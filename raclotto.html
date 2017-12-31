@@ -1,0 +1,31 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="raclotto.css">
+		<script type="text/javascript" src="watch.js"></script>
+		<script type="text/javascript" src="raclotto.js"></script>
+		<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+		<title>Raclotto, Totto, Lotterie</title>
+	</head>
+	<body>
+		<div class="flexContainer">
+			<div class="flexItem">
+				<h1>Zutaten</h1>
+				<div id="ingredientList">
+				</div>
+			</div>
+			<div class="flexItem">
+				<h1>Zutat in den Topf werfen</h1>
+				<input id="inputIngredient" class="inputText"  type="text" name="inputIngredient">
+		 	<button id="addIngredient" onClick="addIngredient()">Rein da</button>
+			</div>
+			<div class="flexItem">
+				<h1>Zugeschnitten auf dich</h1>
+				<input id="inputCount" class="inputText"  type="number" name="inputCount">
+				<button onClick="gimmeSomeFood()">Gib mir</button>
+				<div id="ingredientsRandom"  class="ingredientList">
+					
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

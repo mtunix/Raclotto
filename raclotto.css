@@ -1,0 +1,41 @@
+input[type=text] {
+	width: 100%;
+	height: 30px;
+	margin: 1pt;
+}
+
+input[type=number] {
+	width: 100%;
+	height: 30px;
+	margin: 1pt;
+}
+
+button {
+	width: 100%;
+	margin: 1pt;
+}
+
+.flexContainer {
+	display: flex;
+	flex-direction: row;
+	height: 100%;
+}
+
+.flexItem {
+	flex-grow: 1;
+	margin: 5pt;
+	padding: 5pt;
+	border: 1px solid #000;
+}
+
+.ingredientList {
+	display: flex;
+	flex-direction: column;
+}
+
+.ingredient {
+	flex-grow: 1;
+	border-bottom: 1px solid #000;
+	margin: 5pt;
+	padding: 5pt;
+}

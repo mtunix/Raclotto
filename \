@@ -1,0 +1,17 @@
+.flexContainer {
+	display: flex;
+	flex-direction: row;
+}
+
+.flexItem {
+	flex-grow: 1;
+}
+
+.ingredientList {
+	display: flex;
+	flex-direction: column;
+}
+
+.ingredient {
+	flex-grow: 1;
+}
