@@ -29,6 +29,22 @@ window.onload = function () {
         if (event.which == 13) add(types.ingredient);
     });
 
+    $('#input-ingredient').keyup(function (_) {
+        if (ingredients.includes($('#input-ingredient').val())) {
+            $('#btn-add-ingredient').prop("disabled", true);
+        } else {
+            $('#btn-add-ingredient').prop("disabled", false);
+        }
+    });
+
+    $('#input-sauce').keyup(function (_) {
+        if (ingredients.includes($('#input-sauce').val())) {
+            $('#btn-add-sauce').prop("disabled", true);
+        } else {
+            $('#btn-add-sauce').prop("disabled", false);
+        }
+    });
+
     $('#input-sauce').keypress(function (event) {
         if (event.which == 13) add(types.sauce);
     });
@@ -37,11 +53,11 @@ window.onload = function () {
         if (event.which == 13) gimmeSomeFood();
     });
 
-    $('#btn-add-ingredient').click(function (event) {
+    $('#btn-add-ingredient').click(function (_) {
         add(types.ingredient);
     });
 
-    $('#btn-add-sauce').click(function (event) {
+    $('#btn-add-sauce').click(function (_) {
         add(types.sauce);
     });
 
@@ -55,7 +71,7 @@ function add(type) {
     let item = find("input-" + type).value;
     if (item !== undefined) {
         window[type + "s"].push(item);
-        listContainer.appendChild(generate(window[type + "s"].length - 1, type, true));
+        listContainer.appendChild(generate(item, type, true));
         find("input-" + type).value = "";
     }
     localStorage.setItem(type + "s", JSON.stringify(window[type + "s"]));
@@ -64,19 +80,19 @@ function add(type) {
 function populate(type) {
     let listContainer = find(type + "-list");
     for (let i = 0; i < window[type + "s"].length; ++i) {
-        listContainer.appendChild(generate(i, type, true));
+        listContainer.appendChild(generate(window[type + "s"][i], type, true));
     }
 }
 
 function remove(type, id) {
     $('#' + type + id).remove();
-    window[type + "s"].splice(id - 1, 1);
-	localStorage.setItem(type + "s", JSON.stringify(window[type + "s"]));
+    window[type + "s"] = window[type + "s"].filter(e => e != (id));
+    localStorage.setItem(type + "s", JSON.stringify(window[type + "s"]));
 }
 
 function generate(id, type, allowDelete) {
     let item = document.createElement("div");
-    item.innerHTML = window[type + "s"][id];
+    item.innerHTML = id;
     item.id = type + id;
     item.setAttribute("class", "ingredient");
 
@@ -110,7 +126,7 @@ function randomize(count, type) {
     count = count > window[type + "s"].length ? window[type + "s"].length : count;
 
     for (let i = 0; i < count;) {
-        let random = Math.trunc(Math.random() * window[type + "s"].length);
+        let random = window[type + "s"][Math.trunc(Math.random() * window[type + "s"].length)];
         if (!randoms.includes(random)) {
             randoms.push(random);
             ++i;
