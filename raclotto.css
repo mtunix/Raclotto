@@ -19,9 +19,15 @@ button {
 }
 
 .ingredient {
-	flex-grow: 1;
 	border-bottom: 1px solid #dfdfdf;
 	margin: 5pt;
 	padding: 5pt;
 	font-size: 16pt;
+}
+
+.btn-remove {
+	width: 40%;
+	float: right;
+	color: red !important;
+	text-align: right !important;
 }

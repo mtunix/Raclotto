@@ -75,7 +75,7 @@ function generate(id, type, allowDelete) {
     if (allowDelete) {
         let button = document.createElement("button")
         button.setAttribute("type", "button")
-        button.setAttribute("class", "btn btn-danger")
+        button.setAttribute("class", "btn btn-link btn-sm btn-remove")
         button.innerHTML = "Raus aus dem Topf"
         button.addEventListener("click", function () {
             remove(type, id);
