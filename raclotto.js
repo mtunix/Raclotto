@@ -1,67 +1,94 @@
 var ingredients = [];
+var sauces = []
+
+types = {
+	ingredient: "ingredient",
+	sauce: "sauce"
+}
 
 window.onload = function() {
-	$('#inputIngredient').keypress(function(event) {
-		if (event.which == 13) addIngredient();	
+	$('#input-ingredient').keypress(function(event) {
+		if (event.which == 13) add(types.ingredient);
 	});
 
-	$('#inputCount').keypress(function(event) {
+	$('#input-sauce').keypress(function(event) {
+		if (event.which == 13) add(types.sauce);
+	});
+
+	$('#input-count').keypress(function(event) {
 		if (event.which == 13) gimmeSomeFood();	
+	});
+
+	$('#btn-add-ingredient').click(function(event) {
+		add(types.ingredient)
+	});
+
+	$('#btn-add-sauce').click(function(event) {
+		add(types.sauce)
+	});
+
+	$('#btn-gimme-food').click(function () {
+		gimmeSomeFood()
 	});
 }
 
-function addIngredient() {
-	let listContainer = find("ingredientList");
-	let ingredient = find("inputIngredient").value;
-	if (ingredient !== undefined) {
-		ingredients.push(ingredient);
-		listContainer.appendChild(generateIngredient(ingredients.length-1, true));
-		find("inputIngredient").value = "";
+function add(type) {
+	let listContainer = find(type + "-list")
+	let item = find("input-" + type).value
+	if (item !== undefined) {
+		window[type + "s"].push(item)
+		listContainer.appendChild(generate(window[type + "s"].length-1, type, true))
+		find("input-" + type).value = ""
 	}
 }
 
-function deleteIngredient(id) {
-	$('#' + id).remove();
-	ingredients.splice(id - 1, 1);
+function remove(type, id) {
+	$('#' + type + id).remove();
+	window[type + "s"].splice(id - 1, 1);
 }
 
-function generateIngredient(id, deleteFlag) {
-	let ingredient = document.createElement("div");
-	ingredient.innerHTML = ingredients[id];
-	ingredient.id = id;
-	ingredient.setAttribute("class", "ingredient");
+function generate(id, type, allowDelete) {
+	let item = document.createElement("div")
+	item.innerHTML = window[type + "s"][id];
+	item.id = type + id
+	item.setAttribute("class", "ingredient")
 
-	if (deleteFlag) {
-		let deleteButton = document.createElement("button");
-		deleteButton.innerHTML = "Raus aus dem Topf";
-		deleteButton.addEventListener("click", function() { deleteIngredient(id);  });
-		ingredient.appendChild(deleteButton);
-	}	
+	if (allowDelete) {
+		let button = document.createElement("button")
+		button.setAttribute("type", "button")
+		button.setAttribute("class", "btn btn-danger")
+		button.innerHTML = "Raus aus dem Topf"
+		button.addEventListener("click", function () { remove(type, id); })
+		item.appendChild(button)
+	}
 
-
-	return ingredient;
+	return item
 }
 
 function gimmeSomeFood() {
-	let randoms = randomize($('#inputCount').val());
-	$('#ingredientsRandom').empty();
-	for (let i = 0; i < randoms.length; ++i)
-		$('#ingredientsRandom').append(generateIngredient(randoms[i], false));
+	let randomIngredients = randomize($('#input-ingredient-count').val(), types.ingredient);
+	let randomSauces = randomize($('#input-sauce-count').val(), types.sauce)
+	$('#ingredients-random').empty();
+	for (let i = 0; i < randomIngredients.length; ++i)
+		$('#ingredients-random').append(generate(randomIngredients[i], types.ingredient, false));
+
+	for (let i = 0; i < randomSauces.length; ++i)
+		$('#ingredients-random').append(generate(randomSauces[i], types.sauce, false));
 }	
 
-function randomize(count) {
-	let randomIngredients = [];
-	count = count > ingredients.length ? ingredients.length : count;
+function randomize(count, type) {
+	let randoms = [];
+	count = count > window[type + "s"].length ? window[type + "s"].length : count;
 
 	for (let i = 0; i < count;) {
-		let random = Math.trunc(Math.random() * ingredients.length);
-		if (!randomIngredients.includes(random)) {
-			randomIngredients.push(random);
+		let random = Math.trunc(Math.random() * window[type + "s"].length);
+		if (!randoms.includes(random)) {
+			randoms.push(random);
 			++i;
 		}
 	}
 
-	return randomIngredients;
+	return randoms;
 }
 
 function find(id) {

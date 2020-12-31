@@ -1,13 +1,11 @@
 input[type=text] {
 	width: 100%;
-	height: 30px;
-	margin: 1pt;
+	height: 35px;
 }
 
 input[type=number] {
 	width: 100%;
-	height: 30px;
-	margin: 1pt;
+	height: 35px;
 }
 
 button {
@@ -15,27 +13,15 @@ button {
 	margin: 1pt;
 }
 
-.flexContainer {
-	display: flex;
-	flex-direction: row;
-	height: 100%;
-}
-
-.flexItem {
-	flex-grow: 1;
-	margin: 5pt;
-	padding: 5pt;
-	border: 1px solid #000;
-}
-
-.ingredientList {
+.ingredient-list {
 	display: flex;
 	flex-direction: column;
 }
 
 .ingredient {
 	flex-grow: 1;
-	border-bottom: 1px solid #000;
+	border-bottom: 1px solid #dfdfdf;
 	margin: 5pt;
 	padding: 5pt;
+	font-size: 16pt;
 }
