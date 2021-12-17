@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from back.src.model.domain.base import Base
-from back.src.model.domain.ingredient import Ingredient
+from back.src.model.domain.ingredient import Ingredient, IngredientType
 from back.src.model.domain.rating import Rating
 from back.src.model.domain.pan import Pan
 
@@ -94,7 +94,7 @@ class TestDatabase(unittest.TestCase):
         return Ingredient(
             name="Potato",
             session_id=hashlib.sha256(str(datetime.now()).encode("ASCII")).hexdigest(),
-            type=0,
+            type=IngredientType.FILL,
             vegetarian=False,
             vegan=False,
             histamine=False,
