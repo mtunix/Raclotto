@@ -9,9 +9,17 @@ class IngredientService(DatabaseService):
     def __init__(self):
         super().__init__(Ingredient)
 
-    def all(self, session_id):
+    def all(self, session_id=None, of_type=None):
         with Session(Database.engine()) as session:
-            return session.query(Ingredient).filter(Ingredient.session_id == session_id).all()
+            if session_id and of_type:
+                return session.query(Ingredient)\
+                    .filter(Ingredient.session_id == session_id,
+                            Ingredient.type == IngredientType(int(of_type)))\
+                    .all()
+            elif session_id:
+                return session.query(Ingredient).filter(Ingredient.session_id == session_id).all()
+            else:
+                return session.query(Ingredient).all()
 
     def add(self, obj_dict):
         obj_dict["type"] = IngredientType(obj_dict["type"])

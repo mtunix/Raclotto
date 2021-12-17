@@ -13,9 +13,9 @@ class Database(SQLiteMixin):
     _engine = None
 
     @staticmethod
-    def engine():
+    def engine(url="sqlite:///raclotto.db"):
         if not Database._engine:
-            Database._engine = create_engine('sqlite:///raclotto.db')
+            Database._engine = create_engine(url)
             event.listen(Database._engine, 'connect', Database._fk_pragma_on_connect)
             Base.metadata.create_all(Database._engine)
 

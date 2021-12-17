@@ -14,7 +14,7 @@ from back.src.model.domain.rating import Rating
 from back.src.model.domain.pan import Pan
 
 
-class TestDatabase(SQLiteMixin, unittest.TestCase):
+class TestDomain(SQLiteMixin, unittest.TestCase):
     def setUp(self):
         self.engine = create_engine('sqlite://')
         event.listen(self.engine, 'connect', self._fk_pragma_on_connect)
@@ -91,9 +91,3 @@ class TestDatabase(SQLiteMixin, unittest.TestCase):
             fructose=False,
             lactose=False
         )
-
-    @staticmethod
-    def _fk_pragma_on_connect(dbapi_con, _):
-        dbapi_con.execute('pragma foreign_keys=ON')
-
-

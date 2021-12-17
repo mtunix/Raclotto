@@ -16,7 +16,10 @@ def index():
 @app.route('/api/ingredients/', methods=['GET', 'POST'])
 def api_ingredients():
     if request.method == 'GET':
-        return api.get_ingredients(request.args.get('session_id'))
+        session_id = request.args.get('session_id')
+        if request.args.get('type'):
+            return api.get_ingredients(session_id, request.args.get('type'))
+        return api.get_ingredients(session_id)
     else:
         api.add_ingredient(request.json)
 

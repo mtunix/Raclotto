@@ -13,8 +13,8 @@ class ApiController:
         self.pan_service = PanService()
         self.rating_service = RatingService()
 
-    def get_ingredients(self, session_id):
-        items = self.ingredient_service.all(session_id)
+    def get_ingredients(self, session_id, of_type=None):
+        items = self.ingredient_service.all(session_id, of_type)
         return self.view.get(items)
 
     def get_pans(self, session_id):
