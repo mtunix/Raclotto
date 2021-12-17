@@ -1,10 +1,10 @@
 from sqlalchemy import Table, ForeignKey, Column, Integer
 from sqlalchemy.orm import relationship
 
-from back.src.model.domain.base import Base, DomainMixin
+from back.src.model.domain.base import Base, DomainMixin, SerializableMixin
 
 
-class Pan(DomainMixin, Base):
+class Pan(SerializableMixin, DomainMixin, Base):
     __tablename__ = "pan"
 
     id = Column(Integer, primary_key=True)
@@ -27,3 +27,9 @@ class Pan(DomainMixin, Base):
             Column("rating_id", ForeignKey("rating.id"), primary_key=True, nullable=False),
         ),
     )
+
+    def as_dict(self):
+        cols = super().as_dict()
+        cols["ratings"] = [x.as_dict() for x in self.ratings]
+        cols["ingredients"] = [x.as_dict() for x in self.ingredients]
+        return cols

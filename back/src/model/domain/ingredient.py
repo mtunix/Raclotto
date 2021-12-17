@@ -2,15 +2,15 @@ import enum
 
 from sqlalchemy import Column, Boolean, Integer, Enum
 
-from back.src.model.domain.base import Base, DomainMixin
+from back.src.model.domain.base import Base, DomainMixin, SerializableMixin
 
 
-class IngredientType(enum.Enum):
-    FILL = enum.auto()
-    SAUCE = enum.auto()
+class IngredientType(enum.IntEnum):
+    FILL = 0
+    SAUCE = 1
 
 
-class Ingredient(DomainMixin, Base):
+class Ingredient(SerializableMixin, DomainMixin, Base):
     __tablename__ = "ingredient"
 
     id = Column(Integer, primary_key=True)
