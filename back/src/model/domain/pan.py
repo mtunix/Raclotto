@@ -1,14 +1,14 @@
 from sqlalchemy import Table, ForeignKey, Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from back.src.model.domain.base import Base, DomainMixin, SerializableMixin
+from back.src.model.domain.base import Base, DomainMixin, SerializableMixin, SessionMixin
 
 
-class Pan(SerializableMixin, DomainMixin, Base):
+class Pan(DomainMixin, Base):
     __tablename__ = "pan"
 
     id = Column(Integer, primary_key=True)
-    user = Column(String)
+    user = Column(String, nullable=False)
     ingredients = relationship(
         "Ingredient",
         secondary=Table(

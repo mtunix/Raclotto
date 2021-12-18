@@ -32,6 +32,7 @@ class IngredientService(DatabaseService):
                 Ingredient.histamine == gen_dict["histamine"],
                 Ingredient.gluten == gen_dict["gluten"],
                 Ingredient.lactose == gen_dict["lactose"],
+                Ingredient.type == of_type
             ).all()
 
     def add(self, obj_dict):

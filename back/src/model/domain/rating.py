@@ -1,12 +1,12 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 
-from back.src.model.domain.base import Base, SerializableMixin
+from back.src.model.domain.base import Base, SerializableMixin, SessionMixin
 
 
-class Rating(SerializableMixin, Base):
+class Rating(SessionMixin, Base):
     __tablename__ = "rating"
 
     id = Column(Integer, primary_key=True)
-    rating = Column(Integer)
-    user = Column(String)
-    session_id = Column(String)
+    rating = Column(Integer, nullable=False)
+    user = Column(String, nullable=False)

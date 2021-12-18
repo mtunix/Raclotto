@@ -14,7 +14,7 @@ from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.pan_service import PanService
 
 
-class TestDomain(SQLiteMixin, unittest.TestCase):
+class TestService(SQLiteMixin, unittest.TestCase):
     def setUp(self):
         self.engine = Database.engine("sqlite://")
         event.listen(self.engine, 'connect', self._fk_pragma_on_connect)
@@ -31,9 +31,13 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
         self.assertEqual(len(service.all(self._get_session_id(), of_type=1)), 1)
 
     def test_generate_pan(self):
-        service = PanService()
-        self.assertIsInstance(service.generate(json.loads(self._get_gen_pan_json())), Pan)
-        print(service.generate(json.loads(self._get_gen_pan_json())).name)
+        p_service = PanService()
+        i_service = IngredientService()
+        for i in range(10):
+            i_service.add(self._get_ingredient())
+
+        self.assertIsInstance(p_service.generate(json.loads(self._get_gen_pan_json())), Pan)
+        self.assertEqual(len(p_service.generate(json.loads(self._get_gen_pan_json())).ingredients), 4)
 
     def _get_gen_pan_json(self):
         return f"""{{
