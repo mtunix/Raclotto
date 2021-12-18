@@ -67,19 +67,21 @@ class TestApiControllerModel(SQLiteMixin, unittest.TestCase):
     def _get_json_ingredient(self):
         return f"""{{
             "name": "Potato",
-            "session_id": "{self._get_session_id()}",
+            "session_key": "{self._get_session_id()}",
             "type": 1,
             "vegetarian": 0,
             "vegan": 0,
             "histamine": 0,
             "fructose": 0,
-            "lactose": 0
+            "lactose": 0,
+            "gluten": 0
         }}"""
 
     def _get_json_pan(self):
         return f"""{{
             "name": "PeterPan",
-            "session_id": "{self._get_session_id()}",
+            "user": "AldiAlfi",
+            "session_key": "{self._get_session_id()}",
             "ingredients": [1, 2, 5, 7]
         }}"""
 
@@ -88,7 +90,7 @@ class TestApiControllerModel(SQLiteMixin, unittest.TestCase):
             "pan": 1,
             "rating": 3,
             "user": "mtard",
-            "session_id": "{self._get_session_id()}"
+            "session_key": "{self._get_session_id()}"
         }}"""
 
     @staticmethod
