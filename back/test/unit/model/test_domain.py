@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from back.test.lib import get_session_const, get_session
-from back.src.model.database import SQLiteMixin
+from back.src.model.database import SQLiteMixin, Database
 from back.src.model.domain.base import Base
 from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.domain.ingredient import Ingredient, IngredientType
@@ -18,26 +18,26 @@ from back.src.model.domain.pan import Pan
 
 class TestDomain(SQLiteMixin, unittest.TestCase):
     def setUp(self):
-        self.engine = create_engine('sqlite://')
-        event.listen(self.engine, 'connect', self._fk_pragma_on_connect)
-        Base.metadata.create_all(self.engine)
+        Database.engine('sqlite://')
+        Base.metadata.drop_all(Database.engine())
+        Base.metadata.create_all(Database.engine())
 
     def test_creation(self):
-        with Session(self.engine) as session:
+        with Database.session() as session:
             self.assertEqual(session.query(Ingredient).all(), [])
             self.assertEqual(session.query(Pan).all(), [])
             self.assertEqual(session.query(RaclottoSession).all(), [])
             self.assertEqual(session.query(Rating).all(), [])
 
     def test_insert_ingredient(self):
-        with Session(self.engine) as session:
+        with Database.session() as session:
             with session.begin():
                 session.add(self._get_ingredient())
             self.assertEqual(len(session.query(Ingredient).all()), 1)
             self.assertEqual(len(session.query(RaclottoSession).all()), 1)
 
     def test_insert_rating(self):
-        with Session(self.engine) as session:
+        with Database.session() as session:
             with session.begin():
                 session.add(self._get_ingredient())
                 session.add(self._get_rating())
@@ -45,7 +45,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
             self.assertEqual(len(session.query(RaclottoSession).all()), 1)
 
     def test_insert_pan(self):
-        with Session(self.engine) as session:
+        with Database.session() as session:
             with session.begin():
                 session.add(self._get_ingredient())
                 session.add(self._get_pan(session))
@@ -54,14 +54,14 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
 
     def test_insert_duplicate_session(self):
         with self.assertRaises(IntegrityError) as ctx:
-            with Session(self.engine) as session:
+            with Database.session() as session:
                 with session.begin():
                     session.add(get_session_const())
                     session.add(get_session_const())
         self.assertEqual(ctx.exception.__class__, IntegrityError)
 
     def test_delete(self):
-        with Session(self.engine) as session, session.begin():
+        with Database.session() as session, session.begin():
             session.add(self._get_ingredient())
             self.assertEqual(len(session.query(Ingredient).all()), 1)
             ingredient = session.query(Ingredient).first()
@@ -71,7 +71,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
 
     def test_delete_associated(self):
         with self.assertRaises(IntegrityError) as ctx:
-            with Session(self.engine) as session, session.begin():
+            with Database.session() as session, session.begin():
                 session.add(self._get_ingredient())
                 self.assertEqual(len(session.query(Ingredient).all()), 1)
                 ingredient = session.query(Ingredient).first()

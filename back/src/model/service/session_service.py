@@ -11,7 +11,7 @@ class SessionService(DatabaseService):
         super().__init__(RaclottoSession)
 
     def find(self, key):
-        with Session(Database.engine()) as session, session.begin():
+        with Database.session() as session, session.begin():
             try:
                 return session.query(self.domain_type).filter_by(key=key).one()
             except NoResultFound:

@@ -17,7 +17,7 @@ class PanService(DatabaseService):
         self.session_service = SessionService()
 
     def all(self, session_key=None):
-        with Session(Database.engine()) as session:
+        with Database.session() as session:
             try:
                 sesh = self._get_session(session, session_key)
             except NoResultFound:
@@ -41,7 +41,7 @@ class PanService(DatabaseService):
         r_session = self.session_service.find(pan_dict["session_key"])
         del pan_dict["session_key"]
 
-        with Session(Database.engine()) as session, session.begin():
+        with Database.session() as session, session.begin():
             session.add(Pan(**pan_dict, session=r_session))
 
     def generate(self, gen_dict):

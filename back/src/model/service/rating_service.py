@@ -16,7 +16,7 @@ class RatingService(DatabaseService):
         r_session = self.session_service.find(obj_dict["session_key"])
         del obj_dict["session_key"]
 
-        with Session(Database.engine()) as session, session.begin():
+        with Database.session() as session, session.begin():
             pan = session.query(Pan).filter_by(id=obj_dict["pan"]).one()
             del obj_dict["pan"]
             pan.ratings.append(Rating(**obj_dict, session=r_session))

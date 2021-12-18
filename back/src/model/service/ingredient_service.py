@@ -16,7 +16,7 @@ class IngredientService(DatabaseService):
         self.session_service = SessionService()
 
     def all(self, session_key=None, of_type=None):
-        with Session(Database.engine()) as session:
+        with Database.session() as session:
             try:
                 sesh = self._get_session(session, session_key)
             except NoResultFound:
@@ -33,7 +33,7 @@ class IngredientService(DatabaseService):
                 return session.query(Ingredient).all()
 
     def all_filtered(self, gen_dict, of_type):
-        with Session(Database.engine()) as session:
+        with Database.session() as session:
             try:
                 sesh = self._get_session(session, gen_dict["session_key"])
             except NoResultFound:
@@ -55,8 +55,16 @@ class IngredientService(DatabaseService):
         r_session = self.session_service.find(obj_dict["session_key"])
         del obj_dict["session_key"]
 
-        with Session(Database.engine()) as session, session.begin():
-            session.add(Ingredient(**obj_dict, session=r_session))
+        with Database.session() as session, session.begin():
+            session.expire_on_commit = False
+            ingredient = Ingredient(**obj_dict, session=r_session)
+            session.add(ingredient)
+
+        return ingredient
+
+    def remove(self, id):
+        with Database.session() as session, session.begin():
+            session.delete(self.find(id))
 
     def select(self, gen_dict):
         fills = self.all_filtered(gen_dict, 1)
