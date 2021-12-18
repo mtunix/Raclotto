@@ -1,8 +1,10 @@
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session, joinedload
 from wonderwords import RandomWord
 
 from back.src.model.database import Database
 from back.src.model.domain.pan import Pan
+from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.service.database_service import DatabaseService
 from back.src.model.service.ingredient_service import IngredientService
 
@@ -12,12 +14,17 @@ class PanService(DatabaseService):
         super().__init__(Pan)
         self.ingredient_service = IngredientService()
 
-    def all(self, session_id=None):
+    def all(self, session_key=None):
         with Session(Database.engine()) as session:
-            if session_id:
+            try:
+                sesh = self._get_session(session, session_key)
+            except NoResultFound:
+                return []
+
+            if session_key:
                 return session.query(Pan)\
                     .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
-                    .filter(Pan.session_id == session_id)\
+                    .filter(Pan.session == sesh)\
                     .all()
             else:
                 return session.query(self.domain_type) \

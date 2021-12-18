@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from back.test.lib import get_session_const, get_session
 from back.src.model.database import SQLiteMixin
 from back.src.model.domain.base import Base
 from back.src.model.domain.raclotto_session import RaclottoSession
@@ -55,8 +56,8 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
         with self.assertRaises(IntegrityError) as ctx:
             with Session(self.engine) as session:
                 with session.begin():
-                    session.add(self._get_session_const())
-                    session.add(self._get_session_const())
+                    session.add(get_session_const())
+                    session.add(get_session_const())
         self.assertEqual(ctx.exception.__class__, IntegrityError)
 
     def test_delete(self):
@@ -82,7 +83,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
 
     def _get_pan(self, session):
         return Pan(
-            session=self._get_session(),
+            session=get_session(),
             ingredients=[session.query(Ingredient).first()],
             user="AldiAlfi",
             ratings=[]
@@ -97,24 +98,11 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
     def _get_ingredient(self):
         return Ingredient(
             name="Potato",
-            session=self._get_session(),
+            session=get_session(),
             type=IngredientType.FILL,
             vegetarian=False,
             vegan=False,
             histamine=False,
             fructose=False,
             lactose=False
-        )
-
-    @staticmethod
-    def _get_session():
-        return RaclottoSession(
-            key=hashlib.sha256(str(datetime.now()).encode("ASCII")).hexdigest()
-        )
-
-    @staticmethod
-    def _get_session_const():
-        stamp = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
-        return RaclottoSession(
-            key=hashlib.sha256(str(stamp).encode("ASCII")).hexdigest()
         )

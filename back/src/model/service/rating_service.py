@@ -11,10 +11,8 @@ class RatingService(DatabaseService):
         super().__init__(Rating)
 
     def add(self, obj_dict):
-        ingredients = []
         with Session(Database.engine()) as session, session.begin():
             pan = session.query(Pan).filter_by(id=obj_dict["pan"]).one()
             del obj_dict["pan"]
-            # session.add(Rating(**obj_dict))
             pan.ratings.append(Rating(**obj_dict))
             session.add(pan)

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 
-from back.src.model.domain.base import Base
+from back.src.model.domain.base import Base, SerializableMixin
 
 
 class RaclottoSession(Base):

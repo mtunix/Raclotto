@@ -1,9 +1,7 @@
-import hashlib
 import json
 import unittest
-from datetime import datetime
 
-from sqlalchemy import event, create_engine
+from sqlalchemy import event
 
 from back.src.model.database import SQLiteMixin, Database
 from back.src.model.domain.base import Base
@@ -12,6 +10,7 @@ from back.src.model.domain.pan import Pan
 from back.src.model.domain.rating import Rating
 from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.pan_service import PanService
+from back.test.lib import get_session_const
 
 
 class TestService(SQLiteMixin, unittest.TestCase):
@@ -23,25 +22,25 @@ class TestService(SQLiteMixin, unittest.TestCase):
 
     def test_query_ingredients_by_type_empty(self):
         service = IngredientService()
-        self.assertEqual(len(service.all(self._get_session_id(), of_type=1)), 0)
+        self.assertEqual(0, len(service.all(get_session_const().key, of_type=1)))
 
     def test_query_ingredients_by_type(self):
         service = IngredientService()
         service.add(self._get_ingredient())
-        self.assertEqual(len(service.all(self._get_session_id(), of_type=1)), 1)
+        self.assertEqual(1, len(service.all(get_session_const().key, of_type=1)))
 
     def test_generate_pan(self):
         p_service = PanService()
         i_service = IngredientService()
         for i in range(10):
-            i_service.add(self._get_ingredient())
+            i_service.add(self._get_ingredient(of_type=IngredientType(i % 2 + 1)))
 
         self.assertIsInstance(p_service.generate(json.loads(self._get_gen_pan_json())), Pan)
-        self.assertEqual(len(p_service.generate(json.loads(self._get_gen_pan_json())).ingredients), 4)
+        self.assertEqual(4, len(p_service.generate(json.loads(self._get_gen_pan_json())).ingredients))
 
     def _get_gen_pan_json(self):
         return f"""{{
-            "session_id": "{self._get_session_id()}",
+            "session_key": "{get_session_const().key}",
             "user": "AldiAlfi",
             "num_fill": 2,
             "num_sauce": 2,
@@ -54,33 +53,33 @@ class TestService(SQLiteMixin, unittest.TestCase):
         }}"""
 
     def _get_pan(self, session):
-        return Pan(
-            session_id=self._get_session_id(),
+        p_dict = Pan(
+            session=get_session_const(),
             ingredients=[session.query(Ingredient).first()],
             ratings=[]
         ).as_dict()
+        p_dict["session_key"] = get_session_const().key
+        return p_dict
 
     def _get_rating(self):
-        return Rating(
+        r_dict = Rating(
             user="AldiAlfi",
             rating=5,
-            session_id=self._get_session_id()
+            session=get_session_const()
         ).as_dict()
+        r_dict["session_key"] = get_session_const().key
+        return r_dict
 
-    def _get_ingredient(self):
-        return Ingredient(
+    def _get_ingredient(self, of_type=IngredientType.FILL):
+        i_dict = Ingredient(
             name="Potato",
-            session_id=self._get_session_id(),
-            type=IngredientType.FILL,
+            session=get_session_const(),
+            type=of_type,
             vegetarian=False,
             vegan=False,
             histamine=False,
             fructose=False,
             lactose=False
         ).as_dict()
-
-    @staticmethod
-    def _get_session_id():
-        stamp = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
-        return hashlib.sha256(str(stamp).encode("ASCII")).hexdigest()
-
+        i_dict["session_key"] = get_session_const().key
+        return i_dict
