@@ -24,6 +24,9 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
     def test_creation(self):
         with Session(self.engine) as session:
             self.assertEqual(session.query(Ingredient).all(), [])
+            self.assertEqual(session.query(Pan).all(), [])
+            self.assertEqual(session.query(RaclottoSession).all(), [])
+            self.assertEqual(session.query(Rating).all(), [])
 
     def test_insert_ingredient(self):
         with Session(self.engine) as session:
@@ -48,6 +51,14 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
             self.assertEqual(len(session.query(Pan).all()), 1)
             self.assertEqual(len(session.query(RaclottoSession).all()), 2)
 
+    def test_insert_duplicate_session(self):
+        with self.assertRaises(IntegrityError) as ctx:
+            with Session(self.engine) as session:
+                with session.begin():
+                    session.add(self._get_session_const())
+                    session.add(self._get_session_const())
+        self.assertEqual(ctx.exception.__class__, IntegrityError)
+
     def test_delete(self):
         with Session(self.engine) as session, session.begin():
             session.add(self._get_ingredient())
@@ -58,7 +69,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
             self.assertEqual(len(session.query(RaclottoSession).all()), 1)
 
     def test_delete_associated(self):
-        with self.assertRaises(IntegrityError) as context:
+        with self.assertRaises(IntegrityError) as ctx:
             with Session(self.engine) as session, session.begin():
                 session.add(self._get_ingredient())
                 self.assertEqual(len(session.query(Ingredient).all()), 1)
@@ -67,7 +78,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
                 session.delete(ingredient)
                 self.assertEqual(len(session.query(Ingredient).all()), 0)
 
-        self.assertEqual(context.exception.__class__, IntegrityError)
+        self.assertEqual(ctx.exception.__class__, IntegrityError)
 
     def _get_pan(self, session):
         return Pan(
@@ -99,4 +110,11 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
     def _get_session():
         return RaclottoSession(
             key=hashlib.sha256(str(datetime.now()).encode("ASCII")).hexdigest()
+        )
+
+    @staticmethod
+    def _get_session_const():
+        stamp = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
+        return RaclottoSession(
+            key=hashlib.sha256(str(stamp).encode("ASCII")).hexdigest()
         )
