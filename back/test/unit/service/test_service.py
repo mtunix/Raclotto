@@ -1,4 +1,5 @@
 import hashlib
+import json
 import unittest
 from datetime import datetime
 
@@ -10,6 +11,7 @@ from back.src.model.domain.ingredient import Ingredient, IngredientType
 from back.src.model.domain.pan import Pan
 from back.src.model.domain.rating import Rating
 from back.src.model.service.ingredient_service import IngredientService
+from back.src.model.service.pan_service import PanService
 
 
 class TestDomain(SQLiteMixin, unittest.TestCase):
@@ -27,6 +29,25 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
         service = IngredientService()
         service.add(self._get_ingredient())
         self.assertEqual(len(service.all(self._get_session_id(), of_type=1)), 1)
+
+    def test_generate_pan(self):
+        service = PanService()
+        self.assertIsInstance(service.generate(json.loads(self._get_gen_pan_json())), Pan)
+        print(service.generate(json.loads(self._get_gen_pan_json())).name)
+
+    def _get_gen_pan_json(self):
+        return f"""{{
+            "session_id": "{self._get_session_id()}",
+            "user": "AldiAlfi",
+            "num_fill": 2,
+            "num_sauce": 2,
+            "vegetarian": false,
+            "vegan": false,
+            "histamine": false,
+            "fructose": false,
+            "lactose": false,
+            "gluten": false
+        }}"""
 
     def _get_pan(self, session):
         return Pan(

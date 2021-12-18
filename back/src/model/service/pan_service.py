@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
+from wonderwords import RandomWord
 
 from back.src.model.database import Database
 from back.src.model.domain.pan import Pan
@@ -21,11 +22,20 @@ class PanService(DatabaseService):
             else:
                 return session.query(self.domain_type).all()
 
-    def add(self, obj_dict):
+    def add(self, pan_dict):
         ingredients = []
-        for i in obj_dict["ingredients"]:
+        for i in pan_dict["ingredients"]:
             ingredients.append(self.ingredient_service.find(i))
-        obj_dict["ingredients"] = ingredients
+        pan_dict["ingredients"] = ingredients
 
         with Session(Database.engine()) as session, session.begin():
-            session.add(Pan(**obj_dict))
+            session.add(Pan(**pan_dict))
+
+    def generate(self, gen_dict):
+        ingredients = self.ingredient_service.select(gen_dict)
+        r = RandomWord()
+        return Pan(
+            name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
+            ingredients=ingredients,
+            user=gen_dict["user"]
+        )

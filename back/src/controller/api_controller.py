@@ -36,3 +36,8 @@ class ApiController:
     def add_rating(self, json_str):
         parsed = json.loads(json_str)
         self.rating_service.add(parsed)
+
+    def gen_pan(self, json_str):
+        parsed = json.loads(json_str)
+        pan = self.pan_service.generate(parsed)
+        return self.view.get(pan)

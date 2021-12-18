@@ -17,6 +17,7 @@ class Ingredient(SerializableMixin, DomainMixin, Base):
     type = Column(Enum(IngredientType))
     vegetarian = Column(Boolean)
     vegan = Column(Boolean)
+    gluten = Column(Boolean)
     histamine = Column(Boolean)
     fructose = Column(Boolean)
     lactose = Column(Boolean)

@@ -1,3 +1,5 @@
+from random import sample
+
 from sqlalchemy.orm import Session
 
 from back.src.model.database import Database
@@ -21,8 +23,26 @@ class IngredientService(DatabaseService):
             else:
                 return session.query(Ingredient).all()
 
+    def all_filtered(self, gen_dict, of_type):
+        with Session(Database.engine()) as session:
+            return session.query(Ingredient).filter(
+                Ingredient.vegan == gen_dict["vegan"],
+                Ingredient.vegetarian == gen_dict["vegetarian"],
+                Ingredient.fructose == gen_dict["fructose"],
+                Ingredient.histamine == gen_dict["histamine"],
+                Ingredient.gluten == gen_dict["gluten"],
+                Ingredient.lactose == gen_dict["lactose"],
+            ).all()
+
     def add(self, obj_dict):
         obj_dict["type"] = IngredientType(obj_dict["type"])
 
         with Session(Database.engine()) as session, session.begin():
             session.add(Ingredient(**obj_dict))
+
+    def select(self, gen_dict):
+        fills = self.all_filtered(gen_dict, 1)
+        sauces = self.all_filtered(gen_dict, 2)
+        num_fill = gen_dict["num_fill"] if len(fills) >= gen_dict["num_fill"] else len(fills)
+        num_sauce = gen_dict["num_sauce"] if len(sauces) >= gen_dict["num_sauce"] else len(sauces)
+        return sample(fills, num_fill) + sample(sauces, num_sauce)
