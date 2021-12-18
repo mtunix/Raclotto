@@ -18,8 +18,14 @@ def api_ingredients():
     if request.method == 'GET':
         session_id = request.args.get('session_id')
         if request.args.get('type'):
-            return api.get_ingredients(session_id, request.args.get('type'))
-        return api.get_ingredients(session_id)
+            res = api.get_ingredients(session_id, request.args.get('type'))
+        else:
+            res = api.get_ingredients(session_id)
+        return app.response_class(
+            response=res,
+            status=200,
+            mimetype='application/json'
+        )
     else:
         api.add_ingredient(request.json)
 

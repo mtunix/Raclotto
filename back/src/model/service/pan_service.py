@@ -20,7 +20,9 @@ class PanService(DatabaseService):
                     .filter(Pan.session_id == session_id)\
                     .all()
             else:
-                return session.query(self.domain_type).all()
+                return session.query(self.domain_type) \
+                    .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
+                    .all()
 
     def add(self, pan_dict):
         ingredients = []
