@@ -1,7 +1,5 @@
-import hashlib
 import json
 import unittest
-from datetime import datetime
 
 from back.src.controller.api_controller import ApiController
 from back.src.model.database import SQLiteMixin, Database

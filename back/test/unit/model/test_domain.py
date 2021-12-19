@@ -1,19 +1,14 @@
-import hashlib
 import unittest
-from datetime import datetime
 
-from sqlalchemy import event
-from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
-from back.test.lib import get_session_const, get_session
 from back.src.model.database import SQLiteMixin, Database
 from back.src.model.domain.base import Base
-from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.domain.ingredient import Ingredient, IngredientType
-from back.src.model.domain.rating import Rating
 from back.src.model.domain.pan import Pan
+from back.src.model.domain.raclotto_session import RaclottoSession
+from back.src.model.domain.rating import Rating
+from back.test.lib import get_session_const, get_session
 
 
 class TestDomain(SQLiteMixin, unittest.TestCase):

@@ -1,11 +1,8 @@
 import hashlib
 from datetime import datetime
 
-from back.src.model.database import Database
-from back.src.model.domain.ingredient import Ingredient, IngredientType
-from back.src.model.domain.pan import Pan
+from back.src.model.domain.ingredient import IngredientType
 from back.src.model.domain.raclotto_session import RaclottoSession
-from back.src.model.domain.rating import Rating
 
 
 def get_session():
