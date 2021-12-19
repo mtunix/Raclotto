@@ -29,5 +29,9 @@ class DatabaseService:
         with Database.session() as session, session.begin():
             return session.query(self.domain_type).filter_by(id=id).one()
 
+    def remove(self, id):
+        with Database.session() as session, session.begin():
+            session.delete(self.find(id))
+
     def _get_session(self, session, session_key):
         return session.query(RaclottoSession).filter(RaclottoSession.key == session_key).one()
