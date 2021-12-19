@@ -1,6 +1,7 @@
 import hashlib
 from datetime import datetime
 
+from back.src.model.database import Database
 from back.src.model.domain.ingredient import Ingredient, IngredientType
 from back.src.model.domain.pan import Pan
 from back.src.model.domain.raclotto_session import RaclottoSession
@@ -67,14 +68,14 @@ def get_json_rating():
     }}"""
 
 
-def get_dict_pan(session):
-    p_dict = Pan(
-        session=get_session_const(),
-        ingredients=[session.query(Ingredient).first()],
-        ratings=[]
-    ).as_dict()
-    p_dict["session_key"] = get_session_const().key
-    return p_dict
+def get_dict_pan(ingredient_ids):
+    return {
+        "session_key": get_session_const().key,
+        "name": "Fabulous Raclotto Pan",
+        "user": "AldiAlfi",
+        "ingredients": ingredient_ids,
+        "ratings": []
+    }
 
 
 def get_dict_rating():

@@ -1,6 +1,6 @@
 from random import sample
 
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import Session
 
 from back.src.model.database import Database
@@ -63,8 +63,14 @@ class IngredientService(DatabaseService):
         return ingredient
 
     def remove(self, id):
-        with Database.session() as session, session.begin():
-            session.delete(self.find(id))
+        with Database.session() as session:
+            ingredient = self.find(id)
+            try:
+                with session.begin():
+                    session.delete(ingredient)
+            except IntegrityError:
+                with session.begin():
+                    ingredient.available = False
 
     def select(self, gen_dict):
         fills = self.all_filtered(gen_dict, 1)

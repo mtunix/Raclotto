@@ -42,7 +42,10 @@ class PanService(DatabaseService):
         del pan_dict["session_key"]
 
         with Database.session() as session, session.begin():
-            session.add(Pan(**pan_dict, session=r_session))
+            pan = Pan(**pan_dict, session=r_session)
+            session.add(pan)
+
+        return pan
 
     def generate(self, gen_dict):
         ingredients = self.ingredient_service.select(gen_dict)
