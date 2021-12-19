@@ -37,6 +37,9 @@ class ApiController:
         parsed = json.loads(json_str)
         self.rating_service.add(parsed)
 
+    def del_ingredient(self, session_key, obj_id):
+        self.ingredient_service.delete(session_key, obj_id)
+
     def gen_pan(self, json_str):
         parsed = json.loads(json_str)
         pan = self.pan_service.generate(parsed)

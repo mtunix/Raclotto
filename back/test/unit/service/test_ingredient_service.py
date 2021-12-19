@@ -43,7 +43,7 @@ class UnitTestIngredientService(SQLiteMixin, unittest.TestCase):
         self.assertEqual(0, len(self.i_service.all(get_session_const().key, of_type=1)))
         ingredient = self.i_service.add(get_dict_ingredient())
         self.assertEqual(1, len(self.i_service.all(get_session_const().key, of_type=1)))
-        self.i_service.remove(ingredient.id)
+        self.i_service.delete(ingredient.session.key, ingredient.id)
         self.assertEqual(0, len(self.i_service.all(get_session_const().key, of_type=1)))
 
     def test_remove_used_ingredient(self):
@@ -51,7 +51,7 @@ class UnitTestIngredientService(SQLiteMixin, unittest.TestCase):
         ingredient = self.i_service.add(get_dict_ingredient())
         self.assertEqual(1, len(self.i_service.all(get_session_const().key, of_type=1)))
         self.p_service.add(get_dict_pan([ingredient.id]))
-        self.i_service.remove(ingredient.id)
+        self.i_service.delete(ingredient.session.key, ingredient.id)
         self.assertEqual(1, len(self.i_service.all(get_session_const().key, of_type=1)))
         self.assertFalse(self.i_service.find(ingredient.id).available)
 

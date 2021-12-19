@@ -39,7 +39,7 @@ class UnitTestPanService(SQLiteMixin, unittest.TestCase):
         ingredient = self.i_service.add(get_dict_ingredient())
         pan = self.p_service.add(get_dict_pan([ingredient.id]))
         self.assertEqual(1, len(self.p_service.all(get_session_const().key)))
-        self.p_service.remove(pan.id)
+        self.p_service.delete(pan.session.key, pan.id)
         self.assertEqual(0, len(self.p_service.all(get_session_const().key)))
 
     def test_generate_pan(self):

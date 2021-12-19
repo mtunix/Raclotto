@@ -1,9 +1,10 @@
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import Session, joinedload
 from wonderwords import RandomWord
 
 from back.src.model.database import Database
 from back.src.model.domain.pan import Pan
+from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.service.database_service import DatabaseService
 from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.session_service import SessionService
@@ -16,21 +17,18 @@ class PanService(DatabaseService):
         self.session_service = SessionService()
 
     def all(self, session_key=None):
-        with Database.session() as session:
-            try:
-                sesh = self._get_session(session, session_key)
-            except NoResultFound:
-                return []
+        try:
+            sesh = self._get_session(self.session, session_key)
+        except NoResultFound:
+            return []
 
-            if session_key:
-                return session.query(Pan)\
-                    .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
-                    .filter(Pan.session == sesh)\
-                    .all()
-            else:
-                return session.query(self.domain_type) \
-                    .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
-                    .all()
+        if session_key:
+            return self.session.query(Pan)\
+                .filter(Pan.session == sesh)\
+                .all()
+        else:
+            return self.session.query(self.domain_type) \
+                .all()
 
     def add(self, pan_dict):
         ingredients = []
@@ -40,17 +38,16 @@ class PanService(DatabaseService):
         r_session = self.session_service.find(pan_dict["session_key"])
         del pan_dict["session_key"]
 
-        with Database.session() as session, session.begin():
-            pan = Pan(**pan_dict, session=r_session)
-            session.add(pan)
+        with self.session.begin():
+            pan = Pan(session_id=r_session.id, **pan_dict)
+            self.session.add(pan)
 
-        return pan
+        return self.find(pan.id)
 
     def find(self, id):
-        with Database.session() as session, session.begin():
-            return session.query(self.domain_type)\
-                .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
-                .filter_by(id=id).one()
+        return self.session.query(self.domain_type)\
+            .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
+            .filter_by(id=id).one()
 
     def generate(self, gen_dict):
         ingredients = self.ingredient_service.select(gen_dict)
