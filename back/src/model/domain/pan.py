@@ -17,6 +17,7 @@ class Pan(DomainMixin, Base):
             Column("pan_id", ForeignKey("pan.id"), primary_key=True, nullable=False),
             Column("ingredient_id", ForeignKey("ingredient.id"), primary_key=True, nullable=False),
         ),
+        lazy="selectin"
     )
 
     ratings = relationship(
@@ -27,6 +28,7 @@ class Pan(DomainMixin, Base):
             Column("pan_id", ForeignKey("pan.id"), primary_key=True, nullable=False),
             Column("rating_id", ForeignKey("rating.id"), primary_key=True, nullable=False),
         ),
+        lazy="selectin"
     )
 
     def as_dict(self):

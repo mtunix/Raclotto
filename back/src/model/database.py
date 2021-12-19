@@ -1,7 +1,9 @@
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
+# Imports and their order are critical
 from back.src.model.domain.base import Base
+from back.src.model.domain.rating import Rating
 
 
 class SQLiteMixin:
@@ -26,7 +28,7 @@ class Database(SQLiteMixin):
     @staticmethod
     def session():
         if not Database._session:
-            Database._session = sessionmaker(Database.engine(), expire_on_commit=False)
+            Database._session = sessionmaker(Database.engine(), expire_on_commit=False, autocommit=True, autoflush=True)()
 
-        return Database._session()
+        return Database._session
 

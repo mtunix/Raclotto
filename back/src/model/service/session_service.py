@@ -9,12 +9,12 @@ from back.src.model.service.database_service import DatabaseService
 class SessionService(DatabaseService):
     def __init__(self):
         super().__init__(RaclottoSession)
+        self.session = Database.session()
 
     def find(self, key):
-        with Database.session() as session, session.begin():
-            try:
-                return session.query(self.domain_type).filter_by(key=key).one()
-            except NoResultFound:
-                self.add({"key": key})
-                return session.query(self.domain_type).filter_by(key=key).one()
+        try:
+            return self.session.query(self.domain_type).filter_by(key=key).one()
+        except NoResultFound:
+            self.add({"key": key})
+            return self.session.query(self.domain_type).filter_by(key=key).one()
 

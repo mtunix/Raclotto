@@ -37,7 +37,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
                 session.add(self._get_ingredient())
                 session.add(self._get_rating())
             self.assertEqual(len(session.query(Rating).all()), 1)
-            self.assertEqual(len(session.query(RaclottoSession).all()), 1)
+            self.assertEqual(len(session.query(RaclottoSession).all()), 2)
 
     def test_insert_pan(self):
         with Database.session() as session:
@@ -87,7 +87,8 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
     def _get_rating(self):
         return Rating(
             user="AldiAlfi",
-            rating=5
+            rating=5,
+            session=get_session_const()
         )
 
     def _get_ingredient(self):

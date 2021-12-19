@@ -7,11 +7,11 @@ Base = declarative_base()
 class SessionMixin(object):
     @declared_attr
     def session_id(self):
-        return Column(Integer, ForeignKey('session.id'))
+        return Column(Integer, ForeignKey('session.id'), nullable=False)
 
     @declared_attr
     def session(self):
-        return relationship("RaclottoSession", uselist=False)
+        return relationship("RaclottoSession", uselist=False, lazy="selectin")
 
 
 class SerializableMixin(object):

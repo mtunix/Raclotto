@@ -8,40 +8,52 @@ api = ApiController()
 ui = UiController()
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return 'index'
+    return "index"
 
 
-@app.route('/api/ingredients/', methods=['GET', 'POST'])
+@app.route("/api/ingredients/", methods=["GET", "POST"])
 def api_ingredients():
-    if request.method == 'GET':
-        session_id = request.args.get('session_id')
-        if request.args.get('type'):
-            res = api.get_ingredients(session_id, request.args.get('type'))
+    if request.method == "GET":
+        session_id = request.args.get("session_id")
+        if request.args.get("type"):
+            res = api.get_ingredients(session_id, request.args.get("type"))
         else:
             res = api.get_ingredients(session_id)
         return app.response_class(
             response=res,
             status=200,
-            mimetype='application/json'
+            mimetype="application/json"
         )
     else:
         api.add_ingredient(request.json)
 
 
-@app.route('/api/pans/', methods=['GET', 'POST'])
+@app.route("/api/ingredients/delete/", methods=["GET"])
+def api_ingredients_remove():
+    session_id = request.args.get("session_key")
+    res = api.del_ingredient(session_id, request.args.get("id"))
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
+@app.route("/api/pans/", methods=["GET", "POST"])
 def api_pans():
-    if request.method == 'GET':
-        return api.get_pans(request.args.get('session_id'))
+    if request.method == "GET":
+        return api.get_pans(request.args.get("session_id"))
     else:
         api.add_pan(request.json)
 
 
-@app.route('/api/ratings/', methods=['GET', 'POST'])
+@app.route("/api/ratings/", methods=["GET", "POST"])
 def api_ratings():
-    if request.method == 'GET':
-        return api.get_ratings(request.args.get('session_id'))
+    if request.method == "GET":
+        return api.get_ratings(request.args.get("session_id"))
     else:
         api.add_rating(request.json)
 
