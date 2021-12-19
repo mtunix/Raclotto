@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String
 
-from back.src.model.domain.base import Base, SerializableMixin, SessionMixin
+from back.src.model.domain.base import Base, SessionMixin
 
 
 class Rating(SessionMixin, Base):

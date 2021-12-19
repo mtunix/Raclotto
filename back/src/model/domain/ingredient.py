@@ -2,7 +2,7 @@ import enum
 
 from sqlalchemy import Column, Boolean, Integer, Enum
 
-from back.src.model.domain.base import Base, DomainMixin, SerializableMixin, SessionMixin
+from back.src.model.domain.base import Base, DomainMixin
 
 
 class IngredientType(enum.IntEnum):

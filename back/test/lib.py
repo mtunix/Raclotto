@@ -78,26 +78,24 @@ def get_dict_pan(ingredient_ids):
     }
 
 
-def get_dict_rating():
-    r_dict = Rating(
-        user="AldiAlfi",
-        rating=5,
-        session=get_session_const()
-    ).as_dict()
-    r_dict["session_key"] = get_session_const().key
-    return r_dict
+def get_dict_rating(pan_id=1):
+    return {
+        "session_key": get_session_const().key,
+        "rating": 5,
+        "user": "AldiAlfi",
+        "pan": pan_id
+    }
 
 
 def get_dict_ingredient(of_type=IngredientType.FILL):
-    i_dict = Ingredient(
-        name="Potato",
-        session=get_session_const(),
-        type=of_type,
-        vegetarian=False,
-        vegan=False,
-        histamine=False,
-        fructose=False,
-        lactose=False
-    ).as_dict()
-    i_dict["session_key"] = get_session_const().key
-    return i_dict
+    return {
+        "name": "Potato",
+        "session_key": get_session_const().key,
+        "type": of_type,
+        "vegetarian": False,
+        "vegan": False,
+        "histamine": False,
+        "fructose": False,
+        "lactose": False,
+        "gluten": False
+    }

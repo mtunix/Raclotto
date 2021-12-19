@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import Session, joinedload
 
 from back.src.model.database import Database
 from back.src.model.domain.pan import Pan
@@ -19,5 +20,8 @@ class RatingService(DatabaseService):
         with Database.session() as session, session.begin():
             pan = session.query(Pan).filter_by(id=obj_dict["pan"]).one()
             del obj_dict["pan"]
-            pan.ratings.append(Rating(**obj_dict, session=r_session))
+            rating = Rating(**obj_dict, session=r_session)
+            pan.ratings.append(rating)
             session.add(pan)
+
+        return rating

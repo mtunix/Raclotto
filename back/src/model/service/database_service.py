@@ -1,5 +1,4 @@
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
 
 from back.src.model.database import Database
 from back.src.model.domain.raclotto_session import RaclottoSession

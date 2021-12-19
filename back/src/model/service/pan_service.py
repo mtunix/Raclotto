@@ -1,10 +1,9 @@
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import joinedload
 from wonderwords import RandomWord
 
 from back.src.model.database import Database
 from back.src.model.domain.pan import Pan
-from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.service.database_service import DatabaseService
 from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.session_service import SessionService
@@ -46,6 +45,12 @@ class PanService(DatabaseService):
             session.add(pan)
 
         return pan
+
+    def find(self, id):
+        with Database.session() as session, session.begin():
+            return session.query(self.domain_type)\
+                .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
+                .filter_by(id=id).one()
 
     def generate(self, gen_dict):
         ingredients = self.ingredient_service.select(gen_dict)

@@ -1,7 +1,7 @@
 from sqlalchemy import Table, ForeignKey, Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from back.src.model.domain.base import Base, DomainMixin, SerializableMixin, SessionMixin
+from back.src.model.domain.base import Base, DomainMixin
 
 
 class Pan(DomainMixin, Base):
