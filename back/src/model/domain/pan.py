@@ -1,4 +1,5 @@
 from sqlalchemy import Table, ForeignKey, Column, Integer, String
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from back.src.model.domain.base import Base, DomainMixin
@@ -30,6 +31,10 @@ class Pan(DomainMixin, Base):
         ),
         lazy="selectin"
     )
+
+    @hybrid_property
+    def rating(self):
+        return sum([x.rating for x in self.ratings])/len(self.ratings)
 
     def as_dict(self):
         cols = super().as_dict()
