@@ -45,9 +45,19 @@ class PanService(DatabaseService):
         return self.find(pan.id)
 
     def find(self, id):
-        return self.session.query(self.domain_type)\
+        return self.session.query(Pan)\
             .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
             .filter_by(id=id).one()
+
+    def find_n_best(self, session_key=None, n=None):
+        if session_key and n:
+            return self.session.query(Pan).filter_by(Pan.session.key == session_key).order_by(Pan.rating).all()
+        elif session_key:
+            return self.session.query(Pan).filter_by(Pan.session.key == session_key).order_by(Pan.rating).all()
+        elif n:
+            return self.session.query(Pan).order_by(Pan.rating).all()
+        else:
+            return self.session.query(Pan).order_by(Pan.rating).all()
 
     def generate(self, gen_dict):
         ingredients = self.ingredient_service.select(gen_dict)

@@ -39,6 +39,18 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
             self.assertEqual(len(session.query(Rating).all()), 1)
             self.assertEqual(len(session.query(RaclottoSession).all()), 2)
 
+    def test_associate_rating_with_pan(self):
+        with Database.session() as session:
+            with session.begin():
+                session.add(self._get_ingredient())
+                rating = self._get_rating()
+                pan = self._get_pan(session)
+                pan.ratings.append(rating)
+                session.add(pan)
+            self.assertEqual(5, session.query(Pan).filter_by(id=pan.id).first().rating)
+            self.assertEqual(1, len(session.query(Pan).filter_by(id=pan.id).first().ratings))
+
+
     def test_insert_pan(self):
         with Database.session() as session:
             with session.begin():
@@ -88,7 +100,7 @@ class TestDomain(SQLiteMixin, unittest.TestCase):
         return Rating(
             user="AldiAlfi",
             rating=5,
-            session=get_session_const()
+            session=get_session_const(),
         )
 
     def _get_ingredient(self):

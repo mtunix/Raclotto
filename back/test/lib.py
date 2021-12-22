@@ -75,10 +75,10 @@ def get_dict_pan(ingredient_ids):
     }
 
 
-def get_dict_rating(pan_id=1):
+def get_dict_rating(pan_id=1, rating=5):
     return {
         "session_key": get_session_const().key,
-        "rating": 5,
+        "rating": rating,
         "user": "AldiAlfi",
         "pan": pan_id
     }

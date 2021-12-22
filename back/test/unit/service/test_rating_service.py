@@ -26,3 +26,4 @@ class UnitTestRatingService(SQLiteMixin, unittest.TestCase):
         self.r_service.add(get_dict_rating())
         self.assertEqual(1, len(self.r_service.all(get_session_const().key)))
         self.assertEqual(1, len(self.p_service.find(pan.id).ratings))
+
