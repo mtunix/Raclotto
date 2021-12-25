@@ -1,16 +1,23 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
+from flask_cors import CORS
 
 from back.src.controller.api_controller import ApiController
 from back.src.controller.ui_controller import UiController
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="build/static", template_folder="build")
+CORS(app)
 api = ApiController()
 ui = UiController()
 
 
 @app.route("/")
 def index():
-    return "index"
+    return render_template("index.html")
+
+
+@app.route("/api/session")
+def api_session_validate():
+    pass
 
 
 @app.route("/api/ingredients/", methods=["GET", "POST"])
@@ -45,7 +52,12 @@ def api_ingredients_remove():
 @app.route("/api/pans/", methods=["GET", "POST"])
 def api_pans():
     if request.method == "GET":
-        return api.get_pans(request.args.get("session_id"))
+        res = api.get_pans(request.args.get("session_id"))
+        return app.response_class(
+            response=res,
+            status=200,
+            mimetype="application/json"
+        )
     else:
         api.add_pan(request.json)
 

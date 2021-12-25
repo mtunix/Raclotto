@@ -26,7 +26,6 @@ class Pan(DomainMixin, Base):
 
     ratings = relationship(
         "Rating",
-        # secondary=pan_ratings,
         lazy="selectin"
     )
 
