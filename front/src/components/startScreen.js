@@ -1,12 +1,16 @@
 import React from "react";
 import {Button, Col, Row, Form} from "react-bootstrap";
 import {Notifications} from "../lib/notifications";
-import randomWords from "random-words"
+import {Api} from "../lib/api";
 
 export class StartScreen extends React.Component {
     constructor(props) {
         super(props);
-        this.props.onNotification(Notifications.SESSION_FOUND())
+    }
+
+    validate() {
+        if (Api.validate(this.props.session))
+            this.props.onNotification(Notifications.SESSION_FOUND())
     }
 
     render() {

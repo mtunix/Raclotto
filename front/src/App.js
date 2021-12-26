@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import {StartScreen} from "./components/startScreen";
 import {ToastContainer, Toast} from "react-bootstrap";
+import {Api} from "./lib/api";
 
 class App extends React.Component {
     constructor(props) {
@@ -20,8 +21,8 @@ class App extends React.Component {
     }
 
     updateState = () => {
-        this.apiGet("ingredients");
-        this.apiGet("pans");
+        Api.get("pans")
+        Api.get("ingredients")
         this.state.view = <StartScreen session={this.state.session} onNotification={this.onNotification}/>
     };
 
@@ -29,23 +30,6 @@ class App extends React.Component {
         this.state.notifications.push(notification)
         this.setState(this.state.notifications)
     };
-
-    apiGet(datasetName) {
-        const self = this;
-        fetch("api/" + datasetName)
-            .then(function (response) {
-                response.text().then(function (data) {
-                    // workaround to use string as key
-                    let set = [];
-                    set[datasetName] = data;
-                    self.setState(set);
-                    console.log(set)
-                });
-            })
-            .catch(function (error) {
-                console.warn(error);
-            });
-    }
 
     onNavClicked(id, event) {
         event.preventDefault();

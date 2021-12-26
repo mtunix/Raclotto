@@ -3,6 +3,7 @@ import json
 from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.pan_service import PanService
 from back.src.model.service.rating_service import RatingService
+from back.src.model.service.session_service import SessionService
 from back.src.view.api_view import ApiView
 
 
@@ -12,6 +13,7 @@ class ApiController:
         self.ingredient_service = IngredientService()
         self.pan_service = PanService()
         self.rating_service = RatingService()
+        self.session_service = SessionService()
 
     def get_ingredients(self, session_id, of_type=None):
         items = self.ingredient_service.all(session_id, of_type)
@@ -44,3 +46,7 @@ class ApiController:
         parsed = json.loads(json_str)
         pan = self.pan_service.generate(parsed)
         return self.view.get(pan)
+
+    def validate(self, session_key):
+        validation = self.session_service.validate(session_key)
+        return self.view.scalar(session_key, validation)

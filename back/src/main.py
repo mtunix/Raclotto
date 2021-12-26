@@ -15,15 +15,22 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/api/session")
+@app.route("/api/sessions/validate/", methods=["GET"])
 def api_session_validate():
-    pass
+    session_key = request.args.get("session_key")
+    res = api.validate(session_key)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
 
 
 @app.route("/api/ingredients/", methods=["GET", "POST"])
 def api_ingredients():
     if request.method == "GET":
-        session_id = request.args.get("session_id")
+        session_id = request.args.get("session_key")
         if request.args.get("type"):
             res = api.get_ingredients(session_id, request.args.get("type"))
         else:
@@ -52,7 +59,7 @@ def api_ingredients_remove():
 @app.route("/api/pans/", methods=["GET", "POST"])
 def api_pans():
     if request.method == "GET":
-        res = api.get_pans(request.args.get("session_id"))
+        res = api.get_pans(request.args.get("session_key"))
         return app.response_class(
             response=res,
             status=200,
@@ -65,7 +72,7 @@ def api_pans():
 @app.route("/api/ratings/", methods=["GET", "POST"])
 def api_ratings():
     if request.method == "GET":
-        return api.get_ratings(request.args.get("session_id"))
+        return api.get_ratings(request.args.get("session_key"))
     else:
         api.add_rating(request.json)
 

@@ -1,5 +1,4 @@
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
 
 from back.src.model.database import Database
 from back.src.model.domain.raclotto_session import RaclottoSession
@@ -17,4 +16,7 @@ class SessionService(DatabaseService):
         except NoResultFound:
             self.add({"key": key})
             return self.session.query(self.domain_type).filter_by(key=key).one()
+
+    def validate(self, key):
+        return self.session.query(self.domain_type).filter_by(key=key).first() is not None
 
