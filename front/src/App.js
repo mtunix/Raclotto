@@ -52,7 +52,7 @@ class App extends React.Component {
                         alt=""
                     />
                     <strong className="me-auto">{notification.title}</strong>
-                    <small>5 minutes ago</small>
+                    <small>{new Date(notification.timestamp).toLocaleTimeString("de-DE")}</small>
                 </Toast.Header>
                 <Toast.Body>{notification.content}</Toast.Body>
             </Toast>

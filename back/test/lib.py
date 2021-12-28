@@ -7,15 +7,27 @@ from back.src.model.domain.raclotto_session import RaclottoSession
 
 def get_session():
     return RaclottoSession(
-        key=hashlib.sha256(str(datetime.now()).encode("ASCII")).hexdigest()
+        key=hashlib.sha256(str(datetime.now()).encode("ASCII")).hexdigest(),
+        name="Fabulous Raclotto Session",
+        timestamp=datetime.now()
     )
 
 
 def get_session_const():
     stamp = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0)
     return RaclottoSession(
-        key=hashlib.sha256(str(stamp).encode("ASCII")).hexdigest()
+        key=hashlib.sha256(str(stamp).encode("ASCII")).hexdigest(),
+        name="Fabulous Raclotto Session",
+        timestamp=stamp
     )
+
+
+def get_dict_session():
+    return get_session().as_dict()
+
+
+def get_dict_session_const():
+    return get_session_const().as_dict()
 
 
 def get_json_gen_pan():
@@ -65,9 +77,9 @@ def get_json_rating():
     }}"""
 
 
-def get_dict_pan(ingredient_ids):
+def get_dict_pan(session, ingredient_ids):
     return {
-        "session_key": get_session_const().key,
+        "session_id": session.id,
         "name": "Fabulous Raclotto Pan",
         "user": "AldiAlfi",
         "ingredients": ingredient_ids,
@@ -75,19 +87,19 @@ def get_dict_pan(ingredient_ids):
     }
 
 
-def get_dict_rating(pan_id=1, rating=5):
+def get_dict_rating(session, pan_id=1, rating=5):
     return {
-        "session_key": get_session_const().key,
+        "session_id": session.id,
         "rating": rating,
         "user": "AldiAlfi",
         "pan": pan_id
     }
 
 
-def get_dict_ingredient(of_type=IngredientType.FILL):
+def get_dict_ingredient(session, of_type=IngredientType.FILL):
     return {
         "name": "Potato",
-        "session_key": get_session_const().key,
+        "session_id": session.id,
         "type": of_type,
         "vegetarian": False,
         "vegan": False,

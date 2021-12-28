@@ -16,7 +16,7 @@ def index():
 
 
 @app.route("/api/sessions/validate/", methods=["GET"])
-def api_session_validate():
+def api_sessions_validate():
     session_key = request.args.get("session_key")
     res = api.validate(session_key)
 
@@ -25,6 +25,30 @@ def api_session_validate():
         status=200,
         mimetype="application/json"
     )
+
+
+@app.route("/api/sessions/create/", methods=["POST"])
+def api_sessions_create():
+    res = api.add_session(request.json)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
+@app.route("/api/sessions/", methods=["GET", "POST"])
+def api_sessions():
+    if request.method == "GET":
+        res = api.get_sessions()
+        return app.response_class(
+            response=res,
+            status=200,
+            mimetype="application/json"
+        )
+    else:
+        pass
 
 
 @app.route("/api/ingredients/", methods=["GET", "POST"])

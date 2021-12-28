@@ -10,19 +10,21 @@ class DatabaseService:
         self.session = Database.session()
 
     def all(self, session_key=None):
-        try:
-            sesh = self._get_session(self.session, session_key)
-        except NoResultFound:
-            return []
-
         if session_key:
+            try:
+                sesh = self._get_session(self.session, session_key)
+            except NoResultFound:
+                return []
+
             return self.session.query(self.domain_type).filter(self.domain_type.session == sesh).all()
         else:
             return self.session.query(self.domain_type).all()
 
     def add(self, obj_dict):
         with self.session.begin():
-            self.session.add(self.domain_type(**obj_dict))
+            obj = self.domain_type(**obj_dict)
+            self.session.add(obj)
+            return obj
 
     def find(self, id):
         return self.session.query(self.domain_type).filter_by(id=id).one()

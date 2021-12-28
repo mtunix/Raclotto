@@ -27,6 +27,10 @@ class ApiController:
         items = self.rating_service.all(session_id)
         return self.view.get(items)
 
+    def get_sessions(self):
+        sessions = self.session_service.all()
+        return self.view.get(sessions)
+
     def add_ingredient(self, json_str):
         parsed = json.loads(json_str)
         self.ingredient_service.add(parsed)
@@ -38,6 +42,10 @@ class ApiController:
     def add_rating(self, json_str):
         parsed = json.loads(json_str)
         self.rating_service.add(parsed)
+
+    def add_session(self, obj_dict):
+        self.session_service.add(obj_dict)
+        return self.view.scalar("session", obj_dict)
 
     def del_ingredient(self, session_key, obj_id):
         self.ingredient_service.delete(session_key, obj_id)

@@ -6,7 +6,7 @@ class ApiView:
         pass
 
     def get(self, items):
-        return json.dumps([x.as_dict() for x in items])
+        return json.dumps([x.as_dict() for x in items], default=str)
 
     def scalar(self, key, value):
-        return json.dumps({key: value})
+        return json.dumps({key: value}, default=str)

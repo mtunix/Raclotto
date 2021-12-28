@@ -35,8 +35,8 @@ class PanService(DatabaseService):
         for i in pan_dict["ingredients"]:
             ingredients.append(self.ingredient_service.find(i))
         pan_dict["ingredients"] = ingredients
-        r_session = self.session_service.find(pan_dict["session_key"])
-        del pan_dict["session_key"]
+        r_session = self.session_service.find(pan_dict["session_id"])
+        del pan_dict["session_id"]
 
         with self.session.begin():
             pan = Pan(session_id=r_session.id, **pan_dict)
@@ -61,9 +61,11 @@ class PanService(DatabaseService):
 
     def generate(self, gen_dict):
         ingredients = self.ingredient_service.select(gen_dict)
+        session = self.session_service.find_by_key(gen_dict["session_key"])
         r = RandomWord()
         return Pan(
             name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
             ingredients=ingredients,
-            user=gen_dict["user"]
+            user=gen_dict["user"],
+            session_id=session.id
         )

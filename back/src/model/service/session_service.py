@@ -1,3 +1,6 @@
+import hashlib
+from datetime import datetime
+
 from sqlalchemy.exc import NoResultFound
 
 from back.src.model.database import Database
@@ -10,13 +13,24 @@ class SessionService(DatabaseService):
         super().__init__(RaclottoSession)
         self.session = Database.session()
 
-    def find(self, key):
-        try:
-            return self.session.query(self.domain_type).filter_by(key=key).one()
-        except NoResultFound:
-            self.add({"key": key})
-            return self.session.query(self.domain_type).filter_by(key=key).one()
+    def add(self, obj_dict):
+        sesh = RaclottoSession(
+            key=hashlib.sha256(str(datetime.now()).encode("ASCII")).hexdigest(),
+            name=obj_dict["name"],
+            timestamp=datetime.now()
+        )
+
+        with self.session.begin():
+            self.session.add(sesh)
+
+        return sesh
+
+
+    def find_by_key(self, key):
+        return self.session.query(RaclottoSession).filter_by(key=key).one()
 
     def validate(self, key):
-        return self.session.query(self.domain_type).filter_by(key=key).first() is not None
+        return self.session.query(RaclottoSession).filter_by(key=key).first() is not None
+
+
 

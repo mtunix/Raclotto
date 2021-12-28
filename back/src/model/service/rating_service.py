@@ -1,7 +1,3 @@
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session, joinedload
-
-from back.src.model.database import Database
 from back.src.model.domain.pan import Pan
 from back.src.model.domain.rating import Rating
 from back.src.model.service.database_service import DatabaseService
@@ -14,8 +10,8 @@ class RatingService(DatabaseService):
         self.session_service = SessionService()
 
     def add(self, obj_dict):
-        r_session = self.session_service.find(obj_dict["session_key"])
-        del obj_dict["session_key"]
+        r_session = self.session_service.find(obj_dict["session_id"])
+        del obj_dict["session_id"]
 
         with self.session.begin():
             pan = self.session.query(Pan).filter_by(id=obj_dict["pan"]).one()
