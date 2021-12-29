@@ -4,32 +4,57 @@ import './App.css';
 import {StartScreen} from "./components/startScreen";
 import {ToastContainer, Toast} from "react-bootstrap";
 import {Api} from "./lib/api";
+import {MainScreen} from "./components/mainScreen";
 
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            session: "session",
+            session: localStorage.getItem("session"),
             ingredients: [],
             pans: [],
             notifications: [],
             view: null,
         };
-
-        this.updateState();
-        // this.onNavClicked = this.onNavClicked.bind(this);
     }
 
-    updateState = () => {
-        Api.get("pans")
-        Api.get("ingredients")
-        this.state.view = <StartScreen session={this.state.session} onNotification={this.onNotification}/>
-    };
+    componentDidMount() {
+        this.state.view = this.getStartScreen();
+        this.updateState();
+    }
+
+    getStartScreen() {
+        return (
+            <StartScreen session={this.state.session}
+                         onNotification={this.onNotification}
+                         onSessionJoined={this.onSessionJoined}/>
+        );
+    }
+
+    updateState() {
+        Api.get("pans", this.state.session).then((data) => {
+            this.setState({pans: data})
+        });
+
+        Api.get("ingredients", this.state.session).then((data) => {
+            console.log(data)
+            this.setState({ingredients: data})
+        });
+    }
+
+    onSessionJoined = (session) => {
+        this.setState({
+            session: session,
+            view: <MainScreen ingredients={this.state.ingredients} pans={this.state.pans}/>
+        });
+
+        localStorage.setItem("session", session)
+    }
 
     onNotification = (notification) => {
         this.state.notifications.push(notification)
         this.setState(this.state.notifications)
-    };
+    }
 
     onNavClicked(id, event) {
         event.preventDefault();
@@ -47,7 +72,7 @@ class App extends React.Component {
                    autohide>
                 <Toast.Header>
                     <img
-                        src="holder.js/20x20?text=%20"
+                        // src="holder.js/20x20?text=%20"
                         className="rounded me-2"
                         alt=""
                     />

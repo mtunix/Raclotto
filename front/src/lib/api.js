@@ -1,21 +1,12 @@
 export class Api {
-    static async get(name) {
-        let res = await fetch("api/" + name);
+    static async get(name, session) {
+        let res = await fetch("api/" + name + "/?session_key=" + session);
         return await res.json();
     }
 
-    static validate(sessionKey) {
-        fetch("api/sessions/validate/?session_key=" + sessionKey)
-            .then(function (response) {
-                response.json().then(function (data) {
-                    return data[sessionKey];
-                });
-            })
-            .catch(function (error) {
-                console.warn(error);
-            });
-
-        return false;
+    static async validate(sessionKey) {
+        let res = await fetch("api/sessions/validate/?session_key=" + sessionKey);
+        return await res.json();
     }
 
     static createSession(name) {

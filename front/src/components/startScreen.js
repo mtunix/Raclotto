@@ -8,26 +8,45 @@ export class StartScreen extends React.Component {
         super(props);
         this.state = {
             sessions: [],
-            name: ""
-        }
+            name: "",
+            selected: ""
+        };
+    }
+
+    componentDidMount() {
+        this.validate();
 
         Api.get("sessions").then((data) => {
-            this.setState({sessions: data})
+            this.setState({
+                sessions: data,
+            });
 
             if (data <= 0)
                 this.props.onNotification(Notifications.NO_SESSIONS())
         });
-
-        this.handleChange = this.handleChange.bind(this);
     }
 
-    handleChange(event) {
+    onNameChanged = (event) => {
         this.setState({name: event.target.value});
     }
 
+    onSessionSelected = (event) => {
+        this.setState({selected: event.target.value})
+    }
+
     validate() {
-        if (Api.validate(this.props.session))
-            this.props.onNotification(Notifications.SESSION_FOUND())
+        Api.validate(this.props.session).then((data) => {
+            if (data[this.props.session]) {
+                this.props.onNotification(Notifications.SESSION_FOUND());
+                this.setState({selected: this.props.session})
+            }
+        });
+    }
+
+    join = () => {
+        console.log(this.state.selected);
+        this.props.onSessionJoined(this.state.selected)
+        // this.setState()
     }
 
     renderJoinSession() {
@@ -35,18 +54,18 @@ export class StartScreen extends React.Component {
             return "";
         else {
             let sessions = this.state.sessions.map((session) =>
-                <option>
+                <option value={session.key}>
                     {session.name} - {new Date(session.timestamp).toLocaleTimeString("de-DE")}
                 </option>);
 
             return (<Col sm>
                 <h1>Bestehender Session beitreten</h1>
                 <Form.Label>Session</Form.Label>
-                <Form.Select>
+                <Form.Select value={this.state.selected} onChange={this.onSessionSelected}>
                     {sessions}
                 </Form.Select>
                 <div className="d-grid mt-2">
-                    <Button variant="primary">Beitreten</Button>
+                    <Button variant="primary" onClick={this.join}>Beitreten</Button>
                 </div>
             </Col>);
         }
@@ -58,13 +77,13 @@ export class StartScreen extends React.Component {
                 <Row className="mx-0">
                     <Col sm>
                         <h1>Neue Session erstellen</h1>
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Group className="mb-3" controlId="formSessionName">
                             <Form.Label>Sessionname</Form.Label>
                             <Form.Control
-                                type="email"
+                                type="name"
                                 placeholder="Sessionnamen eingeben"
                                 value={this.state.name}
-                                onChange={this.handleChange}
+                                onChange={this.onNameChanged}
                             />
                             <Form.Text className="text-muted">
                                 Der Sessionname wird anderen Spielern bei der Sessionauswahl angezeigt.
