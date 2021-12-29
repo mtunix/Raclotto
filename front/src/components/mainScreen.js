@@ -1,6 +1,5 @@
 import React from "react";
 import {Button, Col, Form, ListGroup, Row} from "react-bootstrap";
-import {Api} from "../lib/api";
 import {AddIngredient} from "./addIngredient";
 
 export class MainScreen extends React.Component {
@@ -24,13 +23,15 @@ export class MainScreen extends React.Component {
         }
     };
 
-    renderIngredients() {
-        let ingredients = this.props.ingredients.map((ingredient) =>
+    renderIngredients(type) {
+        let ingredients = this.props.ingredients
+            .filter(ingredient => ingredient.type === type)
+            .map((ingredient) =>
             <ListGroup.Item>{ingredient.name}</ListGroup.Item>
         );
 
         return (
-            <ListGroup className="mb-2">
+            <ListGroup key={this.props.ingredients} className="mb-2">
                 {ingredients}
             </ListGroup>
         );
@@ -42,11 +43,11 @@ export class MainScreen extends React.Component {
                 <Row className="mx-0">
                     <Col sm>
                         <h1>Zutaten</h1>
-                        {this.renderIngredients()}
+                        {this.renderIngredients(1)}
                     </Col>
                     <Col sm>
                         <h1>Saucen</h1>
-                        {this.renderIngredients()}
+                        {this.renderIngredients(2)}
                     </Col>
                 </Row>
                 <Row className="mx-0 mt-3">

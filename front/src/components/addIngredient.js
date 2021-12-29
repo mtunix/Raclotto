@@ -89,7 +89,7 @@ export class AddIngredient extends React.Component {
                 </ButtonGroup>
             </div>
             <div className="d-grid gap-2 mt-2">
-                <ButtonGroup>
+                <ButtonGroup className="flex-wrap">
                     {checks}
                 </ButtonGroup>
             </div>

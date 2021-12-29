@@ -44,8 +44,8 @@ class ApiController:
         self.rating_service.add(parsed)
 
     def add_session(self, obj_dict):
-        self.session_service.add(obj_dict)
-        return self.view.scalar("session", obj_dict)
+        sesh = self.session_service.add(obj_dict)
+        return self.view.scalar("session", sesh)
 
     def del_ingredient(self, session_key, obj_id):
         self.ingredient_service.delete(session_key, obj_id)

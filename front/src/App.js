@@ -14,13 +14,13 @@ class App extends React.Component {
             ingredients: [],
             pans: [],
             notifications: [],
-            view: null,
+            view: 0,
         };
+
     }
 
     componentDidMount() {
-        this.state.view = this.getStartScreen();
-        this.updateState();
+        this.setState({view: this.getStartScreen()})
     }
 
     getStartScreen() {
@@ -31,34 +31,49 @@ class App extends React.Component {
         );
     }
 
-    updateState() {
+    getMainScreen() {
+        return (
+            <MainScreen session={this.state.session}
+                        ingredients={this.state.ingredients}
+                        pans={this.state.pans}/>
+        );
+    }
+
+    updateState = () => {
         Api.get("pans", this.state.session).then((data) => {
             this.setState({pans: data})
         });
 
         Api.get("ingredients", this.state.session).then((data) => {
-            console.log(data)
             this.setState({ingredients: data})
         });
-    }
+    };
 
     onSessionJoined = (session) => {
         this.setState({
             session: session,
-            view: <MainScreen ingredients={this.state.ingredients} pans={this.state.pans}/>
+            view: 1
+        }, function () {
+            this.updateState();
         });
-
         localStorage.setItem("session", session)
-    }
+    };
 
     onNotification = (notification) => {
         this.state.notifications.push(notification)
-        this.setState(this.state.notifications)
-    }
+        this.setState({notifications: this.state.notifications})
+    };
 
     onNavClicked(id, event) {
         event.preventDefault();
         this.setState({view: id});
+    }
+
+    getView() {
+        if (this.state.view === 1)
+            return this.getMainScreen()
+        else
+            return this.getStartScreen()
     }
 
     render() {
@@ -86,7 +101,7 @@ class App extends React.Component {
         return (
             <>
                 <h1 className="text-center">Raclotto</h1>
-                {this.state.view}
+                {this.getView()}
 
                 <ToastContainer id="notifications" className="p-3" position="bottom-center">
                     {toasts}

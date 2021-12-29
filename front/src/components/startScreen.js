@@ -46,7 +46,12 @@ export class StartScreen extends React.Component {
     join = () => {
         console.log(this.state.selected);
         this.props.onSessionJoined(this.state.selected)
-        // this.setState()
+    }
+
+    create = () => {
+        Api.createSession(this.state.name).then((data) => {
+            this.props.onSessionJoined(data["session"].key)
+        })
     }
 
     renderJoinSession() {
@@ -89,7 +94,7 @@ export class StartScreen extends React.Component {
                                 Der Sessionname wird anderen Spielern bei der Sessionauswahl angezeigt.
                             </Form.Text>
                             <div className="d-grid mt-2">
-                                <Button variant="primary" onClick={() => Api.createSession(this.state.name)}>Erstellen</Button>
+                                <Button variant="primary" onClick={this.create}>Erstellen</Button>
                             </div>
                         </Form.Group>
                     </Col>

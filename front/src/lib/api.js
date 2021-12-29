@@ -9,8 +9,8 @@ export class Api {
         return await res.json();
     }
 
-    static createSession(name) {
-        fetch("api/sessions/create/", {
+    static async createSession(name) {
+        let res = await fetch("api/sessions/create/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -20,16 +20,7 @@ export class Api {
             credentials: 'same-origin', // include, *same-origin, omit
             redirect: 'follow',
             body: JSON.stringify({ name: name })
-        })
-            .then(function (response) {
-                response.json().then(function (data) {
-                    return data;
-                });
-            })
-            .catch(function (error) {
-                console.warn(error);
-            });
-
-        return false;
+        });
+        return await res.json();
     }
 }
