@@ -63,9 +63,14 @@ class PanService(DatabaseService):
         ingredients = self.ingredient_service.select(gen_dict)
         session = self.session_service.find_by_key(gen_dict["session_key"])
         r = RandomWord()
-        return Pan(
-            name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
-            ingredients=ingredients,
-            user=gen_dict["user"],
-            session_id=session.id
-        )
+
+        with self.session.begin():
+            pan = Pan(
+                name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
+                ingredients=ingredients,
+                user=gen_dict["user"],
+                session_id=session.id
+            )
+            self.session.add(pan)
+
+        return self.find(pan.id)

@@ -3,6 +3,7 @@ import {Button, Col, Form, ListGroup, Row, ToggleButton} from "react-bootstrap";
 import {AddIngredient} from "./addIngredient";
 import {GenerateView} from "./generateView";
 import {Api} from "../lib/api";
+import {HistoryView} from "./historyView";
 
 export class MainScreen extends React.Component {
     constructor(props) {
@@ -31,7 +32,7 @@ export class MainScreen extends React.Component {
             case 2:
                 break;
             case 3:
-                break;
+                return (<HistoryView session={this.props.session} />);
             case 4:
                 return (<AddIngredient />);
         }
