@@ -7,6 +7,7 @@ export class DialView extends React.Component {
 
         this.state = {
             numIngredients: 0,
+            type: 1
         }
     }
 
@@ -27,18 +28,22 @@ export class DialView extends React.Component {
     };
 
     onInputChanged = (event) => {
-        this.setState({numIngredients: event.target.value})
+        this.setState({numIngredients: parseInt(event.target.value)})
     };
 
     accept = () => {
         this.props.accept(this.state.numIngredients)
-        this.setState({numIngredients: 0})
+        if (this.state.type === 2) {
+            this.setState({numIngredients: 0, type: 1})
+        } else {
+            this.setState({numIngredients: 0, type: 2})
+        }
     };
 
     buttonIsDisabled = (i) => {
         let numStr = String(this.state.numIngredients);
         numStr += String(i);
-        return parseInt(numStr) > this.props.ingredients.length;
+        return parseInt(numStr) > this.props.ingredients.filter((i) => i.type === this.state.type).length;
     }
 
     render() {
