@@ -9,6 +9,23 @@ export class Api {
         return await res.json();
     }
 
+    static async add(session, ingredient) {
+        let res = await fetch("api/ingredients/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            redirect: 'follow',
+            body: JSON.stringify(
+                Object.assign({}, {session_key: session}, ingredient)
+            )
+        });
+        return await res.json();
+    }
+
     static async generate(session, numIngredient, numSauce) {
         let res = await fetch("api/generate/", {
             method: 'POST',

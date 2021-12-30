@@ -25,7 +25,6 @@ class SessionService(DatabaseService):
 
         return sesh
 
-
     def find_by_key(self, key):
         return self.session.query(RaclottoSession).filter_by(key=key).one()
 

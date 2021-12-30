@@ -12,7 +12,14 @@ export class MainScreen extends React.Component {
 
         this.state = {
             toolbar: 0,
+            ingredients: []
         };
+    }
+
+    componentDidMount() {
+        Api.get("ingredients", this.props.session).then((data) => {
+            this.setState({ingredients: data})
+        });
     }
 
     onToolbarClicked = (id) => {
@@ -29,25 +36,31 @@ export class MainScreen extends React.Component {
     getTool() {
         switch (this.state.toolbar) {
             case 1:
-                return (<GenerateView session={this.props.session} ingredients={this.props.ingredients} onGeneration={this.onGeneration}/>);
+                return (<GenerateView session={this.props.session} ingredients={this.state.ingredients} onGeneration={this.onGeneration}/>);
             case 2:
                 return (<SettingsView />)
             case 3:
                 return (<HistoryView session={this.props.session} />);
             case 4:
-                return (<AddIngredient />);
+                return (<AddIngredient session={this.props.session} onAdd={this.onAdd} />);
         }
     }
 
+    onAdd = () => {
+        Api.get("ingredients", this.props.session).then((data) => {
+            this.setState({ingredients: data})
+        });
+    };
+
     renderIngredients(type) {
-        let ingredients = this.props.ingredients
+        let ingredients = this.state.ingredients
             .filter(ingredient => ingredient.type === type)
             .map((ingredient) =>
             <ListGroup.Item>{ingredient.name}</ListGroup.Item>
         );
 
         return (
-            <ListGroup key={this.props.ingredients} className="mb-2">
+            <ListGroup key={this.state.ingredients} className="mb-2">
                 {ingredients}
             </ListGroup>
         );

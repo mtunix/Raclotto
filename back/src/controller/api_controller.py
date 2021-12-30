@@ -31,9 +31,9 @@ class ApiController:
         sessions = self.session_service.all()
         return self.view.get(sessions)
 
-    def add_ingredient(self, json_str):
-        parsed = json.loads(json_str)
-        self.ingredient_service.add(parsed)
+    def add_ingredient(self, parsed):
+        ingredient = self.ingredient_service.add(parsed)
+        return self.view.scalar("added", ingredient)
 
     def add_pan(self, json_str):
         parsed = json.loads(json_str)

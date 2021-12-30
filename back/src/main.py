@@ -70,13 +70,14 @@ def api_ingredients():
             res = api.get_ingredients(session_id, request.args.get("type"))
         else:
             res = api.get_ingredients(session_id)
-        return app.response_class(
-            response=res,
-            status=200,
-            mimetype="application/json"
-        )
     else:
-        api.add_ingredient(request.json)
+        res = api.add_ingredient(request.json)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
 
 
 @app.route("/api/ingredients/delete/", methods=["GET"])

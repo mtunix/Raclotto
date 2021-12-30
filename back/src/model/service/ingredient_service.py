@@ -55,12 +55,12 @@ class IngredientService(DatabaseService):
 
     def add(self, obj_dict):
         obj_dict["type"] = IngredientType(obj_dict["type"])
-        # r_session = self.session_service.find(obj_dict["session_key"])
-        # del obj_dict["session_key"]
+        r_session = self.session_service.find_by_key(obj_dict["session_key"])
+        del obj_dict["session_key"]
 
         with self.session.begin():
-            # ingredient = Ingredient(**obj_dict, session=r_session)
-            ingredient = Ingredient(**obj_dict)
+            ingredient = Ingredient(**obj_dict, session=r_session)
+            # ingredient = Ingredient(**obj_dict)
             self.session.add(ingredient)
 
         return ingredient

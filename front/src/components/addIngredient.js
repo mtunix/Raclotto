@@ -22,7 +22,7 @@ export class AddIngredient extends React.Component {
             fructose: false,
             lactose: false,
             name: "",
-            type: 0
+            type: 1
         }
     }
 
@@ -36,8 +36,11 @@ export class AddIngredient extends React.Component {
         this.setState({"name": event.target.value})
     };
 
-    onAddClicked = (event) => {
-
+    onAddClicked = () => {
+        Api.add(this.props.session, this.state).then((data) => {
+            this.props.onAdd()
+        });
+        this.setState({"name":""})
     };
 
     onIngredientSelected = (type) => {
@@ -72,8 +75,8 @@ export class AddIngredient extends React.Component {
                         id="ingredient"
                         type="radio"
                         variant="outline-primary"
-                        checked={this.state.type === 0}
-                        onChange={() => this.onIngredientSelected(0)}
+                        checked={this.state.type === 1}
+                        onChange={() => this.onIngredientSelected(1)}
                     >
                         Zutat
                     </ToggleButton>
@@ -81,8 +84,8 @@ export class AddIngredient extends React.Component {
                         id="sauce"
                         type="radio"
                         variant="outline-primary"
-                        checked={this.state.type === 1}
-                        onChange={() => this.onIngredientSelected(1)}
+                        checked={this.state.type === 2}
+                        onChange={() => this.onIngredientSelected(2)}
                     >
                         Sauce
                     </ToggleButton>
