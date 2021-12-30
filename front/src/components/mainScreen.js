@@ -21,16 +21,13 @@ export class MainScreen extends React.Component {
     };
 
     onGeneration = (numIngredient, numSauce) => {
-        this.setState({toolbar: 0})
-        Api.generate(this.props.session, numIngredient, numSauce).then((data) => {
-            console.log(data);
-        });
+        // this.setState({toolbar: 0})
     };
 
     getTool() {
         switch (this.state.toolbar) {
             case 1:
-                return (<GenerateView ingredients={this.props.ingredients} onGeneration={this.onGeneration}/>);
+                return (<GenerateView session={this.props.session} ingredients={this.props.ingredients} onGeneration={this.onGeneration}/>);
             case 2:
                 break;
             case 3:
