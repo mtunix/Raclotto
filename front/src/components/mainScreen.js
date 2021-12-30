@@ -12,6 +12,7 @@ export class MainScreen extends React.Component {
 
         this.state = {
             toolbar: 0,
+            user: "",
             ingredients: []
         };
     }
@@ -38,7 +39,7 @@ export class MainScreen extends React.Component {
             case 1:
                 return (<GenerateView session={this.props.session} ingredients={this.state.ingredients} onGeneration={this.onGeneration}/>);
             case 2:
-                return (<SettingsView />)
+                return (<SettingsView onUserChanged={this.onUserChanged}/>)
             case 3:
                 return (<HistoryView session={this.props.session} />);
             case 4:

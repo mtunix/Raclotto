@@ -108,7 +108,12 @@ def api_pans():
 @app.route("/api/ratings/", methods=["GET", "POST"])
 def api_ratings():
     if request.method == "GET":
-        return api.get_ratings(request.args.get("session_key"))
+        res = api.get_ratings(request.args.get("session_key"))
     else:
-        api.add_rating(request.json)
+        res = api.add_rating(request.json)
 
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )

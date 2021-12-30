@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 
-from back.src.model.domain.base import Base, SessionMixin
+from back.src.model.domain.base import Base, SessionMixin, SerializableMixin
 
 
-class Rating(SessionMixin, Base):
+class Rating(SerializableMixin, SessionMixin, Base):
     __tablename__ = "rating"
 
     id = Column(Integer, primary_key=True)

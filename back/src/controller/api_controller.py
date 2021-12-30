@@ -39,9 +39,9 @@ class ApiController:
         parsed = json.loads(json_str)
         self.pan_service.add(parsed)
 
-    def add_rating(self, json_str):
-        parsed = json.loads(json_str)
-        self.rating_service.add(parsed)
+    def add_rating(self, parsed):
+        rating = self.rating_service.add(parsed)
+        return self.view.scalar("added", rating)
 
     def add_session(self, obj_dict):
         sesh = self.session_service.add(obj_dict)

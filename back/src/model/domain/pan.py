@@ -31,7 +31,10 @@ class Pan(DomainMixin, Base):
 
     @hybrid_property
     def rating(self):
-        return sum([x.rating for x in self.ratings])/len(self.ratings)
+        if len(self.ratings) > 0:
+            return sum([x.rating for x in self.ratings])/len(self.ratings)
+        else:
+            return 0
 
     @rating.expression
     def rating(cls):
@@ -42,6 +45,7 @@ class Pan(DomainMixin, Base):
 
     def as_dict(self):
         cols = super().as_dict()
+        cols["rating"] = self.rating
         cols["ratings"] = [x.as_dict() for x in self.ratings]
         cols["ingredients"] = [x.as_dict() for x in self.ingredients]
         return cols

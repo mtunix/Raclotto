@@ -10,8 +10,8 @@ class RatingService(DatabaseService):
         self.session_service = SessionService()
 
     def add(self, obj_dict):
-        r_session = self.session_service.find(obj_dict["session_id"])
-        del obj_dict["session_id"]
+        r_session = self.session_service.find_by_key(obj_dict["session_key"])
+        del obj_dict["session_key"]
 
         with self.session.begin():
             pan = self.session.query(Pan).filter_by(id=obj_dict["pan"]).one()
