@@ -58,3 +58,7 @@ class ApiController:
     def validate(self, session_key):
         validation = self.session_service.validate(session_key)
         return self.view.scalar(session_key, validation)
+
+    def generate(self, gen_dict):
+        pan = self.pan_service.generate(gen_dict)
+        return self.view.scalar("generated", pan)

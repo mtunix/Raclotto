@@ -15,6 +15,17 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/api/generate/", methods=["POST"])
+def api_generate():
+    res = api.generate(request.json)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
 @app.route("/api/sessions/validate/", methods=["GET"])
 def api_sessions_validate():
     session_key = request.args.get("session_key")
