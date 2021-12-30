@@ -4,6 +4,7 @@ import {AddIngredient} from "./addIngredient";
 import {GenerateView} from "./generateView";
 import {Api} from "../lib/api";
 import {HistoryView} from "./historyView";
+import {SettingsView} from "./settingsView";
 
 export class MainScreen extends React.Component {
     constructor(props) {
@@ -30,7 +31,7 @@ export class MainScreen extends React.Component {
             case 1:
                 return (<GenerateView session={this.props.session} ingredients={this.props.ingredients} onGeneration={this.onGeneration}/>);
             case 2:
-                break;
+                return (<SettingsView />)
             case 3:
                 return (<HistoryView session={this.props.session} />);
             case 4:

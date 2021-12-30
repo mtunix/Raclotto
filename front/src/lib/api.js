@@ -21,7 +21,7 @@ export class Api {
             redirect: 'follow',
             body: JSON.stringify({
                 session_key: session,
-                user: "aldialfi",
+                user: this.getUser(),
                 num_fill: numIngredient,
                 num_sauce: numSauce,
                 vegetarian: true,
@@ -48,5 +48,15 @@ export class Api {
             body: JSON.stringify({ name: name })
         });
         return await res.json();
+    }
+
+    static getUser() {
+        let user = "unknown";
+
+        if (localStorage.getItem("name")) {
+            user = localStorage.getItem("name");
+        }
+
+        return user;
     }
 }
