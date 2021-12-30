@@ -24,8 +24,6 @@ export class GenerateView extends React.Component {
                     this.setState({
                         generated: data["generated"],
                         heading: data["generated"].name
-                    }, function () {
-                        console.log(this.state);
                     });
                 });
                 this.props.onGeneration(this.state.numFill, this.state.numSauce);
@@ -46,9 +44,10 @@ export class GenerateView extends React.Component {
         if (!this.state.generated)
             return (<DialView ingredients={this.props.ingredients} accept={this.accept}/>);
         else {
+            let getVariant = (type) => type === 1 ? "primary" : "secondary";
             let ingredients = this.state.generated.ingredients
                 .map((ingredient) =>
-                    <ListGroup.Item>{ingredient.name}</ListGroup.Item>
+                    <ListGroup.Item variant={getVariant(ingredient.type)}>{ingredient.name}</ListGroup.Item>
                 );
 
             return (

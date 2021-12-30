@@ -18,6 +18,7 @@ export class HistoryView extends React.Component {
     }
 
     render() {
+        let getVariant = (type) => type === 1 ? "primary" : "secondary";
         let pans = this.state.pans.map((pan, i) =>
             <Accordion.Item eventKey={i}>
                 <Accordion.Header>
@@ -27,7 +28,7 @@ export class HistoryView extends React.Component {
                 <Accordion.Body>
                     <ListGroup key={this.props.ingredients} className="mb-2">
                         {pan.ingredients.map((ingredient) =>
-                            <ListGroup.Item>{ingredient.name}</ListGroup.Item>
+                            <ListGroup.Item variant={getVariant(ingredient.type)}>{ingredient.name}</ListGroup.Item>
                         )}
                     </ListGroup>
                 </Accordion.Body>

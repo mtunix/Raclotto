@@ -28,7 +28,6 @@ export class SettingsView extends React.Component {
    componentDidMount() {
        this.options.map((opt) => {
            if (localStorage.getItem(opt.name)) {
-               console.log(opt.name + " " + localStorage.getItem(opt.name))
                this.setState({
                    [opt.name]: localStorage.getItem(opt.name) === 'true'
                });

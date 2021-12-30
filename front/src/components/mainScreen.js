@@ -53,10 +53,11 @@ export class MainScreen extends React.Component {
     };
 
     renderIngredients(type) {
+        let variant = type === 1 ? "primary" : "secondary";
         let ingredients = this.state.ingredients
             .filter(ingredient => ingredient.type === type)
             .map((ingredient) =>
-            <ListGroup.Item>{ingredient.name}</ListGroup.Item>
+            <ListGroup.Item variant={variant}>{ingredient.name}</ListGroup.Item>
         );
 
         return (

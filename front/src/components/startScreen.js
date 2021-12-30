@@ -44,7 +44,6 @@ export class StartScreen extends React.Component {
     }
 
     join = () => {
-        console.log(this.state.selected);
         this.props.onSessionJoined(this.state.selected)
     }
 
