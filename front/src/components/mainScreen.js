@@ -39,17 +39,21 @@ export class MainScreen extends React.Component {
     getTool() {
         switch (this.state.toolbar) {
             case 1:
-                return (<GenerateView session={this.props.session} ingredients={this.state.ingredients} onGeneration={this.onGeneration}/>);
+                return (<GenerateView session={this.props.session}
+                                      ingredients={this.state.ingredients}
+                                      onGeneration={this.onGeneration}/>);
             case 2:
-                return (<SettingsView onUserChanged={this.onUserChanged}/>)
+                return (<SettingsView onUserChanged={this.onUserChanged}/>);
             case 3:
                 return (<HistoryView session={this.props.session} />);
             case 4:
-                return (<AddIngredient session={this.props.session} onAdd={this.onAdd} />);
+                return (<AddIngredient session={this.props.session}
+                                       onAdd={this.onAdd} />);
             case 5:
-                return (<AchievementView />)
+                return (<AchievementView />);
             case 6:
-                return (<ServerSettingsView session={this.props.session} />)
+                return (<ServerSettingsView session={this.props.session}
+                                            onSessionClosed={this.props.onSessionClosed}/>);
         }
     }
 

@@ -19,6 +19,7 @@ export class StartScreen extends React.Component {
         Api.get("sessions").then((data) => {
             this.setState({
                 sessions: data,
+                selected: data[0].key
             });
 
             if (data <= 0)

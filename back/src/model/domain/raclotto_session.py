@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
 from back.src.model.domain.base import Base, SerializableMixin
 
@@ -12,3 +12,4 @@ class RaclottoSession(SerializableMixin, Base):
     key = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    active = Column(Boolean, nullable=False, default=True)

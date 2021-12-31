@@ -72,3 +72,7 @@ class ApiController:
     def get_achievements(self):
         achievements = self.achievement_service.all()
         return self.view.get(achievements)
+
+    def close_session(self, parsed):
+        session = self.session_service.close(parsed)
+        return self.view.scalar("session", session)

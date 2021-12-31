@@ -11,16 +11,10 @@ class App extends React.Component {
         super(props);
         this.state = {
             session: localStorage.getItem("session"),
-            ingredients: [],
-            pans: [],
             notifications: [],
             view: 0,
         };
 
-    }
-
-    componentDidMount() {
-        this.setState({view: this.getStartScreen()})
     }
 
     getStartScreen() {
@@ -34,8 +28,7 @@ class App extends React.Component {
     getMainScreen() {
         return (
             <MainScreen session={this.state.session}
-                        ingredients={this.state.ingredients}
-                        pans={this.state.pans}/>
+                        onSessionClosed={this.onSessionClosed} />
         );
     }
 
@@ -57,6 +50,14 @@ class App extends React.Component {
             this.updateState();
         });
         localStorage.setItem("session", session)
+    };
+
+    onSessionClosed = () => {
+        this.setState({
+            session: "",
+            notifications: [],
+            view: 0,
+        }, () => { localStorage.setItem("session", "") });
     };
 
     onNotification = (notification) => {

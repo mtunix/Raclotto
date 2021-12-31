@@ -74,6 +74,17 @@ def api_sessions():
         pass
 
 
+@app.route("/api/sessions/close", methods=["POST"])
+def api_sessions_close():
+    res = api.close_session(request.json)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
 @app.route("/api/ingredients/", methods=["GET", "POST"])
 def api_ingredients():
     if request.method == "GET":

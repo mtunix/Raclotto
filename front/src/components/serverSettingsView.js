@@ -21,6 +21,12 @@ export class ServerSettingsView extends React.Component {
         this.setState({name: event.target.value})
     };
 
+    onCloseSession = () => {
+        Api.close(this.props.session).then((data) => {
+            this.props.onSessionClosed();
+        });
+    };
+
     render() {
         return (
             <div>
@@ -36,7 +42,7 @@ export class ServerSettingsView extends React.Component {
                 <Form.Group className="d-grid gap-2 mt-2 mb-3" controlId="formIngredientName">
                     <Form.Label>Abend schon vorbei?</Form.Label>
                     <ButtonGroup className="flex-wrap">
-                        <Button>Session beenden</Button>
+                        <Button onClick={this.onCloseSession}>Session beenden</Button>
                     </ButtonGroup>
                 </Form.Group>
 

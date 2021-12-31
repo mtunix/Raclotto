@@ -16,15 +16,32 @@ export class Api {
         return await res.json();
     }
 
+    static async close(sessionKey) {
+        let res = await fetch("api/sessions/close", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            redirect: 'follow',
+            body: JSON.stringify(
+                {session_key: sessionKey}
+            )
+        });
+        return await res.json();
+    }
+
     static async add(session, ingredient) {
         let res = await fetch("api/ingredients/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify(
                 Object.assign({}, {session_key: session}, ingredient)
@@ -39,9 +56,9 @@ export class Api {
             headers: {
                 'Content-Type': 'application/json'
             },
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify({
                 session_key: session,
@@ -59,9 +76,9 @@ export class Api {
             headers: {
                 'Content-Type': 'application/json'
             },
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify({
                 session_key: session,
@@ -85,9 +102,9 @@ export class Api {
             headers: {
                 'Content-Type': 'application/json'
             },
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify({ name: name })
         });
