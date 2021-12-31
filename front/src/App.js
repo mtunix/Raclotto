@@ -101,7 +101,11 @@ class App extends React.Component {
 
         return (
             <>
-                <h1 className="text-center">Raclotto</h1>
+                {/*<h1 className="text-center">Raclotto</h1>*/}
+                <center>
+                    <img width={150} src="raclotto.png" />
+
+                </center>
                 {this.getView()}
 
                 <ToastContainer id="notifications" className="p-3" position="bottom-center">
