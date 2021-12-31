@@ -50,7 +50,6 @@ def api_session():
     )
 
 
-
 @app.route("/api/sessions/create/", methods=["POST"])
 def api_sessions_create():
     res = api.add_session(request.json)
