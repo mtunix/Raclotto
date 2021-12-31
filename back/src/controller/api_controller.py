@@ -1,5 +1,6 @@
 import json
 
+from back.src.model.service.achievement_service import AchievementService
 from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.pan_service import PanService
 from back.src.model.service.rating_service import RatingService
@@ -14,6 +15,7 @@ class ApiController:
         self.pan_service = PanService()
         self.rating_service = RatingService()
         self.session_service = SessionService()
+        self.achievement_service = AchievementService()
 
     def get_ingredients(self, session_id, of_type=None):
         items = self.ingredient_service.all(session_id, of_type)
@@ -62,3 +64,7 @@ class ApiController:
     def generate(self, gen_dict):
         pan = self.pan_service.generate(gen_dict)
         return self.view.scalar("generated", pan)
+
+    def get_achievements(self):
+        achievements = self.achievement_service.all()
+        return self.view.get(achievements)

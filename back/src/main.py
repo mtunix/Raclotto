@@ -117,3 +117,14 @@ def api_ratings():
         status=200,
         mimetype="application/json"
     )
+
+
+@app.route("/api/achievements/", methods=["GET"])
+def api_achievements():
+    res = api.get_achievements()
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
