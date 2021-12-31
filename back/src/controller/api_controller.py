@@ -29,6 +29,10 @@ class ApiController:
         items = self.rating_service.all(session_id)
         return self.view.get(items)
 
+    def get_session(self, session_key):
+        session = self.session_service.find_by_key(session_key)
+        return self.view.scalar("session", session)
+
     def get_sessions(self):
         sessions = self.session_service.all()
         return self.view.get(sessions)

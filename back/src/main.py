@@ -38,6 +38,19 @@ def api_sessions_validate():
     )
 
 
+@app.route("/api/session/", methods=["GET"])
+def api_session():
+    session_key = request.args.get("session_key")
+    res = api.get_session(session_key)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
+
 @app.route("/api/sessions/create/", methods=["POST"])
 def api_sessions_create():
     res = api.add_session(request.json)
