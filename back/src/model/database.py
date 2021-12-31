@@ -40,7 +40,7 @@ class Database(SQLiteMixin):
         return Database._session
 
     @staticmethod
-    def _add_achievements():
+    def _add_achievements(target, connection, **kwargs):
         session = Database.session()
 
         achievements = [
