@@ -112,7 +112,7 @@ class Database(SQLiteMixin):
                 hidden = true
             ),
             Achievement(
-                title="Zeit für ein D- D- D- Duel!",
+                title="Zeit für ein D- D- D- Duell!",
                 description="Beende ein Raclotto mit 2 Racleuren",
                 value=8,
                 hidden = true
@@ -227,7 +227,41 @@ class Database(SQLiteMixin):
             ),
 
         ]
+        insult = [
+            Insult(
+                title="5-Minuten Terrinen Kocher"
+            ),
+            Insult(
+                title="Rabingospieler"
+            ),
+            Insult(
+                title="Termomixer"
+            ),
+            Insult(
+                title="Nichtsnutz"
+            ),
+            Insult(
+                title="Unkreativling"
+            ),
+            Insult(
+                title="BZgA Beratungsstelle"
+            ),
+            Insult(
+                title="Panner"
+            ),
+            Insult(
+                title="Langweiler"
+            ),
+            Insult(
+                title="Spielverderber"
+            ),
+            Insult(
+                title="Lauch"
+            )
+        ]
 
         with session.begin():
             for achievement in achievements:
                 session.add(achievement)
+            for insult in insults:
+                session.add(insult)
