@@ -1,5 +1,6 @@
 from random import sample
 
+from sqlalchemy import or_
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -42,16 +43,30 @@ class IngredientService(DatabaseService):
         except NoResultFound:
             return []
 
-        return self.session.query(Ingredient).filter(
+        query = self.session.query(Ingredient).filter(
             Ingredient.session_id == sesh.id,
-            Ingredient.vegan == gen_dict["vegan"],
-            Ingredient.vegetarian == gen_dict["vegetarian"],
-            Ingredient.fructose == gen_dict["fructose"],
-            Ingredient.histamine == gen_dict["histamine"],
-            Ingredient.gluten == gen_dict["gluten"],
-            Ingredient.lactose == gen_dict["lactose"],
             Ingredient.type == IngredientType(int(of_type))
-        ).all()
+        )
+
+        if gen_dict["vegetarian"]:
+            query = query.filter(or_(Ingredient.vegetarian == gen_dict["vegetarian"], Ingredient.vegan))
+        else:
+            if gen_dict["vegan"]:
+                query = query.filter(Ingredient.vegan == gen_dict["vegan"])
+
+        if not gen_dict["fructose"]:
+            query = query.filter(Ingredient.fructose == gen_dict["fructose"])
+
+        if not gen_dict["histamine"]:
+            query = query.filter(Ingredient.histamine == gen_dict["histamine"])
+
+        if not gen_dict["gluten"]:
+            query = query.filter(Ingredient.histamine == gen_dict["histamine"])
+
+        if not gen_dict["lactose"]:
+            query = query.filter(Ingredient.lactose == gen_dict["lactose"])
+
+        return query.all()
 
     def add(self, obj_dict):
         obj_dict["type"] = IngredientType(obj_dict["type"])
@@ -76,6 +91,7 @@ class IngredientService(DatabaseService):
                     ingredient.available = False
 
     def select(self, gen_dict):
+        print(gen_dict)
         fills = self.all_filtered(gen_dict, 1)
         sauces = self.all_filtered(gen_dict, 2)
         num_fill = gen_dict["num_fill"] if len(fills) >= gen_dict["num_fill"] else len(fills)

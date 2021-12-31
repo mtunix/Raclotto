@@ -60,6 +60,8 @@ class PanService(DatabaseService):
             return self.session.query(Pan).order_by(Pan.rating).all()
 
     def generate(self, gen_dict):
+        for key in ["vegetarian", "vegan", "histamine", "fructose", "lactose", "gluten"]:
+            gen_dict[key] = gen_dict[key] == "true"
         ingredients = self.ingredient_service.select(gen_dict)
         session = self.session_service.find_by_key(gen_dict["session_key"])
         r = RandomWord()

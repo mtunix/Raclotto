@@ -85,12 +85,12 @@ export class Api {
                 user: this.getUser(),
                 num_fill: numIngredient,
                 num_sauce: numSauce,
-                vegetarian: true,
-                vegan: false,
-                histamine: false,
-                fructose: false,
-                lactose: false,
-                gluten: false
+                vegetarian: this.getSnackable("vegetarian"),
+                vegan: this.getSnackable("vegan"),
+                histamine: this.getSnackable("histamine"),
+                fructose: this.getSnackable("fructose"),
+                lactose: this.getSnackable("lactose"),
+                gluten: this.getSnackable("gluten")
             })
         });
         return await res.json();
@@ -119,5 +119,15 @@ export class Api {
         }
 
         return user;
+    }
+
+    static getSnackable(key) {
+        let snackable = true;
+
+        if (localStorage.getItem(key)) {
+            snackable = localStorage.getItem(key);
+        }
+
+        return snackable;
     }
 }

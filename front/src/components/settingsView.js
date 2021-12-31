@@ -26,13 +26,14 @@ export class SettingsView extends React.Component {
    }
 
    componentDidMount() {
-       for (let opt in this.options) {
-           if (localStorage.getItem(opt.name)) {
-               this.setState({
-                   [opt.name]: localStorage.getItem(opt.name) === 'true'
-               });
+       this.options.map((opt) => {
+               if (localStorage.getItem(opt.name)) {
+                   this.setState({
+                       [opt.name]: localStorage.getItem(opt.name) === 'true'
+                   });
+               }
            }
-       }
+       );
 
        if (localStorage.getItem("name")) {
            this.setState({"name":localStorage.getItem("name")})

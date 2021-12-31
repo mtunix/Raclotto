@@ -4,7 +4,7 @@ from flask_cors import CORS
 from back.src.controller.api_controller import ApiController
 from back.src.controller.ui_controller import UiController
 
-app = Flask(__name__, static_folder="build/static", template_folder="build")
+app = Flask(__name__, static_folder="back/src/build/static", template_folder="back/src/build")
 CORS(app)
 api = ApiController()
 ui = UiController()
@@ -151,3 +151,7 @@ def api_achievements():
         status=200,
         mimetype="application/json"
     )
+
+
+if __name__ == '__main__':
+    app.run()
