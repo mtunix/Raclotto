@@ -31,10 +31,10 @@ export class AchievementView extends React.Component {
     }
 
     render() {
-        let achievements = this.state.achievements.map((achievement) =>
-            <Accordion.Item eventKey="0">
+        let achievements = this.state.achievements.map((achievement, i) =>
+            <Accordion.Item eventKey={i}>
                 <Accordion.Header>
-                    {achievement.title}
+                    <span style={{fontWeight: 800}}>{achievement.title}</span>
                 </Accordion.Header>
                 <Accordion.Body>
                     {achievement.description}
