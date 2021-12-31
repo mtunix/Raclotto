@@ -10,4 +10,5 @@ class Achievement(SerializableMixin, Base):
     title = Column(String)
     description = Column(String)
     value = Column(Integer)
+    hidden = Column(Boolean)
 
