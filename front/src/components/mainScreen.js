@@ -5,6 +5,8 @@ import {GenerateView} from "./generateView";
 import {Api} from "../lib/api";
 import {HistoryView} from "./historyView";
 import {SettingsView} from "./settingsView";
+import {AchievementView} from "./achievementView";
+import {ServerSettingsView} from "./serverSettingsView";
 
 export class MainScreen extends React.Component {
     constructor(props) {
@@ -44,6 +46,10 @@ export class MainScreen extends React.Component {
                 return (<HistoryView session={this.props.session} />);
             case 4:
                 return (<AddIngredient session={this.props.session} onAdd={this.onAdd} />);
+            case 5:
+                return (<AchievementView />)
+            case 6:
+                return (<ServerSettingsView />)
         }
     }
 
@@ -111,6 +117,25 @@ export class MainScreen extends React.Component {
                         </ToggleButton>
                         <ToggleButton type="radio" checked={this.state.toolbar === 4} variant="outline-primary" className="mx-2" onClick={() => this.onToolbarClicked(4)}>
                             +
+                        </ToggleButton>
+                        <ToggleButton type="radio" checked={this.state.toolbar === 5} variant="outline-primary" onClick={() => this.onToolbarClicked(5)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 className="bi bi-journal-check" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                      d="M10.854 6.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 8.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                <path
+                                    d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+                                <path
+                                    d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+                            </svg>
+                        </ToggleButton>
+                        <ToggleButton type="radio" checked={this.state.toolbar === 6} className="mx-2" variant="outline-primary" onClick={() => this.onToolbarClicked(6)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 className="bi bi-hdd-network" viewBox="0 0 16 16">
+                                <path d="M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                                <path
+                                    d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8.5v3a1.5 1.5 0 0 1 1.5 1.5h5.5a.5.5 0 0 1 0 1H10A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5H.5a.5.5 0 0 1 0-1H6A1.5 1.5 0 0 1 7.5 10V7H2a2 2 0 0 1-2-2V4zm1 0v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1zm6 7.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5z"/>
+                            </svg>
                         </ToggleButton>
                         <div className="mt-3">
                             {this.getTool()}

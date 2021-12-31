@@ -1,6 +1,13 @@
 export class Api {
     static async get(name, session) {
-        let res = await fetch("api/" + name + "/?session_key=" + session);
+        let res;
+
+        if (session) {
+            res = await fetch("api/" + name + "/?session_key=" + session);
+        } else {
+            res = await fetch("api/" + name);
+        }
+
         return await res.json();
     }
 
