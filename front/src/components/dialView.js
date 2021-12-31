@@ -52,6 +52,7 @@ export class DialView extends React.Component {
                 <ButtonGroup>
                     <FormControl
                         type="number"
+                        readOnly={true}
                         placeholder="Anzahl Zutaten eingeben"
                         value={this.state.numIngredients}
                         onChange={this.onInputChanged}

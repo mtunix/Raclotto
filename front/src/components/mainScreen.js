@@ -49,7 +49,7 @@ export class MainScreen extends React.Component {
             case 5:
                 return (<AchievementView />)
             case 6:
-                return (<ServerSettingsView />)
+                return (<ServerSettingsView session={this.props.session} />)
         }
     }
 
