@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, ButtonGroup, Col, Form, FormControl, InputGroup, ListGroup, Row, ToggleButton} from "react-bootstrap";
+import {Button, Col, ListGroup, Row} from "react-bootstrap";
 import {DialView} from "./dialView";
 import {Api} from "../lib/api";
 import Rating from "react-rating";

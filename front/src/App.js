@@ -5,6 +5,7 @@ import {StartScreen} from "./components/startScreen";
 import {ToastContainer, Toast} from "react-bootstrap";
 import {Api} from "./lib/api";
 import {MainScreen} from "./components/mainScreen";
+import raclotto from "./raclotto.png";
 
 class App extends React.Component {
     constructor(props) {
@@ -85,6 +86,7 @@ class App extends React.Component {
             }}
                    show={notification.visible}
                    delay={notification.delay}
+                   key={"toast-" + i}
                    autohide>
                 <Toast.Header>
                     <img
@@ -103,7 +105,7 @@ class App extends React.Component {
             <>
                 {/*<h1 className="text-center">Raclotto</h1>*/}
                 <center>
-                    <img width={150} src="raclotto.png"></img>
+                    <img width={150} src={raclotto} alt=""/>
                 </center>
                 {this.getView()}
 

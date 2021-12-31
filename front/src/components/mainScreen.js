@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Col, Form, ListGroup, Row, ToggleButton} from "react-bootstrap";
+import {Col, ListGroup, Row, ToggleButton} from "react-bootstrap";
 import {AddIngredient} from "./addIngredient";
 import {GenerateView} from "./generateView";
 import {Api} from "../lib/api";

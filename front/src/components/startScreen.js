@@ -15,15 +15,19 @@ export class StartScreen extends React.Component {
 
     componentDidMount() {
         this.validate();
+        this.getSessions();
+    }
 
+    getSessions() {
         Api.get("sessions").then((data) => {
-            this.setState({
-                sessions: data,
-                selected: data[0].key
-            });
-
-            if (data <= 0)
+            if (data <= 0) {
                 this.props.onNotification(Notifications.NO_SESSIONS())
+            } else {
+                this.setState({
+                    sessions: data,
+                    selected: data[0].key
+                });
+            }
         });
     }
 
@@ -58,8 +62,8 @@ export class StartScreen extends React.Component {
         if (this.state.sessions.length <= 0)
             return "";
         else {
-            let sessions = this.state.sessions.map((session) =>
-                <option value={session.key}>
+            let sessions = this.state.sessions.map((session, i) =>
+                <option value={session.key} key={"session-option-" + i}>
                     {session.name} - {new Date(session.timestamp).toLocaleTimeString("de-DE")}
                 </option>);
 

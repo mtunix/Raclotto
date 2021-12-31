@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, ButtonGroup, FormControl, Form} from "react-bootstrap";
+import {Button, ButtonGroup, FormControl} from "react-bootstrap";
 
 export class DialView extends React.Component {
     constructor(props) {
