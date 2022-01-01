@@ -58,20 +58,25 @@ export class MainScreen extends React.Component {
                 break;
             case 2:
                 view = (<SettingsView onUserChanged={this.onUserChanged}/>);
+                title = "Einstellungen Nutzer"
                 break;
             case 3:
                 view = (<HistoryView session={this.props.session} />);
+                title = "Historie"
                 break;
             case 4:
                 view = (<AddIngredient session={this.props.session}
                                        onAdd={this.onAdd} />);
+                title = "Zutat hinzufuegen"
                 break;
             case 5:
                 view = (<AchievementView />);
+                title = "Errungenschaften"
                 break;
             case 6:
                 view = (<ServerSettingsView session={this.props.session}
                                             onSessionClosed={this.props.onSessionClosed}/>);
+                title = "Einstellungen Session"
                 break;
         }
 
