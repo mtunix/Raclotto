@@ -1,4 +1,6 @@
-from sqlalchemy import Table, ForeignKey, Column, Integer, String, func, select
+from datetime import datetime
+
+from sqlalchemy import Table, ForeignKey, Column, Integer, String, func, select, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -18,6 +20,7 @@ class Pan(DomainMixin, Base):
 
     id = Column(Integer, primary_key=True)
     user = Column(String, nullable=False)
+    timestamp = Column(DateTime, nullable=False, default=datetime.now())
     ingredients = relationship(
         "Ingredient",
         secondary=pan_ingredients,
