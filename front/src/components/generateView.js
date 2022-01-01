@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Col, ListGroup, Row} from "react-bootstrap";
+import {Button, Col, ListGroup, Row, Form} from "react-bootstrap";
 import {DialView} from "./dialView";
 import {Api} from "../lib/api";
 import Rating from "react-rating";
@@ -12,13 +12,13 @@ export class GenerateView extends React.Component {
             numFill: null,
             numSauce: null,
             generated: null,
-            heading: "Zutaten"
+            heading: "Zutatenanzahl eingeben"
         };
     }
 
     accept = (num) => {
         if (!this.state.numFill) {
-            this.setState({numFill: num, heading: "Saucen"});
+            this.setState({numFill: num, heading: "Saucenanzahl eingeben"});
         } else {
             this.setState({numSauce: num}, function () {
                 Api.generate(this.props.session, this.state.numFill, this.state.numSauce).then((data) => {
@@ -37,7 +37,7 @@ export class GenerateView extends React.Component {
             numFill: null,
             numSauce: null,
             generated: null,
-            heading: "Zutaten"
+            heading: "Zutatenanzahl eingeben"
         });
     };
 
@@ -95,7 +95,7 @@ export class GenerateView extends React.Component {
             <div>
                 <Row>
                     <Col>
-                        <h3>{this.state.heading}</h3>
+                        <Form.Label>{this.state.heading}</Form.Label>
                     </Col>
                     <Col style={{textAlign: "right"}}>
                         {this.getRating()}

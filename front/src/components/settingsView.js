@@ -80,7 +80,7 @@ export class SettingsView extends React.Component {
                        placeholder="Namen eingeben"
                    />
                </Form.Group>
-               <Form.Group className="d-grid gap-2 mt-2 mb-3" controlId="formIngredientName">
+               <Form.Group className="d-grid gap-2 mt-2" controlId="formIngredientName">
                    <Form.Label>Das alles ist okay zum Snacken</Form.Label>
                    <ButtonGroup className="flex-wrap">
                        {checks}

@@ -27,20 +27,19 @@ export class HistoryView extends React.Component {
             fullSymbol={VectorGraphics.RATING_FULL}/>);
     }
 
-
     onRating = (id, rating) => {
         Api.rate(
             this.props.session,
             id,
             rating
         ).then((data) => {
+            // todo
             console.log(data);
         });
     };
 
     render() {
         let getVariant = (type) => type === 1 ? "primary" : "secondary";
-        console.log(this.state.pans)
         let pans = this.state.pans.map((pan, i) =>
             <Accordion.Item eventKey={i}>
                 <Accordion.Header>
