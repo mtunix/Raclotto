@@ -51,7 +51,7 @@ export class SettingsView extends React.Component {
     onNameChanged = (event) => {
         this.setState({"name": event.target.value}, () => {
             localStorage.setItem("name", event.target.value);
-            this.props.onUserChanged(event.target.value);
+            // this.props.onUserChanged(event.target.value);
         });
     };
 

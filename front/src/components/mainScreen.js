@@ -36,6 +36,12 @@ export class MainScreen extends React.Component {
         // this.setState({toolbar: 0})
     };
 
+    onUserChanged = (name) => {
+        this.setState({
+            user: name
+        });
+    };
+
     getTool() {
         switch (this.state.toolbar) {
             case 1:
