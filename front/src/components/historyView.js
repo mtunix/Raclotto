@@ -108,7 +108,7 @@ export class HistoryView extends React.Component {
                             </ListGroup>
                         </Col>
                     </Row>
-                    <span style={{fontStyle: "italic", fontSize: "smaller"}} className="px-3">verspeist um {pan.timestamp}</span>
+                    <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist um {pan.timestamp}</span>
                 </Accordion.Body>
             </Accordion.Item>
         );

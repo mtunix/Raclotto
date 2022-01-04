@@ -43,9 +43,15 @@ export class SettingsView extends React.Component {
     setChecked = (event) => {
         let type = event.target.id;
         let state = this.state[type];
+        if (type === "vegan" && !state) {
+            this.setState({vegetarian: true}, () => {
+                localStorage.setItem("vegetarian", String(true))
+            });
+        }
+
         this.setState({[type]: !state}, () => {
             localStorage.setItem(type, String(!state))
-        })
+        });
     };
 
     onNameChanged = (event) => {

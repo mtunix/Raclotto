@@ -29,6 +29,11 @@ export class AddIngredient extends React.Component {
     setChecked = (event) => {
         let type = event.target.id;
         let state = this.state[type];
+
+        if (type === "vegan" && !state) {
+            this.setState({vegetarian: true})
+        }
+
         this.setState({[type]: !state})
     };
 
