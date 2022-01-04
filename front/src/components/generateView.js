@@ -13,6 +13,7 @@ export class GenerateView extends React.Component {
             numFill: this.getLocal("numFill"),
             numSauce: this.getLocal("numSauce"),
             generated: null,
+            waiting: false
         };
     }
 
@@ -67,12 +68,13 @@ export class GenerateView extends React.Component {
     };
 
     onGenerateClicked = () => {
-        console.log(this.state)
+        this.setState({waiting: true})
         localStorage.setItem("numFill", this.state.numFill);
         localStorage.setItem("numSauce", this.state.numSauce);
         Api.generate(this.props.session, this.state.numFill, this.state.numSauce).then((data) => {
             this.setState({
-                generated: data["generated"]
+                generated: data["generated"],
+                waiting: false
             });
         });
         this.props.onGeneration(this.state.numFill, this.state.numSauce);
@@ -92,7 +94,7 @@ export class GenerateView extends React.Component {
     render() {
         return (
             <div>
-                <div hidden={!this.state.generated}>
+                <div hidden={!this.state.generated || this.state.waiting}>
                     <Row>
                         <Col>
                             <h3>{this.state.generated ? this.state.generated.name : ""}</h3>
@@ -105,7 +107,7 @@ export class GenerateView extends React.Component {
                         {this.getView()}
                     </Row>
                 </div>
-                <div hidden={this.state.generated}>
+                <div hidden={this.state.generated || this.state.waiting}>
                     <Row className="mb-2">
                         <Col>
                             <Form.Label>Zutatenanzahl</Form.Label>
@@ -131,6 +133,12 @@ export class GenerateView extends React.Component {
                             </div>
                         </Col>
                     </Row>
+                </div>
+                <div hidden={!this.state.waiting}>
+                    <div className="d-flex justify-content-center">
+                        <div className="spinner-border text-secondary" role="status">
+                        </div>
+                    </div>
                 </div>
             </div>
         );

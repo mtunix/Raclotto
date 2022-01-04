@@ -10,12 +10,16 @@ export class HistoryView extends React.Component {
 
         this.state = {
             pans: [],
+            waiting: true
         };
     }
 
     componentDidMount() {
         Api.get("pans", this.props.session).then((data) => {
-            this.setState({pans: data.reverse()});
+            this.setState({
+                pans: data.reverse(),
+                waiting: false
+            });
         });
     }
     getRating(id, initial) {
@@ -105,9 +109,17 @@ export class HistoryView extends React.Component {
         );
 
         return (
-            <Accordion>
-                {pans}
-            </Accordion>
+            <div>
+                <div hidden={!this.state.waiting}>
+                    <div className="d-flex justify-content-center">
+                        <div className="spinner-border text-secondary" role="status">
+                        </div>
+                    </div>
+                </div>
+                <Accordion hidden={this.state.waiting}>
+                    {pans}
+                </Accordion>
+            </div>
         );
     }
 }

@@ -50,7 +50,6 @@ export class DialView extends React.Component {
                  onTouchMove={(e) => this.onDrag(e.touches[0])}
                  onClick={(e) => e.preventDefault()}
                  draggable={true}>
-                <div >
                     <InputGroup className="mb-3">
                         <Button className={"mr-0"}
                                 variant={"primary"}
@@ -63,7 +62,6 @@ export class DialView extends React.Component {
                                 className={"ml-0"}
                                 onClick={() => this.setState((pre) => ({num: pre.num + 1}))}>+</Button>
                     </InputGroup>
-                </div>
             </div>
         );
     }
