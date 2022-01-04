@@ -38,14 +38,14 @@ export class DialView extends React.Component {
         if (e.screenY === 0)
             return;
 
-        if (this.state.num > 1 && (e.screenY - this.state.dragY) > 5) {
+        if (this.state.num > 1 && e.screenY > this.state.dragY) {
             this.setState((prevState) => ({
                 num: prevState.num - 1,
                 dragY: e.screenY
             }), () => {
                 this.props.onChange(this.state.num)
             });
-        } else if (this.state.num < this.props.ingredients.length && (e.screenY - this.state.dragY ) < -5) {
+        } else if (this.state.num < this.props.ingredients.length && e.screenY < this.state.dragY) {
             this.setState((prevState) => ({
                 num: prevState.num + 1,
                 dragY: e.screenY
