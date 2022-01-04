@@ -13,7 +13,25 @@ export class DialView extends React.Component {
     }
 
     onInputChanged = (event) => {
-        this.setState({num: parseInt(event.target.value)})
+        this.setState({num: parseInt(event.target.value)}, () => {
+            this.props.onChange(this.state.num)
+        })
+    };
+
+    decrement = (e) => {
+        if (this.state.num > 1) {
+            this.setState((pre) => ({num: pre.num - 1}), () => {
+                this.props.onChange(this.state.num)
+            });
+        }
+    };
+
+    increment = (e) => {
+        if (this.state.num < this.props.ingredients.length) {
+            this.setState((pre) => ({num: pre.num + 1}), () => {
+                this.props.onChange(this.state.num)
+            });
+        }
     };
 
     onDrag = (e) => {
@@ -53,14 +71,14 @@ export class DialView extends React.Component {
                     <InputGroup className="mb-3">
                         <Button className={"mr-0"}
                                 variant={"primary"}
-                                onClick={() => this.setState((pre) => ({num: pre.num - 1}))}
+                                onClick={this.decrement}
                         >-</Button>
                         <Form.Control type="number"
                                       className={"mx-0 text-center"}
                                       value={this.state.num} />
                         <Button variant={"primary"}
                                 className={"ml-0"}
-                                onClick={() => this.setState((pre) => ({num: pre.num + 1}))}>+</Button>
+                                onClick={this.increment}>+</Button>
                     </InputGroup>
             </div>
         );

@@ -111,13 +111,13 @@ export class GenerateView extends React.Component {
                     <Row className="mb-2">
                         <Col>
                             <Form.Label>Zutatenanzahl</Form.Label>
-                            <DialView ingredients={this.props.ingredients}
+                            <DialView ingredients={this.props.ingredients.filter(i => i.type === 1)}
                                       onChange={(num) => this.setState({numFill: num})}
                                       num={this.state.numFill} />
                         </Col>
                         <Col>
                             <Form.Label>Saucenanzahl</Form.Label>
-                            <DialView ingredients={this.props.ingredients}
+                            <DialView ingredients={this.props.ingredients.filter(i => i.type === 2)}
                                       onChange={(num) => this.setState({numSauce: num})}
                                       num={this.state.numSauce}/>
                         </Col>

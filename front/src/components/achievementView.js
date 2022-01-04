@@ -9,13 +9,17 @@ export class AchievementView extends React.Component {
         super(props);
 
         this.state = {
-            achievements: []
+            achievements: [],
+            waiting: true
         }
     }
 
     componentDidMount() {
         Api.get("achievements").then((data) => {
-            this.setState({achievements: data})
+            this.setState({
+                achievements: data,
+                waiting: false
+            })
         })
     }
 
@@ -33,7 +37,13 @@ export class AchievementView extends React.Component {
 
         return (
             <div>
-                <Accordion>
+                <div hidden={!this.state.waiting}>
+                    <div className="d-flex justify-content-center">
+                        <div className="spinner-border text-secondary" role="status">
+                        </div>
+                    </div>
+                </div>
+                <Accordion hidden={this.state.waiting}>
                     {achievements}
                 </Accordion>
             </div>
