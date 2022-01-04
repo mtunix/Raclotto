@@ -17,6 +17,7 @@ export class Api {
     }
 
     static async delete(sessionKey, ingredient) {
+        console.log(ingredient)
         let res = await fetch("api/ingredients/delete", {
             method: 'POST',
             headers: {
@@ -119,6 +120,7 @@ export class Api {
                 user: this.getUser(),
                 num_fill: numIngredient,
                 num_sauce: numSauce,
+                meat: this.getSnackable("meat"),
                 vegetarian: this.getSnackable("vegetarian"),
                 vegan: this.getSnackable("vegan"),
                 histamine: this.getSnackable("histamine"),

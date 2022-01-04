@@ -48,11 +48,14 @@ class IngredientService(DatabaseService):
             Ingredient.type == IngredientType(int(of_type))
         )
 
-        if gen_dict["vegetarian"]:
-            query = query.filter(or_(Ingredient.vegetarian == gen_dict["vegetarian"], Ingredient.vegan))
+        if gen_dict["meat"]:
+            query = query.filter(or_(Ingredient.meat == gen_dict["meat"], Ingredient.vegetarian, Ingredient.vegan))
         else:
-            if gen_dict["vegan"]:
-                query = query.filter(Ingredient.vegan == gen_dict["vegan"])
+            if gen_dict["vegetarian"]:
+                query = query.filter(or_(Ingredient.vegetarian == gen_dict["vegetarian"], Ingredient.vegan))
+            else:
+                if gen_dict["vegan"]:
+                    query = query.filter(Ingredient.vegan == gen_dict["vegan"])
 
         if not gen_dict["fructose"]:
             query = query.filter(Ingredient.fructose == gen_dict["fructose"])
@@ -78,17 +81,13 @@ class IngredientService(DatabaseService):
             # ingredient = Ingredient(**obj_dict)
             self.session.add(ingredient)
 
-        return ingredient
+        return self.find(ingredient.id)
 
     def delete(self, parsed):
         ingredient = self.find(parsed["id"])
         if ingredient.session.key == parsed["session_key"]:
-            try:
-                with self.session.begin():
-                    self.session.delete(ingredient)
-            except IntegrityError:
-                with self.session.begin():
-                    ingredient.available = False
+            with self.session.begin():
+                ingredient.available = False
 
         return self.find(ingredient.id)
 

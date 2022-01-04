@@ -47,17 +47,19 @@ export class HistoryView extends React.Component {
     getTags(ingredient) {
         return (<div>
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                    hidden={!ingredient.vegan} className={"mb-1"}>Vegan</Button>{' '}
+                    hidden={!ingredient.meat} className={"mb-1"} disabled={true}>Fleisch</Button>{' '}
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                    hidden={!ingredient.vegetarian} className={"mb-1"}>Vegetarisch</Button>{' '}
+                    hidden={!ingredient.vegan} className={"mb-1"} disabled={true}>Vegan</Button>{' '}
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                    hidden={!ingredient.histamine} className={"mb-1"}>Histamin</Button>{' '}
+                    hidden={!ingredient.vegetarian} className={"mb-1"} disabled={true}>Vegetarisch</Button>{' '}
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                    hidden={!ingredient.gluten} className={"mb-1"}>Gluten</Button>{' '}
+                    hidden={!ingredient.histamine} className={"mb-1"} disabled={true}>Histamin</Button>{' '}
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                    hidden={!ingredient.lactose} className={"mb-1"}>Lactose</Button>{' '}
+                    hidden={!ingredient.gluten} className={"mb-1"} disabled={true}>Gluten</Button>{' '}
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                    hidden={!ingredient.fructose} className={"mb-1"}>Fructose</Button>{' '}
+                    hidden={!ingredient.lactose} className={"mb-1"} disabled={true}>Lactose</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.fructose} className={"mb-1"} disabled={true}>Fructose</Button>{' '}
         </div>);
     }
 

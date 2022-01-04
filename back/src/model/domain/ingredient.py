@@ -15,6 +15,7 @@ class Ingredient(DomainMixin, Base):
 
     id = Column(Integer, primary_key=True)
     type = Column(Enum(IngredientType), nullable=False, default=False)
+    meat = Column(Boolean, nullable=False, default=False)
     vegetarian = Column(Boolean, nullable=False, default=False)
     vegan = Column(Boolean, nullable=False, default=False)
     gluten = Column(Boolean, nullable=False, default=False)

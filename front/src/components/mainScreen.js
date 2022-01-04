@@ -46,6 +46,8 @@ export class MainScreen extends React.Component {
     getTags(ingredient) {
         return (<div>
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.meat} className={"mb-1"} disabled={true}>Fleisch</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
                     hidden={!ingredient.vegan} className={"mb-1"} disabled={true}>Vegan</Button>{' '}
             <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
                     hidden={!ingredient.vegetarian} className={"mb-1"} disabled={true}>Vegetarisch</Button>{' '}
@@ -137,7 +139,7 @@ export class MainScreen extends React.Component {
                             ingredients={this.state.ingredients}
                             session={this.props.session}
                             sessionClosed={this.props.onSessionClosed}
-                            onAdd={this.props.onAdd}
+                            onAdd={this.onAdd}
                         />
                     </Col>
                 </Row>

@@ -6,6 +6,7 @@ export class SettingsView extends React.Component {
        super(props);
 
        this.options = [
+           {"name": "meat", "localized": "Karnivor"},
            {"name": "vegetarian", "localized": "Vegetarisch"},
            {"name": "vegan", "localized": "Vegan"},
            {"name": "histamine", "localized": "Histamin"},
@@ -15,6 +16,7 @@ export class SettingsView extends React.Component {
        ];
 
        this.state = {
+           meat: true,
            vegetarian: true,
            vegan: true,
            gluten: true,
@@ -43,9 +45,16 @@ export class SettingsView extends React.Component {
     setChecked = (event) => {
         let type = event.target.id;
         let state = this.state[type];
-        if (type === "vegan" && !state) {
-            this.setState({vegetarian: true}, () => {
+        if (type === "vegetarian" && !state) {
+            this.setState({vegan: true}, () => {
+                localStorage.setItem("vegan", String(true))
+            });
+        }
+
+        if (type === "meat" && !state) {
+            this.setState({vegetarian: true, vegan: true}, () => {
                 localStorage.setItem("vegetarian", String(true))
+                localStorage.setItem("vegan", String(true))
             });
         }
 

@@ -6,6 +6,7 @@ export class AddIngredient extends React.Component {
     constructor(props) {
         super(props);
         this.options = [
+            {"name": "meat", "localized": "Fleisch"},
             {"name": "vegetarian", "localized": "Vegetarisch"},
             {"name": "vegan", "localized": "Vegan"},
             {"name": "histamine", "localized": "Histamin"},
@@ -15,6 +16,7 @@ export class AddIngredient extends React.Component {
         ];
 
         this.state = {
+            meat: false,
             vegetarian: true,
             vegan: false,
             gluten: false,
@@ -30,8 +32,15 @@ export class AddIngredient extends React.Component {
         let type = event.target.id;
         let state = this.state[type];
 
-        if (type === "vegan" && !state) {
-            this.setState({vegetarian: true})
+        if (type === "vegetarian" && !state) {
+            this.setState({vegan: true})
+        }
+
+        if (type === "meat" && !state) {
+            this.setState({
+                vegan: true,
+                vegetarian: true
+            })
         }
 
         this.setState({[type]: !state})
@@ -103,7 +112,7 @@ export class AddIngredient extends React.Component {
                     </div>
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label>Unvertraeglichkeiten</Form.Label>
+                    <Form.Label>Enthaelt/Ist</Form.Label>
                     <div className="d-grid">
                         <ButtonGroup className="flex-wrap">
                             {checks}
