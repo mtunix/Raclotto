@@ -80,9 +80,9 @@ class IngredientService(DatabaseService):
 
         return ingredient
 
-    def delete(self, session_key, id):
-        ingredient = self.find(id)
-        if ingredient.session.key == session_key:
+    def delete(self, parsed):
+        ingredient = self.find(parsed["id"])
+        if ingredient.session.key == parsed["session_key"]:
             try:
                 with self.session.begin():
                     self.session.delete(ingredient)
@@ -90,8 +90,9 @@ class IngredientService(DatabaseService):
                 with self.session.begin():
                     ingredient.available = False
 
+        return self.find(ingredient.id)
+
     def select(self, gen_dict):
-        print(gen_dict)
         fills = self.all_filtered(gen_dict, 1)
         sauces = self.all_filtered(gen_dict, 2)
         num_fill = gen_dict["num_fill"] if len(fills) >= gen_dict["num_fill"] else len(fills)

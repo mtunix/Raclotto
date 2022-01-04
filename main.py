@@ -103,10 +103,9 @@ def api_ingredients():
     )
 
 
-@app.route("/api/ingredients/delete/", methods=["GET"])
+@app.route("/api/ingredients/delete/", methods=["POST"])
 def api_ingredients_remove():
-    session_id = request.args.get("session_key")
-    res = api.del_ingredient(session_id, request.args.get("id"))
+    res = api.del_ingredient(request.json)
 
     return app.response_class(
         response=res,

@@ -53,8 +53,9 @@ class ApiController:
         sesh = self.session_service.add(obj_dict)
         return self.view.scalar("session", sesh)
 
-    def del_ingredient(self, session_key, obj_id):
-        self.ingredient_service.delete(session_key, obj_id)
+    def del_ingredient(self, parsed):
+        ingredient = self.ingredient_service.delete(parsed)
+        return self.view.scalar("ingredient", ingredient)
 
     def gen_pan(self, json_str):
         parsed = json.loads(json_str)

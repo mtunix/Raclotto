@@ -104,7 +104,6 @@ class App extends React.Component {
 
         return (
             <>
-                {/*<h1 className="text-center">Raclotto</h1>*/}
                 <center>
                     <img width={150} src={raclotto} alt=""/>
                 </center>

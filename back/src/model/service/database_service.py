@@ -29,11 +29,13 @@ class DatabaseService:
     def find(self, id):
         return self.session.query(self.domain_type).filter_by(id=id).one()
 
-    def delete(self, session_key, id):
+    def delete(self, parsed):
         with self.session.begin():
-            item = self.find(id)
-            if item.session.key == session_key:
+            item = self.find(parsed["id"])
+            if item.session.key == parsed["session_key"]:
                 self.session.delete(item)
+
+        return self.find(item.id)
 
     def _get_session(self, session, session_key):
         return session.query(RaclottoSession).filter(RaclottoSession.key == session_key).one()

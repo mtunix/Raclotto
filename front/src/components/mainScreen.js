@@ -14,41 +14,83 @@ export class MainScreen extends React.Component {
         };
     }
 
-    onAdd = () => {
-        Api.get("ingredients", this.props.session).then((data) => {
-            this.setState({ingredients: data})
-        });
-    };
-
     componentDidMount() {
         Api.get("ingredients", this.props.session).then((data) => {
             this.setState({ingredients: data})
         });
     }
 
+    onAdd = () => {
+        Api.get("ingredients", this.props.session).then((data) => {
+            this.setState({ingredients: data})
+        });
+    };
+
+    onDelete = (ingredient) => {
+        Api.delete(this.props.session, ingredient).then((data) => {
+            console.log(data);
+        });
+    }
+
+    getTags(ingredient) {
+        return (<div>
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.vegan} className={"mb-1"}>Vegan</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.vegetarian} className={"mb-1"}>Vegetarisch</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.histamine} className={"mb-1"}>Histamin</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.gluten} className={"mb-1"}>Gluten</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.lactose} className={"mb-1"}>Lactose</Button>{' '}
+            <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
+                    hidden={!ingredient.fructose} className={"mb-1"}>Fructose</Button>{' '}
+        </div>);
+    }
+
     renderIngredients(type) {
         let variant = type === 1 ? "primary" : "secondary";
         let typeStr = type === 1 ? "Zutaten" : "Saucen";
         let ingredients = this.state.ingredients
-            .filter(ingredient => ingredient.type === type)
+            .filter(ingredient => ingredient.type === type && ingredient.available)
             .map((ingredient) => {
                     return (
                         <ListGroup.Item variant={variant}>
-                            <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
-                            <div>
-                                <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.vegan} className={"mb-1"}>Vegan</Button>{' '}
-                                <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.vegetarian} className={"mb-1"}>Vegetarisch</Button>{' '}
-                                <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.histamine} className={"mb-1"}>Histamin</Button>{' '}
-                                <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.gluten} className={"mb-1"}>Gluten</Button>{' '}
-                                <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.lactose} className={"mb-1"}>Lactose</Button>{' '}
-                                <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.fructose} className={"mb-1"}>Fructose</Button>{' '}
-                            </div>
+                            <Row>
+                                <Col>
+                                    <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
+                                </Col>
+                                <Col style={{textAlign: "right"}}>
+                                    <Button variant={"danger"}
+                                            size={"sm"}
+                                            style={{fontSize: "0.7rem"}}
+                                            onClick={() => this.onDelete(ingredient)}>x</Button>
+                                </Col>
+                            </Row>
+                            {this.getTags(ingredient)}
+                        </ListGroup.Item>
+                    );
+                }
+            );
+
+        let unavailable = this.state.ingredients
+            .filter(ingredient => ingredient.type === type && !ingredient.available)
+            .map((ingredient) => {
+                    return (
+                        <ListGroup.Item variant={"danger"}>
+                            <Row>
+                                <Col>
+                                    <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
+                                </Col>
+                                <Col style={{textAlign: "right"}}>
+                                    <Button variant={"danger"}
+                                            size={"sm"}
+                                            style={{fontSize: "0.7rem"}}
+                                            onClick={() => this.onDelete(ingredient)}>x</Button>
+                                </Col>
+                            </Row>
+                            {this.getTags(ingredient)}
                         </ListGroup.Item>
                     );
                 }
@@ -63,6 +105,7 @@ export class MainScreen extends React.Component {
                     <Accordion.Body>
                         <ListGroup key={this.state.ingredients} className="mb-2">
                             {ingredients}
+                            {unavailable}
                         </ListGroup>
                     </Accordion.Body>
                 </Accordion.Item>
