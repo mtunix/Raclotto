@@ -9,7 +9,7 @@ ACHIEVEMENTS = [
         hidden=False
     ),
     Achievement(
-        title="King of the sauce",
+        title="King of the Sauce",
         description="Esse alle Saucen des Raclottos",
         value=10,
         hidden=False
@@ -21,13 +21,13 @@ ACHIEVEMENTS = [
         hidden=False
     ),
     Achievement(
-        title="King of the grill",
+        title="King of the Grill",
         description="Esse am meisten Pfannen in einem Raclotto",
         value=20,
         hidden=False
     ),
     Achievement(
-        title="Garbage collector",
+        title="Garbage Collector",
         description="Esse eine Pfanne nach einer 3-stündigen Pause",
         value=5,
         hidden=False
@@ -40,25 +40,25 @@ ACHIEVEMENTS = [
 
     ),
     Achievement(
-        title="Local guide",
+        title="Local Guide",
         description="Bewerte 10 Pfannen",
         value=3,
         hidden=False
     ),
     Achievement(
-        title="Local host",
+        title="Local Host",
         description="Eröffne 10 Raclottos",
         value=10,
         hidden=False
     ),
     Achievement(
-        title="First blood!",
+        title="First Blood!",
         description="Esse die erste Pfanne des Raclottos",
         value=10,
         hidden=False
     ),
     Achievement(
-        title="Double kill!",
+        title="Double Kill!",
         description="Erhalte eine identische Pfanne direkt hintereinander",
         value=30,
         hidden=False
@@ -82,20 +82,20 @@ ACHIEVEMENTS = [
         hidden=False
     ),
     Achievement(
-        title="Last pan standing",
+        title="Last Pan standing",
         description="Esse die letzte Pfanne eines Raclottos",
         value=8,
         hidden=False
     ),
     Achievement(
-        title="Easter egg",
+        title="Easter Egg",
         description="Esse eine Pfanne mit Ei an Ostern",
         value=50,
         hidden=False
     ),
     Achievement(
         title="Vanilla",
-        description="",
+        description="Esse eine Pfanne mit nur einer Zutat",
         value=10,
         hidden=False
     ),
@@ -112,19 +112,19 @@ ACHIEVEMENTS = [
         hidden=False
     ),
     Achievement(
-        title="Survival of the fittest",
+        title="Survival of the Fittest",
         description="Esse die schlecht bewerteste Pfanne",
         value=10,
         hidden=False
     ),
     Achievement(
-        title="Raclottonormalverbraucher",
+        title="Raclotto Normalverbraucher",
         description="Esse eine Pfanne mit Käse und Kartoffel",
         value=12,
         hidden=False
     ),
     Achievement(
-        title="verPant",
+        title="VerPant",
         description="Mache deine erste Pfanne eine Stunde nach Start des Raclottos",
         value=5,
         hidden=True
@@ -148,7 +148,7 @@ ACHIEVEMENTS = [
         hidden=False
     ),
     Achievement(
-        title="Pan sexual",
+        title="Pan Sexual",
         description="Bewerte deine Pfannen mit durchschnittlich 4+",
         value=8,
         hidden=True

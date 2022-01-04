@@ -22,7 +22,7 @@ export class AchievementView extends React.Component {
     render() {
         let achievements = this.state.achievements.map((achievement, i) =>
             <Accordion.Item eventKey={i}>
-                <Accordion.Header>
+                <Accordion.Header className={"achievement-done"}>
                     <span style={{fontWeight: 800}}>{achievement.title}</span>
                 </Accordion.Header>
                 <Accordion.Body>
@@ -33,7 +33,6 @@ export class AchievementView extends React.Component {
 
         return (
             <div>
-                <h4>Achievements</h4>
                 <Accordion>
                     {achievements}
                 </Accordion>

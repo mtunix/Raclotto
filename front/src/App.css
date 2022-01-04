@@ -1,3 +1,21 @@
 .App {
-  text-align: center;
+    text-align: center;
+}
+
+.achievement-done button {
+    background: #e9ffe0;
+}
+
+.achievement-done button:not(.collapsed) {
+    background: #d1ffbc;
+    color: #00ad07;
+}
+
+.achievement button {
+    background: #ffcdcd;
+}
+
+.achievement button:not(.collapsed) {
+    background: #ffa4a4;
+    color: #a50000;
 }
