@@ -24,7 +24,9 @@ export class HistoryView extends React.Component {
             initialRating={initial}
             onClick={(rating) => this.onRating(id, rating)}
             emptySymbol={VectorGraphics.RATING_EMPTY}
-            fullSymbol={VectorGraphics.RATING_FULL}/>);
+            fullSymbol={VectorGraphics.RATING_FULL}
+            readonly={true}
+        />);
     }
 
     onRating = (id, rating) => {

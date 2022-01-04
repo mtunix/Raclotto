@@ -4,6 +4,7 @@
   "private": true,
   "proxy": "http://127.0.0.1:3001/",
   "dependencies": {
+    "@babel/preset-react": "^7.16.7",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
@@ -13,6 +14,8 @@
     "random-words": "^1.1.1",
     "react": "^17.0.2",
     "react-bootstrap": "^2.0.4",
+    "react-bootstrap-input-spinner": "^1.0.2",
+    "react-bootstrap-range-slider": "^3.0.3",
     "react-dom": "^17.0.2",
     "react-rating": "^2.0.5",
     "react-scripts": "5.0.0",

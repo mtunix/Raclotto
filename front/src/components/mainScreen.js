@@ -37,17 +37,17 @@ export class MainScreen extends React.Component {
                             <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
                             <div>
                                 <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.vegan}>Vegan</Button>{' '}
+                                        hidden={!ingredient.vegan} className={"mb-1"}>Vegan</Button>{' '}
                                 <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.vegetarian}>Vegetarisch</Button>{' '}
+                                        hidden={!ingredient.vegetarian} className={"mb-1"}>Vegetarisch</Button>{' '}
                                 <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.histamine}>Histamin</Button>{' '}
+                                        hidden={!ingredient.histamine} className={"mb-1"}>Histamin</Button>{' '}
                                 <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.gluten}>Gluten</Button>{' '}
+                                        hidden={!ingredient.gluten} className={"mb-1"}>Gluten</Button>{' '}
                                 <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.lactose}>Lactose</Button>{' '}
+                                        hidden={!ingredient.lactose} className={"mb-1"}>Lactose</Button>{' '}
                                 <Button variant="secondary" style={{fontSize: "0.7rem"}} size="sm"
-                                        hidden={!ingredient.fructose}>Fructose</Button>{' '}
+                                        hidden={!ingredient.fructose} className={"mb-1"}>Fructose</Button>{' '}
                             </div>
                         </ListGroup.Item>
                     );
@@ -84,10 +84,10 @@ export class MainScreen extends React.Component {
                     </Col>
                 </Row>
                 <Row className="mx-0">
-                    <Col sm>
+                    <Col className="mb-2" sm>
                         {this.renderIngredients(1)}
                     </Col>
-                    <Col sm>
+                    <Col className="mb-2" sm>
                         {this.renderIngredients(2)}
                     </Col>
                 </Row>
