@@ -131,7 +131,7 @@ export class MainScreen extends React.Component {
     render() {
         return (
             <div className="card-columns" style={{margin: "10px"}}>
-                <Row className="mx-0 mt-2 mb-3">
+                <Row className="mx-0 mt-2 ">
                     <Col sm>
                         <Toolbar
                             ingredients={this.state.ingredients}

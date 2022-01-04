@@ -87,7 +87,7 @@ export class Toolbar extends React.Component {
 
     render() {
        return (
-            <div>
+            <div className={"mb-3"}>
                 <div>
                     <ToggleButton type="radio"
                                   checked={this.state.toolbar === 1}
