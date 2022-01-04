@@ -28,7 +28,9 @@ export class MainScreen extends React.Component {
 
     onDelete = (ingredient) => {
         Api.delete(this.props.session, ingredient).then((data) => {
-            console.log(data);
+            Api.get("ingredients", this.props.session).then((data) => {
+                this.setState({ingredients: data})
+            });
         });
     }
 

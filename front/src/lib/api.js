@@ -16,6 +16,23 @@ export class Api {
         return await res.json();
     }
 
+    static async delete(sessionKey, ingredient) {
+        let res = await fetch("api/ingredients/delete", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            redirect: 'follow',
+            body: JSON.stringify(
+                Object.assign({}, {session_key: sessionKey}, ingredient)
+            )
+        });
+        return await res.json();
+    }
+
     static async close(sessionKey) {
         let res = await fetch("api/sessions/close", {
             method: 'POST',
