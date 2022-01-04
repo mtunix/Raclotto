@@ -98,3 +98,13 @@ class IngredientService(DatabaseService):
         num_fill = gen_dict["num_fill"] if len(fills) >= gen_dict["num_fill"] else len(fills)
         num_sauce = gen_dict["num_sauce"] if len(sauces) >= gen_dict["num_sauce"] else len(sauces)
         return sample(fills, num_fill) + sample(sauces, num_sauce)
+
+    def refill(self, parsed):
+        try:
+            ingredient = self.find(parsed["id"])
+            with self.session.begin():
+                ingredient.available = True
+        except NoResultFound:
+            return None
+
+        return self.find(ingredient.id)

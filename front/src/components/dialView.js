@@ -43,8 +43,12 @@ export class DialView extends React.Component {
 
     render() {
         return (
-            <div onDragStart={(e) => e.dataTransfer.setDragImage(new Image(), 0, 0)}
+            <div touch-action={"none"}
+                 style={{touchAction: "none !important"}}
+                 onDragStart={(e) => e.dataTransfer.setDragImage(new Image(), 0, 0)}
                  onDrag={this.onDrag}
+                 onTouchMove={(e) => this.onDrag(e.touches[0])}
+                 onClick={(e) => e.preventDefault()}
                  draggable={true}>
                 <div >
                     <InputGroup className="mb-3">

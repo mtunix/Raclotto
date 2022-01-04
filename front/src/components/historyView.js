@@ -19,14 +19,14 @@ export class HistoryView extends React.Component {
         });
     }
     getRating(id, initial) {
-        return (<Rating
+        return (<div className={"d-none d-sm-block"}><Rating
             className="mb-2"
             initialRating={initial}
             onClick={(rating) => this.onRating(id, rating)}
             emptySymbol={VectorGraphics.RATING_EMPTY}
             fullSymbol={VectorGraphics.RATING_FULL}
             readonly={true}
-        />);
+        /></div> );
     }
 
     onRating = (id, rating) => {

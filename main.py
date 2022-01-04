@@ -114,6 +114,17 @@ def api_ingredients_remove():
     )
 
 
+@app.route("/api/ingredients/refill", methods=["POST"])
+def api_ingredients_refill():
+    res = api.ref_ingredient(request.json)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
 @app.route("/api/pans/", methods=["GET", "POST"])
 def api_pans():
     if request.method == "GET":

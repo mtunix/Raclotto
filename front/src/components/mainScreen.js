@@ -2,6 +2,7 @@ import React from "react";
 import {Accordion, Button, Card, Col, ListGroup, Row} from "react-bootstrap";
 import {Api} from "../lib/api";
 import {Toolbar} from "./toolbar";
+import {VectorGraphics} from "../lib/vectorGraphics";
 
 export class MainScreen extends React.Component {
     constructor(props) {
@@ -32,7 +33,15 @@ export class MainScreen extends React.Component {
                 this.setState({ingredients: data})
             });
         });
-    }
+    };
+
+    onRefill = (ingredient) => {
+        Api.refill(this.props.session, ingredient).then((data) => {
+            Api.get("ingredients", this.props.session).then((data) => {
+                this.setState({ingredients: data})
+            });
+        });
+    };
 
     getTags(ingredient) {
         return (<div>
@@ -67,7 +76,9 @@ export class MainScreen extends React.Component {
                                     <Button variant={"danger"}
                                             size={"sm"}
                                             style={{fontSize: "0.7rem"}}
-                                            onClick={() => this.onDelete(ingredient)}>x</Button>
+                                            onClick={() => this.onDelete(ingredient)}>
+                                        {VectorGraphics.REMOVE}
+                                    </Button>
                                 </Col>
                             </Row>
                             {this.getTags(ingredient)}
@@ -86,10 +97,12 @@ export class MainScreen extends React.Component {
                                     <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
                                 </Col>
                                 <Col style={{textAlign: "right"}}>
-                                    <Button variant={"danger"}
+                                    <Button variant={"primary"}
                                             size={"sm"}
                                             style={{fontSize: "0.7rem"}}
-                                            onClick={() => this.onDelete(ingredient)}>x</Button>
+                                            onClick={() => this.onRefill(ingredient)}>
+                                        {VectorGraphics.REPEAT}
+                                    </Button>
                                 </Col>
                             </Row>
                             {this.getTags(ingredient)}

@@ -77,3 +77,7 @@ class ApiController:
     def close_session(self, parsed):
         session = self.session_service.close(parsed)
         return self.view.scalar("session", session)
+
+    def ref_ingredient(self, parsed):
+        ingredient = self.ingredient_service.refill(parsed)
+        return self.view.scalar("ingredient", ingredient)
