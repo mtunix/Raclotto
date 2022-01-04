@@ -66,14 +66,19 @@ export class HistoryView extends React.Component {
         let pans = this.state.pans.map((pan, i) =>
             <Accordion.Item eventKey={i}>
                 <Accordion.Header>
-                    <span style={{fontWeight: 800}}>{pan.name}</span>
-                    <span style={{fontStyle: "italic", fontSize: "smaller"}} className="px-3">verspeist von {pan.user}</span>
-                    {this.getRating(pan.id, pan.rating)}
+                    <div className={"w-100"}>
+                        <span style={{fontWeight: 800}}>{pan.name}</span>
+                        <br />
+                        <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist von {pan.user}</span>
+                    </div>
+                    <div className={"w-25 mx-2"} style={{textAlign: "right"}}>
+                        {this.getRating(pan.id, pan.rating)}
+                    </div>
                 </Accordion.Header>
                 <Accordion.Body>
                     <Row>
                         <Col sm>
-                            <h5>Zutaten</h5>
+                            <span style={{fontWeight: 800}}>Zutaten</span>
                             <ListGroup key={this.props.ingredients} className="mb-2">
                                 {pan.ingredients.filter(ingredient => ingredient.type === 1).map((ingredient) =>
                                     <ListGroup.Item variant={getVariant(ingredient.type)}>
@@ -88,7 +93,7 @@ export class HistoryView extends React.Component {
                             </ListGroup>
                         </Col>
                         <Col sm>
-                            <h5>Saucen</h5>
+                            <span style={{fontWeight: 800}}>Saucen</span>
                             <ListGroup key={this.props.ingredients} className="mb-2">
                                 {pan.ingredients.filter(ingredient => ingredient.type === 2).map((ingredient) =>
                                     <ListGroup.Item variant={getVariant(ingredient.type)}>
