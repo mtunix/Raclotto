@@ -7,13 +7,17 @@ export class ServerSettingsView extends React.Component {
         super(props);
 
         this.state = {
-            name: ""
+            name: "",
+            waiting: true
         }
     }
 
     componentDidMount() {
         Api.get("session", this.props.session).then((data) => {
-            this.setState({name:data["session"].name})
+            this.setState({
+                name:data["session"].name,
+                waiting: false
+            })
         });
     }
 
@@ -30,22 +34,29 @@ export class ServerSettingsView extends React.Component {
     render() {
         return (
             <div>
-                <Form.Group className="mb-3" controlId="formIngredientName">
-                    <Form.Label>Sessionname</Form.Label>
-                    <Form.Control
-                        value={this.state.name}
-                        onChange={this.onNameChanged}
-                        type="name"
-                        placeholder="Namen eingeben"
-                    />
-                </Form.Group>
-                <Form.Group className="d-grid gap-2 mt-2" controlId="formIngredientName">
-                    <Form.Label>Abend schon vorbei?</Form.Label>
-                    <ButtonGroup className="flex-wrap">
-                        <Button onClick={this.onCloseSession}>Session beenden</Button>
-                    </ButtonGroup>
-                </Form.Group>
-
+                <div hidden={!this.state.waiting}>
+                    <div className="d-flex justify-content-center">
+                        <div className="spinner-border text-secondary" role="status">
+                        </div>
+                    </div>
+                </div>
+                <div hidden={this.state.waiting}>
+                    <Form.Group className="mb-3" controlId="formIngredientName">
+                        <Form.Label>Sessionname</Form.Label>
+                        <Form.Control
+                            value={this.state.name}
+                            onChange={this.onNameChanged}
+                            type="name"
+                            placeholder="Namen eingeben"
+                        />
+                    </Form.Group>
+                    <Form.Group className="d-grid gap-2 mt-2" controlId="formIngredientName">
+                        <Form.Label>Abend schon vorbei?</Form.Label>
+                        <ButtonGroup className="flex-wrap">
+                            <Button onClick={this.onCloseSession}>Session beenden</Button>
+                        </ButtonGroup>
+                    </Form.Group>
+                </div>
             </div>
         )
     }
