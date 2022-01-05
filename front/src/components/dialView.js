@@ -1,5 +1,6 @@
 import React from "react";
 import {Button, Form, InputGroup} from "react-bootstrap";
+import {Util} from "../lib/util";
 
 
 export class DialView extends React.Component {
@@ -18,7 +19,7 @@ export class DialView extends React.Component {
 
     onInputChanged = (event) => {
         let v = event.target.value
-        if (this.isNumeric(event.target.value)) {
+        if (Util.isNumeric(event.target.value)) {
             v = parseInt(event.target.value)
         }
 
@@ -34,10 +35,6 @@ export class DialView extends React.Component {
             });
         }
     };
-
-    isNumeric(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    }
 
     increment = (e) => {
         if (this.state.num < this.props.ingredients.length) {
@@ -72,14 +69,28 @@ export class DialView extends React.Component {
         });
     };
 
+    bodyScroll = () => {
+        document.body.style.overflow = "visible";
+        document.body.style.position = "";
+    };
+
+    noBodyScroll = () => {
+        document.body.style.overflow = "hidden";
+        document.body.style.position = "fixed";
+    };
+
+    hideDragImage = (e) => {
+        e.dataTransfer.setDragImage(new Image(), 0, 0)
+    };
+
     render() {
         return (
             <div touch-action={"none"}
                  style={{touchAction: "none !important"}}
-                 onDragStart={(e) => e.dataTransfer.setDragImage(new Image(), 0, 0)}
+                 onDragStart={this.hideDragImage}
                  onDrag={this.onDrag}
-                 onTouchStart={() => {document.body.style.overflow = "hidden"; document.body.style.position = "fixed";}}
-                 onTouchEnd={() => {document.body.style.overflow = "visible"; document.body.style.position = "";}}
+                 onTouchStart={this.noBodyScroll}
+                 onTouchEnd={this.bodyScroll}
                  onTouchMove={(e) => this.onDrag(e.touches[0])}
                  onClick={(e) => e.preventDefault()}
                  draggable={true}>

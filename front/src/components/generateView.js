@@ -4,6 +4,7 @@ import {DialView} from "./dialView";
 import {Api} from "../lib/api";
 import Rating from "react-rating";
 import {VectorGraphics} from "../lib/vectorGraphics";
+import {Util} from "../lib/util";
 
 export class GenerateView extends React.Component {
     constructor(props) {
@@ -71,10 +72,6 @@ export class GenerateView extends React.Component {
         this.setState({numFill: v});
     };
 
-    isNumeric(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    }
-
     onGenerateClicked = () => {
         this.setState({waiting: true})
         localStorage.setItem("numFill", this.state.numFill);
@@ -100,7 +97,7 @@ export class GenerateView extends React.Component {
     }
 
     canGenerate() {
-        if (!this.isNumeric(this.state.numFill) || !this.isNumeric(this.state.numSauce))
+        if (!Util.isNumeric(this.state.numFill) || !Util.isNumeric(this.state.numSauce))
             return false;
 
         return this.state.numFill > 0
