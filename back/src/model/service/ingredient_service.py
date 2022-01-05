@@ -1,3 +1,4 @@
+import random
 from random import sample
 
 from sqlalchemy import or_
@@ -92,6 +93,7 @@ class IngredientService(DatabaseService):
         return self.find(ingredient.id)
 
     def select(self, gen_dict):
+        random.seed()
         fills = self.all_filtered(gen_dict, 1)
         sauces = self.all_filtered(gen_dict, 2)
         num_fill = gen_dict["num_fill"] if len(fills) >= gen_dict["num_fill"] else len(fills)

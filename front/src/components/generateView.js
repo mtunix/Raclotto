@@ -68,10 +68,6 @@ export class GenerateView extends React.Component {
         });
     };
 
-    onChange = (v) => {
-        this.setState({numFill: v});
-    };
-
     onGenerateClicked = () => {
         this.setState({waiting: true})
         localStorage.setItem("numFill", this.state.numFill);
@@ -127,13 +123,13 @@ export class GenerateView extends React.Component {
                         <Col>
                             <Form.Label>Zutatenanzahl</Form.Label>
                             <DialView ingredients={this.props.ingredients.filter(i => i.type === 1)}
-                                      onChange={this.onChange}
+                                      onChange={(v) => this.setState({numFill: v})}
                                       num={this.state.numFill} />
                         </Col>
                         <Col>
                             <Form.Label>Saucenanzahl</Form.Label>
                             <DialView ingredients={this.props.ingredients.filter(i => i.type === 2)}
-                                      onChange={this.onChange}
+                                      onChange={(v) => this.setState({numSauce: v})}
                                       num={this.state.numSauce}/>
                         </Col>
                     </Row>
