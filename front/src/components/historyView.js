@@ -22,14 +22,14 @@ export class HistoryView extends React.Component {
             });
         });
     }
-    getRating(id, initial) {
+    getRating(id, initial, readonly) {
         return (<div className={"d-none d-sm-block"}><Rating
             className="mb-2"
             initialRating={initial}
             onClick={(rating) => this.onRating(id, rating)}
             emptySymbol={VectorGraphics.RATING_EMPTY}
             fullSymbol={VectorGraphics.RATING_FULL}
-            readonly={true}
+            readonly={readonly}
         /></div> );
     }
 
@@ -74,7 +74,7 @@ export class HistoryView extends React.Component {
                         <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist von {pan.user}</span>
                     </div>
                     <div className={"w-25 mx-2"} style={{textAlign: "right"}}>
-                        {this.getRating(pan.id, pan.rating)}
+                        {this.getRating(pan.id, pan.rating, true)}
                     </div>
                 </Accordion.Header>
                 <Accordion.Body>
@@ -110,7 +110,26 @@ export class HistoryView extends React.Component {
                             </ListGroup>
                         </Col>
                     </Row>
-                    <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist um {pan.timestamp}</span>
+                    <Row>
+                        <Col>
+
+                        </Col>
+                    </Row>
+                    <div className="alert alert-secondary mt-2" role="alert">
+                        <Row>
+                            <Col>
+                                <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist um {pan.timestamp}</span>
+                            </Col>
+                            <Col hidden={false} style={{textAlign: "right"}}>
+                                {this.getRating(pan.id, pan.rating, false)}
+                            </Col>
+                        </Row>
+                    </div>
+                    <Row>
+                        <Col className={"d-grid"}>
+                            <button type="button" className="btn btn-primary">Ich will das auch</button>
+                        </Col>
+                    </Row>
                 </Accordion.Body>
             </Accordion.Item>
         );

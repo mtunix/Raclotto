@@ -67,6 +67,14 @@ export class GenerateView extends React.Component {
         });
     };
 
+    onChange = (v) => {
+        this.setState({numFill: v});
+    };
+
+    isNumeric(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
     onGenerateClicked = () => {
         this.setState({waiting: true})
         localStorage.setItem("numFill", this.state.numFill);
@@ -91,6 +99,16 @@ export class GenerateView extends React.Component {
             fullSymbol={VectorGraphics.RATING_FULL}/>);
     }
 
+    canGenerate() {
+        if (!this.isNumeric(this.state.numFill) || !this.isNumeric(this.state.numSauce))
+            return false;
+
+        return this.state.numFill > 0
+            && this.state.numSauce > 0
+            && this.state.numFill <= this.props.ingredients.filter(i => i.type === 1).length
+            && this.state.numSauce <= this.props.ingredients.filter(i => i.type === 2).length;
+    }
+
     render() {
         return (
             <div>
@@ -112,13 +130,13 @@ export class GenerateView extends React.Component {
                         <Col>
                             <Form.Label>Zutatenanzahl</Form.Label>
                             <DialView ingredients={this.props.ingredients.filter(i => i.type === 1)}
-                                      onChange={(num) => this.setState({numFill: num})}
+                                      onChange={this.onChange}
                                       num={this.state.numFill} />
                         </Col>
                         <Col>
                             <Form.Label>Saucenanzahl</Form.Label>
                             <DialView ingredients={this.props.ingredients.filter(i => i.type === 2)}
-                                      onChange={(num) => this.setState({numSauce: num})}
+                                      onChange={this.onChange}
                                       num={this.state.numSauce}/>
                         </Col>
                     </Row>
@@ -126,7 +144,7 @@ export class GenerateView extends React.Component {
                         <Col>
                             <div className="d-grid mt-2">
                                 <Button variant="primary"
-                                        disabled={this.state.numFill < 1 && this.state.numSauce < 1}
+                                        disabled={!this.canGenerate()}
                                         onClick={this.onGenerateClicked}>
                                     Erstellen
                                 </Button>

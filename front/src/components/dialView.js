@@ -8,12 +8,21 @@ export class DialView extends React.Component {
 
         this.state = {
             num: this.props.num,
-            dragY: 0
+            dragY: 0,
         }
     }
 
+    isInRange() {
+        return 0 < this.state.num && this.state.num <= this.props.ingredients.length;
+    }
+
     onInputChanged = (event) => {
-        this.setState({num: parseInt(event.target.value)}, () => {
+        let v = event.target.value
+        if (this.isNumeric(event.target.value)) {
+            v = parseInt(event.target.value)
+        }
+
+        this.setState({num: v}, () => {
             this.props.onChange(this.state.num)
         })
     };
@@ -25,6 +34,10 @@ export class DialView extends React.Component {
             });
         }
     };
+
+    isNumeric(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
 
     increment = (e) => {
         if (this.state.num < this.props.ingredients.length) {
@@ -76,7 +89,8 @@ export class DialView extends React.Component {
                                 onClick={this.decrement}
                         >-</Button>
                         <Form.Control type="number"
-                                      className={"mx-0 text-center"}
+                                      onChange={this.onInputChanged}
+                                      className={`mx-0 text-center ${this.isInRange() ? "" : "border border-danger"}`}
                                       value={this.state.num} />
                         <Button variant={"primary"}
                                 className={"ml-0"}
