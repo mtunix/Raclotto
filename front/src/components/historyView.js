@@ -23,14 +23,14 @@ export class HistoryView extends React.Component {
         });
     }
     getRating(id, initial, readonly) {
-        return (<div className={"d-none d-sm-block"}><Rating
+        return (<Rating
             className="mb-2"
             initialRating={initial}
             onClick={(rating) => this.onRating(id, rating)}
             emptySymbol={VectorGraphics.RATING_EMPTY}
             fullSymbol={VectorGraphics.RATING_FULL}
             readonly={readonly}
-        /></div> );
+        />);
     }
 
     onRating = (id, rating) => {
@@ -74,7 +74,9 @@ export class HistoryView extends React.Component {
                         <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist von {pan.user}</span>
                     </div>
                     <div className={"w-25 mx-2"} style={{textAlign: "right"}}>
-                        {this.getRating(pan.id, pan.rating, true)}
+                        <div className={"d-none d-sm-block"}>
+                            {this.getRating(pan.id, pan.rating, true)}
+                        </div>
                     </div>
                 </Accordion.Header>
                 <Accordion.Body>
