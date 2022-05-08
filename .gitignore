@@ -1,0 +1,5 @@
+**/build/**
+**/venv/**
+*.db
+.idea/**
+**/node_modules/**
