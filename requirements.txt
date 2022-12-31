@@ -1,0 +1,4 @@
+Flask==2.2.2
+Flask_Cors==3.0.10
+SQLAlchemy==1.4.45
+wonderwords==2.2.0

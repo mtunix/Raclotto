@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.d0970d1a.css",
+    "main.js": "/static/js/main.134f3d1f.js",
+    "static/js/496.41a54d62.chunk.js": "/static/js/496.41a54d62.chunk.js",
+    "static/media/raclotto.png": "/static/media/raclotto.c5d092d3a80e0ff3211a.png",
+    "index.html": "/index.html",
+    "main.d0970d1a.css.map": "/static/css/main.d0970d1a.css.map",
+    "main.134f3d1f.js.map": "/static/js/main.134f3d1f.js.map",
+    "496.41a54d62.chunk.js.map": "/static/js/496.41a54d62.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d0970d1a.css",
+    "static/js/main.134f3d1f.js"
+  ]
+}
