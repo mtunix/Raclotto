@@ -1,7 +1,7 @@
-from back.src.model.domain.pan import Pan
-from back.src.model.domain.rating import Rating
-from back.src.model.service.database_service import DatabaseService
-from back.src.model.service.session_service import SessionService
+from back.src.entity import Pan
+from back.src.entity import Rating
+from back.src.interactor.database_service import DatabaseService
+from back.src.interactor.session_service import SessionService
 
 
 class RatingService(DatabaseService):

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
-from back.src.model.domain.base import Base, SerializableMixin
+from back.src.entity.base import Base, SerializableMixin
 
 
 class RaclottoSession(SerializableMixin, Base):

@@ -1,13 +1,11 @@
 import unittest
 
-from sqlalchemy import event
-
 from back.src.model.database import SQLiteMixin, Database
-from back.src.model.domain.base import Base
-from back.src.model.domain.ingredient import IngredientType
-from back.src.model.service.ingredient_service import IngredientService
-from back.src.model.service.pan_service import PanService
-from back.src.model.service.session_service import SessionService
+from back.src.entity.base import Base
+from back.src.entity import IngredientType
+from back.src.interactor import IngredientService
+from back.src.interactor import PanService
+from back.src.interactor import SessionService
 from back.test.lib import get_session_const, get_dict_ingredient, get_dict_pan, get_dict_session_const
 
 

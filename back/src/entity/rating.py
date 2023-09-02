@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 
-from back.src.model.domain.base import Base, SessionMixin, SerializableMixin
+from back.src.entity.base import Base, SessionMixin, SerializableMixin
 
 
 class Rating(SerializableMixin, SessionMixin, Base):

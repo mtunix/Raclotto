@@ -1,10 +1,10 @@
 import json
 
-from back.src.model.service.achievement_service import AchievementService
-from back.src.model.service.ingredient_service import IngredientService
-from back.src.model.service.pan_service import PanService
-from back.src.model.service.rating_service import RatingService
-from back.src.model.service.session_service import SessionService
+from back.src.interactor import AchievementService
+from back.src.interactor import IngredientService
+from back.src.interactor import PanService
+from back.src.interactor import RatingService
+from back.src.interactor import SessionService
 from back.src.view.api_view import ApiView
 
 

@@ -1,9 +1,9 @@
-from back.src.model.domain.achievement import Achievement
-from back.src.model.domain.ingredient import Ingredient
-from back.src.model.domain.insults import Insult
-from back.src.model.domain.pan import Pan
-from back.src.model.domain.raclotto_session import RaclottoSession
-from back.src.model.domain.rating import Rating
+from back.src.entity.achievement import Achievement
+from back.src.entity.ingredient import Ingredient
+from back.src.entity.insults import Insult
+from back.src.entity.pan import Pan
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.entity.rating import Rating
 
 """
 Every entity should be in this list.

@@ -2,14 +2,12 @@ import random
 from random import sample
 
 from sqlalchemy import or_
-from sqlalchemy.exc import NoResultFound, IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import joinedload
 
-from back.src.model.database import Database
-from back.src.model.domain.ingredient import IngredientType, Ingredient
-from back.src.model.domain.raclotto_session import RaclottoSession
-from back.src.model.service.database_service import DatabaseService
-from back.src.model.service.session_service import SessionService
+from back.src.entity import IngredientType, Ingredient
+from back.src.interactor.database_service import DatabaseService
+from back.src.interactor.session_service import SessionService
 
 
 class IngredientService(DatabaseService):

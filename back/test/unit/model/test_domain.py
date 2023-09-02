@@ -3,11 +3,11 @@ import unittest
 from sqlalchemy.exc import IntegrityError
 
 from back.src.model.database import SQLiteMixin, Database
-from back.src.model.domain.base import Base
-from back.src.model.domain.ingredient import Ingredient, IngredientType
-from back.src.model.domain.pan import Pan
-from back.src.model.domain.raclotto_session import RaclottoSession
-from back.src.model.domain.rating import Rating
+from back.src.entity.base import Base
+from back.src.entity import Ingredient, IngredientType
+from back.src.entity import Pan
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.entity import Rating
 from back.test.lib import get_session_const, get_session
 
 

@@ -3,10 +3,9 @@ from sqlalchemy.orm import sessionmaker
 
 # Imports and their order are critical
 from back.src.model.default_data import ACHIEVEMENTS, INSULTS
-from back.src.model.domain.achievement import Achievement
-from back.src.model.domain.base import Base
-from back.src.model.domain.insults import Insult
-from back.src.model.domain.rating import Rating
+from back.src.entity.achievement import Achievement
+from back.src.entity.base import Base
+from back.src.entity.insults import Insult
 
 
 class SQLiteMixin:

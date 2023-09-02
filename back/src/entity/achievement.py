@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 
-from back.src.model.domain.base import Base, SerializableMixin
+from back.src.entity.base import Base, SerializableMixin
 
 
 class Achievement(SerializableMixin, Base):

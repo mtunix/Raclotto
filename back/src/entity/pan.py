@@ -4,8 +4,8 @@ from sqlalchemy import Table, ForeignKey, Column, Integer, String, func, select,
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from back.src.model.domain.base import Base, DomainMixin
-from back.src.model.domain.rating import Rating
+from back.src.entity.base import Base, DomainMixin
+from back.src.entity.rating import Rating
 
 pan_ingredients = Table(
     "pan_ingredients",

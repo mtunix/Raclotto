@@ -3,14 +3,14 @@ import unittest
 
 from back.src.controller.api_controller import ApiController
 from back.src.model.database import SQLiteMixin, Database
-from back.src.model.domain.base import Base
-from back.src.model.domain.ingredient import Ingredient
-from back.src.model.domain.pan import Pan
-from back.src.model.domain.rating import Rating
-from back.src.model.service.database_service import DatabaseService
-from back.src.model.service.ingredient_service import IngredientService
-from back.src.model.service.pan_service import PanService
-from back.src.model.service.rating_service import RatingService
+from back.src.entity.base import Base
+from back.src.entity import Ingredient
+from back.src.entity import Pan
+from back.src.entity import Rating
+from back.src.interactor import DatabaseService
+from back.src.interactor import IngredientService
+from back.src.interactor import PanService
+from back.src.interactor import RatingService
 from back.test.lib import get_session_const, get_json_rating, get_json_pan, get_json_ingredient
 
 

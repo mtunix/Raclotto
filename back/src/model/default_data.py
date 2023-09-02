@@ -1,5 +1,5 @@
-from back.src.model.domain.achievement import Achievement
-from back.src.model.domain.insults import Insult
+from back.src.entity.achievement import Achievement
+from back.src.entity.insults import Insult
 
 ACHIEVEMENTS = [
     Achievement(
