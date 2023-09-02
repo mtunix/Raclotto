@@ -1,13 +1,21 @@
 from flask import Flask, request, render_template
 from flask_cors import CORS
+from flask_restless import APIManager
+from flask_sqlalchemy import SQLAlchemy
 
-from back.src.controller.api_controller import ApiController
-from back.src.controller.ui_controller import UiController
+from model.domain.achievement import Achievement
+from model.domain.ingredient import Ingredient
+from model.domain.pan import Pan
+from model.domain.raclotto_session import RaclottoSession
+from model.domain.rating import Rating
 
 app = Flask(__name__, static_folder="back/src/build/static", template_folder="back/src/build")
+db = SQLAlchemy(app)
 CORS(app)
-api = ApiController()
-ui = UiController()
+manager = APIManager(app, db)
+
+for entity in [Ingredient, Pan, Rating, RaclottoSession, Achievement]:
+    manager.create_api(entity, methods=["GET", "POST", "DELETE", "PATCH"])
 
 
 @app.route("/")
@@ -164,4 +172,4 @@ def api_achievements():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=3001)
