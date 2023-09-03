@@ -338,5 +338,5 @@ for path in doc["paths"]:
             "externalDocs": external_docs
         }
 
-with open("mikado_spec.json", "w") as f:
+with open("../../raclotto_spec.json", "w") as f:
     f.write(json.dumps(open_api_spec))

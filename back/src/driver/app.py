@@ -23,8 +23,7 @@ class App(Flask):
             db: SQLAlchemy,
             config: Type[Config]
     ):
-        super().__init__(name)
-        self.static_url_path = ""
+        super().__init__(name, static_folder="static", static_url_path="")
         self.debug = True
         self.db = db
         self.config.from_object(config)
@@ -41,7 +40,7 @@ class App(Flask):
         self.add_url_rule(rule='/<path:path>', view_func=self.serve, methods=['GET'])
 
         if self.config["DOCUMENTATION"]:
-            api_doc(self, config_path='mikado_spec.json', url_prefix='/api/docs', title='Mikado API')
+            api_doc(self, config_path='raclotto_spec.json', url_prefix='/api/docs', title='Raclotto API')
 
         self.init_logging()
 
@@ -49,6 +48,7 @@ class App(Flask):
         self.register_error_handler(404, self.page_not_found)
 
     def serve(self, path):
+        print(self.static_folder)
         if path != "" and Path(f"{self.static_folder}/{path}").exists():
             return send_from_directory(self.static_folder, path)
         else:
@@ -111,7 +111,7 @@ class App(Flask):
 
     def init_logging(self):
         log_format_str = '%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s'
-        file_handler = logging.FileHandler("../tb-api.log")
+        file_handler = logging.FileHandler("../raclotto-api.log")
         file_handler.setFormatter(
             logging.Formatter(log_format_str, "%d.%m.%y %H:%M:%S"))
         self.logger.addHandler(file_handler)
@@ -128,6 +128,6 @@ class App(Flask):
         return jsonify(e.to_dict()), e.status
 
     def uncaught_mikado_error(self, e):
-        e = ApiError(e.args[0], title="Uncaught MikadoError.", detail=str(e),
+        e = ApiError(e.args[0], title="Uncaught RaclottoError.", detail=str(e),
                      status=500)
         return jsonify(e.to_dict()), e.status
