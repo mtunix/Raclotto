@@ -152,20 +152,16 @@ for api in apis_custom:
 open_api_spec = {
     "openapi": "3.0.0",
     "info": {
-        "title": "Mikado API",
-        "description": "Mikado API",
-        "version": "0.0.4",
+        "title": "Raclotto API",
+        "description": "Raclotto API",
+        "version": "0.0.1",
     },
     "contact": {
-        "name": "Marius",
-        "email": "marius.tuschl@wwv.de",
-    },
-    "license": {
-        "name": "Proprietary",
-        "url": "https://wwv.de"
+        "name": "mtunix",
+        "email": "https://github.com/mtunix",
     },
     "servers": [{
-        "url": "http://127.0.0.1:8080",
+        "url": "http://127.0.0.1:3001",
         "description": "Development server"
     }],
     "components": {
