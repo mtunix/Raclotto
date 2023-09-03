@@ -67,7 +67,7 @@ class ApiError(Exception):
         return {key: getattr(self, key) for key in ERROR_FIELDS}
 
 
-class MikadoApi(View):
+class RaclottoApi(View):
     init_every_request = False
 
     decorators = [
@@ -190,9 +190,9 @@ class MikadoApi(View):
 
 
 def init_api_rules(mikado_apis, serializers, deserializers, session):
-    MikadoApi.session = session
-    MikadoApi.serializers = serializers
-    MikadoApi.deserializers = deserializers
+    RaclottoApi.session = session
+    RaclottoApi.serializers = serializers
+    RaclottoApi.deserializers = deserializers
 
     api_rules = Blueprint("api_rules", __name__, url_prefix="/api")
     for api in mikado_apis:

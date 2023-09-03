@@ -10,6 +10,19 @@ class IngredientType(enum.IntEnum):
     SAUCE = 2
 
 
+class DietType(enum.Enum):
+    OMNI = enum.auto()
+    VEGAN = enum.auto()
+    VEGETARIAN = enum.auto()
+
+
+class IngredientConstraints(enum.Enum):
+    HISTAMINE = enum.auto()
+    FRUCTOSE = enum.auto()
+    LACTOSE = enum.auto()
+    GLUTEN = enum.auto()
+
+
 class Ingredient(DomainMixin, Base):
     __tablename__ = "ingredient"
 
