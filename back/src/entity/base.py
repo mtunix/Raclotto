@@ -5,9 +5,7 @@ Base = declarative_base()
 
 
 class SessionMixin(object):
-    @declared_attr
-    def session_id(self):
-        return Column(Integer, ForeignKey('session.id'), nullable=False)
+    session_id = Column(Integer, ForeignKey('session.id'), nullable=False)
 
     @declared_attr
     def session(self):

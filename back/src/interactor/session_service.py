@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy.exc import NoResultFound
 
-from back.src.model.database import Database
+from back.src.driver.database import db
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.interactor.database_service import DatabaseService
 
@@ -11,7 +11,6 @@ from back.src.interactor.database_service import DatabaseService
 class SessionService(DatabaseService):
     def __init__(self):
         super().__init__(RaclottoSession)
-        self.session = Database.session()
 
     def all(self, session_key=None):
         if session_key:

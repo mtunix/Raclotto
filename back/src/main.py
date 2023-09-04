@@ -1,8 +1,3 @@
-from flask import Flask, request, render_template
-from flask_cors import CORS
-from flask_restless import APIManager
-from flask_sqlalchemy import SQLAlchemy
-
 from back.src.driver.app import App
 from back.src.driver.config import ConfigInMemory
 from back.src.driver.database import db

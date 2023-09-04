@@ -5,12 +5,12 @@ from sqlalchemy import or_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
-from back.src.entity import IngredientType, Ingredient
+from back.src.entity.ingredient import IngredientType, Ingredient
 from back.src.interactor.database_service import DatabaseService
 from back.src.interactor.session_service import SessionService
 
 
-class IngredientService(DatabaseService):
+class IngredientInteractor(DatabaseService):
     def __init__(self):
         super().__init__(Ingredient)
         self.session_service = SessionService()
