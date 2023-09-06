@@ -11,6 +11,10 @@ gen_preferences_3 = GenerationPreferences(False, False, True, False, False, Fals
 gen_preferences_4 = GenerationPreferences(True, True, True, True, True, True, False)  # Gluten free
 gen_preferences_5 = GenerationPreferences(True, True, True, True, True, False, False)  # Lactose free
 gen_params_1 = GenerationParameters(session_id, 1, 1, 1, gen_preferences_1)
+gen_params_2 = GenerationParameters(session_id, 1, 1, 1, gen_preferences_2)
+gen_params_3 = GenerationParameters(session_id, 1, 1, 1, gen_preferences_3)
+gen_params_4 = GenerationParameters(session_id, 1, 1, 1, gen_preferences_4)
+gen_params_5 = GenerationParameters(session_id, 1, 1, 1, gen_preferences_5)
 gen_params_no_session = GenerationParameters("does_not_exist", 1, 1, 1, gen_preferences_1)
 
 
@@ -28,7 +32,11 @@ class UnitTestIngredientInteractor(DBTest):
         self.assertEqual(result, [])
 
     @parameterized.expand([
-        (gen_params_1, IngredientType.FILL, 7),
+        (gen_params_1, IngredientType.FILL, 7),  # omnivore
+        (gen_params_2, IngredientType.FILL, 3),  # vegetarian
+        (gen_params_3, IngredientType.FILL, 2),  # vegan
+        (gen_params_4, IngredientType.FILL, 6),  # gluten free
+        (gen_params_5, IngredientType.FILL, 6),  # lactose free
     ])
     def test_all_filtered_valid(
             self,

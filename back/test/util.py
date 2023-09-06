@@ -59,9 +59,8 @@ class DBTest(unittest.TestCase):
             Ingredient(name="Chicken", type=IngredientType.FILL, meat=True, session_id=session.id),
             Ingredient(name="Potato", type=IngredientType.FILL, vegan=True, vegetarian=True, session_id=session.id),
             Ingredient(name="Mushroom", type=IngredientType.FILL, vegan=True, vegetarian=True, session_id=session.id),
-            Ingredient(name="Tomato", type=IngredientType.FILL, vegan=True, vegetarian=True, fructose=True,
-                       histamine=True, session_id=session.id),
-            Ingredient(name="Turkish Delight", type=IngredientType.FILL, vegetarian=True, session_id=session.id),
+            Ingredient(name="Tomato", type=IngredientType.FILL, vegan=True, vegetarian=True, fructose=True, histamine=True, session_id=session.id),
+            Ingredient(name="Turkish Delight", type=IngredientType.FILL, vegetarian=True, gluten=True, session_id=session.id),
         ]
 
         sauces = [
