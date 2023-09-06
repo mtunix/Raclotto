@@ -24,7 +24,7 @@ class DBTest(unittest.TestCase):
             self.session = db.session
 
         self.app = Flask(__name__)
-        self.app.config.from_object(ConfigProduction)
+        self.app.config.from_object(ConfigInMemory)
         db.init_app(self.app)
 
         with self.app.app_context() as app_context:

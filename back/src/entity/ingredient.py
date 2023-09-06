@@ -1,4 +1,5 @@
 import enum
+from dataclasses import dataclass
 from typing import NamedTuple
 
 from sqlalchemy import Column, Boolean, Integer, Enum, CheckConstraint
@@ -7,22 +8,63 @@ from back.src.driver.database import BaseModel
 from back.src.entity.mixin import DomainMixin
 
 
-class GenerationPreferences(NamedTuple):
-    meat: bool
-    vegetarian: bool
-    vegan: bool
-    histamine: bool
-    fructose: bool
-    lactose: bool
-    gluten: bool
+class InvalidPreferencesError(ValueError):
+    pass
 
 
-class GenerationParameters(NamedTuple):
-    session_key: str
-    user: int
-    num_fill: int
-    num_sauce: int
-    preferences: GenerationPreferences
+@dataclass
+class GenerationPreferences:
+    """
+    A named tuple that represents the preferences for a generation.
+    Please note that meat, vegetarian and vegan are not mutually exclusive.
+    Instead, they are a hierarchy, where vegan is the most restrictive and meat the least (basically omnivore).
+    This means if meat is set to true, vegetarian and vegan are automatically set to true as well.
+    If vegetarian is set to true, vegan is automatically set to true as well.
+    """
+
+    def __init__(
+            self,
+            meat: bool,
+            vegetarian: bool,
+            vegan: bool,
+            histamine: bool,
+            fructose: bool,
+            lactose: bool,
+            gluten: bool
+    ):
+        if not meat and not vegetarian and not vegan:
+            raise InvalidPreferencesError
+
+        if meat and not (vegetarian and vegan):
+            raise InvalidPreferencesError
+
+        if vegetarian and not vegan:
+            raise InvalidPreferencesError
+
+        self.meat = meat
+        self.vegetarian = vegetarian
+        self.vegan = vegan
+        self.histamine = histamine
+        self.fructose = fructose
+        self.lactose = lactose
+        self.gluten = gluten
+
+
+@dataclass
+class GenerationParameters:
+    def __init__(
+            self,
+            session_key: str,
+            user: int,
+            num_fill: int,
+            num_sauce: int,
+            preferences: GenerationPreferences
+    ):
+        self.session_key = session_key
+        self.user = user
+        self.num_fill = num_fill
+        self.num_sauce = num_sauce
+        self.preferences = preferences
 
 
 class IngredientType(enum.IntEnum):

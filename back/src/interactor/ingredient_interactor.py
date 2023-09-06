@@ -1,7 +1,7 @@
 import random
 from random import sample
 
-from sqlalchemy import or_
+from sqlalchemy import or_, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
@@ -9,6 +9,7 @@ from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType, Ingredient, GenerationParameters
 from back.src.interactor.database_service import DatabaseInteractor
 from back.src.interactor.session_service import SessionService
+
 
 
 class IngredientInteractor(DatabaseInteractor):
@@ -48,26 +49,24 @@ class IngredientInteractor(DatabaseInteractor):
             Ingredient.type == IngredientType(int(of_type))
         )
 
-        # if gen_dict.preferences.meat:
-        #     query = query.filter(or_(Ingredient.meat == gen_dict.preferences.meat, Ingredient.vegetarian, Ingredient.vegan))
-        # else:
-        #     if gen_dict.preferences.vegetarian:
-        #         query = query.filter(or_(Ingredient.vegetarian == gen_dict.preferences.vegetarian, Ingredient.vegan))
-        #     else:
-        #         if gen_dict.preferences.vegan:
-        #             query = query.filter(Ingredient.vegan == gen_dict.preferences.vegan)
-        #
-        # if not gen_dict.preferences.fructose:
-        #     query = query.filter(Ingredient.fructose == gen_dict.preferences.fructose)
-        #
-        # if not gen_dict.preferences.histamine:
-        #     query = query.filter(Ingredient.histamine == gen_dict.preferences.histamine)
-        #
-        # if not gen_dict.preferences.gluten:
-        #     query = query.filter(Ingredient.histamine == gen_dict.preferences.histamine)
-        #
-        # if not gen_dict.preferences.lactose:
-        #     query = query.filter(Ingredient.lactose == gen_dict.preferences.lactose)
+        if not gen_dict.preferences.meat:
+            if gen_dict.preferences.vegetarian:
+                query = query.filter(or_(Ingredient.vegetarian, Ingredient.vegan))
+            elif gen_dict.preferences.vegan:
+                if gen_dict.preferences.vegan:
+                    query = query.filter(Ingredient.vegan)
+
+        if not gen_dict.preferences.fructose:
+            query = query.filter(not_(Ingredient.fructose))
+
+        if not gen_dict.preferences.histamine:
+            query = query.filter(not_(Ingredient.histamine))
+
+        if not gen_dict.preferences.gluten:
+            query = query.filter(not_(Ingredient.histamine))
+
+        if not gen_dict.preferences.lactose:
+            query = query.filter(not_(Ingredient.lactose))
 
         return query.all()
 
