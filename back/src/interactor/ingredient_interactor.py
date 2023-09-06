@@ -11,7 +11,6 @@ from back.src.interactor.database_service import DatabaseInteractor
 from back.src.interactor.session_service import SessionService
 
 
-
 class IngredientInteractor(DatabaseInteractor):
     def __init__(self):
         super().__init__(Ingredient)
@@ -90,12 +89,12 @@ class IngredientInteractor(DatabaseInteractor):
 
         return self.find(ingredient.id)
 
-    def select(self, gen_dict):
+    def select(self, gen_dict: GenerationParameters):
         random.seed()
-        fills = self.all_filtered(gen_dict, 1)
-        sauces = self.all_filtered(gen_dict, 2)
-        num_fill = gen_dict["num_fill"] if len(fills) >= gen_dict["num_fill"] else len(fills)
-        num_sauce = gen_dict["num_sauce"] if len(sauces) >= gen_dict["num_sauce"] else len(sauces)
+        fills = self.all_filtered(gen_dict, IngredientType.FILL)
+        sauces = self.all_filtered(gen_dict, IngredientType.SAUCE)
+        num_fill = gen_dict.num_fill if len(fills) >= gen_dict.num_fill else len(fills)
+        num_sauce = gen_dict.num_sauce if len(sauces) >= gen_dict.num_sauce else len(sauces)
         return sample(fills, num_fill) + sample(sauces, num_sauce)
 
     def refill(self, parsed):

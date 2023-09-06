@@ -2,7 +2,7 @@ from typing import Tuple
 
 from parameterized import parameterized
 
-from back.src.entity.ingredient import GenerationPreferences, IngredientType, InvalidPreferencesError
+from back.src.entity.ingredient import GenerationPreferences, InvalidPreferencesError
 from back.test.util import DBTest
 
 
@@ -16,13 +16,13 @@ class UnitTestIngredient(DBTest):
     gen_preferences_invalid_7 = (False, True, False, True, True, True, True)  # Vegetarian only (invalid)
 
     @parameterized.expand([
-        (gen_preferences_invalid_1),
-        (gen_preferences_invalid_2),
-        (gen_preferences_invalid_3),
-        (gen_preferences_invalid_4),
-        (gen_preferences_invalid_5),
-        (gen_preferences_invalid_6),
-        (gen_preferences_invalid_7),
+        gen_preferences_invalid_1,
+        gen_preferences_invalid_2,
+        gen_preferences_invalid_3,
+        gen_preferences_invalid_4,
+        gen_preferences_invalid_5,
+        gen_preferences_invalid_6,
+        gen_preferences_invalid_7,
     ])
     def test_creation_invalid(
             self,

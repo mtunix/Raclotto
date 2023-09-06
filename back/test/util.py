@@ -57,19 +57,17 @@ class DBTest(unittest.TestCase):
             Ingredient(name="Pork", type=IngredientType.FILL, meat=True, session_id=session.id),
             Ingredient(name="Beef", type=IngredientType.FILL, meat=True, session_id=session.id),
             Ingredient(name="Chicken", type=IngredientType.FILL, meat=True, session_id=session.id),
-            Ingredient(name="Potato", type=IngredientType.FILL, vegan=True, vegetarian=True, session_id=session.id),
-            Ingredient(name="Mushroom", type=IngredientType.FILL, vegan=True, vegetarian=True, session_id=session.id),
-            Ingredient(name="Tomato", type=IngredientType.FILL, vegan=True, vegetarian=True, fructose=True, histamine=True, session_id=session.id),
+            Ingredient(name="Potato", type=IngredientType.FILL, vegan=True, session_id=session.id),
+            Ingredient(name="Mushroom", type=IngredientType.FILL, vegan=True, session_id=session.id),
+            Ingredient(name="Tomato", type=IngredientType.FILL, vegan=True, fructose=True, histamine=True, session_id=session.id),
             Ingredient(name="Turkish Delight", type=IngredientType.FILL, vegetarian=True, gluten=True, session_id=session.id),
         ]
 
         sauces = [
             Ingredient(name="Aioli", type=IngredientType.SAUCE, vegetarian=True, session_id=session.id),
-            Ingredient(name="Ketchup", type=IngredientType.SAUCE, vegetarian=True, fructose=True, histamine=True,
-                       session_id=session.id),
+            Ingredient(name="Ketchup", type=IngredientType.SAUCE, vegetarian=True, fructose=True, histamine=True, session_id=session.id),
             Ingredient(name="Mayo", type=IngredientType.SAUCE, vegetarian=True, session_id=session.id),
-            Ingredient(name="Quark with herbs", type=IngredientType.SAUCE, vegetarian=True, lactose=True,
-                       session_id=session.id),
+            Ingredient(name="Quark with herbs", type=IngredientType.SAUCE, vegetarian=True, lactose=True, session_id=session.id),
         ]
 
         pans = [
@@ -77,8 +75,7 @@ class DBTest(unittest.TestCase):
             Pan(name="Beef Pan", user="abc", snacked=True, ingredients=[fills[1], sauces[1]], session_id=session.id),
             Pan(name="Chicken Pan", user="abc", snacked=True, ingredients=[fills[2], sauces[2]], session_id=session.id),
             Pan(name="Potato Pan", user="abc", snacked=True, ingredients=[fills[3], sauces[3]], session_id=session.id),
-            Pan(name="Mushroom Pan", user="abc", snacked=True, ingredients=[fills[4], sauces[0]],
-                session_id=session.id),
+            Pan(name="Mushroom Pan", user="abc", snacked=True, ingredients=[fills[4], sauces[0]], session_id=session.id),
             Pan(name="Tomato Pan", user="abc", snacked=True, ingredients=[fills[5], sauces[1]], session_id=session.id),
             Pan(name="Turkish Delight Pan", user="abc", snacked=True, ingredients=[fills[6], sauces[2]],
                 session_id=session.id),
