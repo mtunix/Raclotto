@@ -1,8 +1,28 @@
 import enum
+from typing import NamedTuple
 
 from sqlalchemy import Column, Boolean, Integer, Enum, CheckConstraint
 
-from back.src.entity.base import Base, DomainMixin
+from back.src.driver.database import BaseModel
+from back.src.entity.mixin import DomainMixin
+
+
+class GenerationPreferences(NamedTuple):
+    meat: bool
+    vegetarian: bool
+    vegan: bool
+    histamine: bool
+    fructose: bool
+    lactose: bool
+    gluten: bool
+
+
+class GenerationParameters(NamedTuple):
+    session_key: str
+    user: int
+    num_fill: int
+    num_sauce: int
+    preferences: GenerationPreferences
 
 
 class IngredientType(enum.IntEnum):
@@ -10,7 +30,7 @@ class IngredientType(enum.IntEnum):
     SAUCE = 2
 
 
-class Ingredient(DomainMixin, Base):
+class Ingredient(DomainMixin, BaseModel):
     __tablename__ = "ingredient"
 
     id = Column(Integer, primary_key=True)

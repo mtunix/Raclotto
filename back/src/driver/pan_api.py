@@ -1,5 +1,5 @@
 from back.src.driver.raclotto_api import RaclottoApi
-from back.src.interactor.pan_interactor import PanInteractor
+from back.src.interactor.pan_interactor import PanInteractor, GenerationParameters
 
 
 class PanApi(RaclottoApi):
@@ -11,8 +11,13 @@ class PanApi(RaclottoApi):
 
     @RaclottoApi.endpoint("", ["GET"])
     def generate(self):
-        """
+        """Endpoint to generate a new Raclotto pan
 
-        :return:
+        Used to generate a new Raclotto pan according to the given generation parameters.
+        The parameters are passed in the request body.
+        See GenerationParameters for available keys in the generation object.
+
+        :return Pan: Generated pan according to the given generation parameters
+        :status_code 200: Pan generated successfully
         """
-        return self.pan_interactor.generate({})
+        return self.pan_interactor.generate(GenerationParameters())

@@ -2,10 +2,11 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 
-from back.src.entity.base import Base, SerializableMixin
+from back.src.driver.database import BaseModel
+from back.src.entity.mixin import SerializableMixin
 
 
-class RaclottoSession(SerializableMixin, Base):
+class RaclottoSession(SerializableMixin, BaseModel):
     __tablename__ = "session"
 
     id = Column(Integer, primary_key=True)

@@ -1,17 +1,21 @@
+from typing import NamedTuple
+
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 from wonderwords import RandomWord
 
+from back.src.driver.database import db
+from back.src.entity.ingredient import GenerationParameters
 from back.src.entity.pan import Pan
-from back.src.interactor.database_service import DatabaseService
+from back.src.interactor.database_service import DatabaseInteractor
 from back.src.interactor.ingredient_interactor import IngredientInteractor
 from back.src.interactor.session_service import SessionService
 
 
-class PanInteractor(DatabaseService):
+class PanInteractor(DatabaseInteractor):
     def __init__(self):
         super().__init__(Pan)
-        self.ingredient_service = IngredientInteractor()
+        self.ingredient_interactor = IngredientInteractor()
         self.session_service = SessionService()
 
     def all(self, session_key=None):
@@ -31,7 +35,7 @@ class PanInteractor(DatabaseService):
     def add(self, pan_dict):
         ingredients = []
         for i in pan_dict["ingredients"]:
-            ingredients.append(self.ingredient_service.find(i))
+            ingredients.append(self.ingredient_interactor.find(i))
         pan_dict["ingredients"] = ingredients
         r_session = self.session_service.find(pan_dict["session_id"])
         del pan_dict["session_id"]
@@ -57,14 +61,12 @@ class PanInteractor(DatabaseService):
         else:
             return self.session.query(Pan).order_by(Pan.rating).all()
 
-    def generate(self, gen_dict):
-        for key in ["vegetarian", "vegan", "histamine", "fructose", "lactose", "gluten"]:
-            gen_dict[key] = gen_dict[key] == "true"
-        ingredients = self.ingredient_service.select(gen_dict)
-        session = self.session_service.find_by_key(gen_dict["session_key"])
+    def generate(self, params: GenerationParameters):
+        ingredients = self.ingredient_interactor.select(params)
+        session = self.session_service.find_by_key(params.session_key)
         r = RandomWord()
 
-        with self.session.begin():
+        with db.session.begin():
             pan = Pan(
                 name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
                 ingredients=ingredients,

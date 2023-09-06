@@ -1,8 +1,6 @@
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship, declared_attr
 
-Base = declarative_base()
-
 
 class SessionMixin(object):
     session_id = Column(Integer, ForeignKey('session.id'), nullable=False)

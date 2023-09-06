@@ -1,26 +1,29 @@
 from datetime import datetime
 
-from sqlalchemy import Table, ForeignKey, Column, Integer, String, func, select, DateTime
+from sqlalchemy import Table, ForeignKey, Column, Integer, String, func, select, DateTime, Boolean
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from back.src.entity.base import Base, DomainMixin
+from back.src.driver.database import BaseModel
+from back.src.entity.mixin import DomainMixin
 from back.src.entity.rating import Rating
 
 pan_ingredients = Table(
     "pan_ingredients",
-    Base.metadata,
+    BaseModel.metadata,
     Column("pan_id", ForeignKey("pan.id"), primary_key=True, nullable=False),
     Column("ingredient_id", ForeignKey("ingredient.id"), primary_key=True, nullable=False),
 )
 
 
-class Pan(DomainMixin, Base):
+class Pan(DomainMixin, BaseModel):
     __tablename__ = "pan"
 
     id = Column(Integer, primary_key=True)
     user = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    snacked = Column(Boolean, nullable=False, default=False)
+
     ingredients = relationship(
         "Ingredient",
         secondary=pan_ingredients,

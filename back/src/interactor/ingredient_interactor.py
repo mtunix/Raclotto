@@ -5,12 +5,13 @@ from sqlalchemy import or_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
-from back.src.entity.ingredient import IngredientType, Ingredient
-from back.src.interactor.database_service import DatabaseService
+from back.src.driver.database import db
+from back.src.entity.ingredient import IngredientType, Ingredient, GenerationParameters
+from back.src.interactor.database_service import DatabaseInteractor
 from back.src.interactor.session_service import SessionService
 
 
-class IngredientInteractor(DatabaseService):
+class IngredientInteractor(DatabaseInteractor):
     def __init__(self):
         super().__init__(Ingredient)
         self.session_service = SessionService()
@@ -36,37 +37,37 @@ class IngredientInteractor(DatabaseService):
                 .options(joinedload(Ingredient.session))\
                 .all()
 
-    def all_filtered(self, gen_dict, of_type):
+    def all_filtered(self, gen_dict: GenerationParameters, of_type: IngredientType):
         try:
-            sesh = self._get_session(self.session, gen_dict["session_key"])
+            sesh = self._get_session(gen_dict.session_key)
         except NoResultFound:
             return []
 
-        query = self.session.query(Ingredient).filter(
+        query = db.session.query(Ingredient).filter(
             Ingredient.session_id == sesh.id,
             Ingredient.type == IngredientType(int(of_type))
         )
 
-        if gen_dict["meat"]:
-            query = query.filter(or_(Ingredient.meat == gen_dict["meat"], Ingredient.vegetarian, Ingredient.vegan))
-        else:
-            if gen_dict["vegetarian"]:
-                query = query.filter(or_(Ingredient.vegetarian == gen_dict["vegetarian"], Ingredient.vegan))
-            else:
-                if gen_dict["vegan"]:
-                    query = query.filter(Ingredient.vegan == gen_dict["vegan"])
-
-        if not gen_dict["fructose"]:
-            query = query.filter(Ingredient.fructose == gen_dict["fructose"])
-
-        if not gen_dict["histamine"]:
-            query = query.filter(Ingredient.histamine == gen_dict["histamine"])
-
-        if not gen_dict["gluten"]:
-            query = query.filter(Ingredient.histamine == gen_dict["histamine"])
-
-        if not gen_dict["lactose"]:
-            query = query.filter(Ingredient.lactose == gen_dict["lactose"])
+        # if gen_dict.preferences.meat:
+        #     query = query.filter(or_(Ingredient.meat == gen_dict.preferences.meat, Ingredient.vegetarian, Ingredient.vegan))
+        # else:
+        #     if gen_dict.preferences.vegetarian:
+        #         query = query.filter(or_(Ingredient.vegetarian == gen_dict.preferences.vegetarian, Ingredient.vegan))
+        #     else:
+        #         if gen_dict.preferences.vegan:
+        #             query = query.filter(Ingredient.vegan == gen_dict.preferences.vegan)
+        #
+        # if not gen_dict.preferences.fructose:
+        #     query = query.filter(Ingredient.fructose == gen_dict.preferences.fructose)
+        #
+        # if not gen_dict.preferences.histamine:
+        #     query = query.filter(Ingredient.histamine == gen_dict.preferences.histamine)
+        #
+        # if not gen_dict.preferences.gluten:
+        #     query = query.filter(Ingredient.histamine == gen_dict.preferences.histamine)
+        #
+        # if not gen_dict.preferences.lactose:
+        #     query = query.filter(Ingredient.lactose == gen_dict.preferences.lactose)
 
         return query.all()
 
@@ -75,7 +76,7 @@ class IngredientInteractor(DatabaseService):
         r_session = self.session_service.find_by_key(obj_dict["session_key"])
         del obj_dict["session_key"]
 
-        with self.session.begin():
+        with db.session.begin():
             ingredient = Ingredient(**obj_dict, session=r_session)
             # ingredient = Ingredient(**obj_dict)
             self.session.add(ingredient)

@@ -5,10 +5,10 @@ from sqlalchemy.exc import NoResultFound
 
 from back.src.driver.database import db
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.interactor.database_service import DatabaseService
+from back.src.interactor.database_service import DatabaseInteractor
 
 
-class SessionService(DatabaseService):
+class SessionService(DatabaseInteractor):
     def __init__(self):
         super().__init__(RaclottoSession)
 
@@ -37,7 +37,7 @@ class SessionService(DatabaseService):
         return sesh
 
     def find_by_key(self, key):
-        return self.session.query(RaclottoSession).filter_by(key=key).one()
+        return db.session.query(RaclottoSession).filter_by(key=key).one()
 
     def validate(self, key):
         return self.session.query(RaclottoSession).filter_by(key=key).first() is not None

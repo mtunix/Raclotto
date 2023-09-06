@@ -4,7 +4,7 @@ from back.src.driver.database import db
 from back.src.entity.raclotto_session import RaclottoSession
 
 
-class DatabaseService:
+class DatabaseInteractor:
     def __init__(self, domain_type):
         self.domain_type = domain_type
 
@@ -36,5 +36,5 @@ class DatabaseService:
 
         return self.find(item.id)
 
-    def _get_session(self, session, session_key):
-        return session.query(RaclottoSession).filter(RaclottoSession.key == session_key).one()
+    def _get_session(self, session_key):
+        return db.session.query(RaclottoSession).filter(RaclottoSession.key == session_key).one()

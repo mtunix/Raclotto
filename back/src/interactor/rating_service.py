@@ -1,10 +1,10 @@
 from back.src.entity.pan import Pan
 from back.src.entity.rating import Rating
-from back.src.interactor.database_service import DatabaseService
+from back.src.interactor.database_service import DatabaseInteractor
 from back.src.interactor.session_service import SessionService
 
 
-class RatingService(DatabaseService):
+class RatingService(DatabaseInteractor):
     def __init__(self):
         super().__init__(Rating)
         self.session_service = SessionService()
