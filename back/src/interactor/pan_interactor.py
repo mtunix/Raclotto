@@ -47,19 +47,19 @@ class PanInteractor(DatabaseInteractor):
         return self.find(pan.id)
 
     def find(self, id):
-        return self.session.query(Pan)\
+        return db.session.query(Pan)\
             .options(joinedload(Pan.ratings), joinedload(Pan.ingredients))\
             .filter_by(id=id).one()
 
     def find_n_best(self, session_key=None, n=None):
         if session_key and n:
-            return self.session.query(Pan).filter_by(Pan.session.key == session_key).order_by(Pan.rating).all()
+            return db.session.query(Pan).filter_by(Pan.session.key == session_key).order_by(Pan.rating).all()
         elif session_key:
-            return self.session.query(Pan).filter_by(Pan.session.key == session_key).order_by(Pan.rating).all()
+            return db.session.query(Pan).filter_by(Pan.session.key == session_key).order_by(Pan.rating).all()
         elif n:
-            return self.session.query(Pan).order_by(Pan.rating).all()
+            return db.session.query(Pan).order_by(Pan.rating).all()
         else:
-            return self.session.query(Pan).order_by(Pan.rating).all()
+            return db.session.query(Pan).order_by(Pan.rating).all()
 
     def generate(self, params: GenerationParameters):
         ingredients = self.ingredient_interactor.select(params)
@@ -69,7 +69,7 @@ class PanInteractor(DatabaseInteractor):
         pan = Pan(
             name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
             ingredients=ingredients,
-            user=params.user,
+            user_id=params.user,
             session_id=session.id
         )
         db.session.add(pan)

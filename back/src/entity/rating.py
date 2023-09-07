@@ -9,5 +9,5 @@ class Rating(SerializableMixin, SessionMixin, BaseModel):
 
     id = Column(Integer, primary_key=True)
     rating = Column(Integer, nullable=False)
-    user = Column(String, nullable=False)
-    pan_id = Column(Integer, ForeignKey("pan.id"))
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    pan_id = Column(Integer, ForeignKey("pan.id"), nullable=False)

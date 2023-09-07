@@ -50,7 +50,9 @@ class DBTest(unittest.TestCase):
 
     def _insert_dummy_data(self):
         session = RaclottoSession(key=session_id, name="Test Session")
+        user = User(name="Berta", password="123123")
         self.session.add(session)
+        self.session.add(user)
         self.session.commit()
 
         fills = [
@@ -71,17 +73,24 @@ class DBTest(unittest.TestCase):
         ]
 
         pans = [
-            Pan(name="Pork Pan", user="abc", snacked=True, ingredients=[fills[0], sauces[0]], session_id=session.id),
-            Pan(name="Beef Pan", user="abc", snacked=True, ingredients=[fills[1], sauces[1]], session_id=session.id),
-            Pan(name="Chicken Pan", user="abc", snacked=True, ingredients=[fills[2], sauces[2]], session_id=session.id),
-            Pan(name="Potato Pan", user="abc", snacked=True, ingredients=[fills[3], sauces[3]], session_id=session.id),
-            Pan(name="Mushroom Pan", user="abc", snacked=True, ingredients=[fills[4], sauces[0]], session_id=session.id),
-            Pan(name="Tomato Pan", user="abc", snacked=True, ingredients=[fills[5], sauces[1]], session_id=session.id),
-            Pan(name="Turkish Delight Pan", user="abc", snacked=True, ingredients=[fills[6], sauces[2]],
+            Pan(name="Pork Pan", user_id=1, snacked=True, ingredients=[fills[0], sauces[0]], session_id=session.id),
+            Pan(name="Beef Pan", user_id=1, snacked=True, ingredients=[fills[1], sauces[1]], session_id=session.id),
+            Pan(name="Chicken Pan", user_id=1, snacked=True, ingredients=[fills[2], sauces[2]], session_id=session.id),
+            Pan(name="Potato Pan", user_id=1, snacked=True, ingredients=[fills[3], sauces[3]], session_id=session.id),
+            Pan(name="Mushroom Pan", user_id=1, snacked=True, ingredients=[fills[4], sauces[0]], session_id=session.id),
+            Pan(name="Tomato Pan", user_id=1, snacked=True, ingredients=[fills[5], sauces[1]], session_id=session.id),
+            Pan(name="Turkish Delight Pan", user_id=1, snacked=True, ingredients=[fills[6], sauces[2]],
                 session_id=session.id),
         ]
 
         self.session.add_all(fills)
         self.session.add_all(sauces)
         self.session.add_all(pans)
+        self.session.commit()
+
+        ratings = [
+            Rating(rating=i%5, pan_id=pans[i%7].id, session_id=session.id, user_id=1) for i in range(50)
+        ]
+
+        self.session.add_all(ratings)
         self.session.commit()

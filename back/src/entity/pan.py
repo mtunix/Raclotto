@@ -20,7 +20,7 @@ class Pan(DomainMixin, BaseModel):
     __tablename__ = "pan"
 
     id = Column(Integer, primary_key=True)
-    user = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
     snacked = Column(Boolean, nullable=False, default=False)
 
