@@ -13,6 +13,13 @@ user_sessions = Table(
     Column("session_id", ForeignKey("session.id"), primary_key=True, nullable=False),
 )
 
+user_achievements = Table(
+    "user_achievements",
+    BaseModel.metadata,
+    Column("user_id", ForeignKey("user.id"), primary_key=True, nullable=False),
+    Column("achievement_id", ForeignKey("achievement.id"), primary_key=True, nullable=False),
+)
+
 
 class User(SerializableMixin, BaseModel):
     __tablename__ = "user"
@@ -34,5 +41,11 @@ class User(SerializableMixin, BaseModel):
     sessions = relationship(
         "RaclottoSession",
         secondary=user_sessions,
+        lazy="selectin"
+    )
+
+    achievements = relationship(
+        "Achievement",
+        secondary=user_achievements,
         lazy="selectin"
     )
