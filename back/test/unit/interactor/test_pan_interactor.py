@@ -15,22 +15,18 @@ class UnitTestPanService(DBTest):
         super().setUp()
         self.pan_interactor = PanInteractor()
 
-    # def test_get_n_best_pans(self):
-    #     session = self.s_service.add(get_dict_session_const())
-    #     ingredient = self.i_service.add(get_dict_ingredient(session))
-    #     self.assertEqual(0, len(self.p_service.all(get_session_const().key)))
-    #     for _ in range(10):
-    #         pan = self.p_service.add(get_dict_pan(session, [ingredient.id]))
-    #         for _ in range(5):
-    #             rating = get_dict_rating(session, pan.id, rating=randrange(5))
-    #             self.r_service.add(rating)
-    #
-    #         self.assertEqual(5, len(pan.ratings))
-    #         self.assertEqual(5, len(self.p_service.find(pan.id).ratings))
-    #
-    #     n_best = self.p_service.find_n_best()
-    #     self.assertEqual(10, len(n_best))
-    #     self.assertEqual(n_best, sorted(n_best, key=lambda x: x.rating))
+    @parameterized.expand([
+        (7, None, None),
+    ])
+    def test_get_n_best_pans(
+            self,
+            expected_num: int,
+            session_key: str,
+            n: int
+    ):
+        n_best = self.pan_interactor.find_n_best(session_key, n)
+        self.assertEqual(expected_num, len(n_best))
+        self.assertEqual(n_best, sorted(n_best, key=lambda x: x.rating))
 
     @parameterized.expand([
         (gen_params_1, 11),
