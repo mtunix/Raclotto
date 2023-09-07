@@ -133,7 +133,7 @@ export class Api {
     }
 
     static async createSession(name) {
-        let res = await fetch("api/sessions/create/", {
+        let res = await fetch("api/sessions/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
