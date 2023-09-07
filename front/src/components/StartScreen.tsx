@@ -7,4 +7,11 @@ export function StartScreen() {
 
     if (isLoading) return <SpinnerContainer/>;
     if (error) return <ErrorPage error={error}/>;
+
+    return (
+        <div id="start-screen">
+            <h1>Start Screen</h1>
+            <p>There are {data.length} sessions.</p>
+        </div>
+    );
 }
