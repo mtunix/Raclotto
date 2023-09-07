@@ -7,3 +7,4 @@ Flask-Restless-NG==3.0.0
 Flask-SQLAlchemy==3.0.5
 swagger-ui-py==23.8.23
 parameterized==0.9.0
+sqlalchemy_schemadisplay==1.3
