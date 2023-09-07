@@ -1,5 +1,6 @@
 import json
 import re
+from pathlib import Path
 
 from docstring_parser.parser import parse
 
@@ -31,8 +32,7 @@ def get_relationships(s):
             rs.append({f"type": r, "cardinality": "many to one"})
     if hasattr(s, "relationship_columns"):
         for r in s.relationship_columns:
-            if hasattr(s,
-                       "many_to_one_relationships") and r not in s.many_to_one_relationships:
+            if hasattr(s, "many_to_one_relationships") and r not in s.many_to_one_relationships:
                 rs.append({f"type": r, "cardinality": "one to many"})
     return rs
 
@@ -56,7 +56,7 @@ for model, methods, _, _ in apis_generated:
         "url": f"{api.url_prefix}/{api.collection_name}",
         "methods": methods,
         "status_codes": [{"code": 200, "description": "OK"}],
-        "description": f"JSON API conforming REST API endpoint for {api.collection_name}.",
+        "description": f"JSON API conforming REST endpoint for entity {api.collection_name}",
         "path_params": f"As specified by JSON API.",
         "url_params": f"As specified by JSON API.",
         "resource": {
@@ -325,7 +325,7 @@ for path in doc["paths"]:
     open_api_spec = define_components(open_api_spec, path)
     open_api_spec["paths"][path["url"]] = {}
 
-    tag = "REST" if path["api_type"] == "rest" else "Use Case"
+    tag = "Auto Generated (Flask Restless)" if path["api_type"] == "rest" else "Use Case"
     params = _get_json_api_params(path) if path["api_type"] == "rest" else _get_custom_api_params(path)
     external_docs = "" if path["api_type"] == "rest" else ""
 
@@ -338,5 +338,5 @@ for path in doc["paths"]:
             "externalDocs": external_docs
         }
 
-with open("../../raclotto_spec.json", "w") as f:
+with open("./raclotto_spec.json", "w") as f:
     f.write(json.dumps(open_api_spec))
