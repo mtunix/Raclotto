@@ -4,6 +4,7 @@ from pathlib import Path
 
 from docstring_parser.parser import parse
 
+from back.src.entity.ingredient import GenerationPreferences, GenerationParameters
 from driver.api_custom import apis_custom
 from driver.app import App
 from driver.config import ConfigInMemory
@@ -222,8 +223,7 @@ def define_components(open_api_spec, path):
         }
 
         if "enum" in prop["type"]:
-            properties[prop["name"]][
-                "$ref"] = f"#/components/schemas/{prop['type']}"
+            properties[prop["name"]]["$ref"] = f"#/components/schemas/{prop['type']}"
 
     return open_api_spec
 

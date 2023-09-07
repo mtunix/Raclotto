@@ -1,11 +1,20 @@
-from sqlalchemy import String, Column, Integer, Boolean
+from sqlalchemy import String, Column, Integer, Boolean, Table, ForeignKey
+from sqlalchemy.orm import relationship
 
-from back.src.entity.mixin import DomainMixin
+from back.src.entity.mixin import SerializableMixin
 
 from back.src.driver.database import BaseModel
 
 
-class User(DomainMixin, BaseModel):
+user_sessions = Table(
+    "user_sessions",
+    BaseModel.metadata,
+    Column("user_id", ForeignKey("user.id"), primary_key=True, nullable=False),
+    Column("session_id", ForeignKey("session.id"), primary_key=True, nullable=False),
+)
+
+
+class User(SerializableMixin, BaseModel):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
@@ -21,3 +30,9 @@ class User(DomainMixin, BaseModel):
     fructose = Column(Boolean, nullable=False, default=True)
     lactose = Column(Boolean, nullable=False, default=True)
     gluten = Column(Boolean, nullable=False, default=True)
+
+    sessions = relationship(
+        "RaclottoSession",
+        secondary=user_sessions,
+        lazy="selectin"
+    )
