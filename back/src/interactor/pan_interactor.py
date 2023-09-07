@@ -66,13 +66,13 @@ class PanInteractor(DatabaseInteractor):
         session = self.session_service.find_by_key(params.session_key)
         r = RandomWord()
 
-        with db.session.begin():
-            pan = Pan(
-                name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
-                ingredients=ingredients,
-                user=gen_dict["user"],
-                session_id=session.id
-            )
-            self.session.add(pan)
+        pan = Pan(
+            name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
+            ingredients=ingredients,
+            user=params.user,
+            session_id=session.id
+        )
+        db.session.add(pan)
+        db.session.commit()
 
-        return self.find(pan.id)
+        return pan

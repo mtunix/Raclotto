@@ -1,12 +1,18 @@
 import json
 from random import randrange
 
+from parameterized import parameterized
+
+from back.src.entity import Pan
+from back.src.entity.ingredient import GenerationParameters
 from back.src.interactor.pan_interactor import PanInteractor
+from back.test.unit.interactor.generation_objects import gen_params_1, gen_params_6
 from back.test.util import DBTest
 
 
 class UnitTestPanService(DBTest):
     def setUp(self):
+        super().setUp()
         self.pan_interactor = PanInteractor()
 
     # def test_get_n_best_pans(self):
@@ -26,10 +32,15 @@ class UnitTestPanService(DBTest):
     #     self.assertEqual(10, len(n_best))
     #     self.assertEqual(n_best, sorted(n_best, key=lambda x: x.rating))
 
-    # def test_generate_pan(self):
-    #     session = self.s_service.add(get_dict_session_const())
-    #     for i in range(10):
-    #         self.i_service.add(get_dict_ingredient(session, of_type=IngredientType(i % 2 + 1)))
-    #
-    #     self.assertIsInstance(self.p_service.generate(json.loads(get_json_gen_pan())), Pan)
-    #     self.assertEqual(4, len(self.p_service.generate(json.loads(get_json_gen_pan())).ingredients))
+    @parameterized.expand([
+        (gen_params_1, 11),
+        (gen_params_6, 6)
+    ])
+    def test_generate_pan(
+            self,
+            params: GenerationParameters,
+            expected_ingredients: int
+    ):
+        pan = self.pan_interactor.generate(params)
+        self.assertIs(Pan, type(pan))
+        self.assertEqual(expected_ingredients, len(pan.ingredients))

@@ -3,19 +3,9 @@ from parameterized import parameterized
 from back.src.entity.ingredient import IngredientType, GenerationPreferences, GenerationParameters, Ingredient
 from back.src.interactor.ingredient_interactor import IngredientInteractor
 from back.src.interactor.session_service import SessionService
+from back.test.unit.interactor.generation_objects import gen_params_no_session, gen_params_1, gen_params_2, \
+    gen_params_3, gen_params_4, gen_params_5
 from back.test.util import DBTest, session_id
-
-gen_preferences_1 = GenerationPreferences(True, True, True, True, True, True, True)  # Eats everything
-gen_preferences_2 = GenerationPreferences(False, True, True, True, True, True, True)  # Vegetarian
-gen_preferences_3 = GenerationPreferences(False, False, True, True, True, True, True)  # Vegan
-gen_preferences_4 = GenerationPreferences(True, True, True, True, True, True, False)  # Gluten free
-gen_preferences_5 = GenerationPreferences(True, True, True, True, True, False, True)  # Lactose free
-gen_params_1 = GenerationParameters(session_id, 1, 7, 4, gen_preferences_1)  # Give all
-gen_params_2 = GenerationParameters(session_id, 1, 3, 3, gen_preferences_2)
-gen_params_3 = GenerationParameters(session_id, 1, 3, 1, gen_preferences_3)
-gen_params_4 = GenerationParameters(session_id, 1, 7, 4, gen_preferences_4)
-gen_params_5 = GenerationParameters(session_id, 1, 7, 4, gen_preferences_5)
-gen_params_no_session = GenerationParameters("does_not_exist", 1, 1, 1, gen_preferences_1)
 
 
 class UnitTestIngredientInteractor(DBTest):
@@ -49,7 +39,7 @@ class UnitTestIngredientInteractor(DBTest):
         (gen_params_2, 3, 3, 6),    # vegetarian
         (gen_params_3, 3, 1, 4),    # vegan
         (gen_params_4, 6, 4, 10),   # gluten free
-        (gen_params_5, 7, 3, 10)     # lactose free
+        (gen_params_5, 7, 3, 10)    # lactose free
     ])
     def test_select(
             self,

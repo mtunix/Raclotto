@@ -3,7 +3,9 @@ from sqlalchemy.orm import declarative_base, relationship, declared_attr
 
 
 class SessionMixin(object):
-    session_id = Column(Integer, ForeignKey('session.id'), nullable=False)
+    @declared_attr
+    def session_id(self):
+        return Column(Integer, ForeignKey('session.id'), nullable=False)
 
     @declared_attr
     def session(self):
