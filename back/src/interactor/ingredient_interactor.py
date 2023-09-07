@@ -62,7 +62,7 @@ class IngredientInteractor(DatabaseInteractor):
             query = query.filter(not_(Ingredient.histamine))
 
         if not gen_dict.preferences.gluten:
-            query = query.filter(not_(Ingredient.histamine))
+            query = query.filter(not_(Ingredient.gluten))
 
         if not gen_dict.preferences.lactose:
             query = query.filter(not_(Ingredient.lactose))

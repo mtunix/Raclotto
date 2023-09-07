@@ -65,7 +65,7 @@ class DBTest(unittest.TestCase):
 
         sauces = [
             Ingredient(name="Aioli", type=IngredientType.SAUCE, vegetarian=True, session_id=session.id),
-            Ingredient(name="Ketchup", type=IngredientType.SAUCE, vegetarian=True, fructose=True, histamine=True, session_id=session.id),
+            Ingredient(name="Ketchup", type=IngredientType.SAUCE, vegan=True, fructose=True, histamine=True, session_id=session.id),
             Ingredient(name="Mayo", type=IngredientType.SAUCE, vegetarian=True, session_id=session.id),
             Ingredient(name="Quark with herbs", type=IngredientType.SAUCE, vegetarian=True, lactose=True, session_id=session.id),
         ]
