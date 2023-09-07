@@ -40,7 +40,7 @@ class DBTest(unittest.TestCase):
 
         self.session = db.session
         self.session.__request_id__ = ""
-        self._insert_dummy_data()
+        self.insert_dummy_data(self)
 
     def tearDown(self):
         """
@@ -48,12 +48,13 @@ class DBTest(unittest.TestCase):
         """
         db.drop_all()
 
-    def _insert_dummy_data(self):
+    @staticmethod
+    def insert_dummy_data(app):
         session = RaclottoSession(key=session_id, name="Test Session")
         user = User(name="Berta", password="123123")
-        self.session.add(session)
-        self.session.add(user)
-        self.session.commit()
+        app.session.add(session)
+        app.session.add(user)
+        app.session.commit()
 
         fills = [
             Ingredient(name="Pork", type=IngredientType.FILL, meat=True, session_id=session.id),
@@ -83,14 +84,14 @@ class DBTest(unittest.TestCase):
                 session_id=session.id),
         ]
 
-        self.session.add_all(fills)
-        self.session.add_all(sauces)
-        self.session.add_all(pans)
-        self.session.commit()
+        app.session.add_all(fills)
+        app.session.add_all(sauces)
+        app.session.add_all(pans)
+        app.session.commit()
 
         ratings = [
             Rating(rating=i%5, pan_id=pans[i%7].id, session_id=session.id, user_id=1) for i in range(50)
         ]
 
-        self.session.add_all(ratings)
-        self.session.commit()
+        app.session.add_all(ratings)
+        app.session.commit()
