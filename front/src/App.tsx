@@ -6,6 +6,7 @@ import {ToastContainer, Toast, Container} from "react-bootstrap";
 import {Outlet} from "react-router";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import raclotto from "./raclotto.png"
 
 export function App() {
     // constructor(props) {
@@ -118,6 +119,9 @@ export function App() {
         <Container>
             <Row>
                 <Col>
+                    <center>
+                        <img width={150} src={raclotto} alt=""/>
+                    </center>
                     <Outlet/>
                 </Col>
             </Row>

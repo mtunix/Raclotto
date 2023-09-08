@@ -10,7 +10,7 @@ export const RaclottoRouter = createBrowserRouter([
         errorElement: <ErrorPage/>,
         children: [
             {
-                path: "start",
+                path: "",
                 element: <StartScreen/>,
                 errorElement: <ErrorPage/>,
             }
