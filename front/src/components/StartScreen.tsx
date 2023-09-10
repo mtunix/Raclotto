@@ -6,32 +6,36 @@ import React, {useEffect} from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import {RaclottoSession} from "../model/RaclottoSession";
+import {useDispatch, useSelector} from "react-redux";
+import {setSession} from "../AppSlice";
+import {useNavigate} from "react-router";
 
 export function JoinSession() {
+    let dispatch = useDispatch();
     let {data, isLoading, error} = useSessions();
-    let selectedIndex: number = 0;
+    let [selectedIndex, setSelectedIndex] = React.useState(0);
+
+    function join() {
+        dispatch(setSession(data[selectedIndex]));
+    }
+
+    function onSessionSelected(index: number) {
+        setSelectedIndex(index);
+    }
 
     useEffect(() => {
-        if (data && data.length > 0) selectedIndex = data[0].id;
+        if (data && data.length > 0) selectedIndex = 0;
     }, [data]);
 
     if (isLoading) return <SpinnerContainer/>;
     if (error) return <ErrorPage error={error}/>;
 
-    function onSessionSelected(index: string) {
-        selectedIndex = +index;
-    }
-
-    function join() {
-
-    }
-
     return (<Row><Col sm>
         <h1>Bestehender Session beitreten</h1>
         <Form.Label>Session</Form.Label>
-        <Form.Select value={selectedIndex} onChange={(e: React.ChangeEvent) => onSessionSelected(e.target.id)}>
-            {data.map((session: RaclottoSession) => {
-                return <option value={session.id}>{session.name}</option>
+        <Form.Select value={selectedIndex} onChange={(e) => onSessionSelected(e.target.selectedIndex)}>
+            {data.map((session: RaclottoSession, i: number) => {
+                return <option key={session.id} value={i}>{session.name}</option>
             })}
         </Form.Select>
         <div className="d-grid mt-2">
@@ -40,7 +44,7 @@ export function JoinSession() {
     </Col></Row>);
 }
 
-export function StartScreen() {
+export function SessionSelector() {
     function create() {
 
     }
@@ -68,6 +72,24 @@ export function StartScreen() {
                 </Col>
             </Row>
             <JoinSession/>
+        </div>
+    );
+}
+
+export function StartScreen() {
+    let session = useSelector((state: any) => state.app.session);
+
+    if (session) {
+        return (
+            <div className="container">
+                <h1>Session {session.name} beigetreten</h1>
+            </div>
+        );
+    }
+
+    return (
+        <div className="container">
+            <SessionSelector/>
         </div>
     );
 }

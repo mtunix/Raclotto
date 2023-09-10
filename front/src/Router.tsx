@@ -1,7 +1,7 @@
 import {createBrowserRouter} from "react-router-dom";
 import ErrorPage from "./components/common/error/ErrorPage";
 import App from "./App";
-import {StartScreen} from "./components/StartScreen";
+import {SessionSelector} from "./components/StartScreen";
 
 export const RaclottoRouter = createBrowserRouter([
     {
@@ -11,7 +11,7 @@ export const RaclottoRouter = createBrowserRouter([
         children: [
             {
                 path: "",
-                element: <StartScreen/>,
+                element: <SessionSelector/>,
                 errorElement: <ErrorPage/>,
             }
         ]
