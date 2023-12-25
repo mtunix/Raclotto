@@ -114,7 +114,7 @@ export class MainScreen extends React.Component {
             );
 
         return (
-            <Accordion>
+            <Accordion alwaysOpen defaultActiveKey={`ingredients-${type}`}>
                 <Accordion.Item eventKey={`ingredients-${type}`}>
                     <Accordion.Header>
                         <span style={{fontWeight: 800}}>{typeStr}</span>

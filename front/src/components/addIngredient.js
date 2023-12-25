@@ -2,6 +2,15 @@ import React from "react";
 import {Button, ButtonGroup, Form, ToggleButton} from "react-bootstrap";
 import {Api} from "../lib/api";
 
+const utilizeFocus = () => {
+    const ref = React.createRef()
+    const setFocus = () => {
+        ref.current && ref.current.focus()
+    }
+
+    return {setFocus, ref}
+}
+
 export class AddIngredient extends React.Component {
     constructor(props) {
         super(props);
@@ -26,6 +35,8 @@ export class AddIngredient extends React.Component {
             name: "",
             type: 1
         }
+
+        this.inputFocus = utilizeFocus()
     }
 
     setChecked = (event) => {
@@ -55,6 +66,7 @@ export class AddIngredient extends React.Component {
             this.props.onAdd()
         });
         this.setState({"name": ""})
+        this.inputFocus.setFocus();
     };
 
     onIngredientSelected = (type) => {
@@ -79,11 +91,12 @@ export class AddIngredient extends React.Component {
             <div>
                 <Form.Group className="mb-3" controlId="formIngredientName">
                     <Form.Label>Zutatenname</Form.Label>
-                    <Form.Control
-                        value={this.state.name}
-                        onChange={this.onNameChanged}
-                        type="name"
-                        placeholder="Namen eingeben"
+                    <Form.Control autoFocus
+                                  value={this.state.name}
+                                  ref={this.inputFocus.ref}
+                                  onChange={this.onNameChanged}
+                                  type="name"
+                                  placeholder="Namen eingeben"
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
