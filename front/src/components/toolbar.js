@@ -1,13 +1,13 @@
 import React from "react";
-import {Button, Card, Col, ListGroup, Row, ToggleButton} from "react-bootstrap";
+import {Card, ToggleButton} from "react-bootstrap";
 import {AddIngredient} from "./addIngredient";
 import {GenerateView} from "./generateView";
-import {Api} from "../lib/api";
 import {HistoryView} from "./historyView";
 import {SettingsView} from "./settingsView";
 import {AchievementView} from "./achievementView";
 import {ServerSettingsView} from "./serverSettingsView";
 import {VectorGraphics} from "../lib/vectorGraphics";
+import {Dashboard} from "./dashboard";
 
 export class Toolbar extends React.Component {
     constructor(props) {
@@ -70,6 +70,10 @@ export class Toolbar extends React.Component {
                                             onSessionClosed={this.props.onSessionClosed}/>);
                 title = "Einstellungen Session"
                 break;
+            case 7:
+                view = <Dashboard session={this.props.session}/>;
+                title = "Dashboard"
+                break;
         }
 
         if (view)
@@ -86,11 +90,11 @@ export class Toolbar extends React.Component {
     }
 
     render() {
-       return (
+        return (
             <div className={"mb-1"}>
                 <div>
                     <ToggleButton type="radio"
-                                  className={"mb-1"}
+                                  className={"mb-1 mr-1"}
                                   checked={this.state.toolbar === 1}
                                   variant="outline-primary"
                                   onClick={() => this.onToolbarClicked(1)}>
@@ -99,12 +103,12 @@ export class Toolbar extends React.Component {
                     <ToggleButton type="radio"
                                   checked={this.state.toolbar === 2}
                                   variant="outline-primary"
-                                  className="mb-1 mx-2"
+                                  className={"mb-1 mr-1"}
                                   onClick={() => this.onToolbarClicked(2)}>
                         {VectorGraphics.SETTINGS_CLIENT}
                     </ToggleButton>
                     <ToggleButton type="radio"
-                                  className={"mb-1"}
+                                  className={"mb-1 mr-1"}
                                   checked={this.state.toolbar === 3}
                                   variant="outline-primary"
                                   onClick={() => this.onToolbarClicked(3)}>
@@ -113,12 +117,12 @@ export class Toolbar extends React.Component {
                     <ToggleButton type="radio"
                                   checked={this.state.toolbar === 4}
                                   variant="outline-primary"
-                                  className="mb-1 mx-2"
+                                  className={"mb-1 mr-1"}
                                   onClick={() => this.onToolbarClicked(4)}>
                         +
                     </ToggleButton>
                     <ToggleButton type="radio"
-                                  className={"mb-1"}
+                                  className={"mb-1 mr-1"}
                                   checked={this.state.toolbar === 5}
                                   variant="outline-primary"
                                   onClick={() => this.onToolbarClicked(5)}>
@@ -126,16 +130,23 @@ export class Toolbar extends React.Component {
                     </ToggleButton>
                     <ToggleButton type="radio"
                                   checked={this.state.toolbar === 6}
-                                  className="mb-1 mx-2"
+                                  className={"mb-1 mr-1"}
                                   variant="outline-primary"
                                   onClick={() => this.onToolbarClicked(6)}>
                         {VectorGraphics.SETTINGS_SERVER}
+                    </ToggleButton>
+                    <ToggleButton type="radio"
+                                  checked={this.state.toolbar === 7}
+                                  className={"mb-1 mr-1"}
+                                  variant="outline-primary"
+                                  onClick={() => this.onToolbarClicked(7)}>
+                        {VectorGraphics.DASHBOARD}
                     </ToggleButton>
                 </div>
                 <div className="mt-3 mb-3">
                     {this.getTool()}
                 </div>
             </div>
-       );
+        );
     }
 }
