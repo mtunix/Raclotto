@@ -2,17 +2,28 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import './App.css';
-import {StartScreen} from "./components/startScreen";
-import {ToastContainer, Toast} from "react-bootstrap";
+import {StartScreen} from "./components/StartScreen";
+import {Toast, ToastContainer} from "react-bootstrap";
 import {Api} from "./lib/api";
-import {MainScreen} from "./components/mainScreen";
+import {MainScreen} from "./components/MainScreen";
 import raclotto from "./raclotto.png";
+import {Outlet} from "react-router-dom";
+import {useSession} from "./lib/useSession";
 
-class App extends React.Component {
+export function App() {
+    const {session} = useSession();
+    console.log(session);
+
+    return (
+        <AppCls session={session}/>
+    );
+}
+
+class AppCls extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            session: localStorage.getItem("session"),
+            session: props.session,
             notifications: [],
             view: 0,
         };
@@ -30,7 +41,7 @@ class App extends React.Component {
     getMainScreen() {
         return (
             <MainScreen session={this.state.session}
-                        onSessionClosed={this.onSessionClosed} />
+                        onSessionClosed={this.onSessionClosed}/>
         );
     }
 
@@ -59,7 +70,9 @@ class App extends React.Component {
             session: "",
             notifications: [],
             view: 0,
-        }, () => { localStorage.setItem("session", "") });
+        }, () => {
+            localStorage.setItem("session", "")
+        });
     };
 
     onNotification = (notification) => {
@@ -102,18 +115,26 @@ class App extends React.Component {
             </Toast>
         );
 
-        return (
-            <>
-                <center>
-                    <img width={150} src={raclotto} alt=""/>
-                </center>
-                {this.getView()}
+        return (<>
+            <center>
+                <img width={150} src={raclotto} alt=""/>
+            </center>
 
-                <ToastContainer id="notifications" className="p-3" position="bottom-center">
-                    {toasts}
-                </ToastContainer>
-            </>
-        );
+            <Outlet/>
+
+            <ToastContainer
+                position="bottom-center"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+        </>);
     }
 }
 

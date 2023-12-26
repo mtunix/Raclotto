@@ -3,22 +3,22 @@ export class Api {
         let res;
 
         if (session) {
-            res = await fetch("api/" + name + "/?session_key=" + session);
+            res = await fetch("/api/" + name + "/?session_key=" + session.key);
         } else {
-            res = await fetch("api/" + name);
+            res = await fetch("/api/" + name);
         }
 
         return await res.json();
     }
 
-    static async validate(sessionKey) {
-        let res = await fetch("api/sessions/validate/?session_key=" + sessionKey);
+    static async validate(session) {
+        let res = await fetch("/api/sessions/validate/?session_key=" + session.key);
         return await res.json();
     }
 
-    static async delete(sessionKey, ingredient) {
+    static async delete(session, ingredient) {
         console.log(ingredient)
-        let res = await fetch("api/ingredients/delete", {
+        let res = await fetch("/api/ingredients/delete", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -28,14 +28,14 @@ export class Api {
             credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify(
-                Object.assign({}, {session_key: sessionKey}, ingredient)
+                Object.assign({}, {session_key: session.key}, ingredient)
             )
         });
         return await res.json();
     }
 
-    static async refill(sessionKey, ingredient) {
-        let res = await fetch("api/ingredients/refill", {
+    static async refill(session, ingredient) {
+        let res = await fetch("/api/ingredients/refill", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -45,14 +45,14 @@ export class Api {
             credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify(
-                Object.assign({}, {session_key: sessionKey}, ingredient)
+                Object.assign({}, {session_key: session.key}, ingredient)
             )
         });
         return await res.json();
     }
 
-    static async close(sessionKey) {
-        let res = await fetch("api/sessions/close", {
+    static async close(session) {
+        let res = await fetch("/api/sessions/close", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -62,14 +62,14 @@ export class Api {
             credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify(
-                {session_key: sessionKey}
+                {session_key: session.key}
             )
         });
         return await res.json();
     }
 
     static async add(session, ingredient) {
-        let res = await fetch("api/ingredients/", {
+        let res = await fetch("/api/ingredients/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -79,14 +79,14 @@ export class Api {
             credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify(
-                Object.assign({}, {session_key: session}, ingredient)
+                Object.assign({}, {session_key: session.key}, ingredient)
             )
         });
         return await res.json();
     }
 
     static async rate(session, pan, rating) {
-        let res = await fetch("api/ratings/", {
+        let res = await fetch("/api/ratings/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -96,7 +96,7 @@ export class Api {
             credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify({
-                session_key: session,
+                session_key: session.key,
                 pan: pan,
                 user: this.getUser(),
                 rating: rating
@@ -106,7 +106,7 @@ export class Api {
     }
 
     static async generate(session, numIngredient, numSauce) {
-        let res = await fetch("api/generate/", {
+        let res = await fetch("/api/generate/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -116,7 +116,7 @@ export class Api {
             credentials: 'same-origin',
             redirect: 'follow',
             body: JSON.stringify({
-                session_key: session,
+                session_key: session.key,
                 user: this.getUser(),
                 num_fill: numIngredient,
                 num_sauce: numSauce,
@@ -133,7 +133,7 @@ export class Api {
     }
 
     static async createSession(name) {
-        let res = await fetch("api/sessions/create/", {
+        let res = await fetch("/api/sessions/create/", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
