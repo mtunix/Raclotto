@@ -5,7 +5,7 @@ import {useParams} from "react-router-dom";
 
 export function useSession() {
     const {sessionId} = useParams();
-    const [session, setSession] = useState("");
+    const [session, setSession] = useState(localStorage.getItem("session") || undefined);
     const [sessions, setSessions] = useState([]);
 
     const joinSession = useCallback((session) => {
@@ -19,16 +19,19 @@ export function useSession() {
     }, []);
 
     const createSession = useCallback((name) => {
-        Api.createSession(name).then((data) => {
-            setSession(data["session"])
+        return Api.createSession(name).then((data) => {
+            setSession(data["session"]);
+            localStorage.setItem("session", data["session"])
+            return data["session"];
         })
     }, []);
 
     useEffect(() => {
         Api.get("sessions").then((data) => {
-            setSessions(data)
+            setSessions(data);
             const searchKey = sessionId || localStorage.getItem("session");
-            if (searchKey && data.includes(searchKey)) {
+
+            if (searchKey) {
                 setSession(data.find((s) => s.key === searchKey));
             } else if (data.length > 0) {
                 setSession(data[0])
@@ -41,16 +44,6 @@ export function useSession() {
             }
         });
     }, []);
-
-    console.log(
-        {
-            session: session,
-            sessions: sessions,
-            join: joinSession,
-            close: closeSession,
-            create: createSession
-        }
-    )
 
     return {
         session: session,
