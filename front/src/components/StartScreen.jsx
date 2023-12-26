@@ -31,7 +31,11 @@ export function StartScreen(props) {
                         </Form.Text>
                         <div className="d-grid mt-2">
                             <Button variant="primary"
-                                    onClick={create}>
+                                    onClick={() => {
+                                        create(name).then((session) => {
+                                            navigate(`session/${session.key}`);
+                                        });
+                                    }}>
                                 Erstellen
                             </Button>
                         </div>

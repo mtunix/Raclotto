@@ -2,19 +2,19 @@ import React, {useEffect} from "react";
 import {Button, ButtonGroup, Col, Form, Row} from "react-bootstrap";
 import {Api} from "../lib/api";
 import {useNavigate} from "react-router-dom";
+import {useSession} from "../lib/useSession";
 
 export function ServerSettingsView(props) {
     const [sessionName, setSessionName] = React.useState("");
+    const {session} = useSession();
     const navigate = useNavigate();
 
     useEffect(() => {
-        Api.get("session", props.session).then((data) => {
-            setSessionName(data["session"].name);
-        });
-    }, []);
+        setSessionName(session.name);
+    }, [session]);
 
     const onCloseSession = () => {
-        Api.close(props.session).then(() => {
+        Api.close(session).then(() => {
             navigate("/");
         });
     };
