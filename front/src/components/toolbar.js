@@ -5,7 +5,7 @@ import {GenerateView} from "./generateView";
 import {HistoryView} from "./historyView";
 import {SettingsView} from "./settingsView";
 import {AchievementView} from "./achievementView";
-import {ServerSettingsView} from "./serverSettingsView";
+import {ServerSettingsView} from "./ServerSettingsView";
 import {VectorGraphics} from "../lib/vectorGraphics";
 import {Dashboard} from "./dashboard";
 

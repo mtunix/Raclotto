@@ -6,7 +6,7 @@ export class SettingsView extends React.Component {
        super(props);
 
        this.options = [
-           {"name": "meat", "localized": "Karnivor"},
+           {"name": "meat", "localized": "Fleisch"},
            {"name": "vegetarian", "localized": "Vegetarisch"},
            {"name": "vegan", "localized": "Vegan"},
            {"name": "histamine", "localized": "Histamin"},
