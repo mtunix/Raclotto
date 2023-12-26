@@ -5,6 +5,7 @@ from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.pan_service import PanService
 from back.src.model.service.rating_service import RatingService
 from back.src.model.service.session_service import SessionService
+from back.src.model.service.stats_service import StatsService
 from back.src.view.api_view import ApiView
 
 
@@ -16,6 +17,11 @@ class ApiController:
         self.rating_service = RatingService()
         self.session_service = SessionService()
         self.achievement_service = AchievementService()
+        self.stats_service = StatsService()
+
+    def get_stats(self, session_id):
+        stats = self.stats_service.all(session_id)
+        return self.view.get(stats)
 
     def get_ingredients(self, session_id, of_type=None):
         items = self.ingredient_service.all(session_id, of_type)

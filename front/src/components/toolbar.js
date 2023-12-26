@@ -7,7 +7,7 @@ import {SettingsView} from "./settingsView";
 import {AchievementView} from "./achievementView";
 import {ServerSettingsView} from "./ServerSettingsView";
 import {VectorGraphics} from "../lib/vectorGraphics";
-import {Dashboard} from "./dashboard";
+import {Dashboard} from "./Dashboard";
 
 export class Toolbar extends React.Component {
     constructor(props) {

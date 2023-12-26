@@ -16,6 +16,12 @@ export class Api {
         return await res.json();
     }
 
+    static async getStats(session) {
+        console.log(session);
+        let res = await fetch("/api/stats/?session_key=" + session.key);
+        return await res.json();
+    }
+
     static async delete(session, ingredient) {
         console.log(ingredient)
         let res = await fetch("/api/ingredients/delete", {

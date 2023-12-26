@@ -163,5 +163,16 @@ def api_achievements():
     )
 
 
+@app.route("/api/stats/", methods=["GET"])
+def api_stats():
+    res = api.get_stats(request.args.get("session_key"))
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
+
+
 if __name__ == '__main__':
     app.run(port=3001)

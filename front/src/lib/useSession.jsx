@@ -3,9 +3,17 @@ import {Api} from "./api";
 import {Notifications} from "./notifications";
 import {useParams} from "react-router-dom";
 
+function getLocalSession() {
+    try {
+        return JSON.parse(localStorage.getItem("session"))
+    } catch (e) {
+        return undefined;
+    }
+}
+
 export function useSession() {
     const {sessionId} = useParams();
-    const [session, setSession] = useState(localStorage.getItem("session") || undefined);
+    const [session, setSession] = useState(getLocalSession());
     const [sessions, setSessions] = useState([]);
 
     const joinSession = useCallback((session) => {
@@ -15,13 +23,13 @@ export function useSession() {
 
     const closeSession = useCallback(() => {
         setSession("");
-        localStorage.setItem("session", "")
+        localStorage.setItem("session", "");
     }, []);
 
     const createSession = useCallback((name) => {
         return Api.createSession(name).then((data) => {
             setSession(data["session"]);
-            localStorage.setItem("session", data["session"])
+            localStorage.setItem("session", JSON.stringify(data["session"]));
             return data["session"];
         })
     }, []);
@@ -29,7 +37,7 @@ export function useSession() {
     useEffect(() => {
         Api.get("sessions").then((data) => {
             setSessions(data);
-            const searchKey = sessionId || localStorage.getItem("session");
+            const searchKey = sessionId || getLocalSession()?.key;
 
             if (searchKey) {
                 setSession(data.find((s) => s.key === searchKey));
@@ -39,11 +47,12 @@ export function useSession() {
         });
 
         Api.validate(session).then((data) => {
+            console.log(data);
             if (data[session]) {
                 setSession(data[session])
             }
         });
-    }, []);
+    }, [sessionId]);
 
     return {
         session: session,

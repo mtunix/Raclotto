@@ -10,7 +10,7 @@ export function ServerSettingsView(props) {
     const navigate = useNavigate();
 
     useEffect(() => {
-        setSessionName(session.name);
+        setSessionName(session?.name);
     }, [session]);
 
     const onCloseSession = () => {
