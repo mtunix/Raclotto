@@ -20,8 +20,7 @@ class ApiController:
         self.stats_service = StatsService()
 
     def get_stats(self, session_id):
-        stats = self.stats_service.all(session_id)
-        return self.view.get(stats)
+        return json.dumps(self.stats_service.all(session_id))
 
     def get_ingredients(self, session_id, of_type=None):
         items = self.ingredient_service.all(session_id, of_type)

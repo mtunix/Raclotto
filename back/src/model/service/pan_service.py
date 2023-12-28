@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from wonderwords import RandomWord
 
 from back.src.model.database import Database
-from back.src.model.domain.pan import Pan
+from back.src.model.domain.pan import Pan, PanIngredients
 from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.service.database_service import DatabaseService
 from back.src.model.service.ingredient_service import IngredientService
@@ -69,10 +69,13 @@ class PanService(DatabaseService):
         with self.session.begin():
             pan = Pan(
                 name=f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan",
-                ingredients=ingredients,
                 user=gen_dict["user"],
                 session_id=session.id
             )
             self.session.add(pan)
+
+        with self.session.begin():
+            for i in ingredients:
+                self.session.add(PanIngredients(pan_id=pan.id, ingredient_id=i.id))
 
         return self.find(pan.id)

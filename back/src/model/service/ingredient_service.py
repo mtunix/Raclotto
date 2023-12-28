@@ -65,7 +65,7 @@ class IngredientService(DatabaseService):
             query = query.filter(Ingredient.histamine == gen_dict["histamine"])
 
         if not gen_dict["gluten"]:
-            query = query.filter(Ingredient.histamine == gen_dict["histamine"])
+            query = query.filter(Ingredient.histamine == gen_dict["gluten"])
 
         if not gen_dict["lactose"]:
             query = query.filter(Ingredient.lactose == gen_dict["lactose"])

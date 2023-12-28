@@ -1,18 +1,21 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import Table, ForeignKey, Column, Integer, String, func, select, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref, Mapped
 
 from back.src.model.domain.base import Base, DomainMixin
 from back.src.model.domain.rating import Rating
 
-pan_ingredients = Table(
-    "pan_ingredients",
-    Base.metadata,
-    Column("pan_id", ForeignKey("pan.id"), primary_key=True, nullable=False),
-    Column("ingredient_id", ForeignKey("ingredient.id"), primary_key=True, nullable=False),
-)
+
+class PanIngredients(Base):
+    __tablename__ = 'pan_ingredients'
+    pan_id = Column(Integer, ForeignKey('pan.id'), primary_key=True, nullable=False)
+    ingredient_id = Column(Integer, ForeignKey('ingredient.id'), primary_key=True, nullable=False)
+
+    pan: Mapped["Pan"] = relationship("Pan", back_populates="ingredients")
+    ingredient: Mapped["Ingredient"] = relationship("Ingredient", back_populates="pans")
 
 
 class Pan(DomainMixin, Base):
@@ -21,11 +24,7 @@ class Pan(DomainMixin, Base):
     id = Column(Integer, primary_key=True)
     user = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
-    ingredients = relationship(
-        "Ingredient",
-        secondary=pan_ingredients,
-        lazy="selectin"
-    )
+    ingredients: Mapped[List["PanIngredients"]] = relationship("PanIngredients", back_populates="pan")
 
     ratings = relationship(
         "Rating",
@@ -48,7 +47,8 @@ class Pan(DomainMixin, Base):
 
     def as_dict(self):
         cols = super().as_dict()
+        cols["timestamp"] = self.timestamp.isoformat()
         cols["rating"] = self.rating
         cols["ratings"] = [x.as_dict() for x in self.ratings]
-        cols["ingredients"] = [x.as_dict() for x in self.ingredients]
+        cols["ingredients"] = [x.ingredient.as_dict() for x in self.ingredients]
         return cols
