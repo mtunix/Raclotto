@@ -50,6 +50,9 @@ export function ServerSettingsView(props) {
                             <ButtonGroup className="flex-wrap">
                                 <Button onClick={onExit}>Ragequit</Button>
                             </ButtonGroup>
+                            <Form.Text className="text-muted">
+                                You are not allowed to press this button. You did not Raclotto enough.
+                            </Form.Text>
                         </Form.Group>
                     </Col>
                 </Row>
