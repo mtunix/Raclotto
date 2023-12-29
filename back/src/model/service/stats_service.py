@@ -23,7 +23,7 @@ class StatsService:
         return {
             "ingredients_most_used": [x.as_dict() for x in sorted(ingredients, key=lambda x: len(x.pans), reverse=True)],
             "ingredients_top_rated": [x.as_dict() for x in sorted(ingredients, key=lambda x: x.avg_rating(), reverse=True)],
-            "pans": [x.as_dict() for x in self.session.query(Pan).filter(Pan.session == sesh).all()],
+            "pans": list(reversed([x.as_dict() for x in self.session.query(Pan).filter(Pan.session == sesh).all()]))
         }
 
     def _get_session(self, session, session_key):
