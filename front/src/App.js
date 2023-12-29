@@ -7,15 +7,18 @@ import {Toast, ToastContainer} from "react-bootstrap";
 import {Api} from "./lib/api";
 import {MainScreen} from "./components/MainScreen";
 import raclotto from "./raclotto.png";
-import {Outlet} from "react-router-dom";
+import {Outlet, useSearchParams} from "react-router-dom";
 import {useSession} from "./lib/useSession";
 
 export function App() {
     const {session} = useSession();
     console.log(session);
 
+    const [searchParams] = useSearchParams();
+    const popout = searchParams.get("popout") === "true";
+
     return (
-        <AppCls session={session}/>
+        <AppCls session={session} popout={popout}/>
     );
 }
 
@@ -116,9 +119,11 @@ class AppCls extends React.Component {
         );
 
         return (<>
-            <center>
-                <img width={150} src={raclotto} alt=""/>
-            </center>
+            {!this.props.popout &&
+                <center>
+                    <img width={150} src={raclotto} alt=""/>
+                </center>
+            }
 
             <Outlet/>
 

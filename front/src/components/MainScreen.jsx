@@ -4,6 +4,7 @@ import {Api} from "../lib/api";
 import {Toolbar} from "./toolbar";
 import {VectorGraphics} from "../lib/vectorGraphics";
 import {useSession} from "../lib/useSession";
+import {useSearchParams} from "react-router-dom";
 
 export function IngredientListGroupItem(props) {
     let variant = props.ingredient.type === 1 ? "primary" : "secondary";
@@ -55,6 +56,8 @@ export function MainScreen(props) {
     const [toolbar, setToolbar] = React.useState(0);
     const [ingredients, setIngredients] = React.useState([]);
     const {session} = useSession();
+    const [searchParams] = useSearchParams();
+    const popout = searchParams.get("popout") === "true";
 
     React.useEffect(() => {
         Api.get("ingredients", session).then((data) => {
@@ -140,14 +143,16 @@ export function MainScreen(props) {
                     />
                 </Col>
             </Row>
-            <Row className="mx-0">
-                <Col className="mb-2" sm>
-                    {renderIngredients(1)}
-                </Col>
-                <Col className="mb-2" sm>
-                    {renderIngredients(2)}
-                </Col>
-            </Row>
+            {!popout &&
+                <Row className="mx-0">
+                    <Col className="mb-2" sm>
+                        {renderIngredients(1)}
+                    </Col>
+                    <Col className="mb-2" sm>
+                        {renderIngredients(2)}
+                    </Col>
+                </Row>
+            }
         </div>
     );
 }
