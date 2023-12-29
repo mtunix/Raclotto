@@ -2,7 +2,7 @@ import {useState} from "react";
 
 function getLocalSession() {
     try {
-        return localStorage.getItem("player") ?? "";
+        return localStorage.getItem("name") ?? "";
     } catch (e) {
         return "";
     }
@@ -13,7 +13,7 @@ export function usePlayer() {
 
     const changePlayer = (player) => {
         setPlayer(player);
-        localStorage.setItem("player", player)
+        localStorage.setItem("name", player)
     };
 
     return {
