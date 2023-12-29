@@ -4,11 +4,13 @@ import {Notifications} from "../lib/notifications";
 import {Api} from "../lib/api";
 import {useSession} from "../lib/useSession";
 import {useNavigate} from "react-router-dom";
+import {usePlayer} from "../lib/usePlayer";
 
 export function StartScreen(props) {
     const [name, setName] = React.useState("");
     const [selected, setSelected] = React.useState(0);
     const {sessions, join, create} = useSession();
+    const {player, setPlayer} = usePlayer();
     const navigate = useNavigate();
 
     return (
@@ -56,8 +58,14 @@ export function StartScreen(props) {
                                     </option>)
                             }
                         </Form.Select>
+                        <Form.Control type="text"
+                                      className="my-2"
+                                      value={player}
+                                      onChange={(e) => setPlayer(e.target.value)}
+                                      placeholder="Spielername"/>
                         <div className="d-grid mt-2">
                             <Button variant="primary"
+                                    disabled={player.length === 0}
                                     onClick={(e) => {
                                         join(sessions[selected]);
                                         navigate(`session/${sessions[selected].key}`);

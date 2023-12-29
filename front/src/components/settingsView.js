@@ -1,7 +1,14 @@
 import React from "react";
 import {ButtonGroup, Form, ToggleButton} from "react-bootstrap";
+import {usePlayer} from "../lib/usePlayer";
 
-export class SettingsView extends React.Component {
+export function SettingsView(props) {
+    const {player, setPlayer} = usePlayer();
+
+    return <SettingsViewCls name={player} onNameChanged={setPlayer} {...props}/>
+}
+
+class SettingsViewCls extends React.Component {
    constructor(props) {
        super(props);
 
@@ -89,8 +96,8 @@ export class SettingsView extends React.Component {
                <Form.Group className="mb-3" controlId="formIngredientName">
                    <Form.Label>Ich bin</Form.Label>
                    <Form.Control
-                       value={this.state.name}
-                       onChange={this.onNameChanged}
+                       value={this.props.name}
+                       onChange={(e) => this.props.onNameChanged(e.target.value)}
                        type="name"
                        placeholder="Namen eingeben"
                    />
