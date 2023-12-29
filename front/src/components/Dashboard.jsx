@@ -1,7 +1,7 @@
 import {useSession} from "../lib/useSession";
 import React, {useEffect, useState} from "react";
 import {Api} from "../lib/api";
-import {Accordion, Button, Card, Col, ListGroup, Row} from "react-bootstrap";
+import {Accordion, Badge, Button, Card, Col, ListGroup, Row} from "react-bootstrap";
 import {useInterval} from "../lib/useInterval";
 import {IngredientListGroupItem} from "./MainScreen";
 import {PanAccordionItem} from "./historyView";
@@ -53,6 +53,38 @@ export function IngredientListGroupItemCount(props) {
     )
 }
 
+export function PanListItem(props) {
+    return (
+        <ListGroup.Item variant="secondary" eventKey={props.index}>
+            <Row>
+                <div className={"w-100"}>
+                    <span style={{fontWeight: 800}}>{props.pan.name} </span>
+                    <span style={{fontStyle: "italic", fontSize: "smaller"}}>verspeist von {props.pan.user}</span>
+                    <div style={{
+                        float: "right",
+                    }}>
+                        <RatingViewer rating={props.pan.rating}/>
+                    </div>
+                </div>
+            </Row>
+            <Row>
+                <Col sm>
+                    {props.pan.ingredients.filter(ingredient => ingredient.type === 1).map((ingredient) =>
+                        <Badge bg="primary" className="mr-1 mb-1">
+                            <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
+                        </Badge>
+                    )}
+                    {props.pan.ingredients.filter(ingredient => ingredient.type === 2).map((ingredient) =>
+                        <Badge bg="secondary" className="mr-1 mb-1">
+                            <span style={{fontSize: "1rem"}}>{ingredient.name}</span>
+                        </Badge>
+                    )}
+                </Col>
+            </Row>
+        </ListGroup.Item>
+    )
+}
+
 export function Dashboard() {
     const {session} = useSession();
     const [pans, setPans] = useState([]);
@@ -79,10 +111,9 @@ export function Dashboard() {
         <Row>
             <Col sm>
                 <h4>Pans</h4>
-                <Accordion>
-
-                    {pans.map((pan, i) => <PanAccordionItem key={`pan-${pan.id}`} pan={pan} index={i}/>)}
-                </Accordion>
+                <ListGroup>
+                    {pans.map((pan, i) => <PanListItem key={`pan-${pan.id}`} pan={pan} index={i}/>)}
+                </ListGroup>
             </Col>
             <Col sm>
                 <h4>Zutaten (Rating)</h4>
