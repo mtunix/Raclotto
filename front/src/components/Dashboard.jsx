@@ -90,47 +90,63 @@ export function Dashboard() {
     const [pans, setPans] = useState([]);
     const [ingredientsRating, setIngredientsRating] = useState([]);
     const [ingredientsUsage, setIngredientsUsage] = useState([]);
+    const [isGlobal, setIsGlobal] = useState(false);
+
+    const update = () => {
+        Api.getStats(isGlobal ? undefined : session).then((data) => {
+            setPans(data["pans"]);
+            setIngredientsRating(data["ingredients_top_rated"]);
+            setIngredientsUsage(data["ingredients_most_used"]);
+        });
+    }
 
     useEffect(() => {
-        Api.getStats(session).then((data) => {
-            setPans(data["pans"]);
-            setIngredientsRating(data["ingredients_top_rated"]);
-            setIngredientsUsage(data["ingredients_most_used"]);
-        });
-    }, [session]);
+        update();
+    }, [session, isGlobal]);
 
     useInterval(() => {
-        Api.getStats(session).then((data) => {
-            setPans(data["pans"]);
-            setIngredientsRating(data["ingredients_top_rated"]);
-            setIngredientsUsage(data["ingredients_most_used"]);
-        });
+        update();
     }, 5000);
 
-    return (
-        <Row>
-            <Col sm>
-                <h4>Pans</h4>
-                <ListGroup>
-                    {pans.map((pan, i) => <PanListItem key={`pan-${pan.id}`} pan={pan} index={i}/>)}
-                </ListGroup>
-            </Col>
-            <Col sm>
-                <h4>Zutaten (Rating)</h4>
-                <ListGroup className="mb-2">
-                    {ingredientsRating.map((ingredient) => <IngredientListGroupItemRating
-                        key={`ingredient-${ingredient.id}`}
-                        ingredient={ingredient}/>)}
-                </ListGroup>
-            </Col>
-            <Col sm>
-                <h4>Zutaten (Usage)</h4>
-                <ListGroup className="mb-2">
-                    {ingredientsUsage.map((ingredient) => <IngredientListGroupItemCount
-                        key={`ingredient-${ingredient.id}`}
-                        ingredient={ingredient}/>)}
-                </ListGroup>
-            </Col>
-        </Row>
+    return (<>
+            <Row>
+                <Col>
+                    <div className="form-check form-switch mb-2">
+                        <input className="form-check-input"
+                               type="checkbox"
+                               id="flexSwitchCheckChecked"
+                               onChange={(e) => {
+                                   setIsGlobal(e.target.checked);
+                               }}
+                               checked={isGlobal}/>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckChecked">Global</label>
+                    </div>
+                </Col>
+            </Row>
+            <Row>
+                <Col sm>
+                    <h4>Pans</h4>
+                    <ListGroup>
+                        {pans.map((pan, i) => <PanListItem key={`pan-${pan.id}`} pan={pan} index={i}/>)}
+                    </ListGroup>
+                </Col>
+                <Col sm>
+                    <h4>Zutaten (Rating)</h4>
+                    <ListGroup className="mb-2">
+                        {ingredientsRating.map((ingredient) => <IngredientListGroupItemRating
+                            key={`ingredient-${ingredient.id}`}
+                            ingredient={ingredient}/>)}
+                    </ListGroup>
+                </Col>
+                <Col sm>
+                    <h4>Zutaten (Usage)</h4>
+                    <ListGroup className="mb-2">
+                        {ingredientsUsage.map((ingredient) => <IngredientListGroupItemCount
+                            key={`ingredient-${ingredient.id}`}
+                            ingredient={ingredient}/>)}
+                    </ListGroup>
+                </Col>
+            </Row>
+        </>
     );
 }
