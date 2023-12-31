@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from back.src.model.service.achievement_service import AchievementService
 from back.src.model.service.ingredient_service import IngredientService
@@ -19,7 +20,7 @@ class ApiController:
         self.achievement_service = AchievementService()
         self.stats_service = StatsService()
 
-    def get_stats(self, session_id):
+    def get_stats(self, session_id: Optional[str]):
         return json.dumps(self.stats_service.all(session_id))
 
     def get_ingredients(self, session_id, of_type=None):
