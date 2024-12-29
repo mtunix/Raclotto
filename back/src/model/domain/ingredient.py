@@ -9,8 +9,8 @@ from back.src.model.domain.pan import PanIngredients
 
 
 class IngredientType(enum.IntEnum):
-    FILL = 1
-    SAUCE = 2
+    FILL = enum.auto()
+    SAUCE = enum.auto()
 
 
 class Ingredient(DomainMixin, Base):

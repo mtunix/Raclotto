@@ -7,6 +7,7 @@ from back.src.model.domain.pan import Pan, PanIngredients
 from back.src.model.domain.raclotto_session import RaclottoSession
 from back.src.model.service.database_service import DatabaseService
 from back.src.model.service.ingredient_service import IngredientService
+from back.src.model.service.preparation_type_service import PreparationTypeService
 from back.src.model.service.session_service import SessionService
 
 
@@ -15,6 +16,7 @@ class PanService(DatabaseService):
         super().__init__(Pan)
         self.ingredient_service = IngredientService()
         self.session_service = SessionService()
+        self.preparation_service = PreparationTypeService()
 
     def all(self, session_key=None):
         try:
@@ -63,6 +65,7 @@ class PanService(DatabaseService):
         for key in ["vegetarian", "vegan", "histamine", "fructose", "lactose", "gluten"]:
             gen_dict[key] = gen_dict[key] == "true"
         ingredients = self.ingredient_service.select(gen_dict)
+        preparation_types = self.preparation_service.all()
         session = self.session_service.find_by_key(gen_dict["session_key"])
         r = RandomWord()
 

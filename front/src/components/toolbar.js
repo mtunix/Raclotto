@@ -59,7 +59,7 @@ export class Toolbar extends React.Component {
             case 4:
                 view = (<AddIngredient session={this.props.session}
                                        onAdd={this.props.onAdd}/>);
-                title = "Zutat hinzufuegen"
+                title = "Was reinklatschen"
                 break;
             case 5:
                 view = (<AchievementView/>);

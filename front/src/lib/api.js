@@ -95,6 +95,23 @@ export class Api {
         return await res.json();
     }
 
+    static async addPreparationType(session, preparation_type) {
+        let res = await fetch("/api/preparation_type", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            redirect: 'follow',
+            body: JSON.stringify(
+                Object.assign({}, {session_key: session.key}, preparation_type)
+            )
+        })
+        return await res.json()
+    }
+
     static async rate(session, pan, rating) {
         let res = await fetch("/api/ratings/", {
             method: 'POST',

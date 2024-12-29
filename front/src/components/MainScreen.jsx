@@ -1,5 +1,5 @@
 import React, {useCallback} from "react";
-import {Accordion, Button, Card, Col, ListGroup, Row} from "react-bootstrap";
+import {Accordion, Button, Col, ListGroup, Row} from "react-bootstrap";
 import {Api} from "../lib/api";
 import {Toolbar} from "./toolbar";
 import {VectorGraphics} from "../lib/vectorGraphics";
@@ -55,9 +55,16 @@ export function MainScreen(props) {
     const [user, setUser] = React.useState("");
     const [toolbar, setToolbar] = React.useState(0);
     const [ingredients, setIngredients] = React.useState([]);
+    const [prepTypes, setPrepTypes] = React.useState([]);
     const {session} = useSession();
     const [searchParams] = useSearchParams();
     const popout = searchParams.get("popout") === "true";
+
+    React.useEffect(() => {
+        Api.get("preparation_type", session).then((data) => {
+            setPrepTypes(data);
+        });
+    }, [session]);
 
     React.useEffect(() => {
         Api.get("ingredients", session).then((data) => {
@@ -79,6 +86,12 @@ export function MainScreen(props) {
         });
     };
 
+    const onPrepTypeDelete = (type) => {
+        Api.delete(session, type).then((data) => {
+
+        });
+    }
+
     const onRefill = (ingredient) => {
         Api.refill(session, ingredient).then((data) => {
             Api.get("ingredients", session).then((data) => {
@@ -86,6 +99,43 @@ export function MainScreen(props) {
             });
         });
     };
+
+    const renderPrepTypes = useCallback((prepTypes) => {
+        const r = prepTypes.map((x) => {
+            return <ListGroup.Item variant="primary">
+                <Row className={"mb-1"}>
+                    <Col>
+                        <span style={{fontSize: "1rem"}}>{x.name}</span>
+                    </Col>
+                    <Col style={{textAlign: "right"}}>
+                        {
+                            <Button variant={"danger"}
+                                    size={"sm"}
+                                    style={{fontSize: "0.7rem"}}
+                                    onClick={props.onClick}>
+                                {VectorGraphics.REMOVE}
+                            </Button>
+                        }
+                    </Col>
+                </Row>
+            </ListGroup.Item>
+        });
+
+        return (
+            <Accordion alwaysOpen defaultActiveKey={`preparation-type`}>
+                <Accordion.Item eventKey={`preparation-type`}>
+                    <Accordion.Header>
+                        <span style={{fontWeight: 800}}>Zubereitungsarten</span>
+                    </Accordion.Header>
+                    <Accordion.Body>
+                        <ListGroup className="mb-2">
+                            {r}
+                        </ListGroup>
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
+        )
+    }, []);
 
     const renderIngredients = useCallback((type) => {
         let typeStr = type === 1 ? "Zutaten" : "Saucen";
@@ -150,6 +200,9 @@ export function MainScreen(props) {
                     </Col>
                     <Col className="mb-2" sm>
                         {renderIngredients(2)}
+                    </Col>
+                    <Col className="mb-2" sm>
+                        {renderPrepTypes(prepTypes)}
                     </Col>
                 </Row>
             }

@@ -4,6 +4,7 @@ from typing import Optional
 from back.src.model.service.achievement_service import AchievementService
 from back.src.model.service.ingredient_service import IngredientService
 from back.src.model.service.pan_service import PanService
+from back.src.model.service.preparation_type_service import PreparationTypeService
 from back.src.model.service.rating_service import RatingService
 from back.src.model.service.session_service import SessionService
 from back.src.model.service.stats_service import StatsService
@@ -19,6 +20,10 @@ class ApiController:
         self.session_service = SessionService()
         self.achievement_service = AchievementService()
         self.stats_service = StatsService()
+        self.preparation_service = PreparationTypeService()
+
+    def get_preparation_types(self, session_id):
+        return self.view.get(self.preparation_service.all(session_id))
 
     def get_stats(self, session_id: Optional[str]):
         return json.dumps(self.stats_service.all(session_id))
@@ -57,6 +62,10 @@ class ApiController:
 
     def add_session(self, obj_dict):
         sesh = self.session_service.add(obj_dict)
+        self.preparation_service.add({
+            "session_key": sesh.key,
+            "name": "Raclotto Geraet"
+        })
         return self.view.scalar("session", sesh)
 
     def del_ingredient(self, parsed):
@@ -87,3 +96,7 @@ class ApiController:
     def ref_ingredient(self, parsed):
         ingredient = self.ingredient_service.refill(parsed)
         return self.view.scalar("ingredient", ingredient)
+
+    def add_preparation_type(self, parsed):
+        type = self.preparation_service.add(parsed)
+        return self.view.scalar("preparation_type", type)

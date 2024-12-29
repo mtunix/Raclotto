@@ -173,6 +173,18 @@ def api_stats():
         mimetype="application/json"
     )
 
+@app.route("/api/preparation_type/", methods=["GET", "POST"])
+def api_preparation_types():
+    if request.method == "GET":
+        res = api.get_preparation_types(request.args.get("session_key"))
+    else:
+        res = api.add_preparation_type(request.json)
+
+    return app.response_class(
+        response=res,
+        status=200,
+        mimetype="application/json"
+    )
 
 if __name__ == '__main__':
     app.run(port=3001)
