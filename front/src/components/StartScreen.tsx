@@ -1,22 +1,21 @@
 import {Button, Form} from "react-bootstrap";
-import {useSessions} from "../lib/api/ApiSession";
+import {useSessions} from "../lib/api/apiSession";
 import {SpinnerContainer} from "./common/Spinner";
 import ErrorPage from "./common/error/ErrorPage";
 import React, {useEffect} from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import {RaclottoSession} from "../model/RaclottoSession";
-import {useDispatch, useSelector} from "react-redux";
-import {setSession} from "../AppSlice";
+import {useAppStore} from "../AppSlice";
 import {useNavigate} from "react-router";
 
 export function JoinSession() {
-    let dispatch = useDispatch();
+    const setSession = useAppStore((state) => state.setSession);
     let {data, isLoading, error} = useSessions();
     let [selectedIndex, setSelectedIndex] = React.useState(0);
 
     function join() {
-        dispatch(setSession(data[selectedIndex]));
+        setSession(data[selectedIndex]);
     }
 
     function onSessionSelected(index: number) {
@@ -77,7 +76,7 @@ export function SessionSelector() {
 }
 
 export function StartScreen() {
-    let session = useSelector((state: any) => state.app.session);
+    const session = useAppStore((state) => state.session);
 
     if (session) {
         return (

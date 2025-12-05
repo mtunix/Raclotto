@@ -1,6 +1,6 @@
 import useSWR from "swr";
-import {get, onErrorRetry} from "./Api";
-import {RaclottoSession} from "../../model/RaclottoSession";
+import {get, onErrorRetry} from "./api";
+import {RaclottoSession} from "../../model/raclottoSession";
 
 export const ENDPOINT_SESSION = "/api/session";
 

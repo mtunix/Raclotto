@@ -1,24 +1,15 @@
-import {createSlice} from "@reduxjs/toolkit";
-import {RaclottoSession} from "./model/RaclottoSession";
+import { create } from "zustand";
+import { RaclottoSession } from "./model/raclottoSession";
 
-type State = {
-    session: RaclottoSession | undefined;
+interface AppState {
+    session: RaclottoSession | null;
+    setSession: (session: RaclottoSession) => void;
+    clearSession: () => void;
 }
 
-export const appSlice = createSlice({
-    name: 'app',
-    initialState: {
-        session: undefined,
-    } as State,
-    reducers: {
-        setSession: (state, action) => {
-            state.session = action.payload;
-        }
-    }
-});
+export const useAppStore = create<AppState>((set) => ({
+    session: null,
+    setSession: (session: RaclottoSession) => set({ session }),
+    clearSession: () => set({ session: null }),
+}));
 
-export const {
-    setSession,
-} = appSlice.actions;
-
-export default appSlice.reducer;
