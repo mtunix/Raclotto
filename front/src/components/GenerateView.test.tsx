@@ -30,14 +30,14 @@ describe('GenerateView', () => {
     });
 
     it('renders dial views for fill and sauce counts', () => {
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
         expect(screen.getByText('ingredient.ingredientCount')).toBeInTheDocument();
         expect(screen.getByText('ingredient.sauceCount')).toBeInTheDocument();
     });
 
     it('loads counts from localStorage', () => {
         setupLocalStorage('2', '1');
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
         const inputs = screen.getAllByRole('spinbutton');
         expect(inputs[0]).toHaveValue(2);
         expect(inputs[1]).toHaveValue(1);
@@ -46,7 +46,7 @@ describe('GenerateView', () => {
     it('disables generate button when counts are invalid', async () => {
         const user = userEvent.setup();
         mockLocalStorage.getItem.mockReturnValue(null);
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getAllByRole('spinbutton')[0]).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe('GenerateView', () => {
 
     it('enables generate button when counts are valid', async () => {
         setupLocalStorage('1', '1');
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();
@@ -72,7 +72,7 @@ describe('GenerateView', () => {
         setupLocalStorage('1', '1');
         mockApi.generate.mockImplementation(() => new Promise(() => {}));
 
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();
@@ -98,7 +98,7 @@ describe('GenerateView', () => {
         });
         mockApi.generate.mockResolvedValue({ generated: generatedPan });
 
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();
@@ -119,7 +119,7 @@ describe('GenerateView', () => {
         setupLocalStorage('2', '1');
         mockApi.generate.mockResolvedValue({ generated: createMockPan() });
 
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();
@@ -138,7 +138,7 @@ describe('GenerateView', () => {
         setupLocalStorage('2', '1');
         mockApi.generate.mockResolvedValue({ generated: createMockPan() });
 
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();
@@ -157,7 +157,7 @@ describe('GenerateView', () => {
         setupLocalStorage('1', '1');
         mockApi.generate.mockResolvedValue({ generated: createMockPan({ id: 1, rating: 0 }) });
 
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();
@@ -175,7 +175,7 @@ describe('GenerateView', () => {
         setupLocalStorage('1', '1');
         mockApi.generate.mockResolvedValue({ generated: createMockPan() });
 
-        render(<GenerateView session={sessionKey} ingredients={allIngredients} onGeneration={mockOnGeneration} />);
+        render(<GenerateView />);
 
         await waitFor(() => {
             expect(screen.getByText('common.create')).not.toBeDisabled();

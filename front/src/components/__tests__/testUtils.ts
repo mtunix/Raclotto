@@ -4,7 +4,22 @@ import { Achievement } from '../../model/achievement';
 import { RaclottoSession } from '../../model/raclottoSession';
 import { Api } from '../../lib/api';
 
-export const mockApi = Api;
+// Create a mock API type that extends Api but with jest mock functions
+type MockedApi = {
+    [K in keyof typeof Api]: jest.Mock;
+};
+
+// Create a mock API object with jest mock functions
+export const mockApi: MockedApi = {
+    get: jest.fn(),
+    add: jest.fn(),
+    delete: jest.fn(),
+    refill: jest.fn(),
+    generate: jest.fn(),
+    rate: jest.fn(),
+    close: jest.fn(),
+    createSession: jest.fn(),
+} as MockedApi;
 
 jest.mock('../../lib/api/apiSession', () => ({
     useSessions: jest.fn(() => ({ data: [], isLoading: false, error: null })),
@@ -28,6 +43,8 @@ jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     useSearchParams: () => [new URLSearchParams(), jest.fn()],
     useNavigate: () => jest.fn(),
+    useParams: () => ({ sessionId: '123' }),
+    useLocation: () => ({ pathname: '/123' }),
     useRouteError: () => null,
 }));
 
@@ -94,10 +111,10 @@ export const resetAllMocks = () => {
     jest.clearAllMocks();
     mockLocalStorage.clear();
     mockApi.get.mockResolvedValue([]);
-    mockApi.add.mockResolvedValue({});
-    mockApi.delete.mockResolvedValue({});
-    mockApi.refill.mockResolvedValue({});
-    mockApi.generate.mockResolvedValue({ generated: {} });
-    mockApi.rate.mockResolvedValue({});
-    mockApi.close.mockResolvedValue({});
+    mockApi.add.mockResolvedValue({} as Ingredient);
+    mockApi.delete.mockResolvedValue({} as any);
+    mockApi.refill.mockResolvedValue({} as Ingredient);
+    mockApi.generate.mockResolvedValue({ generated: {} } as any);
+    mockApi.rate.mockResolvedValue({} as any);
+    mockApi.close.mockResolvedValue({} as any);
 };

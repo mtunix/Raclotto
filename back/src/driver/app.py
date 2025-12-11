@@ -3,16 +3,11 @@ from pathlib import Path
 from typing import Type, Dict
 
 from flask import Flask, Config, send_from_directory, Response, request, jsonify
-from flask_restless import APIManager, Serializer
-from flask_restless.serialization import Deserializer, DefaultDeserializer
-from flask_restless.views.base import error_response
 from flask_sqlalchemy import SQLAlchemy
 from swagger_ui import api_doc
 
 from back.src.driver.api_custom import apis_custom
-from back.src.driver.api_generated import apis_generated
-from back.src.driver.database import BaseModel
-from back.src.driver.raclotto_api import ApiError, init_api_rules, ApiErrorCode
+from back.src.api.base_api import ApiError, init_api_rules, ApiErrorCode
 from back.src.utils import str_code_from_enum
 
 
@@ -31,10 +26,14 @@ class App(Flask):
 
         with self.app_context() as app_context:
             self.db.create_all()
+            self.init_admin_user()
+            self.init_achievements()
+            self.init_preparation_types()
+            # Initialize achievement registry with evaluators
+            from back.src.interactor.achievement_registry import initialize_registry
+            initialize_registry()
             app_context.push()
 
-        self.manager = APIManager(self, session=db.session)
-        self.init_restless()
         self.init_mikado_api()
         self.add_url_rule(rule='/', defaults={'path': ''}, view_func=self.serve, methods=['GET'])
         self.add_url_rule(rule='/<path:path>', view_func=self.serve, methods=['GET'])
@@ -59,22 +58,6 @@ class App(Flask):
         for rule in self.url_map.iter_rules():
             logging.info([rule.rule, rule.methods])
 
-    def get_serializers(self) -> Dict[BaseModel, Serializer]:
-        serializers = {}
-        for model in self.manager.created_apis_for:
-            serializers[model] = self.manager.serializer_for(model)
-        return serializers
-
-    def get_deserializers(self) -> Dict[BaseModel, Deserializer]:
-        """Seems to be easier to create new deserializers than to get the
-        flask-restless once out of flask.
-        """
-        deserializers = {}
-        for model in self.manager.created_apis_for:
-            deserializer = DefaultDeserializer(self.db.session, model,
-                                               self.manager)
-            deserializers[self.manager.collection_name(model)] = deserializer
-        return deserializers
 
     def log_on_error(self, response: Response):
         if 400 <= response.status_code < 500:
@@ -89,25 +72,102 @@ class App(Flask):
     def start(self, port: int):
         self.run(port=port, host="0.0.0.0")
 
-    def init_restless(self):
-        for model, methods, pre, post in apis_generated:
-            self.manager.create_api(
-                model,
-                methods=methods,
-                page_size=1000000,
-                max_page_size=1000000,
-                preprocessors=pre,
-                postprocessors=post
-        )
-
     def init_mikado_api(self):
         api_rules = init_api_rules(
             apis_custom,
-            self.get_serializers(),
-            self.get_deserializers(),
             self.db.session
         )
         self.register_blueprint(api_rules)
+
+    def init_admin_user(self):
+        """Create admin user if it doesn't exist."""
+        from back.src.entity.user import User
+        from back.src.auth.password import hash_password
+        from back.src.repository.user_repository import UserRepository
+        
+        user_repository = UserRepository()
+        admin_user = user_repository.by_name("admin")
+        if not admin_user:
+            admin_user = User(
+                name="admin",
+                email="admin@raclotto.local",
+                password=hash_password("admin")
+            )
+            self.db.session.add(admin_user)
+            self.db.session.commit()
+            logging.info("Admin user created successfully")
+
+    def init_preparation_types(self):
+        """Initialize default preparation types if they don't exist."""
+        from back.src.entity.preparation_type import PreparationType
+        from back.src.repository.preparation_type_repository import PreparationTypeRepository
+        
+        prep_type_repository = PreparationTypeRepository()
+        default_name = "Raclotto Pfanne"
+        default_types = prep_type_repository.default_types()
+        existing = next((pt for pt in default_types if pt.name == default_name), None)
+        
+        if not existing:
+            default_prep_type = PreparationType(
+                name=default_name,
+                session_id=None  # None means it's a default/system-wide type
+            )
+            self.db.session.add(default_prep_type)
+            self.db.session.commit()
+            logging.info(f"Default preparation type '{default_name}' created successfully")
+
+    def init_achievements(self):
+        """Initialize achievements from default_data if they don't exist."""
+        from back.src.entity.achievement import Achievement
+        from back.src.model.default_data import ACHIEVEMENTS
+        from back.src.repository.achievement_repository import AchievementRepository
+        
+        achievement_repository = AchievementRepository()
+        existing_achievements = achievement_repository.all()
+        existing_titles = {ach.title for ach in existing_achievements}
+        
+        new_achievements = []
+        for achievement_data in ACHIEVEMENTS:
+            if achievement_data.title not in existing_titles:
+                # Create a new Achievement entity from the default data
+                new_achievement = Achievement(
+                    title=achievement_data.title,
+                    description=achievement_data.description,
+                    value=achievement_data.value,
+                    hidden=achievement_data.hidden,
+                    is_global=getattr(achievement_data, 'is_global', True)  # Default to True for backward compatibility
+                )
+                new_achievements.append(new_achievement)
+        
+        if new_achievements:
+            self.db.session.add_all(new_achievements)
+            self.db.session.commit()
+            logging.info(f"Initialized {len(new_achievements)} achievements")
+        
+        # Also update existing achievements if their data changed
+        for achievement_data in ACHIEVEMENTS:
+            existing = achievement_repository.by_title(achievement_data.title)
+            if existing:
+                # Update description, value, hidden status, and is_global flag if they differ
+                is_global = getattr(achievement_data, 'is_global', True)
+                if (existing.description != achievement_data.description or
+                    existing.value != achievement_data.value or
+                    existing.hidden != achievement_data.hidden or
+                    existing.is_global != is_global):
+                    existing.description = achievement_data.description
+                    existing.value = achievement_data.value
+                    existing.hidden = achievement_data.hidden
+                    existing.is_global = is_global
+                    self.db.session.commit()
+                    logging.info(f"Updated achievement: {achievement_data.title}")
+                if (existing.description != achievement_data.description or
+                    existing.value != achievement_data.value or
+                    existing.hidden != achievement_data.hidden):
+                    existing.description = achievement_data.description
+                    existing.value = achievement_data.value
+                    existing.hidden = achievement_data.hidden
+                    self.db.session.commit()
+                    logging.info(f"Updated achievement: {achievement_data.title}")
 
     def init_logging(self):
         log_format_str = '%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s'
@@ -121,8 +181,18 @@ class App(Flask):
 
     @staticmethod
     def page_not_found(_):
+        from back.src.api.base_api import ApiError
         code = ApiErrorCode.endpoint_not_found
-        return error_response(404, code=str_code_from_enum(code))
+        error = ApiError(
+            code,
+            status=404,
+            title="Not Found",
+            detail="The requested endpoint does not exist"
+        )
+        return jsonify({
+            "jsonapi": {"version": "1.0"},
+            "errors": [error.to_dict()]
+        }), 404
 
     def invalid_api_usage(self, e):
         return jsonify(e.to_dict()), e.status

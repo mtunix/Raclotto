@@ -1,58 +1,75 @@
 import React, {useState, useEffect} from "react";
 import {Api} from "../lib/api";
-import {Collapse, List, Row, Col, Rate, Tag, Spin, Button} from "antd";
+import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message} from "antd";
 import {Pan} from "../model/pan";
-import {Ingredient} from "../model/ingredient";
-import {IngredientType} from "../model/ingredient";
 import {useTranslation} from "react-i18next";
+import {useAppStore} from "../AppSlice";
+import {IngredientDisplay} from "./common/IngredientDisplay";
+import {VectorGraphics} from "../lib/vectorGraphics";
 
-type HistoryViewProps = {
-    session: string;
-    ingredients: Ingredient[];
-};
+const {Title, Text} = Typography;
 
-export function HistoryView(props: HistoryViewProps) {
+export function HistoryView() {
     let { t } = useTranslation();
+    const session = useAppStore((state) => state.session);
+    const sessionKey = session?.key || "";
     let [pans, setPans] = useState<Pan[]>([]);
     let [waiting, setWaiting] = useState(true);
+    let [cloningPanId, setCloningPanId] = useState<number | null>(null);
 
     useEffect(() => {
-        Api.get("pans", props.session).then((data: any) => {
-            setPans(data.reverse());
-            setWaiting(false);
-        });
-    }, [props.session]);
-
-    function getRating(id: number, initial: number, readonly: boolean) {
-        return (
-            <Rate
-                value={initial}
-                onChange={(rating) => onRating(id, rating)}
-                disabled={readonly}
-                style={{ marginBottom: '8px' }}
-            />
-        );
-    }
+        if (sessionKey) {
+            Api.get("pans", sessionKey).then((data) => {
+                const pansData = Array.isArray(data) ? data as Pan[] : [];
+                setPans(pansData.reverse());
+                setWaiting(false);
+            }).catch((error) => {
+                console.error("Failed to load pans:", error);
+                setPans([]);
+                setWaiting(false);
+            });
+        }
+    }, [sessionKey]);
 
     function onRating(id: number, rating: number) {
-        Api.rate(props.session, id, rating).then((data: any) => {
-            console.log(data);
+        if (!sessionKey) return;
+        Api.rate(sessionKey, id, rating).then(() => {
+            // Rating successfully submitted - update local state
+            setPans(prevPans => prevPans.map(p => 
+                p.id === id ? { ...p, rating } : p
+            ));
+        }).catch((error) => {
+            console.error("Failed to submit rating:", error);
+        });
+    }
+    
+    function onClonePan(pan: Pan) {
+        if (!sessionKey) return;
+        setCloningPanId(pan.id);
+        Api.clonePan(sessionKey, pan).then(() => {
+            message.success(t("history.panCloned") || "Pan cloned successfully");
+            // Refresh the pans list
+            Api.get("pans", sessionKey).then((data) => {
+                const pansData = Array.isArray(data) ? data as Pan[] : [];
+                setPans(pansData.reverse());
+            }).catch((error) => {
+                console.error("Failed to refresh pans:", error);
+            });
+        }).catch((error) => {
+            console.error("Failed to clone pan:", error);
+            message.error(t("history.panCloneFailed") || "Failed to clone pan");
+        }).finally(() => {
+            setCloningPanId(null);
         });
     }
 
-    function getTags(ingredient: Ingredient) {
-        return (
-            <div>
-                {ingredient.meat && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.meat")}</Tag>}
-                {ingredient.vegan && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.vegan")}</Tag>}
-                {ingredient.vegetarian && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.vegetarian")}</Tag>}
-                {ingredient.histamine && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.histamine")}</Tag>}
-                {ingredient.gluten && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.gluten")}</Tag>}
-                {ingredient.lactose && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.lactose")}</Tag>}
-                {ingredient.fructose && <Tag color="default" style={{ fontSize: '0.7rem', marginBottom: '4px' }}>{t("tags.fructose")}</Tag>}
-            </div>
-        );
-    }
+    const formatDate = (dateString: string) => {
+        try {
+            return new Date(dateString).toLocaleString();
+        } catch {
+            return dateString;
+        }
+    };
 
     if (waiting) {
         return (
@@ -62,84 +79,106 @@ export function HistoryView(props: HistoryViewProps) {
         );
     }
 
-    let items = pans.map((pan, i) => ({
-        key: i,
-        label: (
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <span style={{ fontWeight: 800 }}>{pan.name}</span>
-                    <br />
-                    <span style={{ fontStyle: "italic", fontSize: "smaller" }}>{t("history.consumedBy")} {pan.user}</span>
-                </div>
-                <div style={{ textAlign: 'right', marginLeft: '16px' }}>
-                    {getRating(pan.id, pan.rating, true)}
-                </div>
-            </div>
-        ),
-        children: (
-            <div>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <span style={{ fontWeight: 800 }}>{t("ingredient.ingredients")}</span>
-                        <List
-                            dataSource={pan.ingredients.filter(ingredient => ingredient.type === IngredientType.FILL)}
-                            renderItem={(ingredient) => (
-                                <List.Item
-                                    style={{
-                                        backgroundColor: '#e6f7ff',
-                                        marginBottom: '8px'
-                                    }}
-                                >
-                                    <div style={{ width: '100%' }}>
-                                        <div style={{ fontSize: '1rem' }}>{ingredient.name}</div>
-                                        {getTags(ingredient)}
+    const renderPanCard = (pan: Pan) => {
+        return (
+            <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
+                <Card
+                    hoverable
+                    style={{
+                        height: '100%',
+                        marginBottom: '16px',
+                        border: '1px solid #d9d9d9'
+                    }}
+                    bodyStyle={{ padding: '12px' }}
+                >
+                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                        {/* Header with name and rating */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <Space direction="vertical" size={0} style={{ flex: 1 }}>
+                                <Title level={4} style={{ margin: 0, fontSize: '1rem', marginBottom: '4px' }}>
+                                    {pan.name}
+                                </Title>
+                                <Text type="secondary" style={{ fontSize: '0.8rem' }}>
+                                    {t("history.consumedBy")} <strong>{pan.user}</strong>
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: '0.7rem' }}>
+                                    {t("history.consumedAt")} {formatDate(pan.timestamp)}
+                                </Text>
+                            </Space>
+                            <div style={{ textAlign: 'right', marginLeft: '8px' }}>
+                                <Rate
+                                    value={pan.rating}
+                                    onChange={(rating: number) => onRating(pan.id, rating)}
+                                    allowHalf
+                                    style={{ fontSize: '0.9rem' }}
+                                />
+                                {pan.rating > 0 && (
+                                    <div style={{ marginTop: '2px' }}>
+                                        <Tag color="gold" style={{ fontSize: '0.7rem' }}>
+                                            {pan.rating.toFixed(1)}
+                                        </Tag>
                                     </div>
-                                </List.Item>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* All Ingredients */}
+                        <div>
+                            {pan.ingredients.length > 0 ? (
+                                <Space wrap size="small">
+                                    {pan.ingredients.map((ingredient) => (
+                                        <IngredientDisplay 
+                                            key={ingredient.id}
+                                            ingredient={ingredient}
+                                            variant="badge"
+                                            showTags={false}
+                                            showIcon={true}
+                                        />
+                                    ))}
+                                </Space>
+                            ) : (
+                                <Text type="secondary" style={{ fontSize: '0.85rem' }}>
+                                    {t("ingredient.noIngredients") || "No ingredients"}
+                                </Text>
                             )}
-                        />
-                    </Col>
-                    <Col span={12}>
-                        <span style={{ fontWeight: 800 }}>{t("ingredient.sauces")}</span>
-                        <List
-                            dataSource={pan.ingredients.filter(ingredient => ingredient.type === IngredientType.SAUCE)}
-                            renderItem={(ingredient) => (
-                                <List.Item
-                                    style={{
-                                        backgroundColor: '#f0f0f0',
-                                        marginBottom: '8px'
-                                    }}
-                                >
-                                    <div style={{ width: '100%' }}>
-                                        <div style={{ fontSize: '1rem' }}>{ingredient.name}</div>
-                                        {getTags(ingredient)}
-                                    </div>
-                                </List.Item>
-                            )}
-                        />
-                    </Col>
-                </Row>
-                <div style={{ backgroundColor: '#f5f5f5', padding: '12px', marginTop: '16px', borderRadius: '4px' }}>
-                    <Row>
-                        <Col span={12}>
-                            <span style={{ fontStyle: "italic", fontSize: "smaller" }}>{t("history.consumedAt")} {pan.timestamp}</span>
-                        </Col>
-                        <Col span={12} style={{ textAlign: 'right' }}>
-                            {getRating(pan.id, pan.rating, false)}
-                        </Col>
-                    </Row>
-                </div>
-                <Row style={{ marginTop: '16px' }}>
-                    <Col span={24}>
-                        <Button type="primary" block>{t("history.iWantThisToo")}</Button>
-                    </Col>
-                </Row>
-            </div>
-        )
-    }));
+                        </div>
+
+                        {/* Action button */}
+                        <Button 
+                            type="primary" 
+                            block 
+                            size="small" 
+                            style={{ marginTop: '4px' }}
+                            onClick={() => onClonePan(pan)}
+                            loading={cloningPanId === pan.id}
+                            disabled={cloningPanId !== null}
+                        >
+                            {t("history.iWantThisToo")}
+                        </Button>
+                    </Space>
+                </Card>
+            </Col>
+        );
+    };
 
     return (
         <div>
-            <Collapse items={items} />
+            {pans.length > 0 ? (
+                <Row gutter={[16, 16]}>
+                    {pans.map(renderPanCard)}
+                </Row>
+            ) : (
+                <Card>
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                        <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>
+                            {VectorGraphics.HISTORY}
+                        </span>
+                        <Text type="secondary">
+                            {t("history.noPans") || "No pans in history"}
+                        </Text>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

@@ -1,93 +1,161 @@
-import {Button, Form} from "react-bootstrap";
+import {Button, Form, Input, Select, Card, Row, Col, Space} from "antd";
 import {useSessions} from "../lib/api/apiSession";
 import {SpinnerContainer} from "./common/Spinner";
 import ErrorPage from "./common/error/ErrorPage";
-import React, {useEffect} from "react";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
-import {RaclottoSession} from "../model/RaclottoSession";
+import {Api} from "../lib/api";
+import React, {useEffect, useState} from "react";
+import {RaclottoSession} from "../model/raclottoSession";
 import {useAppStore} from "../AppSlice";
-import {useNavigate} from "react-router";
+import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {useAuthStore} from "../AuthSlice";
 
 export function JoinSession() {
+    const { t } = useTranslation();
     const setSession = useAppStore((state) => state.setSession);
+    const navigate = useNavigate();
     let {data, isLoading, error} = useSessions();
     let [selectedIndex, setSelectedIndex] = React.useState(0);
 
     function join() {
-        setSession(data[selectedIndex]);
+        if (data && data.length > 0 && selectedIndex >= 0 && selectedIndex < data.length) {
+            const selectedSession = data[selectedIndex];
+            setSession(selectedSession);
+            navigate(`/${selectedSession.id}`);
+        }
     }
 
-    function onSessionSelected(index: number) {
-        setSelectedIndex(index);
+    function onSessionSelected(value: number) {
+        setSelectedIndex(value);
     }
 
     useEffect(() => {
-        if (data && data.length > 0) selectedIndex = 0;
+        if (data && data.length > 0) {
+            setSelectedIndex(0);
+        }
     }, [data]);
 
     if (isLoading) return <SpinnerContainer/>;
     if (error) return <ErrorPage error={error}/>;
-
-    return (<Row><Col sm>
-        <h1>Bestehender Session beitreten</h1>
-        <Form.Label>Session</Form.Label>
-        <Form.Select value={selectedIndex} onChange={(e) => onSessionSelected(e.target.selectedIndex)}>
-            {data.map((session: RaclottoSession, i: number) => {
-                return <option key={session.id} value={i}>{session.name}</option>
-            })}
-        </Form.Select>
-        <div className="d-grid mt-2">
-            <Button variant="primary" onClick={join}>Beitreten</Button>
-        </div>
-    </Col></Row>);
-}
-
-export function SessionSelector() {
-    function create() {
-
+    if (!data || data.length === 0) {
+        return (
+            <Card>
+                <h2>{t("session.joinExisting")}</h2>
+                <p>{t("session.noSessionsAvailable")}</p>
+            </Card>
+        );
     }
 
     return (
-        <div className="card-columns" style={{margin: "10px"}}>
-            <Row>
-                <Col sm>
-                    <h1>Neue Session erstellen</h1>
-                    <Form.Group className="mb-3" controlId="formSessionName">
-                        <Form.Label>Sessionname</Form.Label>
-                        <Form.Control
-                            type="name"
-                            placeholder="Sessionnamen eingeben"
-                            // value={this.state.name}
-                            // onChange={this.onNameChanged}
-                        />
-                        <Form.Text className="text-muted">
-                            Der Sessionname wird anderen Spielern bei der Sessionauswahl angezeigt.
-                        </Form.Text>
-                        <div className="d-grid mt-2">
-                            <Button variant="primary" onClick={create}>Erstellen</Button>
-                        </div>
-                    </Form.Group>
+        <Card>
+            <h2>{t("session.joinExisting")}</h2>
+            <Form.Item label={t("session.session")}>
+                <Select 
+                    value={selectedIndex} 
+                    onChange={onSessionSelected}
+                    style={{ width: '100%' }}
+                >
+                    {data.map((session: RaclottoSession, i: number) => {
+                        return <Select.Option key={session.id} value={i}>{session.name}</Select.Option>
+                    })}
+                </Select>
+            </Form.Item>
+            <Button 
+                type="primary" 
+                onClick={join} 
+                disabled={!data || data.length === 0}
+                block
+                style={{ marginTop: 16 }}
+            >
+                {t("session.join")}
+            </Button>
+        </Card>
+    );
+}
+
+export function SessionSelector() {
+    const { t } = useTranslation();
+    const setSession = useAppStore((state) => state.setSession);
+    const navigate = useNavigate();
+    const [sessionName, setSessionName] = useState("");
+    const [isCreating, setIsCreating] = useState(false);
+
+    function onNameChanged(e: React.ChangeEvent<HTMLInputElement>) {
+        setSessionName(e.target.value);
+    }
+
+    function create() {
+        if (sessionName.trim().length === 0) {
+            return;
+        }
+        setIsCreating(true);
+        Api.createSession(sessionName.trim()).then((session) => {
+            setSession(session);
+            setIsCreating(false);
+            navigate(`/${session.id}`);
+        }).catch((error) => {
+            console.error("Failed to create session:", error);
+            setIsCreating(false);
+        });
+    }
+
+    return (
+        <div style={{margin: "10px"}}>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Card title={t("session.createNew")}>
+                        <Form layout="vertical">
+                            <Form.Item label={t("session.sessionName")}>
+                                <Input
+                                    type="text"
+                                    placeholder={t("session.sessionNamePlaceholder")}
+                                    value={sessionName}
+                                    onChange={onNameChanged}
+                                    disabled={isCreating}
+                                />
+                            </Form.Item>
+                            <Form.Item>
+                                <Button 
+                                    type="primary" 
+                                    onClick={create}
+                                    disabled={sessionName.trim().length === 0 || isCreating}
+                                    block
+                                >
+                                    {isCreating ? t("session.creating") : t("common.create")}
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Card>
+                </Col>
+                <Col span={12}>
+                    <JoinSession/>
                 </Col>
             </Row>
-            <JoinSession/>
         </div>
     );
 }
 
 export function StartScreen() {
     const session = useAppStore((state) => state.session);
+    const navigate = useNavigate();
+    const { t } = useTranslation();
+    const user = useAuthStore((state) => state.user);
+    const logout = useAuthStore((state) => state.logout);
 
-    if (session) {
-        return (
-            <div className="container">
-                <h1>Session {session.name} beigetreten</h1>
-            </div>
-        );
-    }
+    React.useEffect(() => {
+        if (session) {
+            navigate(`/${session.id}`);
+        }
+    }, [session, navigate]);
 
     return (
-        <div className="container">
+        <div style={{margin: "10px"}}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <h2>{t("session.welcome")} {user?.name}</h2>
+                <Button onClick={() => { logout(); navigate("/login"); }}>
+                    {t("auth.logout")}
+                </Button>
+            </div>
             <SessionSelector/>
         </div>
     );

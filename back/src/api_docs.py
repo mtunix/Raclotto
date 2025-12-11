@@ -9,7 +9,8 @@ from driver.api_custom import apis_custom
 from driver.app import App
 from driver.config import ConfigInMemory
 from driver.database import db
-from driver.api_generated import apis_generated
+# api_generated removed - Flask-Restless no longer used
+# from driver.api_generated import apis_generated
 
 doc = {"components": [], "paths": []}
 app = App("dummy", db, ConfigInMemory)
@@ -39,8 +40,9 @@ def get_relationships(s):
 
 
 """Add components, enums and json api endpoints to `doc`."""
-for model, methods, _, _ in apis_generated:
-    api = app.manager.created_apis_for[model]
+# Flask-Restless auto-generated APIs removed - using custom APIs now
+# for model, methods, _, _ in apis_generated:
+#     api = app.manager.created_apis_for[model]
     data = [{"name": c.name, "type": get_type(c.type)} for c in
             model.__table__.columns if not c.foreign_keys]
     relationships = get_relationships(api.serializer)
@@ -68,7 +70,7 @@ for model, methods, _, _ in apis_generated:
     })
 
 for api in apis_custom:
-    url_prefix = app.manager.url_prefix
+    url_prefix = "/api"  # Base API prefix
     url_prefix += api.url_prefix
     for endpoint in api.get_api_endpoints():
         doc_str = parse(endpoint.__doc__)

@@ -18,6 +18,7 @@ describe('Toolbar', () => {
         <Toolbar
             ingredients={mockIngredients}
             session={sessionKey}
+            sessionId="123"
             sessionClosed={mockSessionClosed}
             onAdd={mockOnAdd}
         />

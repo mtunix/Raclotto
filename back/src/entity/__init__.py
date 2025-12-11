@@ -2,7 +2,10 @@ from .achievement import Achievement
 from .ingredient import Ingredient
 from .ingredient import IngredientType
 from .insult import Insult
+from .invite_token import InviteToken
 from .pan import Pan
+from .preparation_type import PreparationType
 from .rating import Rating
 from .raclotto_session import RaclottoSession
 from .user import User
+from .user_achievement_progress import UserAchievementProgress

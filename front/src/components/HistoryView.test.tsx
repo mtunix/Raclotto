@@ -17,7 +17,7 @@ describe('HistoryView', () => {
 
     it('renders loading spinner initially', () => {
         mockApi.get.mockImplementation(() => new Promise(() => {}));
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
         expect(screen.getByRole('status')).toBeInTheDocument();
     });
 
@@ -28,7 +28,7 @@ describe('HistoryView', () => {
         ];
         mockApi.get.mockResolvedValue(pans);
 
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('HistoryView', () => {
         });
         mockApi.get.mockResolvedValue([pan]);
 
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(screen.getByText('Test Pan')).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('HistoryView', () => {
         });
         mockApi.get.mockResolvedValue([pan]);
 
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(screen.getByText(/Test User/)).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('HistoryView', () => {
 
     it('shows rating component for each pan', async () => {
         mockApi.get.mockResolvedValue([createMockPan({ id: 1, rating: 3 })]);
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(screen.getAllByRole('radio').length).toBeGreaterThan(0);
@@ -101,7 +101,7 @@ describe('HistoryView', () => {
         });
         mockApi.get.mockResolvedValue([pan]);
 
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(screen.getByText('tags.meat')).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('HistoryView', () => {
 
     it('calls API.get with correct parameters', async () => {
         mockApi.get.mockResolvedValue([createMockPan()]);
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(mockApi.get).toHaveBeenCalledWith('pans', sessionKey);
@@ -120,7 +120,7 @@ describe('HistoryView', () => {
 
     it('handles empty pan history', async () => {
         mockApi.get.mockResolvedValue([]);
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('HistoryView', () => {
         ];
         mockApi.get.mockResolvedValue(pans);
 
-        render(<HistoryView session={sessionKey} ingredients={mockIngredients} />);
+        render(<HistoryView />);
 
         await waitFor(() => {
             const panElements = screen.getAllByText(/Pan/);

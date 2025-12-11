@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 
 from back.src.driver.database import BaseModel
 from back.src.entity.mixin import SerializableMixin
@@ -15,3 +15,4 @@ class RaclottoSession(SerializableMixin, BaseModel):
     name = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
     active = Column(Boolean, nullable=False, default=True)
+    created_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=True)

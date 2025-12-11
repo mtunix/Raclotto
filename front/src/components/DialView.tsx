@@ -7,18 +7,29 @@ type DialViewProps = {
     num: number;
     ingredients: Ingredient[];
     onChange: (value: number) => void;
+    max?: number;
 };
 
 export function DialView(props: DialViewProps) {
-    let [num, setNum] = useState(props.num);
+    const { num: propNum, max, ingredients, onChange } = props;
+    let [num, setNum] = useState(propNum);
     let [dragY, setDragY] = useState(0);
+    const maxValue = max !== undefined ? max : ingredients.length;
 
     useEffect(() => {
-        setNum(props.num);
-    }, [props.num]);
+        setNum(propNum);
+    }, [propNum]);
+    
+    useEffect(() => {
+        // If current value exceeds max, adjust it
+        if (num > maxValue) {
+            setNum(maxValue);
+            onChange(maxValue);
+        }
+    }, [maxValue, num, onChange]);
 
     function isInRange(): boolean {
-        return 0 < num && num <= props.ingredients.length;
+        return 0 < num && num <= maxValue;
     }
 
     function onInputChanged(value: number | null) {
@@ -27,22 +38,22 @@ export function DialView(props: DialViewProps) {
             v = parseInt(String(v));
         }
         setNum(v);
-        props.onChange(v);
+        onChange(v);
     }
 
     function decrement() {
         if (num > 1) {
             let newNum = num - 1;
             setNum(newNum);
-            props.onChange(newNum);
+            onChange(newNum);
         }
     }
 
     function increment() {
-        if (num < props.ingredients.length) {
+        if (num < maxValue) {
             let newNum = num + 1;
             setNum(newNum);
-            props.onChange(newNum);
+            onChange(newNum);
         }
     }
 
@@ -60,12 +71,12 @@ export function DialView(props: DialViewProps) {
             let newNum = num - 1;
             setNum(newNum);
             setDragY(screenY);
-            props.onChange(newNum);
-        } else if (num < props.ingredients.length && screenY < dragY) {
+            onChange(newNum);
+        } else if (num < maxValue && screenY < dragY) {
             let newNum = num + 1;
             setNum(newNum);
             setDragY(screenY);
-            props.onChange(newNum);
+            onChange(newNum);
         }
 
         setDragY(screenY);
@@ -107,7 +118,7 @@ export function DialView(props: DialViewProps) {
                         borderColor: isInRange() ? undefined : '#ff4d4f'
                     }}
                     min={1}
-                    max={props.ingredients.length}
+                    max={maxValue}
                 />
                 <Button onClick={increment}>+</Button>
             </Input.Group>

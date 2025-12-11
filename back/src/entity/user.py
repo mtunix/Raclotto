@@ -26,6 +26,7 @@ class User(SerializableMixin, BaseModel):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=True, unique=True)
     password = Column(String, nullable=False)
 
     # Refers to what a user wants to eat

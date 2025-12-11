@@ -6,6 +6,11 @@ export const VectorGraphics = {
     SETTINGS_CLIENT: "⚙️",
     SETTINGS_SERVER: "🔧",
     HISTORY: "📜",
-    ACHIEVEMENTS: "🏆"
+    ACHIEVEMENTS: "🏆",
+    INGREDIENT: "🥗",
+    SAUCE: "🍯",
+    ADD: "➕",
+    MAIL: "✉️",
+    DASHBOARD: "📊"
 };
 

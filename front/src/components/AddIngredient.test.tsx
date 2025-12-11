@@ -15,27 +15,27 @@ describe('AddIngredient', () => {
     });
 
     it('renders form fields', () => {
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         expect(screen.getByPlaceholderText('common.enterName')).toBeInTheDocument();
         expect(screen.getByText('ingredient.type')).toBeInTheDocument();
         expect(screen.getByText('ingredient.contains')).toBeInTheDocument();
     });
 
     it('disables submit button when name is empty', () => {
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         expect(screen.getByText('common.create')).toBeDisabled();
     });
 
     it('enables submit button when name is entered', async () => {
         const user = userEvent.setup();
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         await user.type(screen.getByPlaceholderText('common.enterName'), 'Test Ingredient');
         expect(screen.getByText('common.create')).not.toBeDisabled();
     });
 
     it('calls API.add with correct data on submit', async () => {
         const user = userEvent.setup();
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         await user.type(screen.getByPlaceholderText('common.enterName'), 'Test Ingredient');
         await user.click(screen.getByText('common.create'));
 
@@ -50,7 +50,7 @@ describe('AddIngredient', () => {
 
     it('resets form after successful submission', async () => {
         const user = userEvent.setup();
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         const nameInput = screen.getByPlaceholderText('common.enterName');
         await user.type(nameInput, 'Test Ingredient');
         await user.click(screen.getByText('common.create'));
@@ -62,7 +62,7 @@ describe('AddIngredient', () => {
 
     it('calls onAdd callback after successful submission', async () => {
         const user = userEvent.setup();
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         await user.type(screen.getByPlaceholderText('common.enterName'), 'Test Ingredient');
         await user.click(screen.getByText('common.create'));
 
@@ -73,7 +73,7 @@ describe('AddIngredient', () => {
 
     it('toggles tag switches', async () => {
         const user = userEvent.setup();
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         const switches = screen.getAllByRole('switch');
         const meatSwitch = switches.find((sw) => sw.getAttribute('aria-checked') === 'false');
         if (meatSwitch) {
@@ -84,7 +84,7 @@ describe('AddIngredient', () => {
 
     it('changes ingredient type selection', async () => {
         const user = userEvent.setup();
-        render(<AddIngredient session={sessionKey} onAdd={mockOnAdd} />);
+        render(<AddIngredient />);
         const sauceRadio = screen.getByLabelText('ingredient.sauce');
         await user.click(sauceRadio);
         expect(sauceRadio).toBeChecked();

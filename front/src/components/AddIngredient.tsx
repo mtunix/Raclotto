@@ -3,14 +3,15 @@ import {Button, Form, Input, Radio, Space, Switch} from "antd";
 import {Api} from "../lib/api";
 import {IngredientType} from "../model/ingredient";
 import {useTranslation} from "react-i18next";
+import {useParams, useNavigate} from "react-router-dom";
+import {useAppStore} from "../AppSlice";
 
-type AddIngredientProps = {
-    session: string;
-    onAdd: () => void;
-};
-
-export function AddIngredient(props: AddIngredientProps) {
+export function AddIngredient() {
     let { t } = useTranslation();
+    const {sessionId} = useParams<{sessionId: string}>();
+    const session = useAppStore((state) => state.session);
+    const sessionKey = session?.key || "";
+    const navigate = useNavigate();
     let options = [
         {"name": "meat", "key": "tags.meat"},
         {"name": "vegetarian", "key": "tags.vegetarian"},
@@ -81,9 +82,13 @@ export function AddIngredient(props: AddIngredientProps) {
             lactose: lactose
         };
 
-        Api.add(props.session, ingredientData).then(() => {
-            props.onAdd();
+        if (!sessionKey) return;
+        Api.add(sessionKey, ingredientData).then(() => {
             setName("");
+            // Navigate back to main view to refresh ingredients
+            navigate(`/${sessionId}`);
+        }).catch((error) => {
+            console.error("Failed to add ingredient:", error);
         });
     }
 
@@ -114,7 +119,7 @@ export function AddIngredient(props: AddIngredientProps) {
                 />
             </Form.Item>
             <Form.Item label={t("ingredient.type")}>
-                <Radio.Group value={type} onChange={(e) => onIngredientSelected(e.target.value)}>
+                <Radio.Group value={type} onChange={(e) => onIngredientSelected(e.target.value as IngredientType)}>
                     <Radio value={IngredientType.FILL}>{t("ingredient.fill")}</Radio>
                     <Radio value={IngredientType.SAUCE}>{t("ingredient.sauce")}</Radio>
                 </Radio.Group>
@@ -125,7 +130,7 @@ export function AddIngredient(props: AddIngredientProps) {
                         <Switch
                             key={option.name}
                             checked={getValue(option.name)}
-                            onChange={(checked) => setChecked(option.name, checked)}
+                            onChange={(checked: boolean) => setChecked(option.name, checked)}
                             checkedChildren={t(option.key)}
                             unCheckedChildren={t(option.key)}
                         />

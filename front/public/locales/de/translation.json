@@ -1,0 +1,77 @@
+{
+  "common": {
+    "shuffle": "Mischen",
+    "settings": "Einstellungen",
+    "history": "Verlauf",
+    "achievements": "Erfolge",
+    "serverSettings": "Server-Einstellungen",
+    "create": "Erstellen",
+    "enterName": "Namen eingeben"
+  },
+  "ingredient": {
+    "ingredientName": "Zutatname",
+    "type": "Typ",
+    "fill": "Füllung",
+    "sauce": "Soße",
+    "contains": "Enthält",
+    "ingredients": "Zutaten",
+    "sauces": "Soßen",
+    "preparationTypes": "Zubereitungsarten",
+    "ingredientCount": "Anzahl der Zutaten",
+    "sauceCount": "Anzahl der Soßen"
+  },
+  "tags": {
+    "meat": "Fleisch",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarisch",
+    "histamine": "Histamin",
+    "gluten": "Gluten",
+    "lactose": "Laktose",
+    "fructose": "Fruktose"
+  },
+  "session": {
+    "session": "Session",
+    "sessionName": "Sessionname",
+    "eveningOver": "Abend vorbei",
+    "endSession": "Session beenden",
+    "leave": "Session verlassen"
+  },
+  "toolbar": {
+    "generateTitle": "Generieren",
+    "userSettingsTitle": "Benutzereinstellungen",
+    "historyTitle": "Verlauf",
+    "addIngredientTitle": "Zutat hinzufügen",
+    "achievementsTitle": "Erfolge",
+    "serverSettingsTitle": "Server-Einstellungen"
+  },
+  "generate": {
+    "rollAnotherDice": "Nochmal würfeln"
+  },
+  "settings": {
+    "iAm": "Ich bin",
+    "allOkToSnack": "Alles OK zum Snacken"
+  },
+  "history": {
+    "consumedBy": "Konsumiert von",
+    "consumedAt": "Konsumiert um",
+    "iWantThisToo": "Das will ich auch"
+  },
+  "error": {
+    "no_response": {
+      "title": "Keine Antwort",
+      "message": "Der Server hat nicht geantwortet."
+    },
+    "unexpected": {
+      "title": "Unerwarteter Fehler",
+      "message": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "unknown": {
+      "title": "Unbekannter Fehler",
+      "message": "Ein unbekannter Fehler ist aufgetreten."
+    },
+    "no_data_available": {
+      "title": "Keine Daten verfügbar",
+      "message": "Derzeit sind keine Daten verfügbar."
+    }
+  }
+}

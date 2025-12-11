@@ -1,7 +1,6 @@
 import {useRouteError} from "react-router-dom";
 import {t} from "i18next";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
+import {Row, Col, Typography} from "antd";
 
 export class RaclottoError extends Error {
     public title: string;
@@ -32,36 +31,39 @@ type ErrorPageProps = {
  * It is _usually_ being rendered by the router.
  */
 export default function ErrorPage(props: ErrorPageProps) {
-    let error: any = useRouteError();
+    let error: unknown = useRouteError();
+
+    const {Title, Paragraph, Text} = Typography;
 
     function renderRouteError() {
+        const errorMessage = error && typeof error === 'object' 
+            ? ('statusText' in error ? String(error.statusText) : 'message' in error ? String(error.message) : '')
+            : '';
         return <>
-            <h1>{t("error.unexpected.title")}</h1>
-            <p>{t("error.unexpected.message")}</p>
-            <p>
-                <i>{error.statusText || error.message}</i>
-            </p>
+            <Title level={1}>{t("error.unexpected.title")}</Title>
+            <Paragraph>{t("error.unexpected.message")}</Paragraph>
+            {errorMessage && <Paragraph><Text type="secondary" italic>{errorMessage}</Text></Paragraph>}
         </>
     }
 
     function renderPropsError() {
         if (props.error) {
             return <>
-                <h1>{props.error.title}</h1>
-                <p>{props.error.message}</p>
+                <Title level={1}>{props.error.title}</Title>
+                <Paragraph>{props.error.message}</Paragraph>
             </>
         } else {
             return <>
-                <h1>{props.title}</h1>
-                <p>{props.message}</p>
+                <Title level={1}>{props.title}</Title>
+                <Paragraph>{props.message}</Paragraph>
             </>
         }
     }
 
     function renderUnknownError() {
         return <>
-            <h1>{t("error.unknown.title")}</h1>
-            <p>{t("error.unknown.message")}</p>
+            <Title level={1}>{t("error.unknown.title")}</Title>
+            <Paragraph>{t("error.unknown.message")}</Paragraph>
         </>
     }
 
@@ -76,16 +78,14 @@ export default function ErrorPage(props: ErrorPageProps) {
     }
 
     return (
-        <div id="error-page">
-            <Row>
-                <Col></Col>
-                <Col className="col-sm-auto align-right my-auto">
-                    <i className="bi bi-bug font-size-xxl"></i>
+        <div id="error-page" style={{padding: '20px'}}>
+            <Row justify="center" align="middle" style={{minHeight: '50vh'}}>
+                <Col span={2} style={{textAlign: 'center'}}>
+                    <span style={{fontSize: '48px'}}>🐛</span>
                 </Col>
-                <Col className="align-left">
+                <Col span={18} style={{textAlign: 'left'}}>
                     {renderError()}
                 </Col>
-                <Col></Col>
             </Row>
         </div>
     );

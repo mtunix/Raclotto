@@ -1,5 +1,6 @@
 import { Ingredient } from "./ingredient";
 import { Rating } from "./rating";
+import { PrepType } from "./prepType";
 
 export interface Pan {
     id: number;
@@ -10,5 +11,7 @@ export interface Pan {
     ingredients: Ingredient[];
     ratings: Rating[];
     rating: number;
+    preparation_type?: PrepType;
+    preparation_type_id?: number;
 }
 

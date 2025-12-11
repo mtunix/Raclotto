@@ -4,8 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { StartScreen, JoinSession, SessionSelector } from './StartScreen';
 import { mockUseAppStore, createMockSession, resetAllMocks } from './__tests__/testUtils';
+import { RaclottoSession } from '../model/raclottoSession';
 
-const mockUseSessions = jest.fn(() => ({ data: [], isLoading: false, error: null }));
+const mockUseSessions: jest.Mock<{ data?: RaclottoSession[]; isLoading: boolean; error: Error | null }> = jest.fn(() => ({ data: [], isLoading: false, error: null }));
 jest.mock('../lib/api/apiSession', () => ({
     useSessions: () => mockUseSessions(),
 }));

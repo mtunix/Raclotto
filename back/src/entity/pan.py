@@ -23,6 +23,7 @@ class Pan(DomainMixin, BaseModel):
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.now())
     snacked = Column(Boolean, nullable=False, default=False)
+    preparation_type_id = Column(Integer, ForeignKey("preparation_type.id"), nullable=True)
 
     ingredients = relationship(
         "Ingredient",
@@ -32,6 +33,11 @@ class Pan(DomainMixin, BaseModel):
 
     ratings = relationship(
         "Rating",
+        lazy="selectin"
+    )
+    
+    preparation_type = relationship(
+        "PreparationType",
         lazy="selectin"
     )
 

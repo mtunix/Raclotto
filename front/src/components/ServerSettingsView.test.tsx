@@ -17,12 +17,12 @@ describe('ServerSettingsView', () => {
 
     it('renders loading spinner initially', () => {
         mockApi.get.mockImplementation(() => new Promise(() => {}));
-        render(<ServerSettingsView session={sessionKey} onSessionClosed={mockOnSessionClosed} />);
+        render(<ServerSettingsView />);
         expect(screen.getByRole('status')).toBeInTheDocument();
     });
 
     it('loads and displays session name', async () => {
-        render(<ServerSettingsView session={sessionKey} onSessionClosed={mockOnSessionClosed} />);
+        render(<ServerSettingsView />);
         await waitFor(() => {
             expect(screen.queryByRole('status')).not.toBeInTheDocument();
         });
@@ -31,7 +31,7 @@ describe('ServerSettingsView', () => {
 
     it('updates session name when input changes', async () => {
         const user = userEvent.setup();
-        render(<ServerSettingsView session={sessionKey} onSessionClosed={mockOnSessionClosed} />);
+        render(<ServerSettingsView />);
         await waitFor(() => {
             expect(screen.queryByRole('status')).not.toBeInTheDocument();
         });
@@ -44,7 +44,7 @@ describe('ServerSettingsView', () => {
 
     it('calls API.close and onSessionClosed when close button is clicked', async () => {
         const user = userEvent.setup();
-        render(<ServerSettingsView session={sessionKey} onSessionClosed={mockOnSessionClosed} />);
+        render(<ServerSettingsView />);
         await waitFor(() => {
             expect(screen.queryByRole('status')).not.toBeInTheDocument();
         });
@@ -58,7 +58,7 @@ describe('ServerSettingsView', () => {
     });
 
     it('calls API.get with correct parameters', async () => {
-        render(<ServerSettingsView session={sessionKey} onSessionClosed={mockOnSessionClosed} />);
+        render(<ServerSettingsView />);
         await waitFor(() => {
             expect(mockApi.get).toHaveBeenCalledWith('session', sessionKey);
         });

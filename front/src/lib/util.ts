@@ -1,5 +1,5 @@
 export class Util {
-    static isNumeric(value: any): boolean {
+    static isNumeric(value: unknown): boolean {
         return typeof value === 'number' && !isNaN(value);
     }
 }

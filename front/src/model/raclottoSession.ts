@@ -13,12 +13,12 @@ export class RaclottoSession {
         this.active = false;
     }
 
-    static fromParsed(parsed: any) {
+    static fromParsed(parsed: { id: number; key: string; name: string; timestamp: Date | string; active: boolean }) {
         let session = new RaclottoSession();
         session.id = parsed.id;
         session.key = parsed.key;
         session.name = parsed.name;
-        session.timestamp = parsed.timestamp;
+        session.timestamp = parsed.timestamp instanceof Date ? parsed.timestamp : new Date(parsed.timestamp);
         session.active = parsed.active;
         return session;
     }
