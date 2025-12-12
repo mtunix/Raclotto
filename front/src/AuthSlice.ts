@@ -11,6 +11,7 @@ interface User {
     fructose: boolean;
     lactose: boolean;
     gluten: boolean;
+    color?: string;
 }
 
 interface AuthState {

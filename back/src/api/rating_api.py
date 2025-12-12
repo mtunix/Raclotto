@@ -107,10 +107,19 @@ class RatingApi(BaseApi):
                 detail="pan_id is required"
             )
         
-        # Create the rating entity directly to ensure it's properly added
-        rating = Rating(**attributes)
-        db.session.add(rating)
-        db.session.flush()  # Get the ID
+        # Check if user already rated this pan
+        existing_rating = self.repository.by_user_and_pan(user.id, attributes['pan_id'])
+        
+        if existing_rating:
+            # Update existing rating
+            existing_rating.rating = attributes['rating']
+            rating = existing_rating
+            db.session.flush()
+        else:
+            # Create new rating
+            rating = Rating(**attributes)
+            db.session.add(rating)
+            db.session.flush()  # Get the ID
         
         # Commit the rating to the database
         db.session.commit()
@@ -119,10 +128,12 @@ class RatingApi(BaseApi):
         db.session.refresh(rating)
         
         # Evaluate achievements for this rating (e.g., "Local Guide" achievement)
-        from back.src.interactor.achievement_service import AchievementService
-        achievement_service = AchievementService()
-        achievement_service.evaluate_achievements_for_rating(rating, user)
-        db.session.commit()
+        # Only evaluate on creation, not on update
+        if not existing_rating:
+            from back.src.interactor.achievement_service import AchievementService
+            achievement_service = AchievementService()
+            achievement_service.evaluate_achievements_for_rating(rating, user)
+            db.session.commit()
         
         return serialize_single(rating, "rating")
     

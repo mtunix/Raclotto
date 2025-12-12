@@ -4,6 +4,7 @@ import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message} fro
 import {Pan} from "../model/pan";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../AppSlice";
+import {useAuthStore} from "../AuthSlice";
 import {IngredientDisplay} from "./common/IngredientDisplay";
 import {VectorGraphics} from "../lib/vectorGraphics";
 
@@ -13,6 +14,7 @@ export function HistoryView() {
     let { t } = useTranslation();
     const session = useAppStore((state) => state.session);
     const sessionKey = session?.key || "";
+    const currentUser = useAuthStore((state) => state.user);
     let [pans, setPans] = useState<Pan[]>([]);
     let [waiting, setWaiting] = useState(true);
     let [cloningPanId, setCloningPanId] = useState<number | null>(null);
@@ -34,10 +36,13 @@ export function HistoryView() {
     function onRating(id: number, rating: number) {
         if (!sessionKey) return;
         Api.rate(sessionKey, id, rating).then(() => {
-            // Rating successfully submitted - update local state
-            setPans(prevPans => prevPans.map(p => 
-                p.id === id ? { ...p, rating } : p
-            ));
+            // Rating successfully submitted - refresh pans to get updated ratings
+            Api.get("pans", sessionKey).then((data) => {
+                const pansData = Array.isArray(data) ? data as Pan[] : [];
+                setPans(pansData.reverse());
+            }).catch((error) => {
+                console.error("Failed to refresh pans after rating:", error);
+            });
         }).catch((error) => {
             console.error("Failed to submit rating:", error);
         });
@@ -80,6 +85,30 @@ export function HistoryView() {
     }
 
     const renderPanCard = (pan: Pan) => {
+        const isOwnPan = currentUser && pan.user === currentUser.name;
+        const borderColor = pan.user_color || "#d9d9d9";
+        const borderWidth = isOwnPan ? '2px' : '1px';
+        
+        // Check if current user has rated this pan
+        let userRatingValue: number | undefined = undefined;
+        
+        if (currentUser && currentUser.id && pan.ratings && Array.isArray(pan.ratings) && pan.ratings.length > 0) {
+            const currentUserRating = pan.ratings.find((r) => {
+                if (!r) return false;
+                // Handle both string and number comparisons
+                const ratingUserId = typeof r.user_id === 'string' ? parseInt(r.user_id, 10) : r.user_id;
+                const userId = typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) : currentUser.id;
+                return ratingUserId === userId;
+            });
+            if (currentUserRating && currentUserRating.rating !== undefined && currentUserRating.rating !== null) {
+                const ratingNum = Number(currentUserRating.rating);
+                // Ensure it's a valid number and within valid range (0-5, or 0.5-5 if allowHalf)
+                if (!isNaN(ratingNum) && ratingNum >= 0 && ratingNum <= 5) {
+                    userRatingValue = ratingNum;
+                }
+            }
+        }
+        
         return (
             <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
                 <Card
@@ -87,7 +116,8 @@ export function HistoryView() {
                     style={{
                         height: '100%',
                         marginBottom: '16px',
-                        border: '1px solid #d9d9d9'
+                        border: `${borderWidth} solid ${borderColor}`,
+                        borderLeft: `4px solid ${borderColor}`
                     }}
                     bodyStyle={{ padding: '12px' }}
                 >
@@ -107,7 +137,7 @@ export function HistoryView() {
                             </Space>
                             <div style={{ textAlign: 'right', marginLeft: '8px' }}>
                                 <Rate
-                                    value={pan.rating}
+                                    value={userRatingValue ?? 0}
                                     onChange={(rating: number) => onRating(pan.id, rating)}
                                     allowHalf
                                     style={{ fontSize: '0.9rem' }}

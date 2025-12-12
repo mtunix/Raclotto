@@ -137,12 +137,35 @@ class IngredientApi(BaseApi):
         ingredient = self.repository.create(attributes)
         db.session.commit()
         
+        # Check if this is a new ingredient (Connoisseur achievement)
+        from back.src.interactor.achievement_service import AchievementService
+        achievement_service = AchievementService()
+        connoisseur_achievement = self.achievement_repository.by_title("Connoisseur")
+        
+        if connoisseur_achievement:
+            # Check if this ingredient name has never been used before
+            from back.src.interactor.achievement_evaluators.connoisseur_evaluator import ConnoisseurEvaluator
+            evaluator = ConnoisseurEvaluator()
+            
+            # Build evaluation context for the user
+            context = achievement_service._build_evaluation_context(user, session)
+            
+            # Evaluate the achievement for the newly created ingredient
+            result = evaluator.evaluate_for_ingredient(ingredient, user, context)
+            
+            if result.unlocked:
+                # Check if user already has the achievement
+                unlocked_achievement_ids = self.user_repository.get_unlocked_achievements(user.id)
+                if connoisseur_achievement.id not in unlocked_achievement_ids:
+                    achievement_service.unlock_achievement(user.id, connoisseur_achievement.id)
+            
+            # Update progress
+            if result.progress is not None:
+                achievement_service.update_progress(user.id, connoisseur_achievement.id, result.progress)
+        
         # If a new sauce was added, check if any users with "King of the Sauce" 
         # achievement need to have it revoked
         if ingredient.type == IngredientType.SAUCE:
-            from back.src.interactor.achievement_service import AchievementService
-            
-            achievement_service = AchievementService()
             
             # Find the "King of the Sauce" achievement
             king_achievement = self.achievement_repository.by_title("King of the Sauce")

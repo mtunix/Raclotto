@@ -6,6 +6,7 @@ from back.src.api.achievement_api import AchievementApi
 from back.src.api.insult_api import InsultApi
 from back.src.api.preparation_type_api import PreparationTypeApi
 from back.src.api.stats_api import StatsApi
+from back.src.api.event_api import EventApi
 from back.src.driver.auth_api import AuthApi, InviteApi
 
 apis_custom = [
@@ -17,6 +18,7 @@ apis_custom = [
     InsultApi,
     PreparationTypeApi,
     StatsApi,
+    EventApi,
     AuthApi,
     InviteApi,
 ]

@@ -75,6 +75,30 @@ class PanRepository(BaseRepository[Pan]):
         
         return query.all()
     
+    def get_recent_pans(self, session_key: Optional[str] = None, limit: int = 10) -> List[Pan]:
+        """
+        Get the most recent pans, optionally filtered by session and limited by count.
+        
+        :param session_key: Optional session key to filter by
+        :param limit: Maximum number of results to return (default: 10)
+        :return: List of pans ordered by timestamp (descending, most recent first)
+        """
+        query = db.session.query(Pan)
+        
+        if session_key:
+            try:
+                session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
+                query = query.filter(Pan.session_id == session.id)
+            except NoResultFound:
+                return []
+        
+        query = query.order_by(Pan.timestamp.desc())
+        
+        if limit:
+            query = query.limit(limit)
+        
+        return query.all()
+    
     def generate(
         self,
         ingredients: List[Ingredient],

@@ -1,0 +1,96 @@
+/* Mobile styles - icon-only buttons */
+@media (max-width: 768px) {
+    .toolbar-session-row-mobile {
+        display: flex;
+    }
+
+    .toolbar-session-row-desktop {
+        display: none !important;
+    }
+
+    .toolbar-logo-mobile {
+        max-width: 180px;
+        max-height: 140px;
+        object-fit: contain;
+        width: 100%;
+    }
+
+    .toolbar-buttons-container {
+        width: 100%;
+        justify-content: space-between;
+        gap: 2px !important;
+    }
+
+    .toolbar-button {
+        padding: 2px 4px !important;
+        min-width: 32px !important;
+        height: 32px !important;
+        font-size: 12px;
+    }
+
+    .toolbar-button .anticon,
+    .toolbar-button > span:first-child {
+        margin-right: 0 !important;
+        margin-inline-end: 0 !important;
+    }
+
+    .toolbar-button-label {
+        display: none !important;
+    }
+
+    .toolbar-logout-button {
+        padding: 2px 4px !important;
+        min-width: 32px !important;
+        height: 32px !important;
+        font-size: 12px;
+    }
+
+    .toolbar-logout-button .anticon,
+    .toolbar-logout-button > span:first-child {
+        margin-right: 0 !important;
+        margin-inline-end: 0 !important;
+    }
+
+    .toolbar-logout-button .toolbar-button-label {
+        display: none !important;
+    }
+}
+
+/* Tablet and Desktop */
+@media (min-width: 769px) {
+    .toolbar-session-row-mobile {
+        display: none !important;
+    }
+
+    .toolbar-session-row-desktop {
+        display: block;
+    }
+}
+
+/* Tablet - smaller logo */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .toolbar-session-row-desktop img {
+        max-width: 140px;
+    }
+
+    .toolbar-button {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .toolbar-logout-button {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+}
+
+/* Desktop - adjust button alignment */
+@media (min-width: 1025px) {
+    .toolbar-buttons-container {
+        justify-content: space-between;
+    }
+
+    .toolbar-buttons-space {
+        flex: 1;
+    }
+}

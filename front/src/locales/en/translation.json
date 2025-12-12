@@ -16,7 +16,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "saved": "Saved",
-    "saveFailed": "Failed to save"
+    "saveFailed": "Failed to save",
+    "edit": "Edit"
   },
   "ingredient": {
     "ingredientName": "Ingredient Name",
@@ -33,12 +34,18 @@
     "unavailable": "Unavailable",
     "noIngredients": "No ingredients",
     "noSauces": "No sauces",
+    "noPrepTypes": "No preparation types",
+    "loadFailed": "Failed to load ingredients",
     "addPreparationType": "Add Preparation Type",
     "preparationTypeName": "Enter preparation type name",
     "default": "Default",
     "cannotDeleteDefault": "Cannot delete default preparation types",
     "preparationTypeDeleted": "Preparation type deleted successfully",
-    "deleteFailed": "Failed to delete preparation type"
+    "deleteFailed": "Failed to delete preparation type",
+    "editIngredient": "Edit Ingredient",
+    "updated": "Ingredient updated successfully",
+    "updateFailed": "Failed to update ingredient",
+    "nameRequired": "Name is required"
   },
   "tags": {
     "meat": "Meat",
@@ -83,10 +90,21 @@
     "available": "Available",
     "excluded": "excluded",
     "rollPreparationType": "Roll preparation type",
-    "preparationType": "Preparation Type"
+    "preparationType": "Preparation Type",
+    "legacyMode": "Legacy",
+    "banditMode": "Bandit",
+    "banditColumnCount": "Number of Columns",
+    "banditColumnCountHelp": "Choose how many columns to spin",
+    "banditNoItems": "No items",
+    "banditSpin": "Pull the Lever! 🎰",
+    "banditSpinning": "Spinning...",
+    "banditCannotSpin": "Cannot Spin",
+    "banditResult": "Your Result!",
+    "banditError": "Failed to spin the bandit. Please try again."
   },
   "settings": {
     "iAm": "I am",
+    "color": "Color",
     "allOkToSnack": "All OK to Snack",
     "loadFailed": "Failed to load settings",
     "saveFailed": "Failed to save settings",
@@ -116,7 +134,11 @@
   },
   "dashboard": {
     "rating": "Rating",
-    "usage": "Usage"
+    "usage": "Usage",
+    "leaderboard": "Leaderboard",
+    "you": "You",
+    "points": "Points",
+    "achievements": "Achievements"
   },
   "auth": {
     "login": "Login",
@@ -144,7 +166,6 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "registrationFailed": "Registration failed. Please check your information.",
-    "logout": "Logout",
     "logout": "Logout"
   },
   "invite": {

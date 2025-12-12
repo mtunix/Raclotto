@@ -67,7 +67,10 @@ class IngredientRepository(BaseRepository[Ingredient]):
         
         query = db.session.query(Ingredient).filter(
             Ingredient.session_id == session.id,
-            Ingredient.type == ingredient_type
+            Ingredient.type == ingredient_type,
+            Ingredient.available == True,
+            Ingredient.name != None,
+            Ingredient.name != ""
         )
         
         # Apply preference filters

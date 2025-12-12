@@ -57,13 +57,39 @@ def initialize_registry():
     from back.src.interactor.achievement_evaluators.stack_overflow_evaluator import StackOverflowEvaluator
     from back.src.interactor.achievement_evaluators.first_blood_evaluator import FirstBloodEvaluator
     from back.src.interactor.achievement_evaluators.local_guide_evaluator import LocalGuideEvaluator
+    from back.src.interactor.achievement_evaluators.local_host_evaluator import LocalHostEvaluator
     from back.src.interactor.achievement_evaluators.king_of_the_sauce_evaluator import KingOfTheSauceEvaluator
+    from back.src.interactor.achievement_evaluators.king_of_the_grill_evaluator import KingOfTheGrillEvaluator
+    from back.src.interactor.achievement_evaluators.garbage_collector_evaluator import GarbageCollectorEvaluator
+    from back.src.interactor.achievement_evaluators.double_kill_evaluator import DoubleKillEvaluator
+    from back.src.interactor.achievement_evaluators.connoisseur_evaluator import ConnoisseurEvaluator
+    from back.src.interactor.achievement_evaluators.last_pan_standing_evaluator import LastPanStandingEvaluator
+    from back.src.interactor.achievement_evaluators.vanilla_evaluator import VanillaEvaluator
+    from back.src.interactor.achievement_evaluators.pandler_evaluator import PandlerEvaluator
+    from back.src.interactor.achievement_evaluators.survival_of_the_fittest_evaluator import SurvivalOfTheFittestEvaluator
+    from back.src.interactor.achievement_evaluators.pantastic_evaluator import PantasticEvaluator
+    from back.src.interactor.achievement_evaluators.steakholder_evaluator import SteakholderEvaluator
+    from back.src.interactor.achievement_evaluators.biotonne_evaluator import BiotonneEvaluator
+    from back.src.interactor.achievement_evaluators.gotta_eat_em_all_evaluator import GottaEatEmAllEvaluator
     
     # Register specific evaluators
     _registry.register_evaluator("Stack Overflow!", StackOverflowEvaluator())
     _registry.register_evaluator("First Blood!", FirstBloodEvaluator())
     _registry.register_evaluator("Local Guide", LocalGuideEvaluator())
+    _registry.register_evaluator("Local Host", LocalHostEvaluator())
     _registry.register_evaluator("King of the Sauce", KingOfTheSauceEvaluator())
+    _registry.register_evaluator("King of the Grill", KingOfTheGrillEvaluator())
+    _registry.register_evaluator("Garbage Collector", GarbageCollectorEvaluator())
+    _registry.register_evaluator("Double Kill!", DoubleKillEvaluator())
+    _registry.register_evaluator("Connoisseur", ConnoisseurEvaluator())
+    _registry.register_evaluator("Last Pan standing", LastPanStandingEvaluator())
+    _registry.register_evaluator("Vanilla", VanillaEvaluator())
+    _registry.register_evaluator("Pandler", PandlerEvaluator())
+    _registry.register_evaluator("Survival of the Fittest", SurvivalOfTheFittestEvaluator())
+    _registry.register_evaluator("Pantastic", PantasticEvaluator())
+    _registry.register_evaluator("Steakholder", SteakholderEvaluator())
+    _registry.register_evaluator("Biotonne", BiotonneEvaluator())
+    _registry.register_evaluator("Gotta eat'em all!", GottaEatEmAllEvaluator())
     
     # Get all achievements from database
     from back.src.repository.achievement_repository import AchievementRepository

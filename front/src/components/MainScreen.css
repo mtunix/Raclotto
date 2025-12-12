@@ -1,0 +1,155 @@
+/* Sleek buttons for all screen sizes */
+.ingredient-action-button {
+    font-size: 0.85rem;
+    min-width: 28px;
+    min-height: 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 4px;
+    box-shadow: none;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+.ingredient-action-button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.ingredient-action-button.ant-btn-dangerous {
+    background-color: rgba(255, 77, 79, 0.1) !important;
+    border-color: rgba(255, 77, 79, 0.3) !important;
+    color: #ff4d4f;
+}
+
+.ingredient-action-button.ant-btn-dangerous:hover {
+    background-color: rgba(255, 77, 79, 0.15) !important;
+    border-color: rgba(255, 77, 79, 0.4) !important;
+}
+
+.ingredient-action-button:not(.ant-btn-dangerous) {
+    background-color: rgba(24, 144, 255, 0.1) !important;
+    border-color: rgba(24, 144, 255, 0.3) !important;
+    color: #1890ff;
+}
+
+.ingredient-action-button:not(.ant-btn-dangerous):hover {
+    background-color: rgba(24, 144, 255, 0.15) !important;
+    border-color: rgba(24, 144, 255, 0.4) !important;
+}
+
+.prep-type-action-button {
+    font-size: 0.85rem;
+    min-width: 28px;
+    min-height: 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 4px;
+    box-shadow: none;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    background-color: rgba(255, 77, 79, 0.1) !important;
+    border: 1px solid rgba(255, 77, 79, 0.3) !important;
+    color: #ff4d4f;
+}
+
+.prep-type-action-button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background-color: rgba(255, 77, 79, 0.15) !important;
+    border-color: rgba(255, 77, 79, 0.4) !important;
+}
+
+/* Circular progress indicator for confirmation */
+.confirm-delete-button {
+    position: relative;
+}
+
+.confirm-delete-button.confirming {
+    opacity: 1 !important;
+}
+
+.confirm-delete-progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin-top: -12px;
+    margin-left: -12px;
+    transform: rotate(-90deg);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.confirm-delete-progress circle {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.confirm-delete-progress .progress-bg {
+    stroke: rgba(0, 0, 0, 0.1);
+}
+
+.confirm-delete-progress .progress-fill {
+    stroke: currentColor;
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+/* Improved card styling */
+.main-screen-section-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: box-shadow 0.3s ease;
+}
+
+.main-screen-section-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Better collapse panel styling */
+.main-screen-section-card .ant-collapse {
+    background: transparent;
+    border: none;
+}
+
+.main-screen-section-card .ant-collapse-item {
+    border: none;
+    margin-bottom: 0;
+}
+
+.main-screen-section-card .ant-collapse-header {
+    padding: 12px 16px !important;
+    font-weight: 600;
+}
+
+.main-screen-section-card .ant-collapse-content {
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Improved list item hover effects */
+.ingredient-list-item {
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.ingredient-list-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}

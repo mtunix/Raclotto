@@ -43,6 +43,16 @@ class RatingRepository(BaseRepository[Rating]):
         """
         return db.session.query(Rating).filter_by(user_id=user_id).all()
     
+    def by_user_and_pan(self, user_id: int, pan_id: int) -> Optional[Rating]:
+        """
+        Get a rating by user and pan.
+        
+        :param user_id: User ID
+        :param pan_id: Pan ID
+        :return: Rating or None if not found
+        """
+        return db.session.query(Rating).filter_by(user_id=user_id, pan_id=pan_id).first()
+    
     def count_by_user(self, user_id: int) -> int:
         """
         Count ratings given by a user.

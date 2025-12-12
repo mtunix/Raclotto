@@ -16,7 +16,8 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "saved": "Gespeichert",
-    "saveFailed": "Fehler beim Speichern"
+    "saveFailed": "Fehler beim Speichern",
+    "edit": "Bearbeiten"
   },
   "ingredient": {
     "ingredientName": "Zutatname",
@@ -33,12 +34,18 @@
     "unavailable": "Nicht verfügbar",
     "noIngredients": "Keine Zutaten",
     "noSauces": "Keine Soßen",
+    "noPrepTypes": "Keine Zubereitungsarten",
+    "loadFailed": "Fehler beim Laden der Zutaten",
     "addPreparationType": "Zubereitungsart hinzufügen",
     "preparationTypeName": "Zubereitungsartname eingeben",
     "default": "Standard",
     "cannotDeleteDefault": "Standard-Zubereitungsarten können nicht gelöscht werden",
     "preparationTypeDeleted": "Zubereitungsart erfolgreich gelöscht",
-    "deleteFailed": "Fehler beim Löschen der Zubereitungsart"
+    "deleteFailed": "Fehler beim Löschen der Zubereitungsart",
+    "editIngredient": "Zutat bearbeiten",
+    "updated": "Zutat erfolgreich aktualisiert",
+    "updateFailed": "Fehler beim Aktualisieren der Zutat",
+    "nameRequired": "Name ist erforderlich"
   },
   "tags": {
     "meat": "Fleisch",
@@ -83,10 +90,21 @@
     "available": "Verfügbar",
     "excluded": "ausgeschlossen",
     "rollPreparationType": "Zubereitungsart würfeln",
-    "preparationType": "Zubereitungsart"
+    "preparationType": "Zubereitungsart",
+    "legacyMode": "Legacy",
+    "banditMode": "Bandit",
+    "banditColumnCount": "Anzahl der Spalten",
+    "banditColumnCountHelp": "Wählen Sie, wie viele Spalten gedreht werden sollen",
+    "banditNoItems": "Keine Elemente",
+    "banditSpin": "Hebel ziehen! 🎰",
+    "banditSpinning": "Dreht...",
+    "banditCannotSpin": "Kann nicht drehen",
+    "banditResult": "Ihr Ergebnis!",
+    "banditError": "Fehler beim Drehen des Bandits. Bitte versuchen Sie es erneut."
   },
   "settings": {
     "iAm": "Ich bin",
+    "color": "Farbe",
     "allOkToSnack": "Alles OK zum Snacken",
     "loadFailed": "Einstellungen konnten nicht geladen werden",
     "saveFailed": "Einstellungen konnten nicht gespeichert werden",
@@ -116,7 +134,11 @@
   },
   "dashboard": {
     "rating": "Bewertung",
-    "usage": "Verwendung"
+    "usage": "Verwendung",
+    "leaderboard": "Bestenliste",
+    "you": "Du",
+    "points": "Punkte",
+    "achievements": "Errungenschaften"
   },
   "auth": {
     "login": "Anmelden",
@@ -144,7 +166,6 @@
     "noAccount": "Noch kein Konto?",
     "haveAccount": "Bereits ein Konto?",
     "registrationFailed": "Registrierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.",
-    "logout": "Abmelden",
     "logout": "Abmelden"
   },
   "invite": {

@@ -19,3 +19,8 @@
     background: #ffa4a4;
     color: #a50000;
 }
+
+.app-content {
+    padding: 0 20px;
+    margin-top: -20px;
+}

@@ -9,3 +9,4 @@ class PreparationType(SerializableMixin, BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     session_id = Column(Integer, nullable=True)  # null means it's a default/system-wide type
+

@@ -4,13 +4,16 @@ import { Ingredient, IngredientType } from "../../model/ingredient";
 import { PrepType } from "../../model/prepType";
 import { RaclottoSession } from "../../model/raclottoSession";
 import { Pan } from "../../model/pan";
+import { Event } from "../../model/event";
+import { EventConfig } from "../../model/eventConfig";
 import { AxiosResponse } from "axios";
 import { 
     GenerationResponse,
     RatingResponse,
     SessionResponse,
     ApiResponse,
-    StatsResponse
+    StatsResponse,
+    LeaderboardEntry
 } from "./types";
 
 const API_BASE = "/api";
@@ -129,6 +132,26 @@ export class Api {
         throw new Error("Invalid ingredient refill response");
     }
 
+    static async updateIngredient(ingredientId: number, data: Partial<Ingredient>): Promise<Ingredient> {
+        const endpoint = `${API_BASE}/ingredients/${ingredientId}`;
+        const jsonApiData = {
+            data: {
+                type: "ingredient",
+                id: ingredientId,
+                attributes: data
+            }
+        };
+        const response = await patch(endpoint, JSON.stringify(jsonApiData));
+        if (response.data && typeof response.data === 'object') {
+            const responseData = response.data as { data?: { attributes?: any; id?: number } };
+            if (responseData.data && responseData.data.attributes) {
+                return { ...responseData.data.attributes, id: responseData.data.id || ingredientId } as Ingredient;
+            }
+            return response.data as Ingredient;
+        }
+        throw new Error("Invalid ingredient update response");
+    }
+
     static async generate(session: string, numFill: number, numSauce: number, preparationTypeId?: number): Promise<GenerationResponse> {
         const endpoint = `${API_BASE}/pans/generate?session_key=${session}`;
         const attributes: any = {
@@ -152,6 +175,28 @@ export class Api {
             return { generated: pan };
         }
         throw new Error("Invalid generation response");
+    }
+
+    static async generateBandit(session: string, totalColumns: number, rollPrepType: boolean): Promise<GenerationResponse> {
+        const endpoint = `${API_BASE}/pans/generate/bandit?session_key=${session}`;
+        const attributes: any = {
+            total_columns: totalColumns,
+            roll_prep_type: rollPrepType
+        };
+        const jsonApiData = {
+            data: {
+                type: "generationParameters",
+                attributes: attributes
+            }
+        };
+        const response = await post(endpoint, JSON.stringify(jsonApiData));
+        // The backend returns a pan directly after deserialization
+        // Wrap it in the expected GenerationResponse format
+        if (response.data && typeof response.data === 'object') {
+            const pan = response.data as Pan;
+            return { generated: pan };
+        }
+        throw new Error("Invalid bandit generation response");
     }
     
     static async clonePan(session: string, pan: Pan): Promise<Pan> {
@@ -322,6 +367,7 @@ export class Api {
         fructose?: boolean;
         lactose?: boolean;
         gluten?: boolean;
+        color?: string;
     }): Promise<any> {
         const endpoint = `${API_BASE}/auth/me`;
         const jsonApiData = {
@@ -483,6 +529,113 @@ export class Api {
         const response = await post(endpoint, JSON.stringify({ ingredients }));
         const data = response.data || response;
         return data as { created: number; updated: number; deleted: number; ingredients: any[] };
+    }
+
+    static async getLeaderboard(): Promise<LeaderboardEntry[]> {
+        const endpoint = `${API_BASE}/achievements/leaderboard`;
+        const response = await get(endpoint) as { data?: unknown };
+        
+        // The deserialize-json-api library flattens attributes
+        // response.data should be an array after deserialization
+        if (response && response.data) {
+            if (Array.isArray(response.data)) {
+                return response.data as LeaderboardEntry[];
+            } else if (typeof response.data === 'object' && response.data !== null) {
+                // Handle nested data structure
+                const nestedData = (response.data as { data?: unknown }).data;
+                if (Array.isArray(nestedData)) {
+                    return nestedData as LeaderboardEntry[];
+                }
+            }
+        }
+        
+        return [];
+    }
+
+    // Event API methods
+    static async getEvents(sessionKey: string): Promise<Event[]> {
+        const endpoint = `${API_BASE}/events?session_key=${sessionKey}`;
+        const response = await get(endpoint);
+        
+        // Handle deserialized response
+        let dataArray: any[] = [];
+        if (Array.isArray(response.data)) {
+            dataArray = response.data;
+        } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            const nestedData = (response.data as { data: any }).data;
+            if (Array.isArray(nestedData)) {
+                dataArray = nestedData;
+            }
+        } else if (Array.isArray(response)) {
+            dataArray = response;
+        }
+        
+        return dataArray.map((item: any) => {
+            const attributes = item.attributes || {};
+            return {
+                id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : attributes.id,
+                event_type: item.event_type !== undefined ? item.event_type : attributes.event_type,
+                message: item.message !== undefined ? item.message : attributes.message,
+                data: item.data !== undefined ? item.data : attributes.data,
+                created_at: item.created_at !== undefined ? item.created_at : attributes.created_at
+            };
+        });
+    }
+
+    static async dismissEvent(eventId: number): Promise<void> {
+        const endpoint = `${API_BASE}/events/${eventId}/dismiss`;
+        await post(endpoint, JSON.stringify({}));
+    }
+
+    static async getEventConfigs(sessionKey?: string): Promise<EventConfig[]> {
+        const endpoint = sessionKey 
+            ? `${API_BASE}/events/configs?session_key=${sessionKey}`
+            : `${API_BASE}/events/configs`;
+        const response = await get(endpoint);
+        
+        // Handle deserialized response
+        let dataArray: any[] = [];
+        if (Array.isArray(response.data)) {
+            dataArray = response.data;
+        } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            const nestedData = (response.data as { data: any }).data;
+            if (Array.isArray(nestedData)) {
+                dataArray = nestedData;
+            }
+        } else if (Array.isArray(response)) {
+            dataArray = response;
+        }
+        
+        return dataArray.map((item: any) => {
+            const attributes = item.attributes || {};
+            return {
+                id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : attributes.id,
+                event_type: item.event_type !== undefined ? item.event_type : attributes.event_type,
+                session_id: item.session_id !== undefined ? item.session_id : (attributes.session_id !== undefined ? attributes.session_id : null),
+                enabled: item.enabled !== undefined ? item.enabled : attributes.enabled,
+                frequency_minutes: item.frequency_minutes !== undefined ? item.frequency_minutes : (attributes.frequency_minutes !== undefined ? attributes.frequency_minutes : null)
+            };
+        });
+    }
+
+    static async updateEventConfig(config: { event_type: string; enabled: boolean; frequency_minutes?: number | null; session_key?: string }): Promise<EventConfig> {
+        const endpoint = `${API_BASE}/events/configs`;
+        const jsonApiData = {
+            data: {
+                type: "event_config",
+                attributes: config
+            }
+        };
+        const response = await post(endpoint, JSON.stringify(jsonApiData));
+        const data = response.data || response;
+        const attributes = (data as any).attributes || data;
+        return {
+            id: (data as any).id ? (typeof (data as any).id === 'string' ? parseInt((data as any).id, 10) : Number((data as any).id)) : attributes.id,
+            event_type: attributes.event_type,
+            session_id: attributes.session_id !== undefined ? attributes.session_id : null,
+            enabled: attributes.enabled,
+            frequency_minutes: attributes.frequency_minutes !== undefined ? attributes.frequency_minutes : null
+        };
     }
 }
 

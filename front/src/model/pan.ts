@@ -6,6 +6,7 @@ export interface Pan {
     id: number;
     name: string;
     user: string;
+    user_color?: string;
     timestamp: string;
     snacked: boolean;
     ingredients: Ingredient[];

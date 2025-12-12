@@ -5,7 +5,6 @@ import {SessionSelector} from "./components/StartScreen";
 import {MainScreen} from "./components/MainScreen";
 import {LoginView} from "./components/LoginView";
 import {RegisterView} from "./components/RegisterView";
-import {InviteTokenView} from "./components/InviteTokenView";
 import {ProtectedRoute} from "./components/ProtectedRoute";
 import {SessionLayout} from "./components/SessionLayout";
 import {Dashboard} from "./components/Dashboard";
@@ -14,7 +13,6 @@ import {HistoryView} from "./components/HistoryView";
 import {AddIngredient} from "./components/AddIngredient";
 import {SettingsView} from "./components/SettingsView";
 import {AchievementView} from "./components/AchievementView";
-import {ServerSettingsView} from "./components/ServerSettingsView";
 
 export const RaclottoRouter = createBrowserRouter([
     {
@@ -87,16 +85,6 @@ export const RaclottoRouter = createBrowserRouter([
                             {
                                 path: "achievements",
                                 element: <AchievementView/>,
-                                errorElement: <ErrorPage/>,
-                            },
-                            {
-                                path: "server-settings",
-                                element: <ServerSettingsView/>,
-                errorElement: <ErrorPage/>,
-            },
-            {
-                path: "invites",
-                                element: <InviteTokenView/>,
                 errorElement: <ErrorPage/>,
                             },
                         ]

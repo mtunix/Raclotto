@@ -51,10 +51,8 @@ class DBTest(unittest.TestCase):
     @staticmethod
     def insert_dummy_data(app):
         session = RaclottoSession(key=session_id, name="Test Session")
-        user = User(name="Berta", password="123123")
         app.session.add(session)
         app.session.add(RaclottoSession(key="123", name="Test Session 2"))
-        app.session.add(user)
         app.session.commit()
 
         fills = [

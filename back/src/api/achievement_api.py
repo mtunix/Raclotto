@@ -6,6 +6,7 @@ from back.src.repository.achievement_repository import AchievementRepository
 from back.src.auth.middleware import require_auth, get_current_user
 from back.src.interactor.achievement_service import AchievementService
 from back.src.driver.database import db
+from back.src.entity.user import user_achievements
 
 
 class AchievementApi(BaseApi):
@@ -138,3 +139,60 @@ class AchievementApi(BaseApi):
             )
         
         return serialize_single(achievement, "achievement")
+    
+    @BaseApi.endpoint("/leaderboard", ["GET"])
+    @require_auth
+    def get_leaderboard(self):
+        """Get leaderboard of users by achievement points.
+        
+        :returns List[Dict]: List of users with their total achievement points, sorted by points descending
+        :status_code 200: Success
+        :status_code 401: Not authenticated
+        """
+        from sqlalchemy import func
+        from back.src.entity.user import User
+        from back.src.entity.achievement import Achievement
+        
+        # Get all users with their total achievement points
+        # Sum up the value of all achievements each user has unlocked
+        # Use a subquery approach to properly handle users with no achievements
+        
+        # Subquery to calculate points per user
+        points_subquery = db.session.query(
+            user_achievements.c.user_id,
+            func.sum(Achievement.value).label('total_points'),
+            func.count(Achievement.id).label('achievement_count')
+        ).join(
+            Achievement, Achievement.id == user_achievements.c.achievement_id
+        ).group_by(
+            user_achievements.c.user_id
+        ).subquery()
+        
+        # Main query joining users with their points
+        leaderboard_query = db.session.query(
+            User.id,
+            User.name,
+            func.coalesce(points_subquery.c.total_points, 0).label('total_points'),
+            func.coalesce(points_subquery.c.achievement_count, 0).label('achievement_count')
+        ).outerjoin(
+            points_subquery, User.id == points_subquery.c.user_id
+        ).order_by(
+            func.coalesce(points_subquery.c.total_points, 0).desc(),
+            User.name.asc()
+        ).all()
+        
+        # Convert to list of dictionaries
+        leaderboard = []
+        for rank, (user_id, user_name, total_points, achievement_count) in enumerate(leaderboard_query, start=1):
+            leaderboard.append({
+                "rank": rank,
+                "user_id": user_id,
+                "name": user_name,
+                "total_points": int(total_points) if total_points else 0,
+                "achievement_count": int(achievement_count) if achievement_count else 0
+            })
+        
+        return {
+            "jsonapi": {"version": JSONAPI_VERSION},
+            "data": leaderboard
+        }

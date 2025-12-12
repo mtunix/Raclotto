@@ -64,6 +64,17 @@ export interface StatsResponse {
 }
 
 /**
+ * Leaderboard entry structure
+ */
+export interface LeaderboardEntry {
+    rank: number;
+    user_id: number;
+    name: string;
+    total_points: number;
+    achievement_count: number;
+}
+
+/**
  * Error response structure
  */
 export interface ApiError {

@@ -245,10 +245,24 @@ class AuthApi(BaseApi):
             user.lactose = attributes['lactose']
         if 'gluten' in attributes:
             user.gluten = attributes['gluten']
+        if 'color' in attributes:
+            user.color = attributes['color']
         
         db.session.commit()
         
-        return serialize_single(user, "user")
+        # Serialize user but exclude password
+        from back.src.api.serializer import serialize_entity
+        from back.src.api.constants import JSONAPI_VERSION
+        
+        entity_data = serialize_entity(user, "user")
+        if entity_data and 'attributes' in entity_data:
+            # Remove password from attributes for security
+            entity_data['attributes'].pop('password', None)
+        
+        return {
+            "jsonapi": {"version": JSONAPI_VERSION},
+            "data": entity_data
+        }
 
     @BaseApi.endpoint("/refresh", ["POST"])
     @require_auth

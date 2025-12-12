@@ -4,7 +4,6 @@ from back.src.auth.middleware import require_auth
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.session_repository import SessionRepository
-from back.src.driver.database import db
 
 
 class StatsApi(BaseApi):
@@ -30,9 +29,12 @@ class StatsApi(BaseApi):
         """
         session_key = request.args.get('session_key')
         
-        # Get pans
+        # Get pans (limited to last 10, ordered by timestamp descending)
+        pans = self.pan_repository.get_recent_pans(session_key=session_key, limit=10)
+        
+        # Get session if session_key was provided (needed for ingredient stats)
+        session = None
         if session_key:
-            pans = self.pan_repository.by_session(session_key)
             session = self.session_repository.by_key(session_key)
             if not session:
                 return {
@@ -40,9 +42,6 @@ class StatsApi(BaseApi):
                     "ingredients_top_rated": [],
                     "ingredients_most_used": []
                 }
-        else:
-            pans = self.pan_repository.all()
-            session = None
         
         # Get top-rated ingredients (by average rating)
         session_id = session.id if session else None

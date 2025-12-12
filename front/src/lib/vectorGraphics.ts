@@ -11,6 +11,7 @@ export const VectorGraphics = {
     SAUCE: "🍯",
     ADD: "➕",
     MAIL: "✉️",
-    DASHBOARD: "📊"
+    DASHBOARD: "📊",
+    LOGOUT: "🚪"
 };
 

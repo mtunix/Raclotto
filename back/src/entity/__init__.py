@@ -9,3 +9,5 @@ from .rating import Rating
 from .raclotto_session import RaclottoSession
 from .user import User
 from .user_achievement_progress import UserAchievementProgress
+from .event import Event
+from .event_config import EventConfig

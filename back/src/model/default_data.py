@@ -35,7 +35,7 @@ ACHIEVEMENTS = [
         description="Esse eine Pfanne nach einer 3-stündigen Pause",
         value=5,
         hidden=False,
-        is_global=True  # Global: any pan
+        is_global=False  # Session-specific: track pause within current session
     ),
     Achievement(
         title="Happy new Year",
@@ -53,10 +53,10 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         title="Local Host",
-        description="Eröffne 10 Raclottos",
+        description="Eröffne ein Raclotto",
         value=10,
         hidden=False,
-        is_global=True  # Global: 10 sessions total
+        is_global=True  # Global: 1 session total
     ),
     Achievement(
         title="First Blood!",
@@ -70,7 +70,7 @@ ACHIEVEMENTS = [
         description="Erhalte eine identische Pfanne direkt hintereinander",
         value=30,
         hidden=False,
-        is_global=True  # Global: any two consecutive pans
+        is_global=False  # Session-specific: consecutive pans in current session
     ),
     Achievement(
         title="Second to none",
@@ -112,7 +112,7 @@ ACHIEVEMENTS = [
         description="Esse eine Pfanne mit nur einer Zutat",
         value=10,
         hidden=False,
-        is_global=True  # Global: any pan
+        is_global=False  # Session-specific: pan in current session
     ),
     Achievement(
         title="Pandler",
@@ -130,7 +130,7 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         title="Survival of the Fittest",
-        description="Esse die schlecht bewerteste Pfanne",
+        description="Esse die schlecht bewerteste Pfanne eines Raclottos (mindestens 2 Bewertungen)",
         value=10,
         hidden=False,
         is_global=False  # Session-specific: worst in a session
@@ -151,7 +151,7 @@ ACHIEVEMENTS = [
     ),
     Achievement(
         title="Pantastic",
-        description="Erstelle die best bewerteste Pfanne eines Raclottos",
+        description="Erstelle die best bewerteste Pfanne eines Raclottos (mindestens 2 Bewertungen)",
         value=8,
         hidden=False,
         is_global=False  # Session-specific: "eines Raclottos"
@@ -161,14 +161,14 @@ ACHIEVEMENTS = [
         description="Esse 5 Pfannen mit Fleisch",
         value=5,
         hidden=False,
-        is_global=True  # Global: 5 pans total
+        is_global=False  # Session-specific: 5 pans in a session
     ),
     Achievement(
         title="Biotonne",
         description="Esse 5 vegane Pfannen",
         value=5,
         hidden=False,
-        is_global=True  # Global: 5 pans total
+        is_global=False  # Session-specific: 5 pans in a session
     ),
     Achievement(
         title="Pan Sexual",
@@ -211,6 +211,41 @@ ACHIEVEMENTS = [
         value=15,
         hidden=False,
         is_global=True  # Global: any session creation
+    ),
+    Achievement(
+        title="Copy & Paste",
+        description="Baue die Pfanne deines Sitznachbarn exakt 1:1 nach",
+        value=10,
+        hidden=True,
+        is_global=False
+    ),
+    Achievement(
+        title="Cheesus Christ",
+        description="Staple mindestens 3 verschiedene Käsesorten auf einer Pfanne",
+        value=12,
+        hidden=False,
+        is_global=False
+    ),
+    Achievement(
+        title="Marzi-Pan",
+        description="Esse eine suesse Pfanne",
+        value=5,
+        hidden=False,
+        is_global=False
+    ),
+    Achievement(
+        title="Firewall",
+        description="Esse eine Pfanne mit Chili und einer scharfen Sauce",
+        value=10,
+        hidden=False,
+        is_global=False
+    ),
+    Achievement(
+        title="404 Cheese not found",
+        description="Esse eine Pfanne ohne Käse",
+        value=20,
+        hidden=True,
+        is_global=False
     ),
 ]
 

@@ -81,6 +81,9 @@ class AchievementService:
         # Get user's unlocked achievements
         unlocked_achievement_ids = self.user_repository.get_unlocked_achievements(user.id)
         
+        # Track which achievement needs to be re-evaluated for all users in the session
+        king_of_the_grill_achievement = None
+        
         for achievement in achievements:
             # For session-specific achievements, always evaluate (they're session-scoped)
             # For global achievements, skip if already unlocked
@@ -106,6 +109,30 @@ class AchievementService:
                 if achievement.id not in unlocked_achievement_ids:
                     self.unlock_achievement(user.id, achievement.id)
                     newly_unlocked.append(achievement)
+            else:
+                # Revoke if not unlocked but user has it (for achievements that can be lost)
+                # This is important for "King of the Grill" which can be lost when someone else takes the lead
+                if achievement.id in unlocked_achievement_ids and achievement.title == "King of the Grill":
+                    self.revoke_achievement(user.id, achievement.id)
+            
+            # Track "King of the Grill" achievement for re-evaluation of all users
+            if achievement.title == "King of the Grill":
+                king_of_the_grill_achievement = achievement
+        
+        # Re-evaluate "King of the Grill" for all users in the session
+        # This ensures that users who lose the lead have the achievement revoked
+        if king_of_the_grill_achievement:
+            user_ids_in_session = self.user_repository.get_users_in_session(session.id)
+            for user_id in user_ids_in_session:
+                # Skip the user who created the pan (already evaluated above)
+                if user_id == user.id:
+                    continue
+                
+                other_user = self.user_repository.by_id(user_id)
+                if other_user:
+                    self.re_evaluate_achievement_for_user(
+                        other_user, king_of_the_grill_achievement, session
+                    )
         
         return newly_unlocked
     
@@ -113,6 +140,7 @@ class AchievementService:
         """
         Evaluate all achievements for a newly created rating.
         This is used for achievements that are based on rating actions (e.g., "Local Guide").
+        Also evaluates achievements for the pan creator (e.g., "Survival of the Fittest").
         
         :param rating: The newly created rating
         :param user: The user who created the rating
@@ -136,7 +164,7 @@ class AchievementService:
         
         newly_unlocked = []
         
-        # Get user's unlocked achievements
+        # Get user's unlocked achievements (for the rater)
         unlocked_achievement_ids = self.user_repository.get_unlocked_achievements(user.id)
         
         for achievement in achievements:
@@ -150,7 +178,30 @@ class AchievementService:
             if not evaluator:
                 continue
             
-            # Evaluate the achievement
+            # Special handling for "Survival of the Fittest" and "Pantastic" - evaluate for pan creator, not rater
+            if achievement.title == "Survival of the Fittest" or achievement.title == "Pantastic":
+                # Get pan creator
+                pan_creator = self.user_repository.by_id(pan.user_id)
+                if pan_creator:
+                    # Build context for pan creator
+                    pan_creator_context = self._build_evaluation_context(pan_creator, session)
+                    
+                    # Evaluate for pan creator
+                    result = evaluator.evaluate(pan, pan_creator, pan_creator_context)
+                    
+                    # Update progress
+                    if result.progress is not None:
+                        self.update_progress(pan_creator.id, achievement.id, result.progress)
+                    
+                    # Unlock if achieved
+                    pan_creator_unlocked_ids = self.user_repository.get_unlocked_achievements(pan_creator.id)
+                    if result.unlocked:
+                        if achievement.id not in pan_creator_unlocked_ids:
+                            self.unlock_achievement(pan_creator.id, achievement.id)
+                            newly_unlocked.append(achievement)
+                continue
+            
+            # Evaluate the achievement for the rater (normal case)
             result = evaluator.evaluate(pan, user, context)
             
             # Update progress if applicable

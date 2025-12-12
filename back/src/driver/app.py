@@ -32,6 +32,9 @@ class App(Flask):
             # Initialize achievement registry with evaluators
             from back.src.interactor.achievement_registry import initialize_registry
             initialize_registry()
+            # Initialize event registry with evaluators
+            from back.src.interactor.event_registry import initialize_registry as initialize_event_registry
+            initialize_event_registry()
             app_context.push()
 
         self.init_mikado_api()

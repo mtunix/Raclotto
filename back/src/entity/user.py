@@ -1,5 +1,6 @@
-from sqlalchemy import String, Column, Integer, Boolean, Table, ForeignKey
+from sqlalchemy import String, Column, Integer, Boolean, Table, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 from back.src.entity.mixin import SerializableMixin
 
@@ -11,6 +12,7 @@ user_sessions = Table(
     BaseModel.metadata,
     Column("user_id", ForeignKey("user.id"), primary_key=True, nullable=False),
     Column("session_id", ForeignKey("session.id"), primary_key=True, nullable=False),
+    Column("joined_at", DateTime, nullable=False, default=datetime.now),
 )
 
 user_achievements = Table(
@@ -18,6 +20,13 @@ user_achievements = Table(
     BaseModel.metadata,
     Column("user_id", ForeignKey("user.id"), primary_key=True, nullable=False),
     Column("achievement_id", ForeignKey("achievement.id"), primary_key=True, nullable=False),
+)
+
+user_event_dismissals = Table(
+    "user_event_dismissals",
+    BaseModel.metadata,
+    Column("user_id", ForeignKey("user.id"), primary_key=True, nullable=False),
+    Column("event_id", ForeignKey("event.id"), primary_key=True, nullable=False),
 )
 
 
@@ -38,6 +47,7 @@ class User(SerializableMixin, BaseModel):
     fructose = Column(Boolean, nullable=False, default=True)
     lactose = Column(Boolean, nullable=False, default=True)
     gluten = Column(Boolean, nullable=False, default=True)
+    color = Column(String, nullable=True, default=None)
 
     sessions = relationship(
         "RaclottoSession",
@@ -50,3 +60,10 @@ class User(SerializableMixin, BaseModel):
         secondary=user_achievements,
         lazy="selectin"
     )
+
+    def as_dict(self):
+        """Override as_dict to exclude password for security."""
+        cols = super().as_dict()
+        # Remove password from serialization
+        cols.pop('password', None)
+        return cols
