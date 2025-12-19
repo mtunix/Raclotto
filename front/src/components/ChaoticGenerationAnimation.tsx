@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Util } from "../lib/util";
 
 interface ChaoticGenerationAnimationProps {
     ingredients?: any[]; // Optional, not used but kept for API compatibility
@@ -34,8 +35,10 @@ export function ChaoticGenerationAnimation(props: ChaoticGenerationAnimationProp
     const [flyingIngredients, setFlyingIngredients] = useState<FlyingIngredient[]>([]);
 
     useEffect(() => {
-        // Create 30-40 flying food icon elements
-        const count = 35;
+        // Reduce particle count on mobile for better performance
+        const isMobile = Util.isMobile();
+        const isLowPerf = Util.isLowPerformanceDevice();
+        const count = isLowPerf ? 15 : isMobile ? 20 : 35;
         const newFlyingIngredients: FlyingIngredient[] = [];
 
         for (let i = 0; i < count; i++) {
@@ -97,7 +100,7 @@ export function ChaoticGenerationAnimation(props: ChaoticGenerationAnimationProp
                 pointerEvents: "none",
                 overflow: "hidden",
                 backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: "blur(2px)",
+                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
                 transition: fading ? "opacity 250ms ease-out" : "none",
                 opacity: fading ? 0 : 1
             }}
@@ -119,34 +122,23 @@ export function ChaoticGenerationAnimation(props: ChaoticGenerationAnimationProp
                             animation: `flyChaotic${item.id} ${duration}ms ease-out forwards`,
                             animationDelay: `${Math.random() * 200}ms`,
                             willChange: "transform",
-                            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
+                            filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
                             lineHeight: 1,
+                            contain: "layout style paint",
                         }}
                     >
                         <style>{`
                             @keyframes flyChaotic${item.id} {
                                 0% {
-                                    transform: translate(0, 0) rotate(${item.rotation}deg) scale(0.5);
+                                    transform: translate3d(0, 0, 0) rotate(${item.rotation}deg) scale(0.5);
                                     opacity: 0.8;
                                 }
-                                20% {
-                                    transform: translate(${deltaX * 0.2}px, ${deltaY * 0.2}px) rotate(${item.rotation + 72}deg) scale(1);
-                                    opacity: 1;
-                                }
-                                40% {
-                                    transform: translate(${deltaX * 0.4}px, ${deltaY * 0.4}px) rotate(${item.rotation + 144}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                60% {
-                                    transform: translate(${deltaX * 0.6}px, ${deltaY * 0.6}px) rotate(${item.rotation + 216}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                80% {
-                                    transform: translate(${deltaX * 0.8}px, ${deltaY * 0.8}px) rotate(${item.rotation + 288}deg) scale(1);
+                                50% {
+                                    transform: translate3d(${deltaX * 0.5}px, ${deltaY * 0.5}px, 0) rotate(${item.rotation + 180}deg) scale(1.05);
                                     opacity: 1;
                                 }
                                 100% {
-                                    transform: translate(${deltaX}px, ${deltaY}px) rotate(${item.rotation + 360}deg) scale(0.8);
+                                    transform: translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${item.rotation + 360}deg) scale(0.8);
                                     opacity: 0;
                                 }
                             }

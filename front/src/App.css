@@ -263,3 +263,25 @@ h6 {
     top: auto !important;
     bottom: 24px !important;
 }
+
+/* Glow effect animation - pulses the box-shadow opacity */
+@keyframes glowPulse {
+    0%, 100% {
+        filter: brightness(1) drop-shadow(0 0 10px currentColor);
+    }
+    50% {
+        filter: brightness(1.1) drop-shadow(0 0 20px currentColor) drop-shadow(0 0 30px currentColor);
+    }
+}
+
+/* Override Ant Design card styles to ensure glow is visible */
+.pan-card-glow-wrapper .ant-card,
+.pan-card-glow-card {
+    box-shadow: inherit !important;
+}
+
+.pan-card-glow-wrapper,
+.pan-card-glow-card {
+    position: relative;
+    animation: glowPulse 2s ease-in-out infinite;
+}

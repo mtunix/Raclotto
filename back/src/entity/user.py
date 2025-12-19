@@ -55,6 +55,7 @@ class User(SerializableMixin, BaseModel):
     # Border customization
     border_style = Column(String, nullable=True, default='solid')  # CSS border style: solid, dashed, dotted, double, ridge, groove, inset, outset
     border_texture = Column(String, nullable=True, default=None)  # Texture name: cheese, bread, crispy, sauce, grilled, herbs, spices, or null
+    glow_effect = Column(Boolean, nullable=True, default=False)  # Card glow effect (unlocked at level 7)
     
     # Leveling system
     experience_points = Column(Integer, nullable=False, default=0)

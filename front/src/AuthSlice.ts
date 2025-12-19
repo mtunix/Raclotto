@@ -32,6 +32,7 @@ interface User {
     next_level?: NextLevel;
     border_style?: string;
     border_texture?: string | null;
+    glow_effect?: boolean;
 }
 
 interface AuthState {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Util } from "../lib/util";
 
 interface BlenderSpinAnimationProps {
     ingredients?: any[]; // Optional, not used but kept for API compatibility
@@ -50,8 +51,10 @@ export function BlenderSpinAnimation(props: BlenderSpinAnimationProps) {
         setCenterX(centerXPos);
         setCenterY(centerYPos);
 
-        // Create 30-40 flying food icon elements
-        const count = 35;
+        // Reduce particle count on mobile for better performance
+        const isMobile = Util.isMobile();
+        const isLowPerf = Util.isLowPerformanceDevice();
+        const count = isLowPerf ? 15 : isMobile ? 20 : 35;
         const newFlyingIngredients: FlyingIngredient[] = [];
 
         // Calculate max distance (diagonal of screen)
@@ -109,7 +112,7 @@ export function BlenderSpinAnimation(props: BlenderSpinAnimationProps) {
                 pointerEvents: "none",
                 overflow: "hidden",
                 backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: "blur(2px)",
+                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
                 transition: fading ? "opacity 250ms ease-out" : "none",
                 opacity: fading ? 0 : 1
             }}
@@ -120,21 +123,22 @@ export function BlenderSpinAnimation(props: BlenderSpinAnimationProps) {
                     position: "absolute",
                     left: "50%",
                     top: "50%",
-                    transform: "translate(-50%, -50%)",
                     fontSize: "200px",
                     zIndex: 1,
                     animation: "blenderSpin 0.5s linear infinite",
-                    filter: "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))",
+                    filter: Util.isMobile() ? "none" : "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))",
                     lineHeight: 1,
+                    willChange: "transform",
+                    transform: "translate3d(-50%, -50%, 0)",
                 }}
             >
                 <style>{`
                     @keyframes blenderSpin {
                         0% {
-                            transform: translate(-50%, -50%) rotate(0deg);
+                            transform: translate3d(-50%, -50%, 0) rotate(0deg);
                         }
                         100% {
-                            transform: translate(-50%, -50%) rotate(360deg);
+                            transform: translate3d(-50%, -50%, 0) rotate(360deg);
                         }
                     }
                 `}</style>
@@ -180,35 +184,24 @@ export function BlenderSpinAnimation(props: BlenderSpinAnimationProps) {
                             animation: `blenderFly${item.id} ${duration * 0.6}ms ease-out forwards`,
                             animationDelay: `${item.delay}ms`,
                             willChange: "transform",
-                            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
+                            filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
                             lineHeight: 1,
-                            transform: "translate(-50%, -50%)",
+                            transform: "translate3d(-50%, -50%, 0)",
+                            contain: "layout style paint",
                         }}
                     >
                         <style>{`
                             @keyframes blenderFly${item.id} {
                                 0% {
-                                    transform: translate(-50%, -50%) rotate(${item.rotation}deg) scale(0.8);
+                                    transform: translate3d(-50%, -50%, 0) rotate(${item.rotation}deg) scale(0.8);
                                     opacity: 0.9;
                                 }
-                                20% {
-                                    transform: translate(calc(-50% + ${translate20X}px), calc(-50% + ${translate20Y}px)) rotate(${item.rotation + 72}deg) scale(1);
-                                    opacity: 1;
-                                }
-                                40% {
-                                    transform: translate(calc(-50% + ${translate40X}px), calc(-50% + ${translate40Y}px)) rotate(${item.rotation + 144}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                60% {
-                                    transform: translate(calc(-50% + ${translate60X}px), calc(-50% + ${translate60Y}px)) rotate(${item.rotation + 216}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                80% {
-                                    transform: translate(calc(-50% + ${translate80X}px), calc(-50% + ${translate80Y}px)) rotate(${item.rotation + 288}deg) scale(1);
+                                50% {
+                                    transform: translate3d(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5}px), 0) rotate(${item.rotation + 180}deg) scale(1.05);
                                     opacity: 1;
                                 }
                                 100% {
-                                    transform: translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) rotate(${item.rotation + 360}deg) scale(0.8);
+                                    transform: translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) rotate(${item.rotation + 360}deg) scale(0.8);
                                     opacity: 0;
                                 }
                             }

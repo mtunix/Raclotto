@@ -310,16 +310,15 @@ export function IngredientDisplay(props: IngredientDisplayProps) {
                 fontSize: '17px',
                 fontWeight: 500,
                 letterSpacing: '-0.022em',
-                color: '#1d1d1f',
-                width: '100%'
+                color: '#1d1d1f'
             }}>
                 <div className="ingredient-display-compact-main" style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
+                    justifyContent: 'center',
                     gap: '6px',
                     flexWrap: 'nowrap',
-                    minWidth: 0,
-                    width: '100%'
+                    minWidth: 0
                 }}>
                     {showIcon && <span style={{fontSize: '18px', flexShrink: 0}}>{icon}</span>}
                     <span className="ingredient-name-compact" style={{ flex: '0 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ingredient.name}</span>

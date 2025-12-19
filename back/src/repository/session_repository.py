@@ -44,6 +44,29 @@ class SessionRepository(BaseRepository[RaclottoSession]):
         db.session.flush()
         return session
     
+    def reactivate_session(self, key: str) -> Optional[RaclottoSession]:
+        """
+        Reactivate a session by setting active to True.
+        
+        :param key: Session key
+        :return: Updated session or None if not found
+        """
+        session = self.by_key(key)
+        if not session:
+            return None
+        
+        session.active = True
+        db.session.flush()
+        return session
+    
+    def all_sessions(self) -> List[RaclottoSession]:
+        """
+        Get all sessions (active and inactive).
+        
+        :return: List of all sessions
+        """
+        return db.session.query(RaclottoSession).all()
+    
     def create_with_key(self, name: str, user_id: Optional[int] = None) -> RaclottoSession:
         """
         Create a new session with generated key.

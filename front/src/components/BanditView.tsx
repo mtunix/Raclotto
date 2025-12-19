@@ -236,101 +236,103 @@ export function BanditView(props: BanditViewProps) {
             setColumnStates(newColumnStates);
 
             // Start spinning animation for each column with staggered stops
-            newColumnStates.forEach((state, columnIndex) => {
-                const startTime = Date.now();
-                const baseDuration = 6000; // Base 6 seconds
-                const stopDelay = columnIndex * 800; // 800ms stagger between columns
-                const columnStopTime = baseDuration + stopDelay;
-                const spinSpeed = 50; // ms per item change
+            // Use a single animation loop to batch updates and reduce re-renders
+            const startTime = Date.now();
+            const baseDuration = 6000; // Base 6 seconds
+            const spinSpeed = 50; // ms per item change
+            const emojiChangeSpeed = 100; // Change emoji every 100ms during spinning
+            
+            // Store local state for each column to avoid frequent React updates
+            const columnLocalState = newColumnStates.map((state, idx) => ({
+                currentIndex: state.currentIndex,
+                currentEmoji: state.currentEmoji,
+                lastItemUpdate: startTime,
+                lastEmojiUpdate: startTime,
+                stopTime: baseDuration + (idx * 800),
+                items: state.items,
+                targetIndex: state.targetIndex,
+                targetEmoji: state.targetEmoji,
+                targetItem: state.items[state.targetIndex]
+            }));
 
-                let lastUpdate = startTime;
-                let currentItemIndex = state.currentIndex;
-                let emojiUpdateTime = startTime;
-                const emojiChangeSpeed = 100; // Change emoji every 100ms during spinning
+            let lastBatchUpdate = startTime;
+            const batchUpdateInterval = 100; // Batch state updates every 100ms instead of every frame
 
-                const animate = () => {
-                    const now = Date.now();
-                    const elapsed = now - startTime;
+            const animate = () => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+                let needsUpdate = false;
+                let allStopped = true;
 
-                    if (elapsed < columnStopTime) {
-                        // Still spinning - update item and emoji
-                        if (now - lastUpdate >= spinSpeed) {
-                            currentItemIndex = (currentItemIndex + 1) % state.items.length;
-                            setColumnStates(prev => {
-                                const updated = [...prev];
-                                if (updated[columnIndex]) {
-                                    updated[columnIndex] = {
-                                        ...updated[columnIndex],
-                                        currentIndex: currentItemIndex
-                                    };
-                                }
-                                return updated;
-                            });
-                            lastUpdate = now;
+                // Update all columns in a single loop
+                columnLocalState.forEach((colState, columnIndex) => {
+                    if (elapsed < colState.stopTime) {
+                        allStopped = false;
+                        
+                        // Update item index
+                        if (now - colState.lastItemUpdate >= spinSpeed) {
+                            colState.currentIndex = (colState.currentIndex + 1) % colState.items.length;
+                            colState.lastItemUpdate = now;
+                            needsUpdate = true;
                         }
                         
-                        // Update emoji during spinning (use appropriate array based on target ingredient type)
-                        if (now - emojiUpdateTime >= emojiChangeSpeed) {
-                            setColumnStates(prev => {
-                                const updated = [...prev];
-                                if (updated[columnIndex] && updated[columnIndex].items.length > 0) {
-                                    const targetItem = updated[columnIndex].items[updated[columnIndex].targetIndex];
-                                    const isSauce = targetItem?.type === IngredientType.SAUCE;
-                                    const emojiArray = isSauce ? SAUCE_ICONS : INGREDIENT_ICONS;
-                                    const randomEmoji = emojiArray[Math.floor(Math.random() * emojiArray.length)];
-                                    updated[columnIndex] = {
-                                        ...updated[columnIndex],
-                                        currentEmoji: randomEmoji
-                                    };
-                                }
-                                return updated;
-                            });
-                            emojiUpdateTime = now;
+                        // Update emoji
+                        if (now - colState.lastEmojiUpdate >= emojiChangeSpeed) {
+                            const isSauce = colState.targetItem?.type === IngredientType.SAUCE;
+                            const emojiArray = isSauce ? SAUCE_ICONS : INGREDIENT_ICONS;
+                            colState.currentEmoji = emojiArray[Math.floor(Math.random() * emojiArray.length)];
+                            colState.lastEmojiUpdate = now;
+                            needsUpdate = true;
                         }
-                        
-                        const frameId = requestAnimationFrame(animate);
-                        animationRefs.current[columnIndex] = frameId;
-                    } else {
-                        // Time to stop - set to target and lock in
-                        setColumnStates(prev => {
-                            const updated = [...prev];
-                            if (updated[columnIndex]) {
-                                updated[columnIndex] = {
-                                    ...updated[columnIndex],
-                                    isSpinning: false,
-                                    currentIndex: updated[columnIndex].targetIndex,
-                                    currentEmoji: updated[columnIndex].targetEmoji
+                    } else if (!stoppedColumnsRef.current.has(columnIndex)) {
+                        // Column just finished - mark as stopped
+                        colState.currentIndex = colState.targetIndex;
+                        colState.currentEmoji = colState.targetEmoji;
+                        stoppedColumnsRef.current.add(columnIndex);
+                        needsUpdate = true;
+                    }
+                });
+
+                // Batch state updates to reduce re-renders (only update every 100ms)
+                if (needsUpdate && (now - lastBatchUpdate >= batchUpdateInterval)) {
+                    setColumnStates(prev => {
+                        const updated = [...prev];
+                        columnLocalState.forEach((colState, idx) => {
+                            if (updated[idx]) {
+                                updated[idx] = {
+                                    ...updated[idx],
+                                    currentIndex: colState.currentIndex,
+                                    currentEmoji: colState.currentEmoji,
+                                    isSpinning: elapsed < colState.stopTime
                                 };
                             }
-                            return updated;
                         });
+                        return updated;
+                    });
+                    
+                    // Update locked columns
+                    const newLockedColumns = new Set<number>();
+                    stoppedColumnsRef.current.forEach(idx => newLockedColumns.add(idx));
+                    setLockedColumns(newLockedColumns);
+                    
+                    lastBatchUpdate = now;
+                }
 
-                        // Mark this column as stopped and locked
-                        stoppedColumnsRef.current.add(columnIndex);
-                        setLockedColumns(prev => {
-                            const newSet = new Set(prev);
-                            newSet.add(columnIndex);
-                            return newSet;
-                        });
+                if (allStopped && stoppedColumnsRef.current.size === numColumns && pan) {
+                    // All columns stopped - show result
+                    setIsSpinning(false);
+                    setShowResult(true);
+                    onGenerate(pan).catch(err => {
+                        console.error("Failed to process pan:", err);
+                    });
+                } else {
+                    const frameId = requestAnimationFrame(animate);
+                    // Store frame ID for cleanup (use first slot)
+                    animationRefs.current[0] = frameId;
+                }
+            };
 
-                        // Check if all columns have stopped
-                        if (stoppedColumnsRef.current.size === numColumns && pan) {
-                            // After all columns stop, show result in the same modal
-                            const stopTimeout = setTimeout(() => {
-                                setIsSpinning(false);
-                                setShowResult(true);
-                                // Call onGenerate in background (for backend tracking)
-                                onGenerate(pan).catch(err => {
-                                    console.error("Failed to process pan:", err);
-                                });
-                            }, 500); // Wait 500ms after last column stops
-                            stopTimeouts.current.push(stopTimeout);
-                        }
-                    }
-                };
-
-                animate();
-            });
+            animate();
         } catch (error) {
             console.error("Failed to generate bandit pan:", error);
             message.error(t("generate.banditError") || "Failed to spin the bandit. Please try again.");
@@ -669,7 +671,9 @@ export function BanditView(props: BanditViewProps) {
                                                     width: '100%',
                                                     padding: '0 8px',
                                                     opacity: isSpinningColumn ? 0.6 : 1,
-                                                    transition: 'opacity 0.3s ease'
+                                                    transition: 'opacity 0.3s ease',
+                                                    display: 'flex',
+                                                    justifyContent: 'center'
                                                 }}
                                             >
                                                 <IngredientDisplay

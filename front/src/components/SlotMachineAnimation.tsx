@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Util } from "../lib/util";
 
 interface SlotMachineAnimationProps {
     ingredients?: any[]; // Optional, not used but kept for API compatibility
@@ -49,8 +50,10 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
         setCenterX(centerXPos);
         setCenterY(centerYPos);
 
-        // Create 30-40 flying food icon elements
-        const count = 35;
+        // Reduce particle count on mobile for better performance
+        const isMobile = Util.isMobile();
+        const isLowPerf = Util.isLowPerformanceDevice();
+        const count = isLowPerf ? 15 : isMobile ? 20 : 35;
         const newFlyingIngredients: FlyingIngredient[] = [];
 
         // Calculate max distance (diagonal of screen)
@@ -122,7 +125,7 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                 pointerEvents: "none",
                 overflow: "hidden",
                 backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: "blur(2px)",
+                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
                 transition: fading ? "opacity 250ms ease-out" : "none",
                 opacity: fading ? 0 : 1
             }}
@@ -133,16 +136,18 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                     position: "absolute",
                     left: "50%",
                     top: "50%",
-                    transform: "translate(-50%, -50%)",
+                    transform: "translate3d(-50%, -50%, 0)",
                     display: "flex",
-                    gap: "20px",
+                    willChange: "transform",
+                    gap: Util.isMobile() ? "8px" : "20px",
                     alignItems: "center",
                     zIndex: 2,
-                    padding: "40px",
+                    padding: Util.isMobile() ? "12px" : "40px",
                     backgroundColor: "rgba(0, 0, 0, 0.6)",
-                    borderRadius: "20px",
-                    border: "4px solid #ffd700",
+                    borderRadius: Util.isMobile() ? "12px" : "20px",
+                    border: Util.isMobile() ? "2px solid #ffd700" : "4px solid #ffd700",
                     boxShadow: "0 0 30px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2)",
+                    maxWidth: "95vw",
                 }}
             >
                 {/* Three spinning reels */}
@@ -150,21 +155,22 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                     <div
                         key={index}
                         style={{
-                            width: "120px",
-                            height: "150px",
+                            width: Util.isMobile() ? "60px" : "120px",
+                            height: Util.isMobile() ? "75px" : "150px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             backgroundColor: "rgba(255, 255, 255, 0.1)",
-                            borderRadius: "10px",
-                            border: "2px solid #ffd700",
+                            borderRadius: Util.isMobile() ? "6px" : "10px",
+                            border: Util.isMobile() ? "1px solid #ffd700" : "2px solid #ffd700",
                             position: "relative",
                             overflow: "hidden",
+                            flexShrink: 0,
                         }}
                     >
                         <div
                             style={{
-                                fontSize: "80px",
+                                fontSize: Util.isMobile() ? "40px" : "80px",
                                 animation: `slotSpin${index} 1.5s ease-out forwards`,
                                 animationDelay: `${index * 0.1}s`,
                                 lineHeight: 1,
@@ -173,19 +179,19 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                             <style>{`
                                 @keyframes slotSpin${index} {
                                     0% {
-                                        transform: translateY(-200px) rotate(0deg);
+                                        transform: translate3d(0, -200px, 0) rotate(0deg);
                                         opacity: 0.5;
                                     }
                                     70% {
-                                        transform: translateY(${Math.random() * 100 - 50}px) rotate(${360 * (index + 1)}deg);
+                                        transform: translate3d(0, ${Math.random() * 100 - 50}px, 0) rotate(${360 * (index + 1)}deg);
                                         opacity: 0.8;
                                     }
                                     85% {
-                                        transform: translateY(${Math.random() * 20 - 10}px) rotate(${360 * (index + 1) + 180}deg);
+                                        transform: translate3d(0, ${Math.random() * 20 - 10}px, 0) rotate(${360 * (index + 1) + 180}deg);
                                         opacity: 1;
                                     }
                                     100% {
-                                        transform: translateY(0px) rotate(${360 * (index + 1) + 360}deg);
+                                        transform: translate3d(0, 0, 0) rotate(${360 * (index + 1) + 360}deg);
                                         opacity: 1;
                                     }
                                 }
@@ -202,9 +208,9 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                     position: "absolute",
                     left: "50%",
                     top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "500px",
-                    height: "300px",
+                    transform: "translate3d(-50%, -50%, 0)",
+                    width: Util.isMobile() ? "90vw" : "500px",
+                    height: Util.isMobile() ? "200px" : "300px",
                     zIndex: 1,
                     animation: "casinoLights 0.3s ease-in-out infinite",
                     pointerEvents: "none",
@@ -272,35 +278,24 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                             animation: `slotFly${item.id} ${(duration - 1500) * 0.7}ms ease-out forwards`,
                             animationDelay: `${item.delay}ms`,
                             willChange: "transform",
-                            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
+                            filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
                             lineHeight: 1,
-                            transform: "translate(-50%, -50%)",
+                            transform: "translate3d(-50%, -50%, 0)",
+                            contain: "layout style paint",
                         }}
                     >
                         <style>{`
                             @keyframes slotFly${item.id} {
                                 0% {
-                                    transform: translate(-50%, -50%) rotate(${item.rotation}deg) scale(0.5);
+                                    transform: translate3d(-50%, -50%, 0) rotate(${item.rotation}deg) scale(0.5);
                                     opacity: 0.8;
                                 }
-                                20% {
-                                    transform: translate(calc(-50% + ${translate20X}px), calc(-50% + ${translate20Y}px)) rotate(${item.rotation + 72}deg) scale(1);
-                                    opacity: 1;
-                                }
-                                40% {
-                                    transform: translate(calc(-50% + ${translate40X}px), calc(-50% + ${translate40Y}px)) rotate(${item.rotation + 144}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                60% {
-                                    transform: translate(calc(-50% + ${translate60X}px), calc(-50% + ${translate60Y}px)) rotate(${item.rotation + 216}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                80% {
-                                    transform: translate(calc(-50% + ${translate80X}px), calc(-50% + ${translate80Y}px)) rotate(${item.rotation + 288}deg) scale(1);
+                                50% {
+                                    transform: translate3d(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5}px), 0) rotate(${item.rotation + 180}deg) scale(1.05);
                                     opacity: 1;
                                 }
                                 100% {
-                                    transform: translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) rotate(${item.rotation + 360}deg) scale(0.8);
+                                    transform: translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) rotate(${item.rotation + 360}deg) scale(0.8);
                                     opacity: 0;
                                 }
                             }

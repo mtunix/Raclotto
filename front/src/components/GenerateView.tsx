@@ -3,9 +3,8 @@ import {Button, Row, Col, Form, Rate, Spin, Card, Typography, Divider, Checkbox,
 import {BanditView} from "./BanditView";
 import {Api} from "../lib/api";
 import {useIngredients, usePrepTypes, useAvailableIngredientCounts} from "../lib/api/swrHooks";
-import {Ingredient, IngredientType} from "../model/ingredient";
+import {IngredientType} from "../model/ingredient";
 import {Pan} from "../model/pan";
-import {PrepType} from "../model/prepType";
 import {Util} from "../lib/util";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../AppSlice";
@@ -371,33 +370,41 @@ export function GenerateView() {
             setAnimatedValue(0);
             startTimeRef.current = Date.now();
 
+            let lastUpdate = startTimeRef.current;
+            const updateInterval = 16; // ~60fps, but we can throttle more on mobile
+            
             const animate = () => {
                 if (!startTimeRef.current) return;
 
-                const elapsed = Date.now() - startTimeRef.current;
+                const now = Date.now();
+                const elapsed = now - startTimeRef.current;
                 const duration = 3000; // 3 seconds total
                 const progress = Math.min(elapsed / duration, 1);
 
-                // Smooth oscillation from 0 to 9 and back, slowing down over time
-                // Start with fast oscillations, gradually slow down and settle on target
-                
-                // Frequency decreases over time (starts fast, ends slow)
-                const frequency = 0.08 * (1 - progress * 0.95); // Start at 0.08, end near 0
-                
-                // Amplitude decreases over time (starts at full range, ends at 0)
-                const amplitude = 4.5 * (1 - progress) * (1 - progress); // Quadratic decay
-                
-                // Smooth sine wave oscillation
-                const oscillation = Math.sin(elapsed * frequency) * amplitude;
-                
-                // Base value that eases towards target (ease-out cubic)
-                const targetProgress = 1 - Math.pow(1 - progress, 3);
-                const baseValue = targetProgress * cheeseLevel;
-                
-                // Combine: smooth oscillation around the base value
-                const currentValue = Math.max(0, Math.min(9, baseValue + oscillation));
-                
-                setAnimatedValue(currentValue);
+                // Throttle updates to reduce re-renders (only update every ~16ms)
+                if (now - lastUpdate >= updateInterval || progress >= 1) {
+                    // Smooth oscillation from 0 to 9 and back, slowing down over time
+                    // Start with fast oscillations, gradually slow down and settle on target
+                    
+                    // Frequency decreases over time (starts fast, ends slow)
+                    const frequency = 0.08 * (1 - progress * 0.95); // Start at 0.08, end near 0
+                    
+                    // Amplitude decreases over time (starts at full range, ends at 0)
+                    const amplitude = 4.5 * (1 - progress) * (1 - progress); // Quadratic decay
+                    
+                    // Smooth sine wave oscillation
+                    const oscillation = Math.sin(elapsed * frequency) * amplitude;
+                    
+                    // Base value that eases towards target (ease-out cubic)
+                    const targetProgress = 1 - Math.pow(1 - progress, 3);
+                    const baseValue = targetProgress * cheeseLevel;
+                    
+                    // Combine: smooth oscillation around the base value
+                    const currentValue = Math.max(0, Math.min(9, baseValue + oscillation));
+                    
+                    setAnimatedValue(currentValue);
+                    lastUpdate = now;
+                }
 
                 if (progress < 1) {
                     animationRef.current = requestAnimationFrame(animate);
@@ -480,6 +487,8 @@ export function GenerateView() {
                                 pointerEvents: 'none',
                                 transition: 'none', // Remove transition for smooth animation
                                 zIndex: 10,
+                                willChange: 'transform',
+                                transform: 'translate3d(0, 0, 0)',
                                 width: '40px',
                                 height: '40px',
                                 display: 'flex',

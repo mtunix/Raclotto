@@ -268,6 +268,7 @@ class AuthApi(BaseApi):
         - profile_picture: String (optional, base64 encoded image)
         - border_style: String (optional, 'solid', 'dashed', 'dotted', 'double', 'ridge', 'groove', 'inset', 'outset')
         - border_texture: String (optional, 'cheese', 'bread', 'sauce-01', 'sauce-02', 'herbs-01', 'herbs-02', or null)
+        - glow_effect: Boolean (optional, unlocked at level 7)
 
         :returns User: Updated user object
         :status_code 200: Success
@@ -329,6 +330,8 @@ class AuthApi(BaseApi):
                     title="Invalid border_texture",
                     detail=f"border_texture must be one of: {', '.join([t for t in allowed_textures if t])}, or null"
                 )
+        if 'glow_effect' in attributes:
+            user.glow_effect = bool(attributes['glow_effect'])
         
         # Enforce hierarchical logic for diet preferences (meat -> vegetarian -> vegan)
         # If meat is true, vegetarian and vegan must be true

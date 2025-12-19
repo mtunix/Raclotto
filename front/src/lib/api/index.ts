@@ -406,6 +406,31 @@ export class Api {
         throw new Error("Invalid session close response");
     }
 
+    static async reactivateSession(session: string): Promise<RaclottoSession> {
+        const endpoint = `${API_BASE}/sessions/reactivate`;
+        const jsonApiData = {
+            data: {
+                type: "session",
+                attributes: {
+                    key: session
+                }
+            }
+        };
+        const response = await post(endpoint, JSON.stringify(jsonApiData));
+        if (response.data && typeof response.data === 'object') {
+            const sessionData = response.data as { id?: number; attributes?: any; key?: string; name?: string; timestamp?: string; active?: boolean };
+            const attrs = sessionData.attributes || sessionData;
+            return RaclottoSession.fromParsed({
+                id: sessionData.id || (attrs as any).id || 0,
+                key: (attrs as any).key || session,
+                name: (attrs as any).name || '',
+                timestamp: (attrs as any).timestamp ? new Date((attrs as any).timestamp) : new Date(),
+                active: (attrs as any).active !== undefined ? (attrs as any).active : true
+            });
+        }
+        throw new Error("Invalid session reactivate response");
+    }
+
     static async getStats(session?: string): Promise<StatsResponse> {
         let endpoint = `${API_BASE}/stats`;
         if (session) {

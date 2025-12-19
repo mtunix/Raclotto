@@ -242,6 +242,7 @@ export function SettingsView(props: SettingsViewProps) {
     let [userLanguage, setUserLanguage] = useState<string>("de");
     let [borderStyle, setBorderStyle] = useState<string>("solid");
     let [borderTexture, setBorderTexture] = useState<string | null>(null);
+    let [glowEffect, setGlowEffect] = useState<boolean>(false);
     let [userSaving, setUserSaving] = useState(false);
     
     // Track initial state for dirty checking
@@ -251,6 +252,7 @@ export function SettingsView(props: SettingsViewProps) {
         language: string;
         border_style: string;
         border_texture: string | null;
+        glow_effect: boolean;
         meat: boolean;
         vegetarian: boolean;
         vegan: boolean;
@@ -270,6 +272,7 @@ export function SettingsView(props: SettingsViewProps) {
     let [exporting, setExporting] = useState(false);
     let [importing, setImporting] = useState(false);
     let [reimporting, setReimporting] = useState(false);
+    const [closeSessionModalVisible, setCloseSessionModalVisible] = useState(false);
     
     // Export modal state
     const [exportModalVisible, setExportModalVisible] = useState(false);
@@ -308,6 +311,7 @@ export function SettingsView(props: SettingsViewProps) {
             const language = attributes.language || "de";
             const border_style = attributes.border_style || "solid";
             const border_texture = attributes.border_texture || null;
+            const glow_effect = attributes.glow_effect || false;
             const meat = attributes.meat || false;
             const vegetarian = attributes.vegetarian !== undefined ? attributes.vegetarian : true;
             const vegan = attributes.vegan !== undefined ? attributes.vegan : true;
@@ -330,6 +334,7 @@ export function SettingsView(props: SettingsViewProps) {
             setUserLanguage(language);
             setBorderStyle(border_style);
             setBorderTexture(border_texture);
+            setGlowEffect(glow_effect);
             
             // Set initial state for dirty checking
             setInitialUserState({
@@ -338,6 +343,7 @@ export function SettingsView(props: SettingsViewProps) {
                 language,
                 border_style,
                 border_texture,
+                glow_effect,
                 meat,
                 vegetarian,
                 vegan,
@@ -417,6 +423,7 @@ export function SettingsView(props: SettingsViewProps) {
             userLanguage !== initialUserState.language ||
             borderStyle !== initialUserState.border_style ||
             borderTexture !== initialUserState.border_texture ||
+            glowEffect !== initialUserState.glow_effect ||
             meat !== initialUserState.meat ||
             vegetarian !== initialUserState.vegetarian ||
             vegan !== initialUserState.vegan ||
@@ -440,6 +447,7 @@ export function SettingsView(props: SettingsViewProps) {
                 language: userLanguage,
                 border_style: borderStyle,
                 border_texture: borderTexture,
+                glow_effect: glowEffect,
                 meat,
                 vegetarian,
                 vegan,
@@ -480,6 +488,7 @@ export function SettingsView(props: SettingsViewProps) {
                 language: userLanguage,
                 border_style: borderStyle,
                 border_texture: borderTexture,
+                glow_effect: glowEffect,
                 meat,
                 vegetarian: updateData.vegetarian !== undefined ? updateData.vegetarian : vegetarian,
                 vegan: updateData.vegan !== undefined ? updateData.vegan : vegan,
@@ -513,7 +522,8 @@ export function SettingsView(props: SettingsViewProps) {
                     color: userColor, 
                     language: userLanguage,
                     border_style: borderStyle,
-                    border_texture: borderTexture
+                    border_texture: borderTexture,
+                    glow_effect: glowEffect
                 });
             }
             
@@ -562,12 +572,18 @@ export function SettingsView(props: SettingsViewProps) {
     }
 
     function onCloseSession() {
+        setCloseSessionModalVisible(true);
+    }
+
+    function handleConfirmCloseSession() {
         if (!sessionKey) return;
         Api.close(sessionKey).then(() => {
             clearSession();
+            setCloseSessionModalVisible(false);
             navigate("/");
         }).catch((error) => {
             console.error("Failed to close session:", error);
+            message.error(t("session.closeFailed") || "Failed to close session");
         });
     }
 
@@ -988,6 +1004,39 @@ export function SettingsView(props: SettingsViewProps) {
                             ) : (
                                 <Text type="secondary" style={{ fontSize: '14px' }}>
                                     {t("settings.borderTextureLocked") || "Locked - Reach level 5 to unlock"}
+                                </Text>
+                            )}
+                        </div>
+                    </Form.Item>
+                    
+                    {/* Glow Effect - unlocked at level 7 */}
+                    <Form.Item 
+                        label={<span style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
+                            {t("settings.glowEffect") || "Card Glow Effect"}
+                            {currentUser?.level && currentUser.level.id < 7 && (
+                                <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
+                            )}
+                        </span>} 
+                        style={{ marginBottom: 24 }}
+                        labelCol={{ span: 24 }}
+                        wrapperCol={{ span: 24 }}
+                    >
+                        <div style={{ opacity: (currentUser?.level ? currentUser.level.id < 7 : true) ? 0.6 : 1 }}>
+                            <Switch
+                                checked={glowEffect}
+                                onChange={(checked) => setGlowEffect(checked)}
+                                disabled={userSaving || (currentUser?.level ? currentUser.level.id < 7 : true)}
+                                size="default"
+                            />
+                        </div>
+                        <div style={{ marginTop: '8px' }}>
+                            {currentUser?.level && currentUser.level.id >= 7 ? (
+                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                    {t("settings.glowEffectUnlocked") || "Unlocked at level 7"}
+                                </Text>
+                            ) : (
+                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                    {t("settings.glowEffectLocked") || "Locked - Reach level 7 to unlock"}
                                 </Text>
                             )}
                         </div>
@@ -1430,6 +1479,28 @@ export function SettingsView(props: SettingsViewProps) {
                 />
             </Modal>
             
+            {/* Close Session Confirmation Modal */}
+            <Modal
+                title={t("session.confirmCloseTitle") || "End Session?"}
+                open={closeSessionModalVisible}
+                onCancel={() => setCloseSessionModalVisible(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setCloseSessionModalVisible(false)}>
+                        {t("common.cancel") || "Cancel"}
+                    </Button>,
+                    <Button 
+                        key="confirm"
+                        type="primary" 
+                        danger
+                        onClick={handleConfirmCloseSession}
+                    >
+                        {t("session.endSession") || "End Session"}
+                    </Button>
+                ]}
+            >
+                <p>{t("session.confirmCloseMessage") || "Are you sure you want to end this session? This action cannot be undone."}</p>
+            </Modal>
+
             {/* Import Modal */}
             <Modal
                 title={t("settings.importModalTitle") || "Import Ingredients"}

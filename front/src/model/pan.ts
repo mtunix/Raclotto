@@ -11,6 +11,7 @@ export interface Pan {
     user_profile_picture?: string;
     user_border_style?: string;
     user_border_texture?: string | null;
+    user_glow_effect?: boolean;
     timestamp: string;
     snacked: boolean;
     ingredients: Ingredient[];

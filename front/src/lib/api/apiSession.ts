@@ -14,8 +14,9 @@ export const sessionFetcher = (endpoint: string) => get(endpoint)
         return [];
     });
 
-export function useSessions() {
-    return useSWR(ENDPOINT_SESSION, sessionFetcher, {
+export function useSessions(includeInactive: boolean = false) {
+    const endpoint = includeInactive ? `${ENDPOINT_SESSION}?include_inactive=true` : ENDPOINT_SESSION;
+    return useSWR(endpoint, sessionFetcher, {
         onErrorRetry: onErrorRetry
     })
 }

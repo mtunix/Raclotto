@@ -342,6 +342,7 @@ export function ProfileView() {
                                 const borderStyle = pan.user_border_style || 'solid';
                                 const borderTexture = pan.user_border_texture;
                                 const textureBorderImage = getTextureBorderImage(borderTexture);
+                                const glowEffect = pan.user_glow_effect || false;
                                 
                                 const cssBorderStyle = borderStyle as React.CSSProperties['borderStyle'];
                                 const borderStyleObj: React.CSSProperties = {
@@ -375,6 +376,37 @@ export function ProfileView() {
                                     borderStyleObj.borderBottom = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
                                     borderStyleObj.borderLeft = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
                                     borderStyleObj.borderRadius = '18px';
+                                }
+                                
+                                // Apply glow effect if enabled
+                                let glowClassName = '';
+                                let glowWrapperClassName = '';
+                                if (glowEffect) {
+                                    const glowColor = borderColor || "#d9d9d9";
+                                    // Convert hex color to RGB for rgba
+                                    const hexToRgb = (hex: string) => {
+                                        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                                        return result ? {
+                                            r: parseInt(result[1], 16),
+                                            g: parseInt(result[2], 16),
+                                            b: parseInt(result[3], 16)
+                                        } : { r: 217, g: 217, b: 217 }; // Default gray
+                                    };
+                                    const rgb = hexToRgb(glowColor);
+                                    // Very visible glow - using rgba for better control
+                                    const glowColorRgba = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
+                                    const glowColorRgbaLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`;
+                                    const glowColorRgbaVeryLight = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`;
+                                    
+                                    // Strong, very visible glow shadow with multiple layers
+                                    const glowShadow = `0 0 25px 6px ${glowColorRgba}, 0 0 40px 10px ${glowColorRgbaLight}, 0 0 60px 15px ${glowColorRgbaVeryLight}`;
+                                    borderStyleObj.boxShadow = glowShadow;
+                                    if (wrapperStyle) {
+                                        wrapperStyle.boxShadow = glowShadow;
+                                    }
+                                    
+                                    glowClassName = 'pan-card-glow-card';
+                                    glowWrapperClassName = 'pan-card-glow-wrapper';
                                 }
                                 
                                 const cardContent = (
@@ -421,9 +453,10 @@ export function ProfileView() {
                                 return (
                                     <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
                                         {textureBorderImage ? (
-                                            <div style={wrapperStyle}>
+                                            <div style={wrapperStyle} className={glowWrapperClassName}>
                                                 <Card
                                                     style={borderStyleObj}
+                                                    className={glowClassName}
                                                     bodyStyle={{ padding: '12px' }}
                                                 >
                                                     {cardContent}
@@ -432,6 +465,7 @@ export function ProfileView() {
                                         ) : (
                                             <Card
                                                 style={borderStyleObj}
+                                                className={glowClassName}
                                                 bodyStyle={{ padding: '12px' }}
                                             >
                                                 {cardContent}

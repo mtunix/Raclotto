@@ -1,4 +1,4 @@
-import {Button, Form, Input, Select, Card, Row, Col} from "antd";
+import {Button, Form, Input, Select, Card, Row, Col, Tag, message} from "antd";
 import {useSessions} from "../lib/api/apiSession";
 import {SpinnerContainer} from "./common/Spinner";
 import ErrorPage from "./common/error/ErrorPage";
@@ -14,14 +14,46 @@ export function JoinSession() {
     const { t } = useTranslation();
     const setSession = useAppStore((state) => state.setSession);
     const navigate = useNavigate();
-    let {data, isLoading, error} = useSessions();
+    let {data, isLoading, error, mutate} = useSessions(true); // Include inactive sessions
     let [selectedIndex, setSelectedIndex] = React.useState(0);
+    const [reactivating, setReactivating] = useState(false);
 
-    function join() {
-        if (data && data.length > 0 && selectedIndex >= 0 && selectedIndex < data.length) {
-            const selectedSession = data[selectedIndex];
-            setSession(selectedSession);
-            navigate(`/${selectedSession.id}/generate`);
+    // Sort sessions: active first, then inactive
+    const sortedSessions = React.useMemo(() => {
+        if (!data) return [];
+        return [...data].sort((a, b) => {
+            // Active sessions first (true comes before false)
+            if (a.active && !b.active) return -1;
+            if (!a.active && b.active) return 1;
+            // If both have same active status, maintain original order
+            return 0;
+        });
+    }, [data]);
+
+    async function join() {
+        if (sortedSessions && sortedSessions.length > 0 && selectedIndex >= 0 && selectedIndex < sortedSessions.length) {
+            const selectedSession = sortedSessions[selectedIndex];
+            
+            // If session is inactive, reactivate it first
+            if (!selectedSession.active) {
+                setReactivating(true);
+                try {
+                    const reactivatedSession = await Api.reactivateSession(selectedSession.key);
+                    setSession(reactivatedSession);
+                    // Refresh the session list
+                    mutate();
+                    message.success(t("session.reactivated") || "Session reactivated successfully");
+                    navigate(`/${reactivatedSession.id}/generate`);
+                } catch (error) {
+                    console.error("Failed to reactivate session:", error);
+                    message.error(t("session.reactivateFailed") || "Failed to reactivate session");
+                    setReactivating(false);
+                    return;
+                }
+            } else {
+                setSession(selectedSession);
+                navigate(`/${selectedSession.id}/generate`);
+            }
         }
     }
 
@@ -30,14 +62,14 @@ export function JoinSession() {
     }
 
     useEffect(() => {
-        if (data && data.length > 0) {
+        if (sortedSessions && sortedSessions.length > 0) {
             setSelectedIndex(0);
         }
-    }, [data]);
+    }, [sortedSessions]);
 
     if (isLoading) return <SpinnerContainer/>;
     if (error) return <ErrorPage error={error}/>;
-    if (!data || data.length === 0) {
+    if (!sortedSessions || sortedSessions.length === 0) {
         return (
             <Card title={t("session.joinExisting")}>
                 <p style={{ margin: 0, color: 'rgba(0, 0, 0, 0.45)' }}>{t("session.noSessionsAvailable")}</p>
@@ -55,20 +87,43 @@ export function JoinSession() {
                         style={{ width: '100%' }}
                         size="large"
                     >
-                        {data.map((session: RaclottoSession, i: number) => {
-                            return <Select.Option key={session.id} value={i}>{session.name}</Select.Option>
+                        {sortedSessions.map((session: RaclottoSession, i: number) => {
+                            const displayName = session.active 
+                                ? session.name 
+                                : `${session.name} ${t("session.inactive") || "(Inactive)"}`;
+                            return (
+                                <Select.Option key={session.id} value={i}>
+                                    {displayName}
+                                </Select.Option>
+                            );
                         })}
                     </Select>
                 </Form.Item>
                 <Form.Item style={{ marginBottom: 0 }}>
+                    {sortedSessions && sortedSessions.length > 0 && selectedIndex >= 0 && selectedIndex < sortedSessions.length && !sortedSessions[selectedIndex].active && (
+                        <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#fff7e6', borderRadius: '8px', border: '1px solid #ffd591' }}>
+                            <Tag color="orange" style={{ marginBottom: '8px' }}>
+                                {t("session.inactive") || "Inactive"}
+                            </Tag>
+                            <div style={{ fontSize: '14px', color: '#666' }}>
+                                {t("session.reactivateMessage") || "This session is inactive. It will be reactivated when you join."}
+                            </div>
+                        </div>
+                    )}
                     <Button 
                         type="primary" 
                         onClick={join} 
-                        disabled={!data || data.length === 0}
+                        disabled={!sortedSessions || sortedSessions.length === 0 || reactivating}
+                        loading={reactivating}
                         block
                         size="large"
                     >
-                        {t("session.join")}
+                        {reactivating 
+                            ? (t("session.reactivating") || "Reactivating...")
+                            : (sortedSessions && sortedSessions.length > 0 && selectedIndex >= 0 && selectedIndex < sortedSessions.length && !sortedSessions[selectedIndex].active
+                                ? (t("session.joinAndReactivate") || "Join & Reactivate")
+                                : (t("session.join") || "Join"))
+                        }
                     </Button>
                 </Form.Item>
             </Form>

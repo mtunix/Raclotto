@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { VectorGraphics } from "../lib/vectorGraphics";
+import { Util } from "../lib/util";
 
 interface ShootingIngredientsAnimationProps {
     ingredients?: any[];
@@ -43,8 +44,11 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
             ? ingredients.filter((i: any) => i.available !== false)
             : [];
 
-        // Number of ingredient ejections (8-12 ingredients)
-        const ejectionCount = Math.min(availableIngredients.length || 10, 12);
+        // Reduce particle count on mobile for better performance
+        const isMobile = Util.isMobile();
+        const isLowPerf = Util.isLowPerformanceDevice();
+        const maxEjections = isLowPerf ? 6 : isMobile ? 8 : 12;
+        const ejectionCount = Math.min(availableIngredients.length || 10, maxEjections);
         const newEjections: IngredientEjection[] = [];
 
         // Rocket flight path - diagonal across screen
@@ -87,8 +91,8 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
 
         setEjections(newEjections);
 
-        // Create exhaust smoke particles
-        const exhaustCount = 30;
+        // Reduce exhaust particles on mobile
+        const exhaustCount = isLowPerf ? 10 : isMobile ? 15 : 30;
         const newExhaust: SmokeParticle[] = [];
         for (let i = 0; i < exhaustCount; i++) {
             newExhaust.push({
@@ -120,7 +124,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                 pointerEvents: "none",
                 overflow: "hidden",
                 backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: "blur(2px)",
+                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
                 transition: fading ? "opacity 250ms ease-out" : "none",
                 opacity: fading ? 0 : 1
             }}
@@ -143,7 +147,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                             height: `${particle.size}px`,
                             borderRadius: "50%",
                             background: `radial-gradient(circle, rgba(255, 150, 50, ${particle.opacity}) 0%, rgba(200, 100, 0, ${particle.opacity * 0.6}) 50%, rgba(150, 50, 0, 0) 100%)`,
-                            filter: "blur(10px)",
+                            filter: Util.isMobile() ? "none" : "blur(10px)",
                             animation: `exhaustFade${particle.id} ${exhaustDuration}ms ease-out forwards`,
                             animationDelay: `${exhaustDelay}ms`,
                             pointerEvents: "none",
@@ -152,20 +156,20 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                         }}
                     >
                         <style>{`
-                            @keyframes exhaustFade${particle.id} {
-                                0% {
-                                    transform: translate(-50%, -50%) translate(${particle.offsetX}px, ${particle.offsetY}px) scale(0.5);
-                                    opacity: ${particle.opacity};
-                                }
-                                50% {
-                                    transform: translate(-50%, -50%) translate(${particle.offsetX * 1.5}px, ${particle.offsetY * 1.5}px) scale(1.2);
-                                    opacity: ${particle.opacity * 0.8};
-                                }
-                                100% {
-                                    transform: translate(-50%, -50%) translate(${particle.offsetX * 2.5}px, ${particle.offsetY * 2.5}px) scale(2);
-                                    opacity: 0;
-                                }
-                            }
+                                        @keyframes exhaustFade${particle.id} {
+                                            0% {
+                                                transform: translate3d(-50%, -50%, 0) translate3d(${particle.offsetX}px, ${particle.offsetY}px, 0) scale(0.5);
+                                                opacity: ${particle.opacity};
+                                            }
+                                            50% {
+                                                transform: translate3d(-50%, -50%, 0) translate3d(${particle.offsetX * 1.5}px, ${particle.offsetY * 1.5}px, 0) scale(1.2);
+                                                opacity: ${particle.opacity * 0.8};
+                                            }
+                                            100% {
+                                                transform: translate3d(-50%, -50%, 0) translate3d(${particle.offsetX * 2.5}px, ${particle.offsetY * 2.5}px, 0) scale(2);
+                                                opacity: 0;
+                                            }
+                                        }
                         `}</style>
                     </div>
                 );
@@ -178,20 +182,21 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                     left: `${rocketPath.startX}px`,
                     top: `${rocketPath.startY}px`,
                     fontSize: "60px",
-                    filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6))",
+                    filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6))",
                     zIndex: 10,
                     animation: `rocketFlight ${duration}ms linear forwards`,
-                    transform: "translate(-50%, -50%)",
-                    transformOrigin: "center center"
+                    transform: "translate3d(-50%, -50%, 0)",
+                    transformOrigin: "center center",
+                    willChange: "transform"
                 }}
             >
                 <style>{`
                     @keyframes rocketFlight {
                         0% {
-                            transform: translate(-50%, -50%) translate(0, 0) rotate(${rocketPath.angle}deg);
+                            transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) rotate(${rocketPath.angle}deg);
                         }
                         100% {
-                            transform: translate(-50%, -50%) translate(${rocketDeltaX}px, ${rocketDeltaY}px) rotate(${rocketPath.angle}deg);
+                            transform: translate3d(-50%, -50%, 0) translate3d(${rocketDeltaX}px, ${rocketDeltaY}px, 0) rotate(${rocketPath.angle}deg);
                         }
                     }
                 `}</style>
@@ -236,7 +241,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                                         height: `${12 + smokeIdx * 2}px`,
                                         borderRadius: "50%",
                                         background: `radial-gradient(circle, rgba(180, 180, 180, ${0.6 - smokeIdx * 0.05}) 0%, rgba(120, 120, 120, 0) 100%)`,
-                                        filter: "blur(6px)",
+                                        filter: Util.isMobile() ? "none" : "blur(6px)",
                                         animation: `ingredientSmoke${ejection.id}_${smokeIdx} ${smokeDuration}ms ease-out forwards`,
                                         animationDelay: `${smokeDelay}ms`,
                                         pointerEvents: "none",
@@ -247,15 +252,15 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                                     <style>{`
                                         @keyframes ingredientSmoke${ejection.id}_${smokeIdx} {
                                             0% {
-                                                transform: translate(-50%, -50%) translate(0, 0) scale(0.3);
+                                                transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(0.3);
                                                 opacity: ${0.6 - smokeIdx * 0.05};
                                             }
                                             50% {
-                                                transform: translate(-50%, -50%) translate(${smokeDeltaX * 0.5}px, ${smokeDeltaY * 0.5}px) scale(1);
+                                                transform: translate3d(-50%, -50%, 0) translate3d(${smokeDeltaX * 0.5}px, ${smokeDeltaY * 0.5}px, 0) scale(1);
                                                 opacity: ${(0.6 - smokeIdx * 0.05) * 0.8};
                                             }
                                             100% {
-                                                transform: translate(-50%, -50%) translate(${smokeDeltaX}px, ${smokeDeltaY}px) scale(1.8);
+                                                transform: translate3d(-50%, -50%, 0) translate3d(${smokeDeltaX}px, ${smokeDeltaY}px, 0) scale(1.8);
                                                 opacity: 0;
                                             }
                                         }
@@ -274,28 +279,25 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                                 animation: `ejectIngredient${ejection.id} ${ingredientDuration}ms ease-out forwards`,
                                 animationDelay: `${ejectionDelay}ms`,
                                 willChange: "transform",
-                                filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6))",
+                                filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6))",
                                 lineHeight: 1,
-                                transform: "translate(-50%, -50%)",
-                                zIndex: 5
+                                transform: "translate3d(-50%, -50%, 0)",
+                                zIndex: 5,
+                                contain: "layout style paint"
                             }}
                         >
                             <style>{`
                                 @keyframes ejectIngredient${ejection.id} {
                                     0% {
-                                        transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.6);
+                                        transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) rotate(0deg) scale(0.6);
                                         opacity: 1;
                                     }
-                                    30% {
-                                        transform: translate(-50%, -50%) translate(${ingredientDeltaX * 0.3}px, ${ingredientDeltaY * 0.3}px) rotate(180deg) scale(1.1);
+                                    50% {
+                                        transform: translate3d(-50%, -50%, 0) translate3d(${ingredientDeltaX * 0.5}px, ${ingredientDeltaY * 0.5}px, 0) rotate(180deg) scale(1.05);
                                         opacity: 1;
-                                    }
-                                    70% {
-                                        transform: translate(-50%, -50%) translate(${ingredientDeltaX * 0.7}px, ${ingredientDeltaY * 0.7}px) rotate(300deg) scale(1);
-                                        opacity: 0.9;
                                     }
                                     100% {
-                                        transform: translate(-50%, -50%) translate(${ingredientDeltaX}px, ${ingredientDeltaY}px) rotate(360deg) scale(0.8);
+                                        transform: translate3d(-50%, -50%, 0) translate3d(${ingredientDeltaX}px, ${ingredientDeltaY}px, 0) rotate(360deg) scale(0.8);
                                         opacity: 0.7;
                                     }
                                 }

@@ -535,6 +535,7 @@ class PanApi(BaseApi):
                     pan_dict["attributes"]["user_profile_picture"] = user.profile_picture if user.profile_picture else None
                     pan_dict["attributes"]["user_border_style"] = user.border_style if user.border_style else 'solid'
                     pan_dict["attributes"]["user_border_texture"] = user.border_texture if user.border_texture else None
+                    pan_dict["attributes"]["user_glow_effect"] = user.glow_effect if user.glow_effect else False
                 else:
                     pan_dict["attributes"]["user"] = "Unknown"
                     pan_dict["attributes"]["user_color"] = "#d9d9d9"
@@ -542,6 +543,7 @@ class PanApi(BaseApi):
                     pan_dict["attributes"]["user_profile_picture"] = None
                     pan_dict["attributes"]["user_border_style"] = 'solid'
                     pan_dict["attributes"]["user_border_texture"] = None
+                    pan_dict["attributes"]["user_glow_effect"] = False
             enriched_pans.append(pan_dict)
         
         # Calculate if there are more results
@@ -600,6 +602,7 @@ class PanApi(BaseApi):
                 pan_dict["attributes"]["user_profile_picture"] = user.profile_picture if user.profile_picture else None
                 pan_dict["attributes"]["user_border_style"] = user.border_style if user.border_style else 'solid'
                 pan_dict["attributes"]["user_border_texture"] = user.border_texture if user.border_texture else None
+                pan_dict["attributes"]["user_glow_effect"] = user.glow_effect if user.glow_effect else False
             else:
                 pan_dict["attributes"]["user"] = "Unknown"
                 pan_dict["attributes"]["user_color"] = "#d9d9d9"
@@ -607,6 +610,7 @@ class PanApi(BaseApi):
                 pan_dict["attributes"]["user_profile_picture"] = None
                 pan_dict["attributes"]["user_border_style"] = 'solid'
                 pan_dict["attributes"]["user_border_texture"] = None
+                pan_dict["attributes"]["user_glow_effect"] = False
         
         return {
             "jsonapi": {"version": JSONAPI_VERSION},

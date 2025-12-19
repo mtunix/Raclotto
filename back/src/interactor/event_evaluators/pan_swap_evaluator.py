@@ -82,6 +82,10 @@ class PanSwapEvaluator(EventEvaluator):
         # Get the closest pan (most recent within window)
         closest_pan = max(nearby_pans, key=lambda p: p.timestamp if p.timestamp else datetime.min)
         
+        # Don't trigger if both pans belong to the same user
+        if pan.user_id == closest_pan.user_id:
+            return None
+        
         # Get user names
         pan_user = self.user_repository.by_id(pan.user_id)
         closest_pan_user = self.user_repository.by_id(closest_pan.user_id)

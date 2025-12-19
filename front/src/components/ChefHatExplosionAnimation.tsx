@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Util } from "../lib/util";
 
 interface ChefHatExplosionAnimationProps {
     ingredients?: any[]; // Optional, not used but kept for API compatibility
@@ -49,8 +50,10 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
         setCenterX(centerXPos);
         setCenterY(centerYPos);
 
-        // Create 30-40 flying food icon elements
-        const count = 35;
+        // Reduce particle count on mobile for better performance
+        const isMobile = Util.isMobile();
+        const isLowPerf = Util.isLowPerformanceDevice();
+        const count = isLowPerf ? 15 : isMobile ? 20 : 35;
         const newFlyingIngredients: FlyingIngredient[] = [];
 
         // Calculate max distance (diagonal of screen)
@@ -101,7 +104,7 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
                 pointerEvents: "none",
                 overflow: "hidden",
                 backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: "blur(2px)",
+                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
                 transition: fading ? "opacity 250ms ease-out" : "none",
                 opacity: fading ? 0 : 1
             }}
@@ -112,27 +115,28 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
                     position: "absolute",
                     left: "50%",
                     top: "50%",
-                    transform: "translate(-50%, -50%)",
                     fontSize: "250px",
                     zIndex: 1,
                     animation: "chefHatBounce 0.6s ease-in-out infinite",
-                    filter: "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))",
+                    filter: Util.isMobile() ? "none" : "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))",
                     lineHeight: 1,
+                    willChange: "transform",
+                    transform: "translate3d(-50%, -50%, 0)",
                 }}
             >
                 <style>{`
                     @keyframes chefHatBounce {
                         0%, 100% {
-                            transform: translate(-50%, -50%) translateY(0px) scale(1);
+                            transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(1);
                         }
                         25% {
-                            transform: translate(-50%, -50%) translateY(-15px) scale(1.05);
+                            transform: translate3d(-50%, -50%, 0) translate3d(0, -15px, 0) scale(1.05);
                         }
                         50% {
-                            transform: translate(-50%, -50%) translateY(0px) scale(1);
+                            transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(1);
                         }
                         75% {
-                            transform: translate(-50%, -50%) translateY(-10px) scale(1.03);
+                            transform: translate3d(-50%, -50%, 0) translate3d(0, -10px, 0) scale(1.03);
                         }
                     }
                 `}</style>
@@ -171,35 +175,24 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
                             animation: `chefHatFly${item.id} ${duration * 0.6}ms ease-out forwards`,
                             animationDelay: `${item.delay}ms`,
                             willChange: "transform",
-                            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
+                            filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
                             lineHeight: 1,
-                            transform: "translate(-50%, -50%)",
+                            transform: "translate3d(-50%, -50%, 0)",
+                            contain: "layout style paint",
                         }}
                     >
                         <style>{`
                             @keyframes chefHatFly${item.id} {
                                 0% {
-                                    transform: translate(-50%, -50%) translateY(0px) rotate(${item.rotation}deg) scale(0.5);
+                                    transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) rotate(${item.rotation}deg) scale(0.5);
                                     opacity: 0.8;
                                 }
-                                15% {
-                                    transform: translate(calc(-50% + ${translate20X * 0.3}px), calc(-50% + ${translate20Y * 0.3}px - 30px)) rotate(${item.rotation + 54}deg) scale(0.9);
-                                    opacity: 1;
-                                }
-                                30% {
-                                    transform: translate(calc(-50% + ${translate40X * 0.5}px), calc(-50% + ${translate40Y * 0.5}px - 20px)) rotate(${item.rotation + 108}deg) scale(1.1);
-                                    opacity: 1;
-                                }
                                 50% {
-                                    transform: translate(calc(-50% + ${translate60X * 0.7}px), calc(-50% + ${translate60Y * 0.7}px - 10px)) rotate(${item.rotation + 180}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                70% {
-                                    transform: translate(calc(-50% + ${translate80X * 0.9}px), calc(-50% + ${translate80Y * 0.9}px)) rotate(${item.rotation + 270}deg) scale(1);
+                                    transform: translate3d(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5}px), 0) rotate(${item.rotation + 180}deg) scale(1.05);
                                     opacity: 1;
                                 }
                                 100% {
-                                    transform: translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) rotate(${item.rotation + 360}deg) scale(0.8);
+                                    transform: translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) rotate(${item.rotation + 360}deg) scale(0.8);
                                     opacity: 0;
                                 }
                             }

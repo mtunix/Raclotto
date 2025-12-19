@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Util } from "../lib/util";
 
 interface PinataPartyAnimationProps {
     ingredients?: any[]; // Optional, not used but kept for API compatibility
@@ -59,8 +60,10 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
         setCenterX(centerXPos);
         setCenterY(centerYPos);
 
-        // Create 30-40 flying food icon elements
-        const count = 35;
+        // Reduce particle count on mobile for better performance
+        const isMobile = Util.isMobile();
+        const isLowPerf = Util.isLowPerformanceDevice();
+        const count = isLowPerf ? 15 : isMobile ? 20 : 35;
         const newFlyingIngredients: FlyingIngredient[] = [];
         const newConfetti: FlyingIngredient[] = [];
 
@@ -102,7 +105,8 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
 
         // Create confetti particles (smaller, faster, more numerous)
         // Confetti also starts after piñata breaks
-        const confettiCount = 20;
+        // Reduce confetti on mobile
+        const confettiCount = isLowPerf ? 5 : isMobile ? 10 : 20;
         for (let i = 0; i < confettiCount; i++) {
             const randomConfetti = CONFETTI_EMOJIS[Math.floor(Math.random() * CONFETTI_EMOJIS.length)];
             const angle = Math.random() * 360;
@@ -136,7 +140,7 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
                 pointerEvents: "none",
                 overflow: "hidden",
                 backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: "blur(2px)",
+                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
                 transition: fading ? "opacity 250ms ease-out" : "none",
                 opacity: fading ? 0 : 1
             }}
@@ -147,30 +151,31 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
                     position: "absolute",
                     left: "50%",
                     top: "50%",
-                    transform: "translate(-50%, -50%)",
                     fontSize: "250px",
                     zIndex: 2,
                     animation: "pinataBreak 0.6s ease-out forwards",
-                    filter: "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))",
+                    filter: Util.isMobile() ? "none" : "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))",
                     lineHeight: 1,
+                    willChange: "transform",
+                    transform: "translate3d(-50%, -50%, 0)",
                 }}
             >
                 <style>{`
                     @keyframes pinataBreak {
                         0% {
-                            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                            transform: translate3d(-50%, -50%, 0) scale(1) rotate(0deg);
                             opacity: 1;
                         }
                         30% {
-                            transform: translate(-50%, -50%) scale(1.2) rotate(5deg);
+                            transform: translate3d(-50%, -50%, 0) scale(1.2) rotate(5deg);
                             opacity: 1;
                         }
                         60% {
-                            transform: translate(-50%, -50%) scale(1.1) rotate(-5deg);
+                            transform: translate3d(-50%, -50%, 0) scale(1.1) rotate(-5deg);
                             opacity: 0.8;
                         }
                         100% {
-                            transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+                            transform: translate3d(-50%, -50%, 0) scale(0.8) rotate(0deg);
                             opacity: 0;
                         }
                     }
@@ -184,28 +189,32 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
                     position: "absolute",
                     left: "50%",
                     top: "50%",
-                    transform: "translate(-50%, -50%)",
                     fontSize: "300px",
                     zIndex: 2,
                     animation: "boomExplosion 0.4s ease-out 0.6s forwards",
-                    filter: "drop-shadow(0 8px 16px rgba(255, 100, 0, 0.5))",
+                    filter: Util.isMobile() ? "none" : "drop-shadow(0 8px 16px rgba(255, 100, 0, 0.5))",
                     lineHeight: 1,
                     opacity: 0,
+                    willChange: "transform",
+                    transform: "translate3d(-50%, -50%, 0)",
                 }}
             >
                 <style>{`
                     @keyframes boomExplosion {
                         0% {
-                            transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                            transform: translate3d(-50%, -50%, 0) scale(0) rotate(0deg);
                             opacity: 1;
+                            visibility: visible;
                         }
                         50% {
-                            transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+                            transform: translate3d(-50%, -50%, 0) scale(1.5) rotate(180deg);
                             opacity: 1;
+                            visibility: visible;
                         }
                         100% {
-                            transform: translate(-50%, -50%) scale(1.2) rotate(360deg);
-                            opacity: 0.6;
+                            transform: translate3d(-50%, -50%, 0) scale(1.2) rotate(360deg);
+                            opacity: 0;
+                            visibility: hidden;
                         }
                     }
                 `}</style>
@@ -232,23 +241,24 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
                             animation: `pinataConfetti${item.id} ${(duration - 1000) * 0.6}ms ease-out forwards`,
                             animationDelay: `${item.delay}ms`,
                             willChange: "transform",
-                            filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
+                            filter: Util.isMobile() ? "none" : "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
                             lineHeight: 1,
-                            transform: "translate(-50%, -50%)",
+                            transform: "translate3d(-50%, -50%, 0)",
+                            contain: "layout style paint",
                         }}
                     >
                         <style>{`
                             @keyframes pinataConfetti${item.id} {
                                 0% {
-                                    transform: translate(-50%, -50%) rotate(${item.rotation}deg) scale(0.5);
+                                    transform: translate3d(-50%, -50%, 0) rotate(${item.rotation}deg) scale(0.5);
                                     opacity: 1;
                                 }
                                 50% {
-                                    transform: translate(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5}px)) rotate(${item.rotation + 180}deg) scale(1);
+                                    transform: translate3d(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5}px), 0) rotate(${item.rotation + 180}deg) scale(1);
                                     opacity: 1;
                                 }
                                 100% {
-                                    transform: translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) rotate(${item.rotation + 360}deg) scale(0.3);
+                                    transform: translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) rotate(${item.rotation + 360}deg) scale(0.3);
                                     opacity: 0;
                                 }
                             }
@@ -290,35 +300,24 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
                             animation: `pinataFly${item.id} ${(duration - 1000) * 0.7}ms ease-out forwards`,
                             animationDelay: `${item.delay}ms`,
                             willChange: "transform",
-                            filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
+                            filter: Util.isMobile() ? "none" : "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4))",
                             lineHeight: 1,
-                            transform: "translate(-50%, -50%)",
+                            transform: "translate3d(-50%, -50%, 0)",
+                            contain: "layout style paint",
                         }}
                     >
                         <style>{`
                             @keyframes pinataFly${item.id} {
                                 0% {
-                                    transform: translate(-50%, -50%) rotate(${item.rotation}deg) scale(0.5);
+                                    transform: translate3d(-50%, -50%, 0) rotate(${item.rotation}deg) scale(0.5);
                                     opacity: 0.8;
                                 }
-                                20% {
-                                    transform: translate(calc(-50% + ${translate20X}px), calc(-50% + ${translate20Y}px)) rotate(${item.rotation + 72}deg) scale(1);
-                                    opacity: 1;
-                                }
-                                40% {
-                                    transform: translate(calc(-50% + ${translate40X}px), calc(-50% + ${translate40Y}px)) rotate(${item.rotation + 144}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                60% {
-                                    transform: translate(calc(-50% + ${translate60X}px), calc(-50% + ${translate60Y}px)) rotate(${item.rotation + 216}deg) scale(1.1);
-                                    opacity: 1;
-                                }
-                                80% {
-                                    transform: translate(calc(-50% + ${translate80X}px), calc(-50% + ${translate80Y}px)) rotate(${item.rotation + 288}deg) scale(1);
+                                50% {
+                                    transform: translate3d(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5}px), 0) rotate(${item.rotation + 180}deg) scale(1.05);
                                     opacity: 1;
                                 }
                                 100% {
-                                    transform: translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) rotate(${item.rotation + 360}deg) scale(0.8);
+                                    transform: translate3d(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px), 0) rotate(${item.rotation + 360}deg) scale(0.8);
                                     opacity: 0;
                                 }
                             }

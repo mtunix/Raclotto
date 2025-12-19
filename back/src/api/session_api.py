@@ -61,13 +61,20 @@ class SessionApi(BaseApi):
     @BaseApi.endpoint("", ["GET"])
     @require_auth
     def list_sessions(self):
-        """List all active sessions.
+        """List all sessions (active and inactive).
         
-        :returns List[RaclottoSession]: List of active sessions
+        Query parameters:
+        - include_inactive: If true, includes inactive sessions (default: false)
+        
+        :returns List[RaclottoSession]: List of sessions
         :status_code 200: Success
         :status_code 401: Not authenticated
         """
-        sessions = self.repository.active_sessions()
+        include_inactive = request.args.get('include_inactive', 'false').lower() == 'true'
+        if include_inactive:
+            sessions = self.repository.all_sessions()
+        else:
+            sessions = self.repository.active_sessions()
         return serialize_collection(sessions, "session")
     
     @BaseApi.endpoint("/<int:session_id>", ["GET"])
@@ -263,6 +270,42 @@ class SessionApi(BaseApi):
                                 achievement_service.update_progress(
                                     last_pan_user.id, last_pan_achievement.id, result.progress
                                 )
+        
+        db.session.commit()
+        return serialize_single(session, "session")
+    
+    @BaseApi.endpoint("/reactivate", ["POST"])
+    @require_auth
+    def reactivate_session(self):
+        """Reactivate a session.
+        
+        Request body should contain:
+        - key: Session key
+        
+        :returns RaclottoSession: Reactivated session
+        :status_code 200: Session reactivated
+        :status_code 401: Not authenticated
+        :status_code 404: Session not found
+        """
+        attributes = deserialize_attributes()
+        session_key = attributes.get('key')
+        
+        if not session_key:
+            raise ApiError(
+                ApiErrorCode.missing_required_body_field,
+                status=400,
+                title="Missing required field",
+                detail="key is required"
+            )
+        
+        session = self.repository.reactivate_session(session_key)
+        if not session:
+            raise ApiError(
+                ApiErrorCode.resource_not_found,
+                status=404,
+                title="Session not found",
+                detail="The specified session does not exist"
+            )
         
         db.session.commit()
         return serialize_single(session, "session")
