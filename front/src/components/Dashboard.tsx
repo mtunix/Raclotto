@@ -1,7 +1,7 @@
-import React, {useEffect, useState, useCallback} from "react";
-import {Api} from "../lib/api";
-import {Row, Col, List, Rate, Switch, Card, Typography, Space, Tag} from "antd";
-import {useInterval} from "../lib/useInterval";
+import React, {useState} from "react";
+import {Row, Col, List, Rate, Switch, Card, Typography, Space, Tag, Button} from "antd";
+import {ExpandOutlined, CompressOutlined} from "@ant-design/icons";
+import {useStats, useLeaderboard} from "../lib/api/swrHooks";
 import {useAppStore} from "../AppSlice";
 import {useAuthStore} from "../AuthSlice";
 import {Pan} from "../model/pan";
@@ -9,6 +9,7 @@ import {Ingredient, IngredientType} from "../model/ingredient";
 import {LeaderboardEntry} from "../lib/api/types";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "./common/IngredientDisplay";
+import {VectorGraphics} from "../lib/vectorGraphics";
 
 const {Title, Text} = Typography;
 
@@ -206,7 +207,8 @@ function LeaderboardListItem(props: LeaderboardListItemProps) {
                         )}
                     </Text>
                 </div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '8px'}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '8px'}}>
+                    <span style={{fontSize: "0.9rem"}}>{VectorGraphics.ACHIEVEMENTS}</span>
                     <Text 
                         type="secondary" 
                         style={{fontSize: "0.8rem", fontWeight: 500}}
@@ -223,36 +225,19 @@ export function Dashboard() {
     const {t} = useTranslation();
     const session = useAppStore((state) => state.session);
     const currentUser = useAuthStore((state) => state.user);
-    const [pans, setPans] = useState<Pan[]>([]);
-    const [ingredientsRating, setIngredientsRating] = useState<IngredientWithRating[]>([]);
-    const [ingredientsUsage, setIngredientsUsage] = useState<IngredientWithCount[]>([]);
-    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+    const removeWidthCap = useAppStore((state) => state.removeWidthCap);
+    const setRemoveWidthCap = useAppStore((state) => state.setRemoveWidthCap);
     const [isGlobal, setIsGlobal] = useState(false);
 
-    const update = useCallback(() => {
-        Api.getStats(isGlobal ? undefined : session?.key).then((data) => {
-            setPans(data.pans);
-            setIngredientsRating(data.ingredients_top_rated);
-            setIngredientsUsage(data.ingredients_most_used);
-        }).catch((error) => {
-            console.error("Failed to load stats:", error);
-        });
-        
-        // Load leaderboard (always global)
-        Api.getLeaderboard().then((data) => {
-            setLeaderboard(data);
-        }).catch((error) => {
-            console.error("Failed to load leaderboard:", error);
-        });
-    }, [isGlobal, session?.key]);
+    // Use SWR hooks for data fetching with automatic revalidation
+    const { data: statsData } = useStats(session?.key, isGlobal);
+    const { data: leaderboardData = [] } = useLeaderboard();
 
-    useEffect(() => {
-        update();
-    }, [update]);
-
-    useInterval(() => {
-        update();
-    }, 5000);
+    // Extract data from stats response
+    const pans = statsData?.pans || [];
+    const ingredientsRating = statsData?.ingredients_top_rated || [];
+    const ingredientsUsage = statsData?.ingredients_most_used || [];
+    const leaderboard = leaderboardData;
 
     // Limit items for other sections, but show all pans
     const limitedIngredientsRating = ingredientsRating.slice(0, 5);
@@ -260,28 +245,38 @@ export function Dashboard() {
     const limitedLeaderboard = leaderboard.slice(0, 8);
 
     return (
-        <div style={{margin: "8px 4px"}}>
-            <Row style={{marginBottom: '12px'}}>
-                <Col span={24}>
-                    <Switch
-                        checked={isGlobal}
-                        onChange={(checked) => {
-                            setIsGlobal(checked);
-                        }}
-                        checkedChildren="Global"
-                        unCheckedChildren="Session"
-                    />
-                    <span style={{marginLeft: '8px', color: '#8c8c8c', fontSize: '0.9rem'}}>
-                        {isGlobal ? "Global" : "Session"}
-                    </span>
+        <div style={{margin: "0", padding: "0"}}>
+            <Row style={{marginBottom: '24px'}}>
+                <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <Switch
+                            checked={isGlobal}
+                            onChange={(checked) => {
+                                setIsGlobal(checked);
+                            }}
+                            checkedChildren="Global"
+                            unCheckedChildren="Session"
+                        />
+                        <span style={{marginLeft: '12px', color: '#8c8c8c', fontSize: '17px'}}>
+                            {isGlobal ? "Global" : "Session"}
+                        </span>
+                    </div>
+                    <Button
+                        type="default"
+                        icon={removeWidthCap ? <CompressOutlined /> : <ExpandOutlined />}
+                        onClick={() => setRemoveWidthCap(!removeWidthCap)}
+                        size="large"
+                    >
+                        {removeWidthCap ? "Cap Width" : "Remove Width Cap"}
+                    </Button>
                 </Col>
             </Row>
-            <Row gutter={12}>
+            <Row gutter={[24, 24]}>
                 <Col xs={24} sm={12} md={12} lg={6}>
                     <Card 
-                        bodyStyle={{padding: '10px', display: 'flex', flexDirection: 'column'}}
+                        bodyStyle={{padding: '20px', display: 'flex', flexDirection: 'column'}}
                     >
-                        <Title level={5} style={{marginBottom: '10px', fontSize: '0.9rem', fontWeight: 500, color: '#595959'}}>
+                        <Title level={5} style={{marginBottom: '16px', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f'}}>
                             Pans
                         </Title>
                         <List
@@ -292,10 +287,10 @@ export function Dashboard() {
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={6}>
                     <Card 
-                        bodyStyle={{padding: '10px', maxHeight: '600px', overflow: 'auto', display: 'flex', flexDirection: 'column'}}
+                        bodyStyle={{padding: '20px', maxHeight: '600px', overflow: 'auto', display: 'flex', flexDirection: 'column'}}
                     >
-                        <Title level={5} style={{marginBottom: '10px', fontSize: '0.9rem', fontWeight: 500, color: '#595959'}}>
-                            {t("ingredient.ingredients")} <Text type="secondary" style={{fontSize: '0.8rem', fontWeight: 400}}>({t("dashboard.rating")})</Text>
+                        <Title level={5} style={{marginBottom: '16px', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f'}}>
+                            {t("ingredient.ingredients")} <Text type="secondary" style={{fontSize: '15px', fontWeight: 400}}>({t("dashboard.rating")})</Text>
                         </Title>
                         <List
                             dataSource={limitedIngredientsRating}
@@ -310,10 +305,10 @@ export function Dashboard() {
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={6}>
                     <Card 
-                        bodyStyle={{padding: '10px', maxHeight: '600px', overflow: 'auto', display: 'flex', flexDirection: 'column'}}
+                        bodyStyle={{padding: '20px', maxHeight: '600px', overflow: 'auto', display: 'flex', flexDirection: 'column'}}
                     >
-                        <Title level={5} style={{marginBottom: '10px', fontSize: '0.9rem', fontWeight: 500, color: '#595959'}}>
-                            {t("ingredient.ingredients")} <Text type="secondary" style={{fontSize: '0.8rem', fontWeight: 400}}>({t("dashboard.usage")})</Text>
+                        <Title level={5} style={{marginBottom: '16px', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f'}}>
+                            {t("ingredient.ingredients")} <Text type="secondary" style={{fontSize: '15px', fontWeight: 400}}>({t("dashboard.usage")})</Text>
                         </Title>
                         <List
                             dataSource={limitedIngredientsUsage}
@@ -328,9 +323,9 @@ export function Dashboard() {
                 </Col>
                 <Col xs={24} sm={12} md={12} lg={6}>
                     <Card 
-                        bodyStyle={{padding: '10px', maxHeight: '600px', overflow: 'auto', display: 'flex', flexDirection: 'column'}}
+                        bodyStyle={{padding: '20px', maxHeight: '600px', overflow: 'auto', display: 'flex', flexDirection: 'column'}}
                     >
-                        <Title level={5} style={{marginBottom: '10px', fontSize: '0.9rem', fontWeight: 500, color: '#595959'}}>
+                        <Title level={5} style={{marginBottom: '16px', fontSize: '20px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f'}}>
                             {t("dashboard.leaderboard") || "Leaderboard"}
                         </Title>
                         <List

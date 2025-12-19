@@ -1,5 +1,17 @@
 import { create } from "zustand";
 
+interface Level {
+    id: number;
+    name: string;
+    required_experience: number;
+}
+
+interface NextLevel {
+    id: number;
+    name: string;
+    required_experience: number;
+}
+
 interface User {
     id: number;
     name: string;
@@ -7,11 +19,19 @@ interface User {
     meat: boolean;
     vegetarian: boolean;
     vegan: boolean;
+    fish: boolean;
     histamine: boolean;
     fructose: boolean;
     lactose: boolean;
     gluten: boolean;
     color?: string;
+    profile_picture?: string;
+    language?: string;
+    experience_points?: number;
+    level?: Level;
+    next_level?: NextLevel;
+    border_style?: string;
+    border_texture?: string | null;
 }
 
 interface AuthState {

@@ -62,8 +62,8 @@ export function EventDisplay(props: EventDisplayProps) {
                     background-size: 300% 300%;
                     animation: gradientShift 3s ease infinite;
                     border: none;
-                    border-radius: 12px;
-                    padding: 20px 24px;
+                    border-radius: 18px;
+                    padding: 24px 28px;
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
                                 0 0 0 2px rgba(255, 255, 255, 0.1) inset;
                     position: relative;
@@ -97,11 +97,12 @@ export function EventDisplay(props: EventDisplayProps) {
                     position: relative;
                     z-index: 1;
                     color: white;
-                    font-weight: 600;
-                    font-size: 16px;
+                    font-weight: 500;
+                    font-size: 17px;
+                    letter-spacing: -0.022em;
                     display: flex;
                     align-items: center;
-                    gap: 12px;
+                    gap: 16px;
                 }
                 
                 .event-icon {
@@ -116,11 +117,14 @@ export function EventDisplay(props: EventDisplayProps) {
                         type="text"
                         icon={<CloseOutlined />}
                         onClick={handleDismiss}
+                        size="large"
                         style={{
                             color: 'white',
                             border: '1px solid rgba(255, 255, 255, 0.3)',
                             background: 'rgba(255, 255, 255, 0.1)',
-                            fontWeight: 600
+                            fontWeight: 500,
+                            borderRadius: '12px',
+                            minHeight: '44px'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';

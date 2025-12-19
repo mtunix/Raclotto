@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Space, Row, Col, Flex, Typography} from "antd";
+import {Button, Space, Row, Col, Flex, Typography, Avatar} from "antd";
 import {VectorGraphics} from "../lib/vectorGraphics";
 import {Ingredient} from "../model/ingredient";
 import {useTranslation} from "react-i18next";
@@ -16,7 +16,6 @@ type ToolbarProps = {
     session: string;
     sessionId: string;
     sessionClosed: () => void;
-    onAdd: () => void;
     sessionName?: string;
 };
 
@@ -31,6 +30,8 @@ export function Toolbar(props: ToolbarProps) {
     const session = useAppStore((state) => state.session);
     const sessionName = props.sessionName || session?.name || "";
 
+    const currentUser = useAuthStore((state) => state.user);
+    
     const routes: {[key: number]: string} = {
         0: `/${sessionId}/dashboard`,
         1: `/${sessionId}/generate`,
@@ -50,14 +51,18 @@ export function Toolbar(props: ToolbarProps) {
         if (path.includes("/achievements")) return 5;
         return -1;
     }
+    
+    function handleProfileClick() {
+        const profileRoute = `/${sessionId}/profile${currentUser?.id ? `/${currentUser.id}` : ''}`;
+        navigate(profileRoute);
+    }
 
     function onToolbarClicked(id: number) {
         const route = routes[id];
         if (route) {
-            if (getActiveRoute() === id) {
-                // If already on this route, navigate to main session view
-                navigate(`/${sessionId}`);
-        } else {
+            // Only navigate if not already on this route
+            // If already active, do nothing (don't deactivate)
+            if (getActiveRoute() !== id) {
                 navigate(route);
             }
         }
@@ -80,7 +85,7 @@ export function Toolbar(props: ToolbarProps) {
         { id: 0, icon: VectorGraphics.DASHBOARD, label: t("common.dashboard") },
         { id: 1, icon: VectorGraphics.SHUFFLE, label: t("common.shuffle") },
         { id: 3, icon: VectorGraphics.HISTORY, label: t("common.history") },
-        { id: 4, icon: VectorGraphics.ADD, label: t("common.addIngredient") || t("ingredient.ingredientName") || "Add Ingredient" },
+        { id: 4, icon: VectorGraphics.ADD, label: t("ingredient.ingredients") || "Ingredients" },
         { id: 5, icon: VectorGraphics.ACHIEVEMENTS, label: t("common.achievements") },
         { id: 2, icon: VectorGraphics.SETTINGS_CLIENT, label: t("common.settings") },
     ];
@@ -92,25 +97,44 @@ export function Toolbar(props: ToolbarProps) {
                 <Col span={24}>
                     <Flex align="center" gap="middle" style={{ width: '100%' }}>
                         <img src={raclotto} alt="Raclotto" style={{ maxWidth: 180, height: 'auto' }} />
-                        <Space>
-                            <Text type="secondary">{t("session.session")}:</Text>
-                            <Text strong>{sessionName}</Text>
-                        </Space>
-                        <Button 
-                            type="default" 
-                            onClick={handleLeaveSession}
-                            style={{ marginLeft: 'auto' }}
+                        <Flex vertical gap={4}>
+                            <Space>
+                                <Text type="secondary">{t("session.session")}:</Text>
+                                <Text strong>{sessionName}</Text>
+                            </Space>
+                            <Button 
+                                type="default" 
+                                onClick={handleLeaveSession}
+                                size="small"
+                            >
+                                ← {t("session.leave")}
+                            </Button>
+                        </Flex>
+                        <Avatar
+                            src={currentUser?.profile_picture}
+                            size={48}
+                            className="toolbar-profile-avatar"
+                            style={{ 
+                                marginLeft: 'auto',
+                                cursor: 'pointer',
+                                border: '2px solid #d9d9d9'
+                            }}
+                            onClick={handleProfileClick}
                         >
-                            ← {t("session.leave")}
-                        </Button>
+                            {!currentUser?.profile_picture && (
+                                <span className="toolbar-profile-avatar-text">
+                                    {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                </span>
+                            )}
+                        </Avatar>
                     </Flex>
                 </Col>
             </Row>
 
             {/* Mobile: Logo, leave button, and session name */}
-            <Flex className="toolbar-session-row-mobile" align="center" gap={8} style={{ marginBottom: 8 }}>
+            <Flex className="toolbar-session-row-mobile" align="center" gap={8} style={{ marginBottom: 8, width: '100%' }}>
                 <img src={raclotto} alt="Raclotto" className="toolbar-logo-mobile" style={{ flexShrink: 0 }} />
-                <Flex vertical gap={4} align="flex-start">
+                <Flex vertical gap={4} align="flex-start" style={{ flex: 1 }}>
                     <Space size="small">
                         <Text strong style={{ fontSize: '0.9rem' }}>{sessionName}</Text>
                     </Space>
@@ -122,6 +146,23 @@ export function Toolbar(props: ToolbarProps) {
                         ← {t("session.leave")}
                     </Button>
                 </Flex>
+                <Avatar
+                    src={currentUser?.profile_picture}
+                    size={48}
+                    className="toolbar-profile-avatar"
+                    style={{ 
+                        cursor: 'pointer',
+                        border: '2px solid #d9d9d9',
+                        flexShrink: 0
+                    }}
+                    onClick={handleProfileClick}
+                >
+                    {!currentUser?.profile_picture && (
+                        <span style={{ fontSize: '20px' }}>
+                            {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                    )}
+                </Avatar>
             </Flex>
 
             {/* Toolbar buttons row */}

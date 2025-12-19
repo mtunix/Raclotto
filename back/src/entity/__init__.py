@@ -3,6 +3,7 @@ from .ingredient import Ingredient
 from .ingredient import IngredientType
 from .insult import Insult
 from .invite_token import InviteToken
+from .level import Level
 from .pan import Pan
 from .preparation_type import PreparationType
 from .rating import Rating

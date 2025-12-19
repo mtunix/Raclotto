@@ -12,15 +12,36 @@ const resources = {
   },
 };
 
+// Get initial language from localStorage or default to 'de'
+const getInitialLanguage = (): string => {
+  try {
+    const userStr = localStorage.getItem("auth_user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user?.language) {
+        return user.language;
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+  return 'de'; // default language
+};
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'de', // default language
+    lng: getInitialLanguage(),
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false, // react already escapes values
     },
   });
+
+// Function to change language
+export const changeLanguage = (lang: string) => {
+  i18n.changeLanguage(lang);
+};
 
 export default i18n;

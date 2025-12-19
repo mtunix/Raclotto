@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Radio, Space, Switch, Button, message } from "antd";
+import { Modal, Form, Input, Radio, Space, Switch, Button, message, Checkbox, Slider } from "antd";
 import { Ingredient, IngredientType } from "../model/ingredient";
 import { useTranslation } from "react-i18next";
 
@@ -16,10 +16,14 @@ export function EditIngredientModal(props: EditIngredientModalProps) {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
-    const options = [
+    const categoryOptions = [
         { name: "meat", key: "tags.meat" },
         { name: "vegetarian", key: "tags.vegetarian" },
         { name: "vegan", key: "tags.vegan" },
+        { name: "fish", key: "tags.fish" },
+    ];
+    
+    const allergenOptions = [
         { name: "histamine", key: "tags.histamine" },
         { name: "gluten", key: "tags.gluten" },
         { name: "fructose", key: "tags.fructose" },
@@ -38,6 +42,10 @@ export function EditIngredientModal(props: EditIngredientModalProps) {
                 histamine: ingredient.histamine,
                 fructose: ingredient.fructose,
                 lactose: ingredient.lactose,
+                fish: ingredient.fish || false,
+                spicy: ingredient.spicy || 0,
+                wildcard: ingredient.wildcard || false,
+                sweet: ingredient.sweet || false,
             });
         }
     }, [ingredient, visible, form]);
@@ -101,9 +109,35 @@ export function EditIngredientModal(props: EditIngredientModalProps) {
                         <Radio value={IngredientType.SAUCE}>{t("ingredient.sauce")}</Radio>
                     </Radio.Group>
                 </Form.Item>
-                <Form.Item label={t("ingredient.contains")}>
+                <Form.Item label={t("ingredient.category") || "Category"}>
                     <Space wrap>
-                        {options.map((option) => (
+                        {categoryOptions.map((option) => (
+                            <Form.Item
+                                key={option.name}
+                                name={option.name}
+                                valuePropName="checked"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Switch
+                                    checkedChildren={t(option.key)}
+                                    unCheckedChildren={t(option.key)}
+                                    onChange={(checked) => {
+                                        if (checked) {
+                                            // Uncheck other categories
+                                            const otherCategories = categoryOptions.filter(opt => opt.name !== option.name);
+                                            otherCategories.forEach(otherOpt => {
+                                                form.setFieldsValue({ [otherOpt.name]: false });
+                                            });
+                                        }
+                                    }}
+                                />
+                            </Form.Item>
+                        ))}
+                    </Space>
+                </Form.Item>
+                <Form.Item label={t("ingredient.allergens") || "Allergens"}>
+                    <Space wrap>
+                        {allergenOptions.map((option) => (
                             <Form.Item
                                 key={option.name}
                                 name={option.name}
@@ -116,6 +150,39 @@ export function EditIngredientModal(props: EditIngredientModalProps) {
                                 />
                             </Form.Item>
                         ))}
+                    </Space>
+                </Form.Item>
+                <Form.Item label={t("ingredient.additionalProperties") || "Additional Properties"}>
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                        <Form.Item
+                            name="spicy"
+                            style={{ marginBottom: 0 }}
+                        >
+                            <div>
+                                <div style={{ marginBottom: '8px' }}>
+                                    {t("ingredient.spicy") || "Spicy"}
+                                </div>
+                                <Slider
+                                    min={0}
+                                    max={3}
+                                    marks={{ 0: '0', 1: '1', 2: '2', 3: '3' }}
+                                />
+                            </div>
+                        </Form.Item>
+                        <Form.Item
+                            name="wildcard"
+                            valuePropName="checked"
+                            style={{ marginBottom: 0 }}
+                        >
+                            <Checkbox>{t("ingredient.wildcard") || "Wildcard"}</Checkbox>
+                        </Form.Item>
+                        <Form.Item
+                            name="sweet"
+                            valuePropName="checked"
+                            style={{ marginBottom: 0 }}
+                        >
+                            <Checkbox>{t("ingredient.sweet") || "Sweet"}</Checkbox>
+                        </Form.Item>
                     </Space>
                 </Form.Item>
             </Form>

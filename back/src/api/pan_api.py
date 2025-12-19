@@ -86,7 +86,21 @@ class PanApi(BaseApi):
         num_fill = min(num_fill, len(fills)) if len(fills) >= num_fill else len(fills)
         num_sauce = min(num_sauce, len(sauces)) if len(sauces) >= num_sauce else len(sauces)
         
-        selected_ingredients = sample(fills, num_fill) + sample(sauces, num_sauce)
+        # Validate that at least one ingredient type is selected
+        if num_fill == 0 and num_sauce == 0:
+            raise ApiError(
+                ApiErrorCode.incorrect_parameters,
+                status=400,
+                title="Invalid ingredient selection",
+                detail="At least one fill or sauce ingredient must be selected"
+            )
+        
+        # Sample ingredients explicitly handling zero values
+        selected_ingredients = []
+        if num_fill > 0:
+            selected_ingredients.extend(sample(fills, num_fill))
+        if num_sauce > 0:
+            selected_ingredients.extend(sample(sauces, num_sauce))
         
         # Generate pan name
         r = RandomWord()
@@ -94,6 +108,16 @@ class PanApi(BaseApi):
         
         # Get preparation type if requested
         preparation_type_id = attributes.get('preparation_type_id')
+        rolled_preparation_type = False
+        
+        # Handle cheese roll if requested
+        cheese_level = None
+        roll_cheese = attributes.get('roll_cheese', False)
+        rolled_cheese = False
+        if roll_cheese:
+            cheese_level = random.randint(0, 9)
+            rolled_cheese = True
+        
         if preparation_type_id:
             from back.src.repository.preparation_type_repository import PreparationTypeRepository
             prep_type_repo = PreparationTypeRepository()
@@ -153,7 +177,10 @@ class PanApi(BaseApi):
             ingredients=selected_ingredients,
             user_id=user.id,
             session_id=session.id,
-            preparation_type_id=preparation_type_id
+            preparation_type_id=preparation_type_id,
+            cheese_level=cheese_level,
+            rolled_preparation_type=rolled_preparation_type,
+            rolled_cheese=rolled_cheese
         )
         db.session.add(pan)
         db.session.commit()
@@ -161,16 +188,31 @@ class PanApi(BaseApi):
         # Evaluate achievements for this pan
         from back.src.interactor.achievement_service import AchievementService
         achievement_service = AchievementService()
-        achievement_service.evaluate_achievements_for_pan(pan, user)
+        newly_unlocked_achievements = achievement_service.evaluate_achievements_for_pan(pan, user)
         
         # Evaluate events for this pan
         from back.src.interactor.event_service import EventService
         event_service = EventService()
         event_service.evaluate_events_for_session(session, {'pan': pan})
         
+        # Award XP for rolling the pan
+        from back.src.interactor.level_service import LevelService
+        level_service = LevelService()
+        level_service.award_xp_for_pan(user, pan)
+        
         db.session.commit()
         
-        return serialize_single(pan, "pan")
+        # Serialize pan
+        pan_response = serialize_single(pan, "pan")
+        
+        # Add newly unlocked achievements to response meta
+        if newly_unlocked_achievements:
+            achievements_data = serialize_collection(newly_unlocked_achievements, "achievement")
+            if achievements_data and "data" in achievements_data:
+                pan_response["meta"] = pan_response.get("meta", {})
+                pan_response["meta"]["newly_unlocked_achievements"] = achievements_data["data"]
+        
+        return pan_response
     
     @BaseApi.endpoint("/generate/bandit", ["POST"])
     @require_auth
@@ -342,6 +384,7 @@ class PanApi(BaseApi):
         
         # Handle preparation type
         preparation_type_id = None
+        rolled_preparation_type = False
         if roll_prep_type:
             from back.src.repository.preparation_type_repository import PreparationTypeRepository
             prep_type_repo = PreparationTypeRepository()
@@ -352,6 +395,15 @@ class PanApi(BaseApi):
                 # Randomly select one
                 selected_prep_type = random.choice(all_prep_types)
                 preparation_type_id = selected_prep_type.id
+                rolled_preparation_type = True
+        
+        # Handle cheese roll if requested
+        cheese_level = None
+        roll_cheese = attributes.get('roll_cheese', False)
+        rolled_cheese = False
+        if roll_cheese:
+            cheese_level = random.randint(0, 9)
+            rolled_cheese = True
         
         # Track when user joins the session (if not already in it)
         from back.src.entity.user import user_sessions
@@ -391,7 +443,10 @@ class PanApi(BaseApi):
             ingredients=selected_ingredients,
             user_id=user.id,
             session_id=session.id,
-            preparation_type_id=preparation_type_id
+            preparation_type_id=preparation_type_id,
+            cheese_level=cheese_level,
+            rolled_preparation_type=rolled_preparation_type,
+            rolled_cheese=rolled_cheese
         )
         db.session.add(pan)
         db.session.commit()
@@ -399,40 +454,74 @@ class PanApi(BaseApi):
         # Evaluate achievements for this pan
         from back.src.interactor.achievement_service import AchievementService
         achievement_service = AchievementService()
-        achievement_service.evaluate_achievements_for_pan(pan, user)
+        newly_unlocked_achievements = achievement_service.evaluate_achievements_for_pan(pan, user)
         
         # Evaluate events for this pan
         from back.src.interactor.event_service import EventService
         event_service = EventService()
         event_service.evaluate_events_for_session(session, {'pan': pan})
         
+        # Award XP for rolling the pan
+        from back.src.interactor.level_service import LevelService
+        level_service = LevelService()
+        level_service.award_xp_for_pan(user, pan)
+        
         db.session.commit()
         
-        return serialize_single(pan, "pan")
+        # Serialize pan
+        pan_response = serialize_single(pan, "pan")
+        
+        # Add newly unlocked achievements to response meta
+        if newly_unlocked_achievements:
+            achievements_data = serialize_collection(newly_unlocked_achievements, "achievement")
+            if achievements_data and "data" in achievements_data:
+                pan_response["meta"] = pan_response.get("meta", {})
+                pan_response["meta"]["newly_unlocked_achievements"] = achievements_data["data"]
+        
+        return pan_response
     
     @BaseApi.endpoint("", ["GET"])
     @require_auth
     def list_pans(self):
-        """List pans, optionally filtered by session.
+        """List pans, optionally filtered by session or user with pagination support.
         
         Query parameters:
         - session_key: Optional session key to filter by
+        - user_id: Optional user ID to filter by
+        - limit: Optional limit on number of results (default: all)
+        - offset: Optional offset for pagination (default: 0)
         
-        :returns List[Pan]: List of pans
+        :returns dict: Response with pans data and pagination metadata
         :status_code 200: Success
         :status_code 401: Not authenticated
         """
         from back.src.repository.user_repository import UserRepository
+        from sqlalchemy import func
         user_repository = UserRepository()
         
         session_key = request.args.get('session_key')
+        user_id = request.args.get('user_id', type=int)
+        limit = request.args.get('limit', type=int)
+        offset = request.args.get('offset', type=int, default=0)
         
         if session_key:
-            pans = self.repository.by_session(session_key)
+            pans = self.repository.by_session(session_key, limit=limit, offset=offset)
+            # Get total count for pagination metadata
+            try:
+                from back.src.entity.raclotto_session import RaclottoSession
+                session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
+                total_count = db.session.query(func.count(Pan.id)).filter_by(session_id=session.id).scalar() or 0
+            except:
+                total_count = len(pans)
+        elif user_id:
+            pans = self.repository.by_user(user_id, limit=limit, offset=offset)
+            # Get total count for pagination metadata
+            total_count = db.session.query(func.count(Pan.id)).filter_by(user_id=user_id).scalar() or 0
         else:
             pans = self.repository.all()
+            total_count = len(pans)
         
-        # Enrich pans with user name and color
+        # Enrich pans with user name, color, id, and profile picture
         enriched_pans = []
         for pan in pans:
             pan_dict = serialize_entity(pan, "pan")
@@ -442,15 +531,39 @@ class PanApi(BaseApi):
                 if user:
                     pan_dict["attributes"]["user"] = user.name
                     pan_dict["attributes"]["user_color"] = user.color if user.color else "#1890ff"
+                    pan_dict["attributes"]["user_id"] = user.id
+                    pan_dict["attributes"]["user_profile_picture"] = user.profile_picture if user.profile_picture else None
+                    pan_dict["attributes"]["user_border_style"] = user.border_style if user.border_style else 'solid'
+                    pan_dict["attributes"]["user_border_texture"] = user.border_texture if user.border_texture else None
                 else:
                     pan_dict["attributes"]["user"] = "Unknown"
                     pan_dict["attributes"]["user_color"] = "#d9d9d9"
+                    pan_dict["attributes"]["user_id"] = None
+                    pan_dict["attributes"]["user_profile_picture"] = None
+                    pan_dict["attributes"]["user_border_style"] = 'solid'
+                    pan_dict["attributes"]["user_border_texture"] = None
             enriched_pans.append(pan_dict)
         
-        return {
+        # Calculate if there are more results
+        has_more = False
+        if limit is not None:
+            has_more = (offset + len(pans)) < total_count
+        
+        response = {
             "jsonapi": {"version": JSONAPI_VERSION},
             "data": enriched_pans
         }
+        
+        # Add pagination metadata if pagination is used
+        if limit is not None:
+            response["meta"] = {
+                "total": total_count,
+                "limit": limit,
+                "offset": offset,
+                "has_more": has_more
+            }
+        
+        return response
     
     @BaseApi.endpoint("/<int:pan_id>", ["GET"])
     @require_auth
@@ -475,7 +588,7 @@ class PanApi(BaseApi):
                 detail="The specified pan does not exist"
             )
         
-        # Enrich pan with user name and color
+        # Enrich pan with user name, color, id, and profile picture
         pan_dict = serialize_entity(pan, "pan")
         if pan_dict and pan_dict.get("attributes"):
             # Get user info
@@ -483,9 +596,17 @@ class PanApi(BaseApi):
             if user:
                 pan_dict["attributes"]["user"] = user.name
                 pan_dict["attributes"]["user_color"] = user.color if user.color else "#1890ff"
+                pan_dict["attributes"]["user_id"] = user.id
+                pan_dict["attributes"]["user_profile_picture"] = user.profile_picture if user.profile_picture else None
+                pan_dict["attributes"]["user_border_style"] = user.border_style if user.border_style else 'solid'
+                pan_dict["attributes"]["user_border_texture"] = user.border_texture if user.border_texture else None
             else:
                 pan_dict["attributes"]["user"] = "Unknown"
                 pan_dict["attributes"]["user_color"] = "#d9d9d9"
+                pan_dict["attributes"]["user_id"] = None
+                pan_dict["attributes"]["user_profile_picture"] = None
+                pan_dict["attributes"]["user_border_style"] = 'solid'
+                pan_dict["attributes"]["user_border_texture"] = None
         
         return {
             "jsonapi": {"version": JSONAPI_VERSION},
@@ -600,6 +721,11 @@ class PanApi(BaseApi):
         event_service = EventService()
         event_service.evaluate_events_for_session(session, {'pan': pan})
         
+        # Award XP for rolling the pan
+        from back.src.interactor.level_service import LevelService
+        level_service = LevelService()
+        level_service.award_xp_for_pan(user, pan)
+        
         db.session.commit()
         
         return serialize_single(pan, "pan")
@@ -626,6 +752,11 @@ class PanApi(BaseApi):
         
         attributes = deserialize_attributes()
         
+        # Check if snacked is being set to True (pan is being eaten)
+        was_snacked = pan.snacked
+        will_be_snacked = attributes.get('snacked', was_snacked)
+        is_being_eaten = not was_snacked and will_be_snacked
+        
         # Handle ingredients if provided as IDs
         if 'ingredients' in attributes:
             ingredient_ids = attributes['ingredients']
@@ -637,6 +768,10 @@ class PanApi(BaseApi):
             attributes['ingredients'] = ingredients
         
         updated = self.repository.update(pan_id, attributes)
+        
+        # Note: XP is awarded when the pan is created/rolled, not when eaten
+        # This prevents double XP from being awarded
+        
         db.session.commit()
         
         return serialize_single(updated, "pan")

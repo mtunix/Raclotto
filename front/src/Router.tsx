@@ -10,9 +10,10 @@ import {SessionLayout} from "./components/SessionLayout";
 import {Dashboard} from "./components/Dashboard";
 import {GenerateView} from "./components/GenerateView";
 import {HistoryView} from "./components/HistoryView";
-import {AddIngredient} from "./components/AddIngredient";
+import {KitchenManagement} from "./components/KitchenManagement";
 import {SettingsView} from "./components/SettingsView";
 import {AchievementView} from "./components/AchievementView";
+import {ProfileView} from "./components/ProfileView";
 
 export const RaclottoRouter = createBrowserRouter([
     {
@@ -74,7 +75,7 @@ export const RaclottoRouter = createBrowserRouter([
                             },
                             {
                                 path: "add",
-                                element: <AddIngredient/>,
+                                element: <KitchenManagement/>,
                                 errorElement: <ErrorPage/>,
                             },
                             {
@@ -85,7 +86,12 @@ export const RaclottoRouter = createBrowserRouter([
                             {
                                 path: "achievements",
                                 element: <AchievementView/>,
-                errorElement: <ErrorPage/>,
+                                errorElement: <ErrorPage/>,
+                            },
+                            {
+                                path: "profile/:userId?",
+                                element: <ProfileView/>,
+                                errorElement: <ErrorPage/>,
                             },
                         ]
                     }

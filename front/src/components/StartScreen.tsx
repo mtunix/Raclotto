@@ -1,4 +1,4 @@
-import {Button, Form, Input, Select, Card, Row, Col, Space} from "antd";
+import {Button, Form, Input, Select, Card, Row, Col} from "antd";
 import {useSessions} from "../lib/api/apiSession";
 import {SpinnerContainer} from "./common/Spinner";
 import ErrorPage from "./common/error/ErrorPage";
@@ -21,7 +21,7 @@ export function JoinSession() {
         if (data && data.length > 0 && selectedIndex >= 0 && selectedIndex < data.length) {
             const selectedSession = data[selectedIndex];
             setSession(selectedSession);
-            navigate(`/${selectedSession.id}`);
+            navigate(`/${selectedSession.id}/generate`);
         }
     }
 
@@ -39,36 +39,39 @@ export function JoinSession() {
     if (error) return <ErrorPage error={error}/>;
     if (!data || data.length === 0) {
         return (
-            <Card>
-                <h2>{t("session.joinExisting")}</h2>
-                <p>{t("session.noSessionsAvailable")}</p>
+            <Card title={t("session.joinExisting")}>
+                <p style={{ margin: 0, color: 'rgba(0, 0, 0, 0.45)' }}>{t("session.noSessionsAvailable")}</p>
             </Card>
         );
     }
 
     return (
-        <Card>
-            <h2>{t("session.joinExisting")}</h2>
-            <Form.Item label={t("session.session")}>
-                <Select 
-                    value={selectedIndex} 
-                    onChange={onSessionSelected}
-                    style={{ width: '100%' }}
-                >
-                    {data.map((session: RaclottoSession, i: number) => {
-                        return <Select.Option key={session.id} value={i}>{session.name}</Select.Option>
-                    })}
-                </Select>
-            </Form.Item>
-            <Button 
-                type="primary" 
-                onClick={join} 
-                disabled={!data || data.length === 0}
-                block
-                style={{ marginTop: 16 }}
-            >
-                {t("session.join")}
-            </Button>
+        <Card title={t("session.joinExisting")} style={{ height: '100%' }}>
+            <Form layout="vertical">
+                <Form.Item label={t("session.session")} style={{ marginBottom: 24 }}>
+                    <Select 
+                        value={selectedIndex} 
+                        onChange={onSessionSelected}
+                        style={{ width: '100%' }}
+                        size="large"
+                    >
+                        {data.map((session: RaclottoSession, i: number) => {
+                            return <Select.Option key={session.id} value={i}>{session.name}</Select.Option>
+                        })}
+                    </Select>
+                </Form.Item>
+                <Form.Item style={{ marginBottom: 0 }}>
+                    <Button 
+                        type="primary" 
+                        onClick={join} 
+                        disabled={!data || data.length === 0}
+                        block
+                        size="large"
+                    >
+                        {t("session.join")}
+                    </Button>
+                </Form.Item>
+            </Form>
         </Card>
     );
 }
@@ -100,26 +103,30 @@ export function SessionSelector() {
     }
 
     return (
-        <div style={{margin: "10px"}}>
-            <Row gutter={16}>
-                <Col span={12}>
-                    <Card title={t("session.createNew")}>
+        <div style={{ maxWidth: 1440, margin: '0 auto', padding: '40px 24px' }}>
+            <Row gutter={[32, 32]}>
+                <Col xs={24} sm={24} md={12}>
+                    <Card title={t("session.createNew")} style={{ height: '100%' }}>
                         <Form layout="vertical">
-                            <Form.Item label={t("session.sessionName")}>
+                            <Form.Item label={t("session.sessionName")} style={{ marginBottom: 24 }}>
                                 <Input
                                     type="text"
                                     placeholder={t("session.sessionNamePlaceholder")}
                                     value={sessionName}
                                     onChange={onNameChanged}
                                     disabled={isCreating}
+                                    size="large"
+                                    onPressEnter={create}
                                 />
                             </Form.Item>
-                            <Form.Item>
+                            <Form.Item style={{ marginBottom: 0 }}>
                                 <Button 
                                     type="primary" 
                                     onClick={create}
                                     disabled={sessionName.trim().length === 0 || isCreating}
                                     block
+                                    size="large"
+                                    loading={isCreating}
                                 >
                                     {isCreating ? t("session.creating") : t("common.create")}
                                 </Button>
@@ -127,7 +134,7 @@ export function SessionSelector() {
                         </Form>
                     </Card>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={24} md={12}>
                     <JoinSession/>
                 </Col>
             </Row>
@@ -149,10 +156,10 @@ export function StartScreen() {
     }, [session, navigate]);
 
     return (
-        <div style={{margin: "10px"}}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <h2>{t("session.welcome")} {user?.name}</h2>
-                <Button onClick={() => { logout(); navigate("/login"); }}>
+        <div style={{margin: "0", padding: "40px 24px"}}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, maxWidth: 1440, marginLeft: 'auto', marginRight: 'auto' }}>
+                <h2 style={{ margin: 0, fontSize: 32, fontWeight: 600, letterSpacing: '-0.022em' }}>{t("session.welcome")} {user?.name}</h2>
+                <Button size="large" onClick={() => { logout(); navigate("/login"); }}>
                     {t("auth.logout")}
                 </Button>
             </div>

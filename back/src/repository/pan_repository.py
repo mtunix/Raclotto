@@ -15,27 +15,47 @@ class PanRepository(BaseRepository[Pan]):
     def __init__(self):
         super().__init__(Pan)
     
-    def by_session(self, session_key: str) -> List[Pan]:
+    def by_session(self, session_key: str, limit: Optional[int] = None, offset: int = 0) -> List[Pan]:
         """
-        Get all pans for a session.
+        Get pans for a session with optional pagination.
         
         :param session_key: Session key
-        :return: List of pans
+        :param limit: Optional limit on number of results
+        :param offset: Offset for pagination (default: 0)
+        :return: List of pans ordered by timestamp (descending, most recent first)
         """
         try:
             session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
-            return db.session.query(Pan).filter_by(session_id=session.id).all()
+            query = db.session.query(Pan).filter_by(session_id=session.id).order_by(Pan.timestamp.desc())
+            
+            if offset > 0:
+                query = query.offset(offset)
+            
+            if limit:
+                query = query.limit(limit)
+            
+            return query.all()
         except NoResultFound:
             return []
     
-    def by_user(self, user_id: int) -> List[Pan]:
+    def by_user(self, user_id: int, limit: Optional[int] = None, offset: int = 0) -> List[Pan]:
         """
-        Get all pans for a user.
+        Get pans for a user with optional pagination.
         
         :param user_id: User ID
-        :return: List of pans
+        :param limit: Optional limit on number of results
+        :param offset: Offset for pagination (default: 0)
+        :return: List of pans ordered by timestamp (descending, most recent first)
         """
-        return db.session.query(Pan).filter_by(user_id=user_id).all()
+        query = db.session.query(Pan).filter_by(user_id=user_id).order_by(Pan.timestamp.desc())
+        
+        if offset > 0:
+            query = query.offset(offset)
+        
+        if limit:
+            query = query.limit(limit)
+        
+        return query.all()
     
     def by_id_with_relations(self, id: int) -> Optional[Pan]:
         """
@@ -104,7 +124,11 @@ class PanRepository(BaseRepository[Pan]):
         ingredients: List[Ingredient],
         session_id: int,
         user_id: int,
-        name: Optional[str] = None
+        name: Optional[str] = None,
+        preparation_type_id: Optional[int] = None,
+        cheese_level: Optional[int] = None,
+        rolled_preparation_type: bool = False,
+        rolled_cheese: bool = False
     ) -> Pan:
         """
         Create a pan with generated or provided name.
@@ -113,6 +137,10 @@ class PanRepository(BaseRepository[Pan]):
         :param session_id: Session ID
         :param user_id: User ID
         :param name: Optional pan name (if not provided, generates one)
+        :param preparation_type_id: Optional preparation type ID
+        :param cheese_level: Optional cheese level
+        :param rolled_preparation_type: Whether preparation type was rolled
+        :param rolled_cheese: Whether cheese was rolled
         :return: Created pan
         """
         if not name:
@@ -123,7 +151,11 @@ class PanRepository(BaseRepository[Pan]):
             name=name,
             ingredients=ingredients,
             user_id=user_id,
-            session_id=session_id
+            session_id=session_id,
+            preparation_type_id=preparation_type_id,
+            cheese_level=cheese_level,
+            rolled_preparation_type=rolled_preparation_type,
+            rolled_cheese=rolled_cheese
         )
         db.session.add(pan)
         db.session.commit()

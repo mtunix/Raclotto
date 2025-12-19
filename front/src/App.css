@@ -21,6 +21,245 @@
 }
 
 .app-content {
-    padding: 0 20px;
+    padding: 0;
     margin-top: -20px;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.app-content.no-max-width {
+    max-width: none;
+}
+
+/* Apple-like typography improvements */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
+    color: #1d1d1f;
+}
+
+h1 {
+    font-size: 48px;
+    line-height: 1.08349;
+    letter-spacing: -0.003em;
+}
+
+h2 {
+    font-size: 40px;
+    line-height: 1.1;
+    letter-spacing: -0.002em;
+}
+
+h3 {
+    font-size: 32px;
+    line-height: 1.125;
+}
+
+h4 {
+    font-size: 28px;
+    line-height: 1.14286;
+}
+
+h5 {
+    font-size: 24px;
+    line-height: 1.16667;
+}
+
+h6 {
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+/* Apple-like button improvements */
+.ant-btn {
+    min-height: 44px;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+    border-radius: 12px;
+    padding: 0 20px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-btn-lg {
+    min-height: 50px;
+    font-size: 19px;
+    padding: 0 24px;
+}
+
+.ant-btn-sm {
+    min-height: 36px;
+    font-size: 15px;
+    padding: 0 16px;
+}
+
+.ant-btn-primary {
+    background: #0071e3;
+    border-color: #0071e3;
+    font-weight: 400;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+    background: #0077ed;
+    border-color: #0077ed;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+}
+
+/* Apple-like card improvements */
+.ant-card {
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: none;
+    background: #ffffff;
+}
+
+.ant-card-head {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px;
+}
+
+.ant-card-head-title {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    color: #1d1d1f;
+}
+
+.ant-card-body {
+    padding: 24px;
+}
+
+/* Apple-like input improvements */
+.ant-input,
+.ant-input-password {
+    min-height: 44px;
+    font-size: 17px;
+    border-radius: 12px;
+    border: 1px solid #d2d2d7;
+    padding: 0 16px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-input:focus,
+.ant-input-password:focus,
+.ant-input-focused,
+.ant-input-password-focused {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+}
+
+.ant-input-lg {
+    min-height: 50px;
+    font-size: 19px;
+    padding: 0 20px;
+}
+
+/* Apple-like select improvements */
+.ant-select-selector {
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    border: 1px solid #d2d2d7 !important;
+    font-size: 17px !important;
+}
+
+.ant-select-lg .ant-select-selector {
+    min-height: 50px !important;
+    font-size: 19px !important;
+}
+
+.ant-select-focused .ant-select-selector {
+    border-color: #0071e3 !important;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1) !important;
+}
+
+/* Responsive max-width adjustments */
+@media (min-width: 1024px) {
+    .app-content:not(.no-max-width) {
+        padding: 0 60px;
+    }
+}
+
+/* Additional Apple-like improvements */
+.ant-form-item-label > label {
+    font-size: 17px;
+    font-weight: 500;
+    color: #1d1d1f;
+    letter-spacing: -0.022em;
+}
+
+.ant-typography {
+    font-size: 17px;
+    line-height: 1.47059;
+    letter-spacing: -0.022em;
+}
+
+.ant-list-item {
+    padding: 16px 20px;
+    border-radius: 12px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-list-item:hover {
+    background-color: #f5f5f7;
+}
+
+/* Apple-like modal improvements */
+.generate-result-modal .ant-modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.generate-result-modal .ant-modal-header {
+    border-bottom: none;
+    padding: 0;
+}
+
+.generate-result-modal .ant-modal-body {
+    padding: 32px;
+}
+
+/* Apple-like tabs improvements */
+.ant-tabs-tab {
+    font-size: 17px !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.022em !important;
+    padding: 12px 20px !important;
+}
+
+.ant-tabs-tab-btn {
+    font-size: 17px !important;
+}
+
+.ant-tabs-content-holder {
+    padding-top: 24px;
+}
+
+/* ColorPicker full width */
+.ant-color-picker-trigger {
+    width: 100% !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    font-size: 17px !important;
+}
+
+.ant-color-picker-color-block {
+    flex-shrink: 0 !important;
+}
+
+.ant-color-picker-trigger-text {
+    font-size: 17px !important;
+}
+
+/* Position message notifications at the bottom */
+.ant-message {
+    top: auto !important;
+    bottom: 24px !important;
 }

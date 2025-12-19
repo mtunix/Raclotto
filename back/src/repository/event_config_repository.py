@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.event_config import EventConfig
 from back.src.driver.database import db
@@ -88,4 +88,7 @@ class EventConfigRepository(BaseRepository[EventConfig]):
             db.session.add(config)
             db.session.flush()
             return config
+
+
+
 

@@ -2,6 +2,7 @@ from typing import Optional
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
 from back.src.entity.achievement import Achievement
+from back.src.entity.ingredient import IngredientType
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
@@ -28,15 +29,20 @@ class VanillaEvaluator(AchievementEvaluator):
         context: EvaluationContext
     ) -> EvaluationResult:
         """
-        Check if the pan has exactly one ingredient.
+        Check if the pan has exactly one fill ingredient (sauces are not counted).
         
         :param pan: The newly created pan
         :param user: The user who created the pan
         :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if pan has exactly 1 ingredient
+        :return: EvaluationResult with unlocked=True if pan has exactly 1 fill ingredient
         """
-        ingredient_count = len(pan.ingredients) if pan.ingredients else 0
-        unlocked = ingredient_count == self.REQUIRED_INGREDIENT_COUNT
+        # Count only fill ingredients, exclude sauces
+        fill_ingredients = [
+            ingredient for ingredient in (pan.ingredients or [])
+            if ingredient.type == IngredientType.FILL
+        ]
+        fill_count = len(fill_ingredients)
+        unlocked = fill_count == self.REQUIRED_INGREDIENT_COUNT
         
         # Progress is binary: either 0.0 or 1.0
         progress = 1.0 if unlocked else 0.0
@@ -51,6 +57,7 @@ class VanillaEvaluator(AchievementEvaluator):
     ) -> Optional[float]:
         """
         Calculate progress - binary achievement, either unlocked or not.
+        Only counts fill ingredients, sauces are excluded.
         
         :param user: The user
         :param achievement: The achievement to calculate progress for
@@ -61,15 +68,20 @@ class VanillaEvaluator(AchievementEvaluator):
         if achievement in user.achievements:
             return 1.0
         
-        # Check if user has created any pan with exactly one ingredient in the session
+        # Check if user has created any pan with exactly one fill ingredient in the session
         user_pans_in_session = [
             pan for pan in context.session_pans
             if pan.user_id == user.id
         ]
         
         for pan in user_pans_in_session:
-            ingredient_count = len(pan.ingredients) if pan.ingredients else 0
-            if ingredient_count == self.REQUIRED_INGREDIENT_COUNT:
+            # Count only fill ingredients, exclude sauces
+            fill_ingredients = [
+                ingredient for ingredient in (pan.ingredients or [])
+                if ingredient.type == IngredientType.FILL
+            ]
+            fill_count = len(fill_ingredients)
+            if fill_count == self.REQUIRED_INGREDIENT_COUNT:
                 return 1.0
         
         return 0.0

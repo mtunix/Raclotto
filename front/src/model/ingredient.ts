@@ -15,6 +15,10 @@ export interface Ingredient {
     histamine: boolean;
     fructose: boolean;
     lactose: boolean;
+    fish?: boolean;
+    spicy?: number; // 0-3 spiciness level
+    wildcard?: boolean;
+    sweet?: boolean;
     applicable?: boolean; // Whether this ingredient matches the current user's dietary preferences
 }
 

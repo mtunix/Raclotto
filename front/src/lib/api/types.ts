@@ -28,6 +28,7 @@ export type AchievementsResponse = Achievement[];
  */
 export interface GenerationResponse {
     generated: Pan;
+    achievements?: Achievement[];
 }
 
 /**

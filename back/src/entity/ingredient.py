@@ -91,13 +91,14 @@ class Ingredient(DomainMixin, BaseModel):
     available = Column(Boolean, nullable=False, default=True)
 
     """
-    The columns meat, vegetarian and vegan are mutually exclusive.
+    The columns meat, vegetarian, vegan and fish are mutually exclusive.
     Please note that this is distinct from the GenerationPreferences where they are hierarchical.
     In the case of the Ingredient class they note that an ingredient is suitable for a certain diet.
     """
     meat = Column(Boolean, nullable=False, default=False)
     vegetarian = Column(Boolean, nullable=False, default=False)
     vegan = Column(Boolean, nullable=False, default=False)
+    fish = Column(Boolean, nullable=False, default=False)
 
     """
     The columns histamine, fructose, lactose and gluten are not mutually exclusive.
@@ -107,18 +108,31 @@ class Ingredient(DomainMixin, BaseModel):
     histamine = Column(Boolean, nullable=False, default=False)
     fructose = Column(Boolean, nullable=False, default=False)
     lactose = Column(Boolean, nullable=False, default=False)
+    
+    # Additional ingredient properties for XP calculation
+    spicy = Column(Integer, nullable=False, default=0)  # 0-3 spiciness level
+    wildcard = Column(Boolean, nullable=False, default=False)
+    sweet = Column(Boolean, nullable=False, default=False)
 
-    __tableargs__ = (
+    __table_args__ = (
         CheckConstraint(
-            "NOT (meat AND (vegetarian OR vegan))",
-            name="check_not_meat_and_vegetarian_or_vegan"
+            "NOT (meat AND (vegetarian OR vegan OR fish))",
+            name="check_not_meat_and_other_categories"
         ),
         CheckConstraint(
-            "NOT (vegetarian AND vegan)",
-            name="check_not_vegetarian_and_vegan"
+            "NOT (vegetarian AND (vegan OR fish))",
+            name="check_not_vegetarian_and_other_categories"
         ),
         CheckConstraint(
-            "vegetarian OR vegan OR meat",
-            name="check_vegetarian_or_vegan_or_meat"
+            "NOT (vegan AND fish)",
+            name="check_not_vegan_and_fish"
+        ),
+        CheckConstraint(
+            "vegetarian OR vegan OR meat OR fish",
+            name="check_at_least_one_category"
+        ),
+        CheckConstraint(
+            "spicy >= 0 AND spicy <= 3",
+            name="check_spicy_range"
         )
     )

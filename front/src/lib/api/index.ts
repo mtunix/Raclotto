@@ -152,7 +152,7 @@ export class Api {
         throw new Error("Invalid ingredient update response");
     }
 
-    static async generate(session: string, numFill: number, numSauce: number, preparationTypeId?: number): Promise<GenerationResponse> {
+    static async generate(session: string, numFill: number, numSauce: number, preparationTypeId?: number, rollCheese?: boolean): Promise<GenerationResponse> {
         const endpoint = `${API_BASE}/pans/generate?session_key=${session}`;
         const attributes: any = {
             numFill: numFill,
@@ -161,6 +161,9 @@ export class Api {
         if (preparationTypeId) {
             attributes.preparation_type_id = preparationTypeId;
         }
+        if (rollCheese !== undefined) {
+            attributes.roll_cheese = rollCheese;
+        }
         const jsonApiData = {
             data: {
                 type: "generationParameters",
@@ -169,20 +172,37 @@ export class Api {
         };
         const response = await post(endpoint, JSON.stringify(jsonApiData));
         // The backend returns a pan directly after deserialization
+        // Extract achievements from meta if present
+        let achievements: any[] = [];
+        if (response && response.meta && (response.meta as any).newly_unlocked_achievements) {
+            const achievementData = (response.meta as any).newly_unlocked_achievements;
+            if (Array.isArray(achievementData)) {
+                achievements = achievementData.map((item: any) => ({
+                    id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : (item.attributes?.id || 0),
+                    title: item.attributes?.title || item.title || '',
+                    description: item.attributes?.description || item.description || '',
+                    value: item.attributes?.value !== undefined ? item.attributes.value : (item.value !== undefined ? item.value : 0),
+                    hidden: item.attributes?.hidden !== undefined ? item.attributes.hidden : (item.hidden !== undefined ? item.hidden : false),
+                }));
+            }
+        }
         // Wrap it in the expected GenerationResponse format
         if (response.data && typeof response.data === 'object') {
             const pan = response.data as Pan;
-            return { generated: pan };
+            return { generated: pan, achievements };
         }
         throw new Error("Invalid generation response");
     }
 
-    static async generateBandit(session: string, totalColumns: number, rollPrepType: boolean): Promise<GenerationResponse> {
+    static async generateBandit(session: string, totalColumns: number, rollPrepType: boolean, rollCheese?: boolean): Promise<GenerationResponse> {
         const endpoint = `${API_BASE}/pans/generate/bandit?session_key=${session}`;
         const attributes: any = {
             total_columns: totalColumns,
             roll_prep_type: rollPrepType
         };
+        if (rollCheese !== undefined) {
+            attributes.roll_cheese = rollCheese;
+        }
         const jsonApiData = {
             data: {
                 type: "generationParameters",
@@ -191,14 +211,122 @@ export class Api {
         };
         const response = await post(endpoint, JSON.stringify(jsonApiData));
         // The backend returns a pan directly after deserialization
+        // Extract achievements from meta if present
+        let achievements: any[] = [];
+        if (response && response.meta && (response.meta as any).newly_unlocked_achievements) {
+            const achievementData = (response.meta as any).newly_unlocked_achievements;
+            if (Array.isArray(achievementData)) {
+                achievements = achievementData.map((item: any) => ({
+                    id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : (item.attributes?.id || 0),
+                    title: item.attributes?.title || item.title || '',
+                    description: item.attributes?.description || item.description || '',
+                    value: item.attributes?.value !== undefined ? item.attributes.value : (item.value !== undefined ? item.value : 0),
+                    hidden: item.attributes?.hidden !== undefined ? item.attributes.hidden : (item.hidden !== undefined ? item.hidden : false),
+                }));
+            }
+        }
         // Wrap it in the expected GenerationResponse format
         if (response.data && typeof response.data === 'object') {
             const pan = response.data as Pan;
-            return { generated: pan };
+            return { generated: pan, achievements };
         }
         throw new Error("Invalid bandit generation response");
     }
     
+    static async getPansPaginated(session: string, limit: number = 12, offset: number = 0): Promise<{ data: Pan[]; hasMore: boolean; total: number }> {
+        const endpoint = `${API_BASE}/pans?session_key=${session}&limit=${limit}&offset=${offset}`;
+        const response = await get(endpoint);
+        
+        // Handle deserialized response
+        let dataArray: any[] = [];
+        if (Array.isArray(response.data)) {
+            dataArray = response.data;
+        } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            const nestedData = (response.data as { data: any }).data;
+            if (Array.isArray(nestedData)) {
+                dataArray = nestedData;
+            }
+        } else if (Array.isArray(response)) {
+            dataArray = response;
+        }
+        
+        const pans = dataArray.map((item: any) => {
+            const attributes = item.attributes || item;
+            return {
+                id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : attributes.id,
+                name: attributes.name || item.name,
+                timestamp: attributes.timestamp || item.timestamp,
+                user: attributes.user || item.user,
+                user_color: attributes.user_color || item.user_color,
+                user_id: attributes.user_id !== undefined ? (typeof attributes.user_id === 'string' ? parseInt(attributes.user_id, 10) : Number(attributes.user_id)) : item.user_id,
+                user_profile_picture: attributes.user_profile_picture || item.user_profile_picture,
+                user_border_style: attributes.user_border_style || item.user_border_style,
+                user_border_texture: attributes.user_border_texture !== undefined ? attributes.user_border_texture : item.user_border_texture,
+                ingredients: attributes.ingredients || item.ingredients || [],
+                ratings: attributes.ratings || item.ratings || [],
+                rating: attributes.rating !== undefined ? attributes.rating : (item.rating !== undefined ? item.rating : 0)
+            } as Pan;
+        });
+        
+        // Extract pagination metadata
+        const meta = (response as any).meta || {};
+        const hasMore = meta.has_more !== undefined ? meta.has_more : (offset + pans.length < (meta.total || 0));
+        const total = meta.total || 0;
+        
+        return {
+            data: pans,
+            hasMore: hasMore,
+            total: total
+        };
+    }
+
+    static async getPansByUser(userId: number, limit: number = 12, offset: number = 0): Promise<{ data: Pan[]; hasMore: boolean; total: number }> {
+        const endpoint = `${API_BASE}/pans?user_id=${userId}&limit=${limit}&offset=${offset}`;
+        const response = await get(endpoint);
+        
+        // Handle deserialized response
+        let dataArray: any[] = [];
+        if (Array.isArray(response.data)) {
+            dataArray = response.data;
+        } else if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            const nestedData = (response.data as { data: any }).data;
+            if (Array.isArray(nestedData)) {
+                dataArray = nestedData;
+            }
+        } else if (Array.isArray(response)) {
+            dataArray = response;
+        }
+        
+        const pans = dataArray.map((item: any) => {
+            const attributes = item.attributes || item;
+            return {
+                id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : attributes.id,
+                name: attributes.name || item.name,
+                timestamp: attributes.timestamp || item.timestamp,
+                user: attributes.user || item.user,
+                user_color: attributes.user_color || item.user_color,
+                user_id: attributes.user_id !== undefined ? (typeof attributes.user_id === 'string' ? parseInt(attributes.user_id, 10) : Number(attributes.user_id)) : item.user_id,
+                user_profile_picture: attributes.user_profile_picture || item.user_profile_picture,
+                user_border_style: attributes.user_border_style || item.user_border_style,
+                user_border_texture: attributes.user_border_texture !== undefined ? attributes.user_border_texture : item.user_border_texture,
+                ingredients: attributes.ingredients || item.ingredients || [],
+                ratings: attributes.ratings || item.ratings || [],
+                rating: attributes.rating !== undefined ? attributes.rating : (item.rating !== undefined ? item.rating : 0)
+            } as Pan;
+        });
+        
+        // Extract pagination metadata
+        const meta = (response as any).meta || {};
+        const hasMore = meta.has_more !== undefined ? meta.has_more : (offset + pans.length < (meta.total || 0));
+        const total = meta.total || 0;
+        
+        return {
+            data: pans,
+            hasMore: hasMore,
+            total: total
+        };
+    }
+
     static async clonePan(session: string, pan: Pan): Promise<Pan> {
         const endpoint = `${API_BASE}/pans?session_key=${session}`;
         const jsonApiData = {
@@ -315,17 +443,21 @@ export class Api {
         throw new Error("Invalid login response");
     }
 
-    static async register(token: string, email: string, name: string, password: string): Promise<{ token: string; user: any }> {
+    static async register(token: string, email: string, name: string, password: string, profile_picture?: string): Promise<{ token: string; user: any }> {
         const endpoint = `${API_BASE}/auth/register`;
+        const attributes: any = {
+            token: token,
+            email: email,
+            name: name,
+            password: password
+        };
+        if (profile_picture) {
+            attributes.profile_picture = profile_picture;
+        }
         const jsonApiData = {
             data: {
                 type: "register",
-                attributes: {
-                    token: token,
-                    email: email,
-                    name: name,
-                    password: password
-                }
+                attributes: attributes
             }
         };
         // Use axios directly to preserve meta field
@@ -348,7 +480,14 @@ export class Api {
             const response = await get(endpoint);
             // After deserialization, attributes are flattened into data
             if (response && response.data && typeof response.data === 'object') {
-                return response.data;
+                // Handle both flattened and nested attribute structures
+                const data = response.data as any;
+                if (data.attributes && typeof data.attributes === 'object') {
+                    // Attributes are nested, flatten them
+                    return { ...data.attributes, id: data.id };
+                }
+                // Attributes are already flattened
+                return data;
             }
             console.error("Invalid user response structure:", response);
             throw new Error("Invalid user response: missing or invalid data");
@@ -363,11 +502,14 @@ export class Api {
         meat?: boolean;
         vegetarian?: boolean;
         vegan?: boolean;
+        fish?: boolean;
         histamine?: boolean;
         fructose?: boolean;
         lactose?: boolean;
         gluten?: boolean;
         color?: string;
+        profile_picture?: string;
+        language?: string;
     }): Promise<any> {
         const endpoint = `${API_BASE}/auth/me`;
         const jsonApiData = {
@@ -407,6 +549,36 @@ export class Api {
             return tokenData.attributes.token;
         }
         throw new Error("Invalid refresh response");
+    }
+
+    static async getUserProfile(userId: number): Promise<any> {
+        const endpoint = `${API_BASE}/users/${userId}`;
+        try {
+            const response = await get(endpoint);
+            if (response && response.data && typeof response.data === 'object') {
+                return response.data;
+            }
+            console.error("Invalid user profile response structure:", response);
+            throw new Error("Invalid user profile response: missing or invalid data");
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            throw error;
+        }
+    }
+
+    static async getUserStats(userId: number): Promise<any> {
+        const endpoint = `${API_BASE}/users/${userId}/stats`;
+        try {
+            const response = await get(endpoint);
+            if (response && response.data && typeof response.data === 'object') {
+                const data = response.data as { attributes?: any };
+                return data.attributes || data;
+            }
+            throw new Error("Invalid user stats response");
+        } catch (error) {
+            console.error("Error fetching user stats:", error);
+            throw error;
+        }
     }
 
     static async createInvite(email: string): Promise<any> {

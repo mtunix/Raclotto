@@ -6,6 +6,8 @@ import {Pan} from "../model/pan";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "./common/IngredientDisplay";
 import {Api} from "../lib/api";
+import {useAuthStore} from "../AuthSlice";
+import {useAppStore} from "../AppSlice";
 
 const {Text, Title} = Typography;
 
@@ -34,6 +36,8 @@ interface BanditViewProps {
     sessionKey: string;
     rollPreparationType: boolean;
     onRollPreparationTypeChange: (checked: boolean) => void;
+    rollCheese: boolean;
+    onRollCheeseChange: (checked: boolean) => void;
     onGenerate: (pan: Pan) => Promise<void>;
     onRating?: (rating: number, panId: number) => void;
 }
@@ -49,6 +53,9 @@ interface ColumnState {
 
 export function BanditView(props: BanditViewProps) {
     const {t} = useTranslation();
+    const currentUser = useAuthStore((state) => state.user);
+    const showXpNotification = useAppStore((state) => state.showXpNotification);
+    const setUser = useAuthStore((state) => state.setUser);
     const {
         ingredients,
         prepTypes,
@@ -56,6 +63,8 @@ export function BanditView(props: BanditViewProps) {
         sessionKey,
         rollPreparationType,
         onRollPreparationTypeChange,
+        rollCheese,
+        onRollCheeseChange,
         onGenerate
     } = props;
 
@@ -136,8 +145,12 @@ export function BanditView(props: BanditViewProps) {
         animationRefs.current = [];
 
         try {
+            // Store old XP before generation
+            const oldXP = currentUser?.experience_points || 0;
+            const oldLevelId = currentUser?.level?.id;
+
             // Call API first to get the result
-            const response = await Api.generateBandit(sessionKey, numColumns, rollPreparationType);
+            const response = await Api.generateBandit(sessionKey, numColumns, rollPreparationType, rollCheese);
             
             if (!response || !response.generated) {
                 throw new Error("Invalid response from bandit API");
@@ -145,6 +158,39 @@ export function BanditView(props: BanditViewProps) {
 
             const pan = response.generated;
             setApiResultPan(pan);
+
+            // Extract achievements from response
+            const achievements = response.achievements || [];
+
+            // Fetch updated user profile to get new XP
+            if (currentUser?.id) {
+                try {
+                    const updatedProfile = await Api.getUserProfile(currentUser.id);
+                    const newXP = updatedProfile.experience_points || 0;
+                    const newLevel = updatedProfile.level;
+                    const nextLevel = updatedProfile.next_level || null;
+                    const levelUp = oldLevelId !== undefined && newLevel?.id !== oldLevelId && newLevel?.id !== undefined;
+
+                    // Update auth store with new user data
+                    if (currentUser) {
+                        setUser({
+                            ...currentUser,
+                            experience_points: newXP,
+                            level: newLevel,
+                            next_level: nextLevel,
+                        });
+                    }
+
+                    // Show XP notification if XP increased
+                    if (newXP > oldXP && newLevel) {
+                        const xpGained = newXP - oldXP;
+                        showXpNotification(xpGained, oldXP, newXP, newLevel, nextLevel, levelUp, achievements);
+                    }
+                } catch (profileError) {
+                    console.error("Failed to fetch updated user profile:", profileError);
+                    // Continue even if profile fetch fails
+                }
+            }
 
             // Extract ingredients from the pan result
             const resultIngredients = pan.ingredients || [];
@@ -357,13 +403,35 @@ export function BanditView(props: BanditViewProps) {
 
                 {/* Slot machine reels - empty/mysterious */}
                 <Row gutter={16} style={{ width: '100%', marginTop: '100px', marginBottom: '40px' }}>
-                    {Array.from({ length: numColumns }).map((_, index) => (
+                    {Array.from({ length: numColumns }).map((_, index) => {
+                        // Calculate responsive column spans for preview
+                        const getPreviewColSpan = () => {
+                            if (numColumns === 1) {
+                                return { xs: 24, sm: 24, md: 24, lg: 24 };
+                            } else if (numColumns === 2) {
+                                return { xs: 24, sm: 12, md: 12, lg: 12 };
+                            } else if (numColumns === 3) {
+                                return { xs: 24, sm: 12, md: 8, lg: 8 };
+                            } else if (numColumns === 4) {
+                                return { xs: 24, sm: 12, md: 6, lg: 6 };
+                            } else if (numColumns === 5) {
+                                return { xs: 24, sm: 12, md: 6, lg: Math.floor(24 / 5) };
+                            } else if (numColumns === 6) {
+                                return { xs: 24, sm: 12, md: 6, lg: 4 };
+                            } else {
+                                const span = Math.floor(24 / Math.min(numColumns, 8));
+                                return { xs: 24, sm: 12, md: span, lg: span };
+                            }
+                        };
+                        const previewColSpan = getPreviewColSpan();
+
+                        return (
                         <Col 
                             key={index}
-                            xs={24 / Math.min(numColumns, 3)}
-                            sm={24 / Math.min(numColumns, 4)}
-                            md={24 / Math.min(numColumns, 5)}
-                            lg={24 / Math.min(numColumns, 6)}
+                            xs={previewColSpan.xs}
+                            sm={previewColSpan.sm}
+                            md={previewColSpan.md}
+                            lg={previewColSpan.lg}
                         >
                             <div
                                 style={{
@@ -401,7 +469,8 @@ export function BanditView(props: BanditViewProps) {
                                 }} />
                             </div>
                         </Col>
-                    ))}
+                        );
+                    })}
                 </Row>
 
                 {/* Pull lever area */}
@@ -464,8 +533,31 @@ export function BanditView(props: BanditViewProps) {
     }
 
     function renderBanditColumns() {
+        // Calculate responsive column spans based on number of columns
+        const getColSpan = () => {
+            if (numColumns === 1) {
+                return { xs: 24, sm: 24, md: 24, lg: 24 };
+            } else if (numColumns === 2) {
+                return { xs: 24, sm: 12, md: 12, lg: 12 };
+            } else if (numColumns === 3) {
+                return { xs: 24, sm: 12, md: 8, lg: 8 };
+            } else if (numColumns === 4) {
+                return { xs: 24, sm: 12, md: 6, lg: 6 };
+            } else if (numColumns === 5) {
+                return { xs: 24, sm: 12, md: 6, lg: Math.floor(24 / 5) };
+            } else if (numColumns === 6) {
+                return { xs: 24, sm: 12, md: 6, lg: 4 };
+            } else {
+                // For 7+ columns, use flexible calculation
+                const span = Math.floor(24 / Math.min(numColumns, 8));
+                return { xs: 24, sm: 12, md: span, lg: span };
+            }
+        };
+
+        const colSpan = getColSpan();
+
         return (
-            <Row gutter={8} style={{ marginBottom: '16px', minHeight: '300px' }}>
+            <Row gutter={[16, 16]} style={{ marginBottom: '16px', minHeight: '300px' }}>
                 {columnStates.map((state, index) => {
                     const currentItem = state.items[state.currentIndex];
                     const isSpinningColumn = state.isSpinning;
@@ -474,11 +566,10 @@ export function BanditView(props: BanditViewProps) {
                     return (
                         <Col 
                             key={index} 
-                            xs={numColumns <= 2 ? 24 : 12} 
-                            sm={numColumns <= 3 ? 12 : 8} 
-                            md={numColumns <= 4 ? 6 : 4} 
-                            lg={24 / Math.min(numColumns, 6)}
-                            style={{ minWidth: '120px' }}
+                            xs={colSpan.xs}
+                            sm={colSpan.sm}
+                            md={colSpan.md}
+                            lg={colSpan.lg}
                         >
                             <Card
                                 style={{
@@ -633,38 +724,90 @@ export function BanditView(props: BanditViewProps) {
                 />
             )}
 
-            <Row gutter={16} style={{ marginBottom: '16px' }}>
+            <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
                 <Col span={24}>
-                    <Form.Item 
-                        label={t("generate.banditColumnCount") || "Number of Columns"}
-                        help={maxColumns > 0 ? `${t("generate.banditColumnCountHelp") || "Choose how many columns to spin"} (1-${maxColumns})` : t("generate.banditColumnCountHelp") || "Choose how many columns to spin"}
+                    <Card 
+                        style={{ 
+                            borderRadius: '18px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            border: 'none'
+                        }}
+                        bodyStyle={{ padding: '24px' }}
                     >
-                        <InputNumber
-                            min={1}
-                            max={maxColumns}
-                            value={numColumns}
-                            onChange={(value) => {
-                                const val = value || 1;
-                                setNumColumns(Math.max(1, Math.min(val, maxColumns)));
-                            }}
-                            style={{ width: '100%' }}
-                            disabled={isSpinning}
-                        />
-                    </Form.Item>
+                        <Form.Item 
+                            style={{ marginBottom: 0 }}
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px' }}>
+                                    <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
+                                        {t("generate.banditColumnCount") || "Number of Columns"}
+                                    </div>
+                                    {maxColumns > 0 && (
+                                        <Text type="secondary" style={{ fontSize: '15px' }}>
+                                            {t("generate.banditColumnCountHelp") || "Choose how many columns to spin"} (1-{maxColumns})
+                                        </Text>
+                                    )}
+                                </div>
+                                <InputNumber
+                                    min={1}
+                                    max={maxColumns}
+                                    value={numColumns}
+                                    onChange={(value) => {
+                                        const val = value || 1;
+                                        setNumColumns(Math.max(1, Math.min(val, maxColumns)));
+                                    }}
+                                    size="large"
+                                    style={{ 
+                                        width: '100%',
+                                        height: '44px',
+                                        fontSize: '20px',
+                                        fontWeight: 600
+                                    }}
+                                    disabled={isSpinning}
+                                />
+                            </div>
+                        </Form.Item>
+                    </Card>
                 </Col>
             </Row>
 
-            <Row style={{ marginBottom: '16px' }}>
+            <Row style={{ marginBottom: '32px' }}>
                 <Col span={24}>
-                    <Form.Item>
-                        <Checkbox
-                            checked={rollPreparationType}
-                            onChange={(e) => onRollPreparationTypeChange(e.target.checked)}
-                            disabled={isSpinning}
-                        >
-                            {t("generate.rollPreparationType") || "Roll preparation type"}
-                        </Checkbox>
-                    </Form.Item>
+                    <Card 
+                        style={{ 
+                            borderRadius: '18px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            border: 'none'
+                        }}
+                        bodyStyle={{ padding: '20px 24px' }}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <Checkbox
+                                checked={rollPreparationType}
+                                onChange={(e) => onRollPreparationTypeChange(e.target.checked)}
+                                disabled={isSpinning}
+                                style={{ 
+                                    fontSize: '17px',
+                                    fontWeight: 400,
+                                    letterSpacing: '-0.022em'
+                                }}
+                            >
+                                {t("generate.rollPreparationType") || "Roll preparation type"}
+                            </Checkbox>
+                            <Checkbox
+                                checked={rollCheese}
+                                onChange={(e) => onRollCheeseChange(e.target.checked)}
+                                disabled={isSpinning}
+                                style={{ 
+                                    fontSize: '17px',
+                                    fontWeight: 400,
+                                    letterSpacing: '-0.022em'
+                                }}
+                            >
+                                {t("generate.rollCheese") || "Roll cheese level"}
+                            </Checkbox>
+                        </div>
+                    </Card>
                 </Col>
             </Row>
 

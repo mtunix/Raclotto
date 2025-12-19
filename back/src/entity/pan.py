@@ -21,9 +21,12 @@ class Pan(DomainMixin, BaseModel):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    timestamp = Column(DateTime, nullable=False, default=datetime.now)
     snacked = Column(Boolean, nullable=False, default=False)
     preparation_type_id = Column(Integer, ForeignKey("preparation_type.id"), nullable=True)
+    cheese_level = Column(Integer, nullable=True, default=0)
+    rolled_preparation_type = Column(Boolean, nullable=False, default=False)
+    rolled_cheese = Column(Boolean, nullable=False, default=False)
 
     ingredients = relationship(
         "Ingredient",
@@ -60,4 +63,6 @@ class Pan(DomainMixin, BaseModel):
         cols["rating"] = self.rating
         cols["ratings"] = [x.as_dict() for x in self.ratings]
         cols["ingredients"] = [x.as_dict() for x in self.ingredients]
+        if self.preparation_type:
+            cols["preparation_type"] = self.preparation_type.as_dict()
         return cols

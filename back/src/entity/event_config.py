@@ -16,3 +16,8 @@ class EventConfig(SerializableMixin, BaseModel):
 
     session = relationship("RaclottoSession", lazy="selectin")
 
+
+
+
+
+

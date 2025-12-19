@@ -8,7 +8,7 @@ interface ConfirmDeleteButtonProps {
     className?: string;
     style?: React.CSSProperties;
     confirmationTimeout?: number; // in milliseconds, default 5000
-    icon?: string; // Icon to display, defaults to REMOVE
+    icon?: string | React.ReactNode; // Icon to display, defaults to REMOVE
 }
 
 export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {

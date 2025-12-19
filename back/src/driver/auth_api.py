@@ -85,11 +85,22 @@ class AuthApi(BaseApi):
                 detail="A user with this email or name already exists"
             )
 
+        # Get optional profile_picture
+        profile_picture = data.get('profile_picture')
+        
+        # Get the first level (Novice) for new users
+        from back.src.repository.level_repository import LevelRepository
+        level_repository = LevelRepository()
+        first_level = level_repository.all_ordered()[0] if level_repository.all_ordered() else None
+        
         # Create new user
         user = User(
             name=name,
             email=email,
-            password=hash_password(password)
+            password=hash_password(password),
+            profile_picture=profile_picture,
+            experience_points=0,
+            level_id=first_level.id if first_level else None
         )
         db.session.add(user)
         db.session.flush()  # Get user.id
@@ -196,6 +207,42 @@ class AuthApi(BaseApi):
             # Also remove relationships that shouldn't be exposed
             entity_data['attributes'].pop('sessions', None)
             entity_data['attributes'].pop('achievements', None)
+            # Include level information
+            from back.src.repository.level_repository import LevelRepository
+            level_repository = LevelRepository()
+            
+            if user.level:
+                current_level = user.level
+                next_level = level_repository.next_level(current_level)
+                entity_data['attributes']['level'] = {
+                    'id': current_level.id,
+                    'name': current_level.name,
+                    'required_experience': current_level.required_experience
+                }
+                if next_level:
+                    entity_data['attributes']['next_level'] = {
+                        'id': next_level.id,
+                        'name': next_level.name,
+                        'required_experience': next_level.required_experience
+                    }
+            else:
+                # If user has no level, assign the first level (Novice)
+                first_level = level_repository.all_ordered()[0] if level_repository.all_ordered() else None
+                if first_level:
+                    user.level_id = first_level.id
+                    db.session.commit()
+                    entity_data['attributes']['level'] = {
+                        'id': first_level.id,
+                        'name': first_level.name,
+                        'required_experience': first_level.required_experience
+                    }
+                    next_level = level_repository.next_level(first_level)
+                    if next_level:
+                        entity_data['attributes']['next_level'] = {
+                            'id': next_level.id,
+                            'name': next_level.name,
+                            'required_experience': next_level.required_experience
+                        }
         
         return {
             "jsonapi": {"version": JSONAPI_VERSION},
@@ -216,6 +263,11 @@ class AuthApi(BaseApi):
         - fructose: Boolean (optional)
         - lactose: Boolean (optional)
         - gluten: Boolean (optional)
+        - color: String (optional)
+        - language: String (optional, 'en' or 'de')
+        - profile_picture: String (optional, base64 encoded image)
+        - border_style: String (optional, 'solid', 'dashed', 'dotted', 'double', 'ridge', 'groove', 'inset', 'outset')
+        - border_texture: String (optional, 'cheese', 'bread', 'sauce-01', 'sauce-02', 'herbs-01', 'herbs-02', or null)
 
         :returns User: Updated user object
         :status_code 200: Success
@@ -237,6 +289,8 @@ class AuthApi(BaseApi):
             user.vegetarian = attributes['vegetarian']
         if 'vegan' in attributes:
             user.vegan = attributes['vegan']
+        if 'fish' in attributes:
+            user.fish = attributes['fish']
         if 'histamine' in attributes:
             user.histamine = attributes['histamine']
         if 'fructose' in attributes:
@@ -247,6 +301,47 @@ class AuthApi(BaseApi):
             user.gluten = attributes['gluten']
         if 'color' in attributes:
             user.color = attributes['color']
+        if 'language' in attributes:
+            user.language = attributes['language']
+        if 'profile_picture' in attributes:
+            user.profile_picture = attributes['profile_picture']
+        if 'border_style' in attributes:
+            # Validate border_style (3D effects removed: ridge, groove, inset, outset)
+            allowed_styles = ['solid', 'dashed', 'dotted', 'double']
+            if attributes['border_style'] in allowed_styles:
+                user.border_style = attributes['border_style']
+            else:
+                raise ApiError(
+                    ApiErrorCode.incorrect_parameters,
+                    status=400,
+                    title="Invalid border_style",
+                    detail=f"border_style must be one of: {', '.join(allowed_styles)}"
+                )
+        if 'border_texture' in attributes:
+            # Validate border_texture
+            allowed_textures = ['cheese', 'bread', 'sauce-01', 'sauce-02', 'herbs-01', 'herbs-02', None]
+            if attributes['border_texture'] in allowed_textures or attributes['border_texture'] is None:
+                user.border_texture = attributes['border_texture']
+            else:
+                raise ApiError(
+                    ApiErrorCode.incorrect_parameters,
+                    status=400,
+                    title="Invalid border_texture",
+                    detail=f"border_texture must be one of: {', '.join([t for t in allowed_textures if t])}, or null"
+                )
+        
+        # Enforce hierarchical logic for diet preferences (meat -> vegetarian -> vegan)
+        # If meat is true, vegetarian and vegan must be true
+        if user.meat:
+            user.vegetarian = True
+            user.vegan = True
+        # If vegetarian is true, vegan must be true
+        elif user.vegetarian:
+            user.vegan = True
+        # Ensure at least one of meat, vegetarian, or vegan is true
+        if not user.meat and not user.vegetarian and not user.vegan:
+            user.vegetarian = True
+            user.vegan = True
         
         db.session.commit()
         

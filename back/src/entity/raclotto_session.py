@@ -11,8 +11,8 @@ class RaclottoSession(SerializableMixin, BaseModel):
     __tablename__ = "session"
 
     id = Column(Integer, primary_key=True)
-    key = Column(String, nullable=False, unique=True, default=uuid.uuid4())
+    key = Column(String, nullable=False, unique=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
-    timestamp = Column(DateTime, nullable=False, default=datetime.now())
+    timestamp = Column(DateTime, nullable=False, default=datetime.now)
     active = Column(Boolean, nullable=False, default=True)
     created_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=True)

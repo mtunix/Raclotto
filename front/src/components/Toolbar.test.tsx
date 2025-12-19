@@ -12,7 +12,6 @@ describe('Toolbar', () => {
     ];
     const sessionKey = 'test-session';
     const mockSessionClosed = jest.fn();
-    const mockOnAdd = jest.fn();
 
     const renderToolbar = () => render(
         <Toolbar
@@ -20,7 +19,6 @@ describe('Toolbar', () => {
             session={sessionKey}
             sessionId="123"
             sessionClosed={mockSessionClosed}
-            onAdd={mockOnAdd}
         />
     );
 

@@ -1,48 +1,78 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import {Api} from "../lib/api";
-import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message} from "antd";
+import {usePansPaginated, mutatePansPaginated} from "../lib/api/swrHooks";
+import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar} from "antd";
 import {Pan} from "../model/pan";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../AppSlice";
 import {useAuthStore} from "../AuthSlice";
 import {IngredientDisplay} from "./common/IngredientDisplay";
 import {VectorGraphics} from "../lib/vectorGraphics";
+import {useNavigate, useParams} from "react-router-dom";
+import {getTextureBorderImage} from "../lib/borderTextures";
 
 const {Title, Text} = Typography;
 
 export function HistoryView() {
     let { t } = useTranslation();
+    const navigate = useNavigate();
+    const params = useParams<{sessionId: string}>();
+    const sessionId = params.sessionId || "";
     const session = useAppStore((state) => state.session);
     const sessionKey = session?.key || "";
     const currentUser = useAuthStore((state) => state.user);
-    let [pans, setPans] = useState<Pan[]>([]);
-    let [waiting, setWaiting] = useState(true);
+    let [offset, setOffset] = useState(0);
+    let [allPans, setAllPans] = useState<Pan[]>([]);
     let [cloningPanId, setCloningPanId] = useState<number | null>(null);
+    const limit = 12;
 
+    // Use SWR hook for the current page
+    const { data: currentPageData, isLoading: waiting } = usePansPaginated(sessionKey, limit, offset);
+    
+    // Reset when session changes
     useEffect(() => {
         if (sessionKey) {
-            Api.get("pans", sessionKey).then((data) => {
-                const pansData = Array.isArray(data) ? data as Pan[] : [];
-                setPans(pansData.reverse());
-                setWaiting(false);
-            }).catch((error) => {
-                console.error("Failed to load pans:", error);
-                setPans([]);
-                setWaiting(false);
-            });
+            setOffset(0);
+            setAllPans([]);
         }
     }, [sessionKey]);
+    
+    // Update accumulated pans when new page data arrives
+    useEffect(() => {
+        if (currentPageData) {
+            if (offset === 0) {
+                // Reset - replace all pans
+                // Always set when at offset 0, especially important when remounting with cached data
+                setAllPans(currentPageData.data);
+            } else {
+                // Append new page
+                setAllPans(prev => {
+                    // Avoid duplicates by checking if we already have these pans
+                    const existingIds = new Set(prev.map(p => p.id));
+                    const newPans = currentPageData.data.filter(p => !existingIds.has(p.id));
+                    return [...prev, ...newPans];
+                });
+            }
+        }
+    }, [currentPageData, offset]);
+
+    const loadMore = useCallback(() => {
+        if (currentPageData?.hasMore) {
+            setOffset(prev => prev + limit);
+        }
+    }, [currentPageData, limit]);
+
+    const hasMore = currentPageData?.hasMore || false;
+    // Use currentPageData directly when at offset 0 and allPans is empty (handles remount case)
+    const pans = (offset === 0 && allPans.length === 0 && currentPageData?.data) 
+        ? currentPageData.data 
+        : allPans;
 
     function onRating(id: number, rating: number) {
         if (!sessionKey) return;
         Api.rate(sessionKey, id, rating).then(() => {
-            // Rating successfully submitted - refresh pans to get updated ratings
-            Api.get("pans", sessionKey).then((data) => {
-                const pansData = Array.isArray(data) ? data as Pan[] : [];
-                setPans(pansData.reverse());
-            }).catch((error) => {
-                console.error("Failed to refresh pans after rating:", error);
-            });
+            // Invalidate cache to refresh ratings
+            mutatePansPaginated(sessionKey);
         }).catch((error) => {
             console.error("Failed to submit rating:", error);
         });
@@ -53,13 +83,8 @@ export function HistoryView() {
         setCloningPanId(pan.id);
         Api.clonePan(sessionKey, pan).then(() => {
             message.success(t("history.panCloned") || "Pan cloned successfully");
-            // Refresh the pans list
-            Api.get("pans", sessionKey).then((data) => {
-                const pansData = Array.isArray(data) ? data as Pan[] : [];
-                setPans(pansData.reverse());
-            }).catch((error) => {
-                console.error("Failed to refresh pans:", error);
-            });
+            // Invalidate cache to refresh pans
+            mutatePansPaginated(sessionKey);
         }).catch((error) => {
             console.error("Failed to clone pan:", error);
             message.error(t("history.panCloneFailed") || "Failed to clone pan");
@@ -76,6 +101,13 @@ export function HistoryView() {
         }
     };
 
+    function handleProfileClick(userId?: number) {
+        if (userId && sessionId) {
+            const profileRoute = `/${sessionId}/profile/${userId}`;
+            navigate(profileRoute);
+        }
+    }
+
     if (waiting) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
@@ -85,9 +117,81 @@ export function HistoryView() {
     }
 
     const renderPanCard = (pan: Pan) => {
-        const isOwnPan = currentUser && pan.user === currentUser.name;
         const borderColor = pan.user_color || "#d9d9d9";
-        const borderWidth = isOwnPan ? '2px' : '1px';
+        // All borders are 5px
+        const borderWidth = '5px';
+        const borderStyle = pan.user_border_style || 'solid';
+        const borderTexture = pan.user_border_texture;
+        const textureBorderImage = getTextureBorderImage(borderTexture);
+        
+        // Debug: log border preferences
+        console.log('Pan border data:', {
+            panId: pan.id,
+            panUser: pan.user,
+            user_border_style: pan.user_border_style,
+            user_border_texture: pan.user_border_texture,
+            user_color: pan.user_color,
+            borderStyle,
+            borderTexture,
+            textureBorderImage
+        });
+        
+        // Build border style object
+        // Note: We need to explicitly override the global .ant-card { border: none; } rule
+        const cssBorderStyle = borderStyle as React.CSSProperties['borderStyle'];
+        const borderStyleObj: React.CSSProperties = {
+            height: '100%',
+            marginBottom: '16px',
+        };
+        
+        // Wrapper style for textured borders (needed for border-radius with border-image)
+        let wrapperStyle: React.CSSProperties | undefined = undefined;
+        
+        // Apply texture if available (border-image takes precedence over individual border properties)
+        if (textureBorderImage) {
+            // Workaround for border-image + border-radius: use wrapper with padding
+            // Extract the image URL from the border-image value
+            const imageUrl = textureBorderImage.match(/url\(([^)]+)\)/)?.[1];
+            
+            // Wrapper: has padding (creates border space), background with texture, rounded corners
+            wrapperStyle = {
+                borderRadius: '18px',
+                padding: borderWidth,
+                background: imageUrl ? `url(${imageUrl})` : borderColor,
+                backgroundSize: 'auto',
+                backgroundRepeat: 'repeat',
+                marginBottom: '16px',
+                position: 'relative' as const,
+                overflow: 'hidden' as const, // Ensure rounded corners clip the background
+            };
+            
+            // Card style for textured border - rounded corners, covers center area
+            // The card's background will cover the center, leaving only the padding area (border) visible
+            borderStyleObj.border = 'none';
+            borderStyleObj.borderRadius = '18px';
+            borderStyleObj.height = '100%';
+            borderStyleObj.marginBottom = '0';
+            borderStyleObj.backgroundColor = '#ffffff'; // Cover the center with white
+            borderStyleObj.position = 'relative' as const;
+        } else {
+            // No texture - use individual border properties for custom styling
+            // IMPORTANT: Set all border properties explicitly to override global CSS
+            borderStyleObj.borderTop = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
+            borderStyleObj.borderRight = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
+            borderStyleObj.borderBottom = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
+            borderStyleObj.borderLeft = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
+            borderStyleObj.borderRadius = '18px'; // Also round non-textured borders
+        }
+        
+        console.log('Final borderStyleObj:', {
+            panId: pan.id,
+            borderStyle,
+            borderTexture,
+            hasTexture: !!textureBorderImage,
+            borderTop: borderStyleObj.borderTop,
+            borderLeft: borderStyleObj.borderLeft,
+            borderImage: borderStyleObj.borderImage
+        });
         
         // Check if current user has rated this pan
         let userRatingValue: number | undefined = undefined;
@@ -109,28 +213,37 @@ export function HistoryView() {
             }
         }
         
-        return (
-            <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
-                <Card
-                    hoverable
-                    style={{
-                        height: '100%',
-                        marginBottom: '16px',
-                        border: `${borderWidth} solid ${borderColor}`,
-                        borderLeft: `4px solid ${borderColor}`
-                    }}
-                    bodyStyle={{ padding: '12px' }}
-                >
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        const cardContent = (
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
                         {/* Header with name and rating */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <Space direction="vertical" size={0} style={{ flex: 1 }}>
                                 <Title level={4} style={{ margin: 0, fontSize: '1rem', marginBottom: '4px' }}>
                                     {pan.name}
                                 </Title>
-                                <Text type="secondary" style={{ fontSize: '0.8rem' }}>
-                                    {t("history.consumedBy")} <strong>{pan.user}</strong>
-                                </Text>
+                                <Space size="small" align="center">
+                                    {pan.user_id && (
+                                        <Avatar
+                                            src={pan.user_profile_picture}
+                                            size={32}
+                                            style={{ 
+                                                cursor: 'pointer',
+                                                border: '2px solid #d9d9d9',
+                                                flexShrink: 0
+                                            }}
+                                            onClick={() => handleProfileClick(pan.user_id)}
+                                        >
+                                            {!pan.user_profile_picture && (
+                                                <span style={{ fontSize: '14px' }}>
+                                                    {pan.user?.charAt(0)?.toUpperCase() || 'U'}
+                                                </span>
+                                            )}
+                                        </Avatar>
+                                    )}
+                                    <Text type="secondary" style={{ fontSize: '0.8rem' }}>
+                                        {t("history.consumedBy")} <strong>{pan.user}</strong>
+                                    </Text>
+                                </Space>
                                 <Text type="secondary" style={{ fontSize: '0.7rem' }}>
                                     {t("history.consumedAt")} {formatDate(pan.timestamp)}
                                 </Text>
@@ -185,8 +298,29 @@ export function HistoryView() {
                         >
                             {t("history.iWantThisToo")}
                         </Button>
-                    </Space>
-                </Card>
+            </Space>
+        );
+
+        return (
+            <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
+                {textureBorderImage ? (
+                    // Wrapper div for textured borders (allows border-radius with border-image)
+                    <div style={wrapperStyle}>
+                        <Card
+                            style={borderStyleObj}
+                            bodyStyle={{ padding: '12px' }}
+                        >
+                            {cardContent}
+                        </Card>
+                    </div>
+                ) : (
+                    <Card
+                        style={borderStyleObj}
+                        bodyStyle={{ padding: '12px' }}
+                    >
+                        {cardContent}
+                    </Card>
+                )}
             </Col>
         );
     };
@@ -194,9 +328,23 @@ export function HistoryView() {
     return (
         <div>
             {pans.length > 0 ? (
-                <Row gutter={[16, 16]}>
-                    {pans.map(renderPanCard)}
-                </Row>
+                <>
+                    <Row gutter={[16, 16]}>
+                        {pans.map(renderPanCard)}
+                    </Row>
+                    {hasMore && (
+                        <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '24px' }}>
+                            <Button 
+                                type="primary" 
+                                loading={waiting && offset > 0}
+                                onClick={loadMore}
+                                size="large"
+                            >
+                                {t("history.loadMore") || "Load More"}
+                            </Button>
+                        </div>
+                    )}
+                </>
             ) : (
                 <Card>
                     <div style={{ textAlign: 'center', padding: '40px' }}>

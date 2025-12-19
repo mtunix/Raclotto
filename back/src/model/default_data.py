@@ -1,5 +1,6 @@
 from back.src.entity.achievement import Achievement
 from back.src.entity.insult import Insult
+from back.src.entity.level import Level
 
 ACHIEVEMENTS = [
     Achievement(
@@ -260,5 +261,28 @@ INSULTS = [
     Insult(title="Langweiler"),
     Insult(title="Spielverderber"),
     Insult(title="Lauch")
+]
+
+LEVELS = [
+    Level(name="level.pfannenPraktikant", required_experience=0),
+    Level(name="level.kaeseKnauserer", required_experience=30),
+    Level(name="level.kartoffelPionier", required_experience=75),
+    Level(name="level.beilagenBaendiger", required_experience=150),
+    Level(name="level.knoblauchKrieger", required_experience=250),
+    Level(name="level.saucenSucher", required_experience=400),
+    Level(name="level.jalapenoJaeger", required_experience=600),
+    Level(name="level.ananasApostel", required_experience=850),
+    Level(name="level.zwiebelZelebrator", required_experience=1150),
+    Level(name="level.pfannenArchitekt", required_experience=1500),
+    Level(name="level.drehDoktor", required_experience=1900),
+    Level(name="level.zufallsZaehmer", required_experience=2350),
+    Level(name="level.stapelSpezialist", required_experience=2850),
+    Level(name="level.vierSchichtVirtuose", required_experience=3400),
+    Level(name="level.jackpotJaeger", required_experience=4000),
+    Level(name="level.gaumenGrossherzog", required_experience=4650),
+    Level(name="level.brutzlerBoss", required_experience=5350),
+    Level(name="level.kaeseKaiser", required_experience=6100),
+    Level(name="level.gourmetGouverneur", required_experience=6900),
+    Level(name="level.raclottoRegent", required_experience=7750),
 ]
 

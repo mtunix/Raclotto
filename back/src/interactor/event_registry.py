@@ -64,3 +64,8 @@ def initialize_registry():
     pan_swap_evaluator = PanSwapEvaluator()
     _registry.register_evaluator(pan_swap_evaluator.get_event_type(), pan_swap_evaluator)
 
+
+
+
+
+

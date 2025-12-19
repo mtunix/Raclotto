@@ -61,6 +61,10 @@ class IngredientApi(BaseApi):
             if not user.vegan and ingredient.vegan:
                 is_applicable = False
             
+            # If user doesn't eat fish, exclude fish ingredients
+            if not user.fish and ingredient.fish:
+                is_applicable = False
+            
             # If user doesn't eat histamine, exclude histamine ingredients
             if not user.histamine and ingredient.histamine:
                 is_applicable = False
@@ -105,6 +109,7 @@ class IngredientApi(BaseApi):
         :status_code 201: Ingredient created successfully
         :status_code 401: Not authenticated
         """
+        user = get_current_user()
         attributes = deserialize_attributes()
         session_key = attributes.get('session_key')
         
@@ -378,6 +383,10 @@ class IngredientApi(BaseApi):
             if not user.vegan and ingredient.vegan:
                 continue
             
+            # If user doesn't eat fish, exclude fish ingredients
+            if not user.fish and ingredient.fish:
+                continue
+            
             # If user doesn't eat histamine, exclude histamine ingredients
             if not user.histamine and ingredient.histamine:
                 continue
@@ -455,6 +464,10 @@ class IngredientApi(BaseApi):
                 "histamine": ingredient.histamine,
                 "fructose": ingredient.fructose,
                 "lactose": ingredient.lactose,
+                "fish": ingredient.fish,
+                "spicy": ingredient.spicy,
+                "wildcard": ingredient.wildcard,
+                "sweet": ingredient.sweet,
                 "session_id": ingredient.session_id
             }
             ingredients_data.append(ingredient_dict)
@@ -563,35 +576,48 @@ class IngredientApi(BaseApi):
             item.setdefault('histamine', False)
             item.setdefault('fructose', False)
             item.setdefault('lactose', False)
+            item.setdefault('fish', False)
+            item.setdefault('spicy', 0)
+            item.setdefault('wildcard', False)
+            item.setdefault('sweet', False)
             
-            # Validate meat/vegetarian/vegan constraints
+            # Validate meat/vegetarian/vegan/fish constraints
             # They are mutually exclusive, and at least one must be true
             meat = item.get('meat', False)
             vegetarian = item.get('vegetarian', False)
             vegan = item.get('vegan', False)
+            fish = item.get('fish', False)
             
-            if not (meat or vegetarian or vegan):
+            if not (meat or vegetarian or vegan or fish):
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
                     title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] must have at least one of meat, vegetarian, or vegan set to true"
+                    detail=f"ingredients[{idx}] must have at least one of meat, vegetarian, vegan, or fish set to true"
                 )
             
-            if meat and (vegetarian or vegan):
+            if meat and (vegetarian or vegan or fish):
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
                     title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have meat=true with vegetarian or vegan=true (they are mutually exclusive)"
+                    detail=f"ingredients[{idx}] cannot have meat=true with vegetarian, vegan, or fish=true (they are mutually exclusive)"
                 )
             
-            if vegetarian and vegan:
+            if vegetarian and (vegan or fish):
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
                     title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have both vegetarian=true and vegan=true (they are mutually exclusive)"
+                    detail=f"ingredients[{idx}] cannot have vegetarian=true with vegan or fish=true (they are mutually exclusive)"
+                )
+            
+            if vegan and fish:
+                raise ApiError(
+                    ApiErrorCode.incorrect_parameters,
+                    status=400,
+                    title="Invalid ingredient constraints",
+                    detail=f"ingredients[{idx}] cannot have both vegan=true and fish=true (they are mutually exclusive)"
                 )
             
             validated_data.append(item)
@@ -615,6 +641,10 @@ class IngredientApi(BaseApi):
                 "histamine": ingredient.histamine,
                 "fructose": ingredient.fructose,
                 "lactose": ingredient.lactose,
+                "fish": ingredient.fish,
+                "spicy": ingredient.spicy,
+                "wildcard": ingredient.wildcard,
+                "sweet": ingredient.sweet,
                 "session_id": ingredient.session_id
             }
             result_ingredients.append(ingredient_dict)
@@ -739,35 +769,48 @@ class IngredientApi(BaseApi):
             item.setdefault('histamine', False)
             item.setdefault('fructose', False)
             item.setdefault('lactose', False)
+            item.setdefault('fish', False)
+            item.setdefault('spicy', 0)
+            item.setdefault('wildcard', False)
+            item.setdefault('sweet', False)
             
-            # Validate meat/vegetarian/vegan constraints
+            # Validate meat/vegetarian/vegan/fish constraints
             # They are mutually exclusive, and at least one must be true
             meat = item.get('meat', False)
             vegetarian = item.get('vegetarian', False)
             vegan = item.get('vegan', False)
+            fish = item.get('fish', False)
             
-            if not (meat or vegetarian or vegan):
+            if not (meat or vegetarian or vegan or fish):
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
                     title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] must have at least one of meat, vegetarian, or vegan set to true"
+                    detail=f"ingredients[{idx}] must have at least one of meat, vegetarian, vegan, or fish set to true"
                 )
             
-            if meat and (vegetarian or vegan):
+            if meat and (vegetarian or vegan or fish):
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
                     title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have meat=true with vegetarian or vegan=true (they are mutually exclusive)"
+                    detail=f"ingredients[{idx}] cannot have meat=true with vegetarian, vegan, or fish=true (they are mutually exclusive)"
                 )
             
-            if vegetarian and vegan:
+            if vegetarian and (vegan or fish):
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
                     title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have both vegetarian=true and vegan=true (they are mutually exclusive)"
+                    detail=f"ingredients[{idx}] cannot have vegetarian=true with vegan or fish=true (they are mutually exclusive)"
+                )
+            
+            if vegan and fish:
+                raise ApiError(
+                    ApiErrorCode.incorrect_parameters,
+                    status=400,
+                    title="Invalid ingredient constraints",
+                    detail=f"ingredients[{idx}] cannot have both vegan=true and fish=true (they are mutually exclusive)"
                 )
             
             # Categorize by whether it has an ID
@@ -860,6 +903,10 @@ class IngredientApi(BaseApi):
                 "histamine": ingredient.histamine,
                 "fructose": ingredient.fructose,
                 "lactose": ingredient.lactose,
+                "fish": ingredient.fish,
+                "spicy": ingredient.spicy,
+                "wildcard": ingredient.wildcard,
+                "sweet": ingredient.sweet,
                 "session_id": ingredient.session_id
             }
             result_ingredients.append(ingredient_dict)

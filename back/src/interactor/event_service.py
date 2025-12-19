@@ -123,3 +123,8 @@ class EventService:
             event_type, enabled, frequency_minutes, session_id
         )
 
+
+
+
+
+

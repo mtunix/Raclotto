@@ -107,3 +107,8 @@ class EventRepository(BaseRepository[Event]):
         db.session.flush()
         return True
 
+
+
+
+
+

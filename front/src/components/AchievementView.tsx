@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {Spin, Card, Row, Col, Tag, Typography, Space, Progress} from "antd";
-import {Api} from "../lib/api";
+import {useAchievements} from "../lib/api/swrHooks";
 import {Achievement} from "../model/achievement";
 import {VectorGraphics} from "../lib/vectorGraphics";
 import {useTranslation} from "react-i18next";
@@ -11,86 +11,18 @@ type AchievementViewProps = {};
 
 export function AchievementView(props: AchievementViewProps) {
     const {t} = useTranslation();
-    let [achievements, setAchievements] = useState<Achievement[]>([]);
-    let [waiting, setWaiting] = useState(true);
-
-    useEffect(() => {
-        Api.get("achievements").then((data) => {
-            console.log("Raw API response from Api.get:", data);
-            
-            // The deserialize-json-api library should flatten attributes
-            // But we need to handle the case where it might not
-            let achievementsData: Achievement[] = [];
-            
-            if (Array.isArray(data)) {
-                // Data is already an array (deserialized by deserialize-json-api)
-                achievementsData = data.map((item: any) => {
-                    // Handle both flattened and nested attribute structures
-                    let achievement: Achievement;
-                    
-                    if (item.attributes) {
-                        // Nested attributes structure: { id, type, attributes: {...} }
-                        achievement = {
-                            id: typeof item.id === 'string' ? parseInt(item.id, 10) : (item.id || parseInt(item.attributes.id || item.attributes.id, 10)),
-                            title: item.attributes.title || '',
-                            description: item.attributes.description || '',
-                            value: item.attributes.value || 0,
-                            hidden: item.attributes.hidden || false,
-                            unlocked: item.attributes.unlocked,
-                            progress: item.attributes.progress
-                        };
-                    } else {
-                        // Flattened structure (deserializer already flattened)
-                        achievement = {
-                            id: typeof item.id === 'string' ? parseInt(item.id, 10) : item.id,
-                            title: item.title || '',
-                            description: item.description || '',
-                            value: item.value || 0,
-                            hidden: item.hidden || false,
-                            unlocked: item.unlocked,
-                            progress: item.progress
-                        };
-                    }
-                    
-                    console.log("Processed achievement:", achievement);
-                    return achievement;
-                });
-            } else if (data && typeof data === 'object' && 'data' in data) {
-                // JSON API format: { data: [...] }
-                const dataArray = (data as any).data;
-                if (Array.isArray(dataArray)) {
-                    achievementsData = dataArray.map((item: any) => {
-                        const attrs = item.attributes || item;
-                        return {
-                            id: typeof item.id === 'string' ? parseInt(item.id, 10) : item.id,
-                            title: attrs.title || '',
-                            description: attrs.description || '',
-                            value: attrs.value || 0,
-                            hidden: attrs.hidden || false,
-                            unlocked: attrs.unlocked,
-                            progress: attrs.progress
-                        } as Achievement;
-                    });
-                }
-            }
-            
-            // Debug: log the first achievement to see its structure
-            if (achievementsData.length > 0) {
-                console.log("Final achievements data (first):", achievementsData[0]);
-                console.log("Has unlocked:", achievementsData[0].unlocked !== undefined);
-                console.log("Has progress:", achievementsData[0].progress !== undefined);
-                console.log("Unlocked value:", achievementsData[0].unlocked);
-                console.log("Progress value:", achievementsData[0].progress);
-            }
-            
-            setAchievements(achievementsData);
-            setWaiting(false);
-        }).catch((error) => {
-            console.error("Failed to load achievements:", error);
-            setAchievements([]);
-            setWaiting(false);
-        });
-    }, []);
+    const { data: achievementsData = [], isLoading: waiting } = useAchievements();
+    
+    // Transform data to Achievement format (fetcher already handles most of this)
+    const achievements = achievementsData.map((item: any) => ({
+        id: item.id,
+        title: item.title || item.name || '',
+        description: item.description || '',
+        value: item.value !== undefined ? item.value : (item.points !== undefined ? item.points : 0),
+        hidden: item.hidden || false,
+        unlocked: item.unlocked,
+        progress: item.progress
+    } as Achievement));
 
     if (waiting) {
         return (

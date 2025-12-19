@@ -43,11 +43,22 @@ class User(SerializableMixin, BaseModel):
     meat = Column(Boolean, nullable=False, default=False)
     vegetarian = Column(Boolean, nullable=False, default=True)
     vegan = Column(Boolean, nullable=False, default=True)
+    fish = Column(Boolean, nullable=False, default=False)
     histamine = Column(Boolean, nullable=False, default=True)
     fructose = Column(Boolean, nullable=False, default=True)
     lactose = Column(Boolean, nullable=False, default=True)
     gluten = Column(Boolean, nullable=False, default=True)
     color = Column(String, nullable=True, default=None)
+    profile_picture = Column(String, nullable=True, default=None)
+    language = Column(String, nullable=False, default='de')  # Language preference: 'en' or 'de'
+    
+    # Border customization
+    border_style = Column(String, nullable=True, default='solid')  # CSS border style: solid, dashed, dotted, double, ridge, groove, inset, outset
+    border_texture = Column(String, nullable=True, default=None)  # Texture name: cheese, bread, crispy, sauce, grilled, herbs, spices, or null
+    
+    # Leveling system
+    experience_points = Column(Integer, nullable=False, default=0)
+    level_id = Column(Integer, ForeignKey("level.id"), nullable=True)
 
     sessions = relationship(
         "RaclottoSession",
@@ -58,6 +69,11 @@ class User(SerializableMixin, BaseModel):
     achievements = relationship(
         "Achievement",
         secondary=user_achievements,
+        lazy="selectin"
+    )
+    
+    level = relationship(
+        "Level",
         lazy="selectin"
     )
 

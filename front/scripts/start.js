@@ -15,6 +15,7 @@ process.on('unhandledRejection', err => {
 require('../config/env');
 
 const fs = require('fs');
+const http = require('http');
 const chalk = require('react-dev-utils/chalk');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
@@ -113,6 +114,60 @@ checkBrowsers(paths.appPath, isInteractive)
       port,
     };
     const devServer = new WebpackDevServer(serverConfig, compiler);
+    
+    // Create HTTP redirect server if HTTPS is enabled
+    let httpRedirectServer = null;
+    if (protocol === 'https') {
+      const httpPort = port - 1; // Use port one less than HTTPS port (e.g., 3000 for HTTPS 3001)
+      const redirectPort = process.env.HTTP_REDIRECT_PORT 
+        ? parseInt(process.env.HTTP_REDIRECT_PORT, 10) 
+        : httpPort;
+      
+      // Check if redirect port is available
+      choosePort(HOST, redirectPort).then(availableRedirectPort => {
+        if (availableRedirectPort == null) {
+          console.log(
+            chalk.yellow(
+              `Warning: HTTP redirect port ${redirectPort} is not available. Skipping HTTP redirect server.`
+            )
+          );
+          return;
+        }
+        
+        const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
+        
+        httpRedirectServer = http.createServer((req, res) => {
+          // Preserve the original host and path, but change protocol and port
+          const host = req.headers.host || `${displayHost}:${availableRedirectPort}`;
+          const hostname = host.split(':')[0];
+          const httpsUrl = `https://${hostname}:${port}${req.url}`;
+          res.writeHead(301, { Location: httpsUrl });
+          res.end();
+        });
+        
+        httpRedirectServer.on('error', (err) => {
+          if (err.code === 'EADDRINUSE') {
+            console.log(
+              chalk.yellow(
+                `Warning: HTTP redirect port ${availableRedirectPort} is already in use. Skipping HTTP redirect server.`
+              )
+            );
+          } else {
+            console.error(chalk.red(`HTTP redirect server error: ${err.message}`));
+          }
+        });
+        
+        httpRedirectServer.listen(availableRedirectPort, HOST, () => {
+          console.log(
+            chalk.cyan(`HTTP redirect server running on http://${displayHost}:${availableRedirectPort}`)
+          );
+          console.log(
+            chalk.cyan(`  → Redirecting to https://${displayHost}:${port}\n`)
+          );
+        });
+      });
+    }
+    
     // Launch WebpackDevServer.
     devServer.startCallback(() => {
       if (isInteractive) {
@@ -133,6 +188,9 @@ checkBrowsers(paths.appPath, isInteractive)
 
     ['SIGINT', 'SIGTERM'].forEach(function (sig) {
       process.on(sig, function () {
+        if (httpRedirectServer) {
+          httpRedirectServer.close();
+        }
         devServer.close();
         process.exit();
       });
@@ -141,6 +199,9 @@ checkBrowsers(paths.appPath, isInteractive)
     if (process.env.CI !== 'true') {
       // Gracefully exit when stdin ends
       process.stdin.on('end', function () {
+        if (httpRedirectServer) {
+          httpRedirectServer.close();
+        }
         devServer.close();
         process.exit();
       });

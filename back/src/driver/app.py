@@ -28,6 +28,7 @@ class App(Flask):
             self.db.create_all()
             self.init_admin_user()
             self.init_achievements()
+            self.init_levels()
             self.init_preparation_types()
             # Initialize achievement registry with evaluators
             from back.src.interactor.achievement_registry import initialize_registry
@@ -91,10 +92,17 @@ class App(Flask):
         user_repository = UserRepository()
         admin_user = user_repository.by_name("admin")
         if not admin_user:
+            # Get the first level (Novice) for new users
+            from back.src.repository.level_repository import LevelRepository
+            level_repository = LevelRepository()
+            first_level = level_repository.all_ordered()[0] if level_repository.all_ordered() else None
+            
             admin_user = User(
                 name="admin",
                 email="admin@raclotto.local",
-                password=hash_password("admin")
+                password=hash_password("admin"),
+                experience_points=0,
+                level_id=first_level.id if first_level else None
             )
             self.db.session.add(admin_user)
             self.db.session.commit()
@@ -171,6 +179,44 @@ class App(Flask):
                     existing.hidden = achievement_data.hidden
                     self.db.session.commit()
                     logging.info(f"Updated achievement: {achievement_data.title}")
+
+    def init_levels(self):
+        """Initialize levels from default_data if they don't exist."""
+        from back.src.entity.level import Level
+        from back.src.model.default_data import LEVELS
+        from back.src.repository.level_repository import LevelRepository
+        
+        level_repository = LevelRepository()
+        existing_levels = level_repository.all()
+        existing_names = {level.name for level in existing_levels}
+        
+        new_levels = []
+        for level_data in LEVELS:
+            if level_data.name not in existing_names:
+                # Create a new Level entity from the default data
+                new_level = Level(
+                    name=level_data.name,
+                    required_experience=level_data.required_experience
+                )
+                new_levels.append(new_level)
+        
+        if new_levels:
+            self.db.session.add_all(new_levels)
+            self.db.session.commit()
+            logging.info(f"Initialized {len(new_levels)} levels")
+        
+        # Also update existing levels if their data changed
+        for level_data in LEVELS:
+            existing = level_repository.by_id(level_data.id) if hasattr(level_data, 'id') else None
+            if not existing:
+                # Try to find by name
+                existing = next((l for l in existing_levels if l.name == level_data.name), None)
+            if existing:
+                # Update required_experience if it differs
+                if existing.required_experience != level_data.required_experience:
+                    existing.required_experience = level_data.required_experience
+                    self.db.session.commit()
+                    logging.info(f"Updated level: {level_data.name}")
 
     def init_logging(self):
         log_format_str = '%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s'

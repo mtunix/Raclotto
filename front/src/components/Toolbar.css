@@ -14,45 +14,141 @@
         object-fit: contain;
         width: 100%;
     }
+}
 
+/* Mobile and tablet - icon-only buttons (up to 785px) */
+@media (max-width: 785px) {
     .toolbar-buttons-container {
         width: 100%;
         justify-content: space-between;
-        gap: 2px !important;
+        gap: 4px !important;
     }
 
-    .toolbar-button {
-        padding: 2px 4px !important;
-        min-width: 32px !important;
-        height: 32px !important;
+    .toolbar-buttons-space {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+    }
+    
+    .toolbar-buttons-space.ant-space > .ant-space-item {
+        margin-right: 4px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .toolbar-buttons-space > * {
+        flex-shrink: 0 !important;
+    }
+
+    .toolbar-button.ant-btn {
+        padding: 0 !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        aspect-ratio: 1 !important;
         font-size: 12px;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        line-height: 1 !important;
+        border-width: 1px !important;
+    }
+
+    .toolbar-button > span:not(.toolbar-button-label) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .toolbar-button > span.toolbar-button-label {
+        display: none !important;
     }
 
     .toolbar-button .anticon,
     .toolbar-button > span:first-child {
+        margin: 0 !important;
         margin-right: 0 !important;
         margin-inline-end: 0 !important;
+        margin-left: 0 !important;
+        margin-inline-start: 0 !important;
     }
 
     .toolbar-button-label {
         display: none !important;
     }
 
-    .toolbar-logout-button {
-        padding: 2px 4px !important;
-        min-width: 32px !important;
-        height: 32px !important;
+    .toolbar-button .toolbar-button-label {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .toolbar-logout-button.ant-btn {
+        padding: 0 !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        aspect-ratio: 1 !important;
         font-size: 12px;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        line-height: 1 !important;
+        border-width: 1px !important;
+    }
+
+    .toolbar-logout-button > span:not(.toolbar-button-label) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .toolbar-logout-button > span.toolbar-button-label {
+        display: none !important;
     }
 
     .toolbar-logout-button .anticon,
     .toolbar-logout-button > span:first-child {
+        margin: 0 !important;
         margin-right: 0 !important;
         margin-inline-end: 0 !important;
+        margin-left: 0 !important;
+        margin-inline-start: 0 !important;
     }
 
     .toolbar-logout-button .toolbar-button-label {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+/* Very small devices - reduce logo size */
+@media (max-width: 480px) {
+    .toolbar-logo-mobile {
+        max-width: 120px;
+        max-height: 90px;
+    }
+    
+    .toolbar-session-row-desktop img {
+        max-width: 120px;
     }
 }
 
@@ -78,9 +174,17 @@
         padding: 4px 8px;
     }
 
+    .toolbar-button-label {
+        font-size: 13px !important;
+    }
+
     .toolbar-logout-button {
         font-size: 12px;
         padding: 4px 8px;
+    }
+
+    .toolbar-logout-button .toolbar-button-label {
+        font-size: 13px !important;
     }
 }
 
@@ -92,5 +196,83 @@
 
     .toolbar-buttons-space {
         flex: 1;
+    }
+}
+
+/* Profile avatar text - default size for small screens (48px avatar) */
+.toolbar-profile-avatar-text {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Profile avatar responsive sizing */
+/* Between 480px and 786px: increase by 50% (48 * 1.5 = 72px) */
+@media (min-width: 481px) and (max-width: 785px) {
+    .toolbar-profile-avatar {
+        width: 72px !important;
+        height: 72px !important;
+        min-width: 72px !important;
+        min-height: 72px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .toolbar-profile-avatar-text {
+        font-size: 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+}
+
+/* Above 786px: increase by 100% (48 * 2 = 96px) */
+@media (min-width: 786px) {
+    .toolbar-profile-avatar {
+        width: 96px !important;
+        height: 96px !important;
+        min-width: 96px !important;
+        min-height: 96px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .toolbar-profile-avatar-text {
+        font-size: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+}
+
+/* Font size adjustments for top bar text */
+/* Between 480px and 768px: increase font size */
+@media (min-width: 481px) and (max-width: 768px) {
+    .toolbar-session-row-desktop .ant-typography {
+        font-size: 16px !important;
+    }
+    
+    .toolbar-session-row-desktop .ant-typography strong {
+        font-size: 18px !important;
+    }
+}
+
+/* Above 768px: increase font size further */
+@media (min-width: 769px) {
+    .toolbar-session-row-desktop .ant-typography {
+        font-size: 18px !important;
+    }
+    
+    .toolbar-session-row-desktop .ant-typography strong {
+        font-size: 20px !important;
     }
 }
