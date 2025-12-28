@@ -56,7 +56,9 @@
     "addSauce": "Add Sauce",
     "spicy": "Spicy",
     "wildcard": "Wildcard",
-    "sweet": "Sweet"
+    "sweet": "Sweet",
+    "available": "Available",
+    "additionalProperties": "Additional Properties"
   },
   "tags": {
     "meat": "Meat",
@@ -140,7 +142,7 @@
     "glowEffectLocked": "Locked - Reach level 7 to unlock",
     "noTexture": "No texture",
     "borderCustomization": "Border Customization",
-    "borderCustomizationInfo": "Note: When a texture is selected, color and style settings are not applied.",
+    "borderCustomizationInfo": "Note: When a texture is selected, style settings are not applied.",
     "disabledWithTexture": "Disabled when texture is active",
     "colorDisabledInfo": "Color is not applied when a texture is selected.",
     "styleDisabledInfo": "Style is not applied when a texture is selected.",
@@ -205,8 +207,16 @@
     "iWantThisToo": "I want this too",
     "panCloned": "Pan cloned successfully",
     "panCloneFailed": "Failed to clone pan",
+    "cloneConfirmTitle": "Clone Pan?",
+    "cloneConfirmMessage": "Are you sure you want to clone this pan?",
     "loadMore": "Load More",
-    "noPans": "No pans in history"
+    "noPans": "No pans in history",
+    "sortBy": "Sort by",
+    "time": "Time",
+    "rating": "Rating",
+    "ingredientCounts": "Ingredient + Sauce counts",
+    "ascending": "Ascending",
+    "descending": "Descending"
   },
   "dashboard": {
     "rating": "Rating",
@@ -254,7 +264,8 @@
     "cameraNotSupported": "Camera is not supported on this device or browser",
     "cameraPermissionDenied": "Camera permission denied. Please allow camera access in your browser settings.",
     "cameraNotFound": "No camera found on this device",
-    "cameraInUse": "Camera is already in use by another application"
+    "cameraInUse": "Camera is already in use by another application",
+    "cancel": "Cancel"
   },
   "invite": {
     "generateToken": "Generate Invite Token",
@@ -292,7 +303,12 @@
     "achievements": "Achievements",
     "noAchievements": "No achievements unlocked yet",
     "pansHistory": "Pans History",
-    "pansAreSessionSpecific": "Pans are displayed per session. Visit a session to see pans."
+    "pansAreSessionSpecific": "Pans are displayed per session. Visit a session to see pans.",
+    "clickToChange": "Click to change",
+    "changeProfilePicture": "Change Profile Picture",
+    "pictureUpdated": "Profile picture updated successfully",
+    "pictureUpdateFailed": "Failed to update profile picture",
+    "defaultAvatar": "U"
   },
   "achievement": {
     "points": "pts",

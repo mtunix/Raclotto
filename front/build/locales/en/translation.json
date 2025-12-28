@@ -1,0 +1,77 @@
+{
+  "common": {
+    "shuffle": "Shuffle",
+    "settings": "Settings",
+    "history": "History",
+    "achievements": "Achievements",
+    "serverSettings": "Server Settings",
+    "create": "Create",
+    "enterName": "Enter name"
+  },
+  "ingredient": {
+    "ingredientName": "Ingredient Name",
+    "type": "Type",
+    "fill": "Fill",
+    "sauce": "Sauce",
+    "contains": "Contains",
+    "ingredients": "Ingredients",
+    "sauces": "Sauces",
+    "preparationTypes": "Preparation Types",
+    "ingredientCount": "Number of Ingredients",
+    "sauceCount": "Number of Sauces"
+  },
+  "tags": {
+    "meat": "Meat",
+    "vegan": "Vegan",
+    "vegetarian": "Vegetarian",
+    "histamine": "Histamine",
+    "gluten": "Gluten",
+    "lactose": "Lactose",
+    "fructose": "Fructose"
+  },
+  "session": {
+    "session": "Session",
+    "sessionName": "Session Name",
+    "eveningOver": "Evening Over",
+    "endSession": "End Session",
+    "leave": "Leave"
+  },
+  "toolbar": {
+    "generateTitle": "Generate",
+    "userSettingsTitle": "User Settings",
+    "historyTitle": "History",
+    "addIngredientTitle": "Add Ingredient",
+    "achievementsTitle": "Achievements",
+    "serverSettingsTitle": "Server Settings"
+  },
+  "generate": {
+    "rollAnotherDice": "Roll Another Dice"
+  },
+  "settings": {
+    "iAm": "I am",
+    "allOkToSnack": "All OK to Snack"
+  },
+  "history": {
+    "consumedBy": "Consumed by",
+    "consumedAt": "Consumed at",
+    "iWantThisToo": "I want this too"
+  },
+  "error": {
+    "no_response": {
+      "title": "No Response",
+      "message": "The server did not respond."
+    },
+    "unexpected": {
+      "title": "Unexpected Error",
+      "message": "An unexpected error occurred."
+    },
+    "unknown": {
+      "title": "Unknown Error",
+      "message": "An unknown error occurred."
+    },
+    "no_data_available": {
+      "title": "No Data Available",
+      "message": "No data is currently available."
+    }
+  }
+}

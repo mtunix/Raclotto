@@ -25,7 +25,7 @@ interface User {
     lactose: boolean;
     gluten: boolean;
     color?: string;
-    profile_picture?: string;
+    profile_picture?: string | null;
     language?: string;
     experience_points?: number;
     level?: Level;

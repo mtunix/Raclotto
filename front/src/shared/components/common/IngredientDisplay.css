@@ -1,0 +1,101 @@
+.ingredient-tags-container {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ingredient-tag {
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 500;
+    letter-spacing: -0.011em;
+    border: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ingredient-display-badge {
+    font-size: 15px;
+    margin-bottom: 6px;
+    margin-right: 6px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: 500;
+    letter-spacing: -0.011em;
+    border: none;
+}
+
+.ingredient-badge-icon {
+    margin-right: 6px;
+    font-size: 16px;
+}
+
+.ingredient-display-compact {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    color: #1d1d1f;
+}
+
+.ingredient-display-compact-main {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.ingredient-compact-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.ingredient-name-compact {
+    flex: 0 0 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ingredient-tags-container-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1 1 auto;
+}
+
+.ingredient-tags-container-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.ingredient-card {
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-style: solid;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ingredient-card-header {
+    font-size: 17px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.022em;
+    color: #1d1d1f;
+}
+
+.ingredient-card-header-icon {
+    font-size: 20px;
+    line-height: 1;
+}

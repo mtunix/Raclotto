@@ -262,6 +262,7 @@ export class Api {
                 user_profile_picture: attributes.user_profile_picture || item.user_profile_picture,
                 user_border_style: attributes.user_border_style || item.user_border_style,
                 user_border_texture: attributes.user_border_texture !== undefined ? attributes.user_border_texture : item.user_border_texture,
+                user_glow_effect: attributes.user_glow_effect !== undefined ? attributes.user_glow_effect : (item.user_glow_effect !== undefined ? item.user_glow_effect : false),
                 ingredients: attributes.ingredients || item.ingredients || [],
                 ratings: attributes.ratings || item.ratings || [],
                 rating: attributes.rating !== undefined ? attributes.rating : (item.rating !== undefined ? item.rating : 0)
@@ -309,6 +310,7 @@ export class Api {
                 user_profile_picture: attributes.user_profile_picture || item.user_profile_picture,
                 user_border_style: attributes.user_border_style || item.user_border_style,
                 user_border_texture: attributes.user_border_texture !== undefined ? attributes.user_border_texture : item.user_border_texture,
+                user_glow_effect: attributes.user_glow_effect !== undefined ? attributes.user_glow_effect : (item.user_glow_effect !== undefined ? item.user_glow_effect : false),
                 ingredients: attributes.ingredients || item.ingredients || [],
                 ratings: attributes.ratings || item.ratings || [],
                 rating: attributes.rating !== undefined ? attributes.rating : (item.rating !== undefined ? item.rating : 0)
@@ -499,6 +501,23 @@ export class Api {
         throw new Error("Invalid registration response");
     }
 
+    static async getInviteByToken(token: string): Promise<{ token: string; email: string; expires_at?: string; is_used?: boolean }> {
+        const endpoint = `${API_BASE}/auth/invite/${encodeURIComponent(token)}`;
+        const response = await get(endpoint);
+
+        // After deserialization, attributes are typically flattened into data,
+        // but we also support a nested attributes structure.
+        if (response && response.data && typeof response.data === "object") {
+            const data = response.data as any;
+            if (data.attributes && typeof data.attributes === "object") {
+                return data.attributes as { token: string; email: string; expires_at?: string; is_used?: boolean };
+            }
+            return data as { token: string; email: string; expires_at?: string; is_used?: boolean };
+        }
+
+        throw new Error("Invalid invite lookup response");
+    }
+
     static async getCurrentUser(): Promise<any> {
         const endpoint = `${API_BASE}/auth/me`;
         try {
@@ -533,7 +552,7 @@ export class Api {
         lactose?: boolean;
         gluten?: boolean;
         color?: string;
-        profile_picture?: string;
+        profile_picture?: string | null;
         language?: string;
     }): Promise<any> {
         const endpoint = `${API_BASE}/auth/me`;

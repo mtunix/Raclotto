@@ -4,7 +4,6 @@ from typing import Type, Dict
 
 from flask import Flask, Config, send_from_directory, Response, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from swagger_ui import api_doc
 
 from back.src.driver.api_custom import apis_custom
 from back.src.api.base_api import ApiError, init_api_rules, ApiErrorCode

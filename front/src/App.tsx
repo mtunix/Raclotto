@@ -3,7 +3,7 @@ import {Outlet, useLocation} from "react-router";
 import {Row, Col, Layout} from "antd";
 import raclotto from "./raclotto-vibe.png"
 import {useAppStore} from "./AppSlice";
-import {XpNotification} from "./components/XpNotification";
+import {XpNotification} from "./shared/components/ui/XpNotification";
 
 const {Content} = Layout;
 

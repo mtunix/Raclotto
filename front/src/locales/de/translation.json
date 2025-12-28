@@ -56,7 +56,9 @@
     "addSauce": "Soße hinzufügen",
     "spicy": "Scharf",
     "wildcard": "Joker",
-    "sweet": "Süß"
+    "sweet": "Süß",
+    "available": "Verfügbar",
+    "additionalProperties": "Zusätzliche Eigenschaften"
   },
   "tags": {
     "meat": "Fleisch",
@@ -140,7 +142,7 @@
     "glowEffectLocked": "Gesperrt - Erreichen Sie Stufe 7 zum Freischalten",
     "noTexture": "Keine Textur",
     "borderCustomization": "Rahmenanpassung",
-    "borderCustomizationInfo": "Hinweis: Wenn eine Textur ausgewählt ist, werden Farb- und Stileinstellungen nicht angewendet.",
+    "borderCustomizationInfo": "Hinweis: Wenn eine Textur ausgewählt ist, werden Stileinstellungen nicht angewendet.",
     "disabledWithTexture": "Deaktiviert wenn Textur aktiv ist",
     "colorDisabledInfo": "Farbe wird nicht angewendet, wenn eine Textur ausgewählt ist.",
     "styleDisabledInfo": "Stil wird nicht angewendet, wenn eine Textur ausgewählt ist.",
@@ -205,8 +207,16 @@
     "iWantThisToo": "Das will ich auch",
     "panCloned": "Pfanne erfolgreich geklont",
     "panCloneFailed": "Fehler beim Klonen der Pfanne",
+    "cloneConfirmTitle": "Pfanne klonen?",
+    "cloneConfirmMessage": "Sind Sie sicher, dass Sie diese Pfanne klonen möchten?",
     "loadMore": "Mehr laden",
-    "noPans": "Keine Pfannen im Verlauf"
+    "noPans": "Keine Pfannen im Verlauf",
+    "sortBy": "Sortieren nach",
+    "time": "Zeit",
+    "rating": "Bewertung",
+    "ingredientCounts": "Zutaten + Soßen Anzahl",
+    "ascending": "Aufsteigend",
+    "descending": "Absteigend"
   },
   "dashboard": {
     "rating": "Bewertung",
@@ -254,7 +264,8 @@
     "cameraNotSupported": "Kamera wird auf diesem Gerät oder Browser nicht unterstützt",
     "cameraPermissionDenied": "Kamera-Berechtigung verweigert. Bitte erlauben Sie den Kamera-Zugriff in Ihren Browser-Einstellungen.",
     "cameraNotFound": "Keine Kamera auf diesem Gerät gefunden",
-    "cameraInUse": "Kamera wird bereits von einer anderen Anwendung verwendet"
+    "cameraInUse": "Kamera wird bereits von einer anderen Anwendung verwendet",
+    "cancel": "Abbrechen"
   },
   "invite": {
     "generateToken": "Einladungstoken erstellen",
@@ -292,7 +303,12 @@
     "achievements": "Erfolge",
     "noAchievements": "Noch keine Erfolge freigeschaltet",
     "pansHistory": "Pfannen-Verlauf",
-    "pansAreSessionSpecific": "Pfannen werden pro Session angezeigt. Besuchen Sie eine Session, um Pfannen zu sehen."
+    "pansAreSessionSpecific": "Pfannen werden pro Session angezeigt. Besuchen Sie eine Session, um Pfannen zu sehen.",
+    "clickToChange": "Klicken zum Ändern",
+    "changeProfilePicture": "Profilbild ändern",
+    "pictureUpdated": "Profilbild erfolgreich aktualisiert",
+    "pictureUpdateFailed": "Fehler beim Aktualisieren des Profilbilds",
+    "defaultAvatar": "U"
   },
   "achievement": {
     "points": "Pkt",

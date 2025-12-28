@@ -1,0 +1,10 @@
+.preparation-type-card-body {
+    padding: 24px;
+}
+
+.preparation-type-name {
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    color: #1d1d1f;
+}

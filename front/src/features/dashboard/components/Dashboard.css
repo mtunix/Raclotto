@@ -1,0 +1,50 @@
+.dashboard-ingredient-item {
+    margin-bottom: 4px;
+    border-radius: 4px;
+    padding: 8px 10px;
+}
+
+.dashboard-ingredient-item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.dashboard-ingredient-name {
+    font-size: 0.9rem;
+}
+
+.dashboard-ingredient-count {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.dashboard-pan-item {
+    margin-bottom: 4px;
+    border-radius: 4px;
+    padding: 8px 10px;
+}
+
+.dashboard-pan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.dashboard-pan-title {
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.dashboard-pan-subtitle {
+    font-style: italic;
+    font-size: 0.75rem;
+    color: #8c8c8c;
+}
+
+.dashboard-pan-rating {
+    margin-left: 8px;
+}

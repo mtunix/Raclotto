@@ -249,6 +249,43 @@ class AuthApi(BaseApi):
             "data": entity_data
         }
 
+    @BaseApi.endpoint("/invite/<string:token>", ["GET"])
+    def get_invite(self, token: str):
+        """Fetch invite token details by token string for registration.
+
+        This is used by the registration page to prefill email when a user
+        opens a link like /register?token=... .
+
+        :param token: Invite token string
+        :returns InviteToken: Minimal invite token data
+        :status_code 200: Success
+        :status_code 400: Invalid or expired token
+        """
+        from back.src.api.constants import JSONAPI_VERSION
+
+        invite_token = self.invite_token_repository.by_token(token)
+        if not invite_token or not invite_token.is_valid():
+            raise ApiError(
+                ApiErrorCode.invalid_token,
+                status=400,
+                title="Invalid invite token",
+                detail="The invite token does not exist, has been used, or has expired",
+            )
+
+        return {
+            "jsonapi": {"version": JSONAPI_VERSION},
+            "data": {
+                "type": "inviteToken",
+                "id": invite_token.id,
+                "attributes": {
+                    "token": invite_token.token,
+                    "email": invite_token.email,
+                    "expires_at": invite_token.expires_at.isoformat(),
+                    "is_used": invite_token.is_used,
+                },
+            },
+        }
+
     @BaseApi.endpoint("/me", ["PATCH"])
     @require_auth
     def update_me(self):

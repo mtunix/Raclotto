@@ -50,6 +50,11 @@ class DBTest(unittest.TestCase):
 
     @staticmethod
     def insert_dummy_data(app):
+        # Check if database is empty before inserting dummy data
+        if app.session.query(RaclottoSession).first() is not None:
+            # Database already has data, skip insertion
+            return
+        
         session = RaclottoSession(key=session_id, name="Test Session")
         app.session.add(session)
         app.session.add(RaclottoSession(key="123", name="Test Session 2"))
