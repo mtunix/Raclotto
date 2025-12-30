@@ -166,6 +166,8 @@ export function GenerateView() {
   const [visibleIngredients, setVisibleIngredients] = useState<Set<number>>(
     new Set(),
   );
+  const [hasLeveledUp, setHasLeveledUp] = useState(false);
+  const [newLevelId, setNewLevelId] = useState<number | undefined>(undefined);
 
   // Refs for animation and API state
   const animationStartTimeRef = useRef<number | null>(null);
@@ -191,6 +193,8 @@ export function GenerateView() {
     setAnimationFading(false);
     animationStartTimeRef.current = null;
     setVisibleIngredients(new Set());
+    setHasLeveledUp(false);
+    setNewLevelId(undefined);
     animationTriggerRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
     animationTriggerRef.current = [];
   }
@@ -294,6 +298,12 @@ export function GenerateView() {
                 level: newLevel,
                 next_level: nextLevel,
               });
+            }
+
+            // Track level-up for profile picture generation
+            if (levelUp && newLevel?.id) {
+              setHasLeveledUp(true);
+              setNewLevelId(newLevel.id);
             }
 
             // Show XP notification if XP increased
@@ -464,6 +474,8 @@ export function GenerateView() {
         rollCheese={rollCheese}
         onClose={closeModal}
         onRating={onRating}
+        hasLeveledUp={hasLeveledUp}
+        newLevelId={newLevelId}
       />
 
       {waiting && !showAnimation && (

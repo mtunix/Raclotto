@@ -309,7 +309,7 @@
     "achievementPoints": "Erfolgspunkte",
     "experiencePoints": "Erfahrungspunkte",
     "favoriteIngredient": "Lieblingszutat",
-    "bestRatedIngredient": "Am besten bewertete Zutat",
+    "bestRatedIngredient": "Bestbewertete Zutat",
     "achievements": "Erfolge",
     "noAchievements": "Noch keine Erfolge freigeschaltet",
     "pansHistory": "Pfannen-Verlauf",
@@ -345,6 +345,7 @@
     "complete": "abgeschlossen"
   },
   "level": {
+    "leveledUp": "Level Aufgestiegen!",
     "pfannenPraktikant": "Pfannen Praktikant",
     "kaeseKnauserer": "Käse Knauserer",
     "kartoffelPionier": "Kartoffel Pionier",
@@ -395,6 +396,19 @@
     "herbs01": "Kräuter 1",
     "herbs02": "Kräuter 2",
     "spices": "Gewürze"
+  },
+  "image": {
+    "generatingProfilePicture": "Generiere dein neues Profilbild...",
+    "generatingMessage": "Erstelle ein künstlerisches Meisterwerk speziell für dich...",
+    "yourNewProfilePicture": "Dein neues Profilbild",
+    "profilePictureUpdated": "Dein Profilbild wurde aktualisiert, um dein neues Level widerzuspiegeln!",
+    "profilePictureGenerationFailed": "Profilbild konnte nicht generiert werden",
+    "profilePictureError": "Fehler beim Generieren des Profilbilds",
+    "setAsCandidate": "Als Kandidat einstellen",
+    "candidateSelected": "Ausgewählt",
+    "generationCandidate": "Generierungskandidat",
+    "candidatePictureSet": "Als Generierungskandidat eingestellt",
+    "candidatePictureSetFailed": "Fehler beim Einstellen als Generierungskandidat"
   },
   "error": {
     "no_response": {

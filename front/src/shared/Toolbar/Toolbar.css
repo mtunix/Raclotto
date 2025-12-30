@@ -235,10 +235,10 @@
 /* Above 786px: increase by 100% (48 * 2 = 96px) */
 @media (min-width: 786px) {
     .toolbar-profile-avatar {
-        width: 96px !important;
-        height: 96px !important;
-        min-width: 96px !important;
-        min-height: 96px !important;
+        width: 128px !important;
+        height: 128px !important;
+        min-width: 128px !important;
+        min-height: 128px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;

@@ -9,5 +9,6 @@ class Level(SerializableMixin, BaseModel):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
+    label_en = Column(String, nullable=False)
+    label_de = Column(String, nullable=False)
     required_experience = Column(Integer, nullable=False)
-

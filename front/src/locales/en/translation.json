@@ -345,6 +345,7 @@
     "complete": "complete"
   },
   "level": {
+    "leveledUp": "Level Up!",
     "pfannenPraktikant": "Pan Apprentice",
     "kaeseKnauserer": "Cheese Miser",
     "kartoffelPionier": "Potato Pioneer",
@@ -395,6 +396,19 @@
     "herbs01": "Herbs 1",
     "herbs02": "Herbs 2",
     "spices": "Spices"
+  },
+  "image": {
+    "generatingProfilePicture": "Generating your new profile picture...",
+    "generatingMessage": "Creating an artistic masterpiece just for you...",
+    "yourNewProfilePicture": "Your New Profile Picture",
+    "profilePictureUpdated": "Your profile picture has been updated to reflect your new level!",
+    "profilePictureGenerationFailed": "Failed to generate profile picture",
+    "profilePictureError": "Error generating profile picture",
+    "setAsCandidate": "Set as Candidate",
+    "candidateSelected": "Selected",
+    "generationCandidate": "Generation Candidate",
+    "candidatePictureSet": "Set as generation candidate",
+    "candidatePictureSetFailed": "Failed to set as generation candidate"
   },
   "error": {
     "no_response": {

@@ -12,7 +12,7 @@ import {
 } from "antd";
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { getRaw } from "../lib/api/api";
+import { getRaw, postRaw } from "../lib/api/api";
 import { getProfilePictureUrl } from "../lib/utils/profilePictureUrl";
 
 interface ProfilePictureEntry {
@@ -21,6 +21,7 @@ interface ProfilePictureEntry {
   created_at: string;
   level_id: number | null;
   level_name: string | null;
+  is_candidate?: boolean;
 }
 
 interface ProfilePictureHistoryResponse {
@@ -64,9 +65,14 @@ export function ProfilePictureManager({
   const [tempPicture, setTempPicture] = useState<string | null>(
     currentPicture || null,
   );
+  const [hasStartedEditing, setHasStartedEditing] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [history, setHistory] = useState<ProfilePictureEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [settingCandidate, setSettingCandidate] = useState(false);
+  const [candidatePictureId, setCandidatePictureId] = useState<number | null>(
+    null,
+  );
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +81,7 @@ export function ProfilePictureManager({
   useEffect(() => {
     if (isModalVisible || directMode) {
       setTempPicture(currentPicture || null);
+      setHasStartedEditing(false);
     }
   }, [isModalVisible, currentPicture, directMode]);
 
@@ -87,7 +94,19 @@ export function ProfilePictureManager({
           const response = (await getRaw(
             `/api/images/profile-picture-history/${userId}`,
           )) as ProfilePictureHistoryResponse;
-          setHistory(response.data.attributes.history || []);
+          const historyData = (response.data.attributes.history || []).map(
+            (entry) => ({
+              ...entry,
+              is_candidate: entry.is_candidate || false,
+            }),
+          );
+          setHistory(historyData);
+
+          // Set the candidate picture ID for UI purposes
+          const candidatePicture = historyData.find((pic) => pic.is_candidate);
+          if (candidatePicture) {
+            setCandidatePictureId(candidatePicture.id);
+          }
         } catch (error) {
           console.error("Failed to fetch profile picture history:", error);
           setHistory([]);
@@ -157,6 +176,7 @@ export function ProfilePictureManager({
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setTempPicture(result);
+        setHasStartedEditing(true);
       };
       reader.readAsDataURL(file);
     }
@@ -243,27 +263,116 @@ export function ProfilePictureManager({
         ctx.drawImage(videoRef.current, 0, 0);
         const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
         setTempPicture(dataUrl);
+        setHasStartedEditing(true);
         stopCamera();
       }
     }
   };
 
   const removePhoto = () => {
+    // Set to null to show placeholder, not current picture
     setTempPicture(null);
+    setHasStartedEditing(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    setIsCameraActive(false);
+    stopCamera();
   };
 
-  const handleSave = () => {
-    onPictureChange(tempPicture);
+  const handleSave = async () => {
+    if (tempPicture !== currentPicture) {
+      onPictureChange(tempPicture);
+
+      // After the picture is saved, refetch history to get the newly saved picture
+      // and automatically set it as the candidate
+      if (userId && !directMode) {
+        try {
+          // Wait a bit for the backend to process the picture
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
+          const historyResponse = (await getRaw(
+            `/api/images/profile-picture-history/${userId}`,
+          )) as ProfilePictureHistoryResponse;
+          const updatedHistory = (
+            historyResponse.data.attributes.history || []
+          ).map((entry) => ({
+            ...entry,
+            is_candidate: entry.is_candidate || false,
+          }));
+          setHistory(updatedHistory);
+
+          // Find the most recently added picture and set it as candidate
+          if (updatedHistory.length > 0) {
+            const newestPicture = updatedHistory[0]; // Assuming most recent is first
+            if (!newestPicture.is_candidate) {
+              await postRaw(
+                `/api/images/set-candidate-picture/${newestPicture.id}`,
+                {},
+              );
+
+              // Refetch history again to show the updated candidate status
+              const updatedHistoryResponse = (await getRaw(
+                `/api/images/profile-picture-history/${userId}`,
+              )) as ProfilePictureHistoryResponse;
+              const finalHistory = (
+                updatedHistoryResponse.data.attributes.history || []
+              ).map((entry) => ({
+                ...entry,
+                is_candidate: entry.is_candidate || false,
+              }));
+              setHistory(finalHistory);
+            }
+          }
+        } catch (error) {
+          console.error(
+            "Failed to set newly saved picture as candidate:",
+            error,
+          );
+          // Continue anyway, the picture was still saved successfully
+        }
+      }
+    }
     setIsModalVisible(false);
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
     setTempPicture(currentPicture || null);
-    stopCamera();
+    setIsCameraActive(false);
+  };
+
+  const handleSetCandidate = async (pictureId: number) => {
+    if (!isOwnProfile) return;
+
+    setSettingCandidate(true);
+    try {
+      await postRaw(`/api/images/set-candidate-picture/${pictureId}`, {});
+
+      // Refetch history from server to ensure is_candidate flag is correctly set
+      const historyResponse = (await getRaw(
+        `/api/images/profile-picture-history/${userId}`,
+      )) as ProfilePictureHistoryResponse;
+      const updatedHistory = (
+        historyResponse.data.attributes.history || []
+      ).map((entry) => ({
+        ...entry,
+        is_candidate: entry.is_candidate || false,
+      }));
+      setHistory(updatedHistory);
+      setCandidatePictureId(pictureId);
+      message.success(
+        t("image.candidatePictureSet") || "Set as generation candidate",
+      );
+    } catch (error) {
+      console.error("Failed to set candidate picture:", error);
+      message.error(
+        t("image.candidatePictureSetFailed") ||
+          "Failed to set as generation candidate",
+      );
+    } finally {
+      setSettingCandidate(false);
+    }
   };
 
   const handleClick = () => {
@@ -439,6 +548,7 @@ export function ProfilePictureManager({
                 key="save"
                 type="primary"
                 onClick={handleSave}
+                disabled={tempPicture === currentPicture}
                 style={{ flex: 1 }}
               >
                 {t("common.save") || "Save"}
@@ -450,7 +560,7 @@ export function ProfilePictureManager({
           <div
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
-            {currentPicture && !tempPicture && (
+            {currentPicture && tempPicture === null && !hasStartedEditing && (
               <div
                 style={{
                   display: "flex",
@@ -464,16 +574,10 @@ export function ProfilePictureManager({
                   {t("profile.currentPicture") || "Current Profile Picture"}
                 </div>
                 <Avatar
-                  size={300}
+                  size={400}
                   src={getProfilePictureUrl(currentPicture)}
                   style={{ border: "3px solid #d9d9d9" }}
-                >
-                  {!currentPicture && (
-                    <span style={{ fontSize: "120px" }}>
-                      {userName?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  )}
-                </Avatar>
+                />
               </div>
             )}
             {tempPicture ? (
@@ -489,7 +593,7 @@ export function ProfilePictureManager({
                   {t("profile.currentPicture") || "Current Profile Picture"}
                 </div>
                 <Avatar
-                  size={300}
+                  size={400}
                   src={tempPicture}
                   style={{ border: "3px solid #1890ff" }}
                 />
@@ -499,65 +603,97 @@ export function ProfilePictureManager({
               </div>
             ) : (
               <div
-                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                  alignItems: "center",
+                }}
               >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                  style={{ display: "none" }}
-                  id="file-input"
-                />
-                <label htmlFor="file-input" style={{ width: "100%" }}>
-                  <Button
-                    icon={<UploadOutlined />}
-                    onClick={() => fileInputRef.current?.click()}
-                    block
-                  >
-                    {t("auth.selectImage") || "Select Image"}
-                  </Button>
-                </label>
-                {!isCameraActive ? (
-                  <Button icon={<CameraOutlined />} onClick={startCamera} block>
-                    {t("auth.takePhoto") || "Take Photo"}
-                  </Button>
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
-                      width: "100%",
-                    }}
-                  >
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
+                <div style={{ fontSize: "14px", color: "#666" }}>
+                  {t("profile.currentPicture") || "Current Profile Picture"}
+                </div>
+                <Avatar
+                  size={400}
+                  style={{
+                    border: "3px solid #d9d9d9",
+                    backgroundColor: "#f0f0f0",
+                  }}
+                >
+                  <span style={{ fontSize: "120px" }}>
+                    {userName?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                </Avatar>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    width: "100%",
+                  }}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    style={{ display: "none" }}
+                    id="file-input"
+                  />
+                  <label htmlFor="file-input" style={{ width: "100%" }}>
+                    <Button
+                      icon={<UploadOutlined />}
+                      onClick={() => fileInputRef.current?.click()}
+                      block
+                    >
+                      {t("auth.selectImage") || "Select Image"}
+                    </Button>
+                  </label>
+                  {!isCameraActive ? (
+                    <Button
+                      icon={<CameraOutlined />}
+                      onClick={startCamera}
+                      block
+                    >
+                      {t("auth.takePhoto") || "Take Photo"}
+                    </Button>
+                  ) : (
+                    <div
                       style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
                         width: "100%",
-                        height: "auto",
-                        borderRadius: "8px",
-                        backgroundColor: "#000",
                       }}
-                    />
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <Button
-                        onClick={capturePhoto}
-                        type="primary"
-                        size="large"
-                        block
-                      >
-                        {t("auth.capture") || "Capture"}
-                      </Button>
-                      <Button onClick={stopCamera} size="large" block>
-                        {t("auth.cancel") || "Cancel"}
-                      </Button>
-                    </Space>
-                  </div>
-                )}
+                    >
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        style={{
+                          width: "100%",
+                          height: "auto",
+                          borderRadius: "8px",
+                          backgroundColor: "#000",
+                        }}
+                      />
+                      <Space direction="vertical" style={{ width: "100%" }}>
+                        <Button
+                          onClick={capturePhoto}
+                          type="primary"
+                          size="large"
+                          block
+                        >
+                          {t("auth.capture") || "Capture"}
+                        </Button>
+                        <Button onClick={stopCamera} size="large" block>
+                          {t("auth.cancel") || "Cancel"}
+                        </Button>
+                      </Space>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -589,14 +725,23 @@ export function ProfilePictureManager({
                             alignItems: "center",
                             gap: "8px",
                             padding: "12px",
-                            border: "1px solid #f0f0f0",
+                            border: entry.is_candidate
+                              ? "2px solid #1890ff"
+                              : "1px solid #f0f0f0",
                             borderRadius: "4px",
+                            backgroundColor: entry.is_candidate
+                              ? "#f5f7ff"
+                              : "transparent",
                           }}
                         >
                           <Avatar
                             size={200}
                             src={getProfilePictureUrl(entry.profile_picture)}
-                            style={{ border: "2px solid #d9d9d9" }}
+                            style={{
+                              border: entry.is_candidate
+                                ? "3px solid #1890ff"
+                                : "2px solid #d9d9d9",
+                            }}
                           />
                           <div
                             style={{
@@ -623,7 +768,36 @@ export function ProfilePictureManager({
                                 {entry.level_id})
                               </div>
                             )}
+                            {entry.is_candidate && (
+                              <div
+                                style={{
+                                  marginTop: "4px",
+                                  color: "#1890ff",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                ✓{" "}
+                                {t("image.generationCandidate") ||
+                                  "Generation Candidate"}
+                              </div>
+                            )}
                           </div>
+                          {isOwnProfile && (
+                            <Button
+                              size="small"
+                              onClick={() => handleSetCandidate(entry.id)}
+                              disabled={entry.is_candidate || settingCandidate}
+                              loading={
+                                settingCandidate &&
+                                candidatePictureId === entry.id
+                              }
+                            >
+                              {entry.is_candidate
+                                ? t("image.candidateSelected") || "Selected"
+                                : t("image.setAsCandidate") ||
+                                  "Set as Candidate"}
+                            </Button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -666,7 +840,7 @@ export function ProfilePictureManager({
                   {t("profile.currentPicture") || "Current Profile Picture"}
                 </div>
                 <Avatar
-                  size={300}
+                  size={400}
                   src={getProfilePictureUrl(currentPicture)}
                   style={{ border: "3px solid #d9d9d9" }}
                 >

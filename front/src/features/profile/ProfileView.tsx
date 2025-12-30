@@ -176,33 +176,24 @@ export function ProfileView() {
 
     setIsRegeneratingPicture(true);
     try {
-      // Create a creative prompt for the profile picture generation
-      const prompt = `adjust the picture to show the original person which has now achieved the rank ${t(profileData.level.name)} which corresponds to rank ${profileData.level.id} of 20 of the progression in raclotto. Raclotto is a combination of raclette and lotto. Make sure to include the ${t(profileData.level.name)} in the picture as best as possible`;
-      // Call the backend image generation API
-      // The backend automatically saves the generated image to the user's profile picture history
-      const data = await postRaw("/api/images/generate-banana", {
-        prompt,
+      // Call the new profile picture generation endpoint
+      // This endpoint includes the user's previous picture as context for Gemini
+      const data = await postRaw("/api/images/generate-profile-picture", {
+        level_id: profileData.level.id,
       });
 
       const imageBase64 = data?.data?.attributes?.imageBase64;
-      const profilePictureUpdated =
-        data?.data?.attributes?.profilePictureUpdated;
 
       if (!imageBase64) {
         throw new Error("No image data returned from server");
       }
 
-      // If the backend successfully saved the profile picture, refetch the data
-      if (profilePictureUpdated) {
-        // Refetch profile data to update the display with the new image
-        await mutateUserProfile();
+      // Refetch profile data to update the display with the new image
+      await mutateUserProfile();
 
-        message.success(
-          t("profile.pictureUpdated") || "Profile picture updated successfully",
-        );
-      } else {
-        throw new Error("Profile picture was not saved by server");
-      }
+      message.success(
+        t("profile.pictureUpdated") || "Profile picture updated successfully",
+      );
     } catch (error: any) {
       console.error("Failed to regenerate profile picture:", error);
       message.error(
@@ -250,18 +241,42 @@ export function ProfileView() {
       {/* Profile Header */}
       <Card style={{ marginBottom: "24px" }}>
         <Row gutter={[24, 24]} align="middle">
-          <Col>
-            <Space direction="vertical" align="center" size="middle">
-              <ProfilePictureManager
-                currentPicture={profileData.profile_picture}
-                onPictureChange={handleProfilePictureChange}
-                disabled={isUpdatingProfile || isRegeneratingPicture}
-                size={120}
-                showLabel={isOwnProfile}
-                userName={profileData.name}
-                isOwnProfile={isOwnProfile}
-                userId={targetUserIdNumber}
-              />
+          <Col xs={24} sm={12} md="auto" style={{ width: "100%" }}>
+            <Space
+              direction="vertical"
+              align="center"
+              size="middle"
+              style={{
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: "180px",
+                    width: "100%",
+                    aspectRatio: "1",
+                  }}
+                >
+                  <ProfilePictureManager
+                    currentPicture={profileData.profile_picture}
+                    onPictureChange={handleProfilePictureChange}
+                    disabled={isUpdatingProfile || isRegeneratingPicture}
+                    size={180}
+                    showLabel={isOwnProfile}
+                    userName={profileData.name}
+                    isOwnProfile={isOwnProfile}
+                    userId={targetUserIdNumber}
+                  />
+                </div>
+              </div>
               {isOwnProfile && (
                 <Button
                   icon={<ReloadOutlined />}
@@ -269,6 +284,9 @@ export function ProfileView() {
                   loading={isRegeneratingPicture}
                   disabled={isUpdatingProfile}
                   size="small"
+                  style={{
+                    width: "100%",
+                  }}
                 >
                   {isRegeneratingPicture
                     ? "Generating..."
@@ -277,7 +295,13 @@ export function ProfileView() {
               )}
             </Space>
           </Col>
-          <Col flex={1}>
+          <Col
+            xs={24}
+            sm={12}
+            md="auto"
+            flex={1}
+            style={{ textAlign: "center" }}
+          >
             <Title level={2} style={{ margin: 0, marginBottom: "8px" }}>
               {profileData.name || t("profile.unknownUser")}
             </Title>

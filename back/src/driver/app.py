@@ -195,7 +195,9 @@ class App(Flask):
                 # Create a new Level entity from the default data
                 new_level = Level(
                     name=level_data.name,
-                    required_experience=level_data.required_experience
+                    required_experience=level_data.required_experience,
+                    label_en=level_data.label_en,
+                    label_de=level_data.label_de
                 )
                 new_levels.append(new_level)
         

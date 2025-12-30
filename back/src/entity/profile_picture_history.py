@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from back.src.driver.database import BaseModel
@@ -15,6 +15,7 @@ class ProfilePictureHistory(SerializableMixin, BaseModel):
     profile_picture = Column(String, nullable=True)
     level_id = Column(Integer, ForeignKey("level.id"), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
+    is_candidate = Column(Boolean, nullable=False, default=False)
 
     user = relationship("User", lazy="selectin", foreign_keys=[user_id])
 

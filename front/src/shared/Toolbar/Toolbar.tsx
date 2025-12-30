@@ -131,7 +131,7 @@ export function Toolbar(props: ToolbarProps) {
             </Flex>
             <Avatar
               src={getProfilePictureUrl(currentUser?.profile_picture)}
-              size={48}
+              size={64}
               className="toolbar-profile-avatar"
               style={{
                 marginLeft: "auto",
@@ -175,7 +175,7 @@ export function Toolbar(props: ToolbarProps) {
         </Flex>
         <Avatar
           src={getProfilePictureUrl(currentUser?.profile_picture)}
-          size={48}
+          size={64}
           className="toolbar-profile-avatar"
           style={{
             cursor: "pointer",
