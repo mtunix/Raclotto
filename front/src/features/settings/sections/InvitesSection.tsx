@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Alert, Form, Input, Button, List, Space, Tag } from "antd";
 import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
-import { ConfirmDeleteButton } from "../../../shared/components/ui/ConfirmDeleteButton";
+import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
 import "../SettingsView.css";
 
 interface InviteToken {

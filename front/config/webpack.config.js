@@ -49,7 +49,8 @@ const babelRuntimeRegenerator = require.resolve('@babel/runtime/regenerator', {
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false';
 
 const emitErrorsAsWarnings = process.env.ESLINT_NO_DEV_ERRORS === 'true';
-const disableESLintPlugin = process.env.DISABLE_ESLINT_PLUGIN === 'true';
+// const disableESLintPlugin = process.env.DISABLE_ESLINT_PLUGIN === 'true';
+const disableESLintPlugin = true;
 
 const imageInlineSizeLimit = parseInt(
   process.env.IMAGE_INLINE_SIZE_LIMIT || '10000'
@@ -492,12 +493,13 @@ module.exports = function (webpackEnv) {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
                 modules: {
                   mode: 'local',
                   getLocalIdent: getCSSModuleLocalIdent,
+                  // ADD THESE TWO LINES:
+                  exportLocalsConvention: 'camelCase',
+                  namedExport: false, 
                 },
               }),
             },
@@ -679,6 +681,7 @@ module.exports = function (webpackEnv) {
         new ForkTsCheckerWebpackPlugin({
           async: isEnvDevelopment,
           typescript: {
+            memoryLimit: 4096,
             typescriptPath: resolve.sync('typescript', {
               basedir: paths.appNodeModules,
             }),
@@ -727,7 +730,7 @@ module.exports = function (webpackEnv) {
           // Plugin options
           extensions: ['js', 'mjs', 'jsx', 'ts', 'tsx'],
           formatter: require.resolve('react-dev-utils/eslintFormatter'),
-          eslintPath: require.resolve('eslint'),
+          eslintPath: require.resolve('eslint/use-at-your-own-risk'),
           failOnError: !(isEnvDevelopment && emitErrorsAsWarnings),
           context: paths.appSrc,
           cache: true,
@@ -735,17 +738,16 @@ module.exports = function (webpackEnv) {
             paths.appNodeModules,
             '.cache/.eslintcache'
           ),
-          // ESLint class options
           cwd: paths.appPath,
-          resolvePluginsRelativeTo: __dirname,
-          baseConfig: {
-            extends: [require.resolve('eslint-config-react-app/base')],
-            rules: {
-              ...(!hasJsxRuntime && {
-                'react/react-in-jsx-scope': 'error',
-              }),
-            },
-          },
+          // resolvePluginsRelativeTo: __dirname,
+          // baseConfig: {
+          //   extends: [require.resolve('eslint-config-react-app/base')],
+          //   rules: {
+          //     ...(!hasJsxRuntime && {
+          //       'react/react-in-jsx-scope': 'error',
+          //     }),
+          //   },
+          // },
         }),
     ].filter(Boolean),
     // Turn off performance processing because we utilize

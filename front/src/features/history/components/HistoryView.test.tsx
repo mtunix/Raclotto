@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { HistoryView } from './HistoryView';
-import { mockApi, createMockPan, createMockIngredient, resetAllMocks } from '../../../components/__tests__/testUtils';
+import { mockApi, createMockPan, createMockIngredient, resetAllMocks } from '../../../testUtils';
 import { IngredientType } from '../../../model/ingredient';
 
 describe('HistoryView', () => {

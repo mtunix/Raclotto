@@ -6,9 +6,9 @@ import { Api } from '../../../lib/api';
 import { useAuthStore } from '../../../AuthSlice';
 import { useAppStore } from '../../../AppSlice';
 import { useTranslation } from 'react-i18next';
-import { TagChipGroup } from '../../../shared/components/common/TagChipGroup';
-import { ExclusiveTagChipGroup } from '../../../shared/components/common/ExclusiveTagChipGroup';
-import { MultiTagChipGroup } from '../../../shared/components/common/MultiTagChipGroup';
+import { TagChipGroup } from '../../../shared/TagChipGroup';
+import { ExclusiveTagChipGroup } from '../../../shared/ExclusiveTagChipGroup';
+import { MultiTagChipGroup } from '../../../shared/MultiTagChipGroup';
 import { IngredientType } from '../../../model/ingredient';
 import { mutateIngredients } from '../../../lib/api/swrHooks';
 

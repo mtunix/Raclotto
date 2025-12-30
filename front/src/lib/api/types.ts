@@ -8,10 +8,10 @@ import { PrepType } from "../../model/prepType";
  * Base structure for deserialized JSON API responses
  */
 export interface DeserializedResponse<T = unknown> {
-    data: T;
-    jsonapi?: Record<string, unknown>;
-    links?: Record<string, unknown>;
-    meta?: Record<string, unknown>;
+  data: T;
+  jsonapi?: Record<string, unknown>;
+  links?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
 }
 
 /**
@@ -27,27 +27,27 @@ export type AchievementsResponse = Achievement[];
  * Response for generation endpoint
  */
 export interface GenerationResponse {
-    generated: Pan;
-    achievements?: Achievement[];
+  generated: Pan;
+  achievements?: Achievement[];
 }
 
 /**
  * Response for rating endpoint
  */
 export interface RatingResponse {
-    id: number;
-    panId: number;
-    rating: number;
+  id: number;
+  panId: number;
+  rating: number;
 }
 
 /**
  * Response for session operations
  */
 export interface SessionResponse {
-    id: number;
-    key: string;
-    name: string;
-    active: boolean;
+  id: number;
+  key: string;
+  name: string;
+  active: boolean;
 }
 
 /**
@@ -59,31 +59,29 @@ export type ApiResponse<T> = T | T[];
  * Stats response structure
  */
 export interface StatsResponse {
-    pans: Pan[];
-    ingredients_top_rated: Array<Ingredient & { avg_rating: number }>;
-    ingredients_most_used: Array<Ingredient & { pan_count: number }>;
+  pans: Pan[];
+  ingredients_top_rated: Array<Ingredient & { avg_rating: number }>;
+  ingredients_most_used: Array<Ingredient & { pan_count: number }>;
+  leaderboard: LeaderboardEntry[];
 }
 
 /**
  * Leaderboard entry structure
  */
 export interface LeaderboardEntry {
-    rank: number;
-    user_id: number;
-    name: string;
-    total_points: number;
-    achievement_count: number;
+  rank: number;
+  user_id: number;
+  name: string;
+  total_points: number;
+  achievement_count: number;
 }
 
 /**
  * Error response structure
  */
 export interface ApiError {
-    status?: number;
-    statusText?: string;
-    message: string;
-    data?: unknown;
+  status?: number;
+  statusText?: string;
+  message: string;
+  data?: unknown;
 }
-
-
-

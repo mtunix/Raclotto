@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AddIngredient } from './AddIngredient';
-import { mockApi, resetAllMocks } from '../../../components/__tests__/testUtils';
+import { mockApi, resetAllMocks } from '../../../testUtils';
 import { IngredientType } from '../../../model/ingredient';
 
 describe('AddIngredient', () => {

@@ -1,18 +1,22 @@
 import React, {useState, useEffect, useCallback} from "react";
 import {Api} from "../../../lib/api";
 import {usePansPaginated, mutatePansPaginated} from "../../../lib/api/swrHooks";
-import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar, Select} from "antd";
+import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar} from "antd";
 import {Pan} from "../../../model/pan";
 import {IngredientType} from "../../../model/ingredient";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
 import {useAuthStore} from "../../../AuthSlice";
-import {IngredientDisplay} from "../../../shared/components/common/IngredientDisplay";
+import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDisplay";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
 import {useNavigate, useParams} from "react-router-dom";
 import {getTextureBorderImage} from "../../../lib/borderTextures";
 import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
-import { PanResultModal } from "../../generation/components/PanResultModal";
+import { PanResultModal } from "../../generation/PanResultModal";
+import {SortingControls} from "./SortingControls";
+import {FilterControls} from "./FilterControls";
+import {getUniqueUsers, getUniqueRatings, getIngredientCountRanges, filterPans, sortPans} from "./historyUtils";
+import useBreakpoint from "antd/es/grid/hooks/useBreakpoint";
 
 const {Title, Text} = Typography;
 
@@ -32,6 +36,12 @@ export function HistoryView() {
     const [selectedPan, setSelectedPan] = useState<Pan | null>(null);
     const [sortField, setSortField] = useState<'time' | 'rating' | 'counts'>('time');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+    const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
+    const [selectedIngredientCounts, setSelectedIngredientCounts] = useState<string[]>([]);
+    const [filtersExpanded, setFiltersExpanded] = useState(false);
+    const screens = useBreakpoint();
+    const isMobile = screens.xs || screens.sm;
     const limit = 12;
 
     // Use SWR hook for the current page
@@ -42,6 +52,9 @@ export function HistoryView() {
         if (sessionKey) {
             setOffset(0);
             setAllPans([]);
+            setSelectedUsers([]);
+            setSelectedRatings([]);
+            setSelectedIngredientCounts([]);
         }
     }, [sessionKey]);
     
@@ -159,45 +172,18 @@ export function HistoryView() {
         }
     }
 
-    // Sorting logic
-    const sortPans = useCallback((pans: Pan[]) => {
-        const sorted = [...pans];
-        
-        switch (sortField) {
-            case 'time':
-                sorted.sort((a, b) => {
-                    const dateA = new Date(a.timestamp).getTime();
-                    const dateB = new Date(b.timestamp).getTime();
-                    return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
-                });
-                break;
-            case 'rating':
-                sorted.sort((a, b) => {
-                    const ratingA = a.rating || 0;
-                    const ratingB = b.rating || 0;
-                    return sortDirection === 'asc' ? ratingA - ratingB : ratingB - ratingA;
-                });
-                break;
-            case 'counts':
-                sorted.sort((a, b) => {
-                    const ingredientCountA = a.ingredients.filter(i => i.type === IngredientType.FILL).length;
-                    const sauceCountA = a.ingredients.filter(i => i.type === IngredientType.SAUCE).length;
-                    const totalCountA = ingredientCountA + sauceCountA;
-                    
-                    const ingredientCountB = b.ingredients.filter(i => i.type === IngredientType.FILL).length;
-                    const sauceCountB = b.ingredients.filter(i => i.type === IngredientType.SAUCE).length;
-                    const totalCountB = ingredientCountB + sauceCountB;
-                    
-                    return sortDirection === 'asc' ? totalCountA - totalCountB : totalCountB - totalCountA;
-                });
-                break;
-        }
-        
-        return sorted;
-    }, [sortField, sortDirection]);
+    // Get unique values for filters
+    const uniqueUsers = getUniqueUsers(pans);
+    const uniqueRatings = getUniqueRatings(pans);
+    const uniqueIngredientRanges = getIngredientCountRanges(pans);
 
-    // Apply sorting to the pans array
-    const sortedPans = sortPans(pans);
+    // Apply filters and sorting
+    const filteredPans = filterPans(pans, {
+        selectedUsers,
+        selectedRatings,
+        selectedIngredientCounts
+    });
+    const finalPans = sortPans(filteredPans, sortField, sortDirection);
 
     if (waiting) {
         return (
@@ -447,35 +433,93 @@ export function HistoryView() {
                 }}
             />
             {pans.length > 0 && (
-                <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-                    <Space size="middle" align="center">
-                        <Text strong>{t("history.sortBy") || "Sort by"}:</Text>
-                        <Select
-                            value={sortField}
-                            onChange={setSortField}
-                            style={{ width: 150 }}
-                            size="middle"
-                        >
-                            <Select.Option value="time">{t("history.time") || "Time"}</Select.Option>
-                            <Select.Option value="rating">{t("history.rating") || "Rating"}</Select.Option>
-                            <Select.Option value="counts">{t("history.ingredientCounts") || "Ingredient + Sauce counts"}</Select.Option>
-                        </Select>
-                        <Select
-                            value={sortDirection}
-                            onChange={setSortDirection}
-                            style={{ width: 120 }}
-                            size="middle"
-                        >
-                            <Select.Option value="desc">{t("history.descending") || "Descending"}</Select.Option>
-                            <Select.Option value="asc">{t("history.ascending") || "Ascending"}</Select.Option>
-                        </Select>
-                    </Space>
-                </div>
+                <>
+                    {isMobile ? (
+                        // Mobile view - collapsible
+                        <Card style={{ marginBottom: '16px' }}>
+                            <Button 
+                                type="default" 
+                                onClick={() => setFiltersExpanded(!filtersExpanded)}
+                                style={{ width: '100%', textAlign: 'left' }}
+                            >
+                                {t("history.sortAndFilters") || "Sort & Filters"}
+                                <span style={{ float: 'right' }}>
+                                    {filtersExpanded ? '▲' : '▼'}
+                                </span>
+                                {(selectedUsers.length > 0 || selectedRatings.length > 0 || selectedIngredientCounts.length > 0) && (
+                                    <Tag style={{ marginLeft: '8px' }}>
+                                        {selectedUsers.length + selectedRatings.length + selectedIngredientCounts.length}
+                                    </Tag>
+                                )}
+                            </Button>
+                            {filtersExpanded && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <SortingControls
+                                        sortField={sortField}
+                                        sortDirection={sortDirection}
+                                        onSortFieldChange={setSortField}
+                                        onSortDirectionChange={setSortDirection}
+                                    />
+                                    <div style={{ marginTop: '16px' }}>
+                                        <FilterControls
+                                            selectedUsers={selectedUsers}
+                                            selectedRatings={selectedRatings}
+                                            selectedIngredientCounts={selectedIngredientCounts}
+                                            uniqueUsers={uniqueUsers}
+                                            uniqueRatings={uniqueRatings}
+                                            uniqueIngredientRanges={uniqueIngredientRanges}
+                                            onUsersChange={setSelectedUsers}
+                                            onRatingsChange={setSelectedRatings}
+                                            onIngredientCountsChange={setSelectedIngredientCounts}
+                                            onClearFilters={() => {
+                                                setSelectedUsers([]);
+                                                setSelectedRatings([]);
+                                                setSelectedIngredientCounts([]);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </Card>
+                    ) : (
+                        // Desktop view - always visible
+                        <>
+                            <Card style={{ marginBottom: '16px' }}>
+                                <SortingControls
+                                    sortField={sortField}
+                                    sortDirection={sortDirection}
+                                    onSortFieldChange={setSortField}
+                                    onSortDirectionChange={setSortDirection}
+                                />
+                            </Card>
+
+                            <Card style={{ marginBottom: '16px' }}>
+                                <FilterControls
+                                    selectedUsers={selectedUsers}
+                                    selectedRatings={selectedRatings}
+                                    selectedIngredientCounts={selectedIngredientCounts}
+                                    uniqueUsers={uniqueUsers}
+                                    uniqueRatings={uniqueRatings}
+                                    uniqueIngredientRanges={uniqueIngredientRanges}
+                                    onUsersChange={setSelectedUsers}
+                                    onRatingsChange={setSelectedRatings}
+                                    onIngredientCountsChange={setSelectedIngredientCounts}
+                                    onClearFilters={() => {
+                                        setSelectedUsers([]);
+                                        setSelectedRatings([]);
+                                        setSelectedIngredientCounts([]);
+                                    }}
+                                />
+                            </Card>
+                        </>
+                    )}
+                </>
             )}
-            {pans.length > 0 ? (
+
+                    {pans.length > 0 ? (
                 <>
                     <Row gutter={[16, 16]}>
-                        {sortedPans.map(renderPanCard)}
+                        {finalPans.map(renderPanCard)}
                     </Row>
                     {hasMore && (
                         <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '24px' }}>

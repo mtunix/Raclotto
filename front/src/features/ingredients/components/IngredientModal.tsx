@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { Api } from "../../../lib/api";
 import { useAppStore } from "../../../AppSlice";
 import { mutateIngredients } from "../../../lib/api/swrHooks";
-import { ExclusiveTagChipGroup } from "../../../shared/components/common/ExclusiveTagChipGroup";
-import { MultiTagChipGroup } from "../../../shared/components/common/MultiTagChipGroup";
+import { ExclusiveTagChipGroup } from "../../../shared/ExclusiveTagChipGroup";
+import { MultiTagChipGroup } from "../../../shared/MultiTagChipGroup";
 
 interface IngredientModalProps {
     // Modal props

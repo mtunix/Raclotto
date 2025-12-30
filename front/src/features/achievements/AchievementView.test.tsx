@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AchievementView } from './AchievementView';
-import { mockApi, createMockAchievement, resetAllMocks } from '../../components/__tests__/testUtils';
+import { mockApi, createMockAchievement, resetAllMocks } from '../../testUtils';
 
 describe('AchievementView', () => {
     beforeEach(() => {

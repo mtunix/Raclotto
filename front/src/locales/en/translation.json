@@ -105,6 +105,7 @@
     "dashboardTitle": "Dashboard"
   },
   "generate": {
+    "generateButton": "Generate",
     "rollAnotherDice": "Roll Another Dice",
     "restrictionsApplied": "Dietary restrictions applied",
     "availableIngredients": "Available ingredients",
@@ -216,7 +217,16 @@
     "rating": "Rating",
     "ingredientCounts": "Ingredient + Sauce counts",
     "ascending": "Ascending",
-    "descending": "Descending"
+    "descending": "Descending",
+    "filters": "Filters",
+    "users": "Users",
+    "ingredients": "Ingredients",
+    "clearFilters": "Clear Filters",
+    "filterByUser": "Filter by User",
+    "filterByRating": "Filter by Rating",
+    "filterByIngredients": "Filter by Ingredient Count",
+    "stars": "stars",
+    "sortAndFilters": "Sort & Filters"
   },
   "dashboard": {
     "rating": "Rating",
@@ -308,7 +318,21 @@
     "changeProfilePicture": "Change Profile Picture",
     "pictureUpdated": "Profile picture updated successfully",
     "pictureUpdateFailed": "Failed to update profile picture",
-    "defaultAvatar": "U"
+    "pictureHistory": "Profile Picture History",
+    "newPicture": "New Picture",
+    "currentPicture": "Current Picture",
+    "defaultAvatar": "U",
+    "mostUsedIngredient": "Most Frequent Ingredient",
+    "pansEaten": "Pans Eaten",
+    "avgIngredientsPerPan": "Avg Ingredients",
+    "sessionsParticipated": "Sessions",
+    "bestSession": "Best Session",
+    "sessionName": "Session",
+    "pansInSession": "Pans Created",
+    "biggestPan": "Biggest Pan",
+    "panName": "Pan Name",
+    "ingredientCount": "Ingredient Count",
+    "ingredients": "Ingredients"
   },
   "achievement": {
     "points": "pts",

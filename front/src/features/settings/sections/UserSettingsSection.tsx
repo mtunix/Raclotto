@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Form, Input, Alert, Button, ColorPicker, Divider, Select, Switch, Typography } from "antd";
 import { LockOutlined } from "@ant-design/icons";
-import { TagChipGroup } from "../../../shared/components/common/TagChipGroup";
+import { TagChipGroup } from "../../../shared/TagChipGroup";
 import "../SettingsView.css";
 
 const { Text } = Typography;

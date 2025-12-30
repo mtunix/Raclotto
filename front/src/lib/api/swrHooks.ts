@@ -23,7 +23,7 @@ const getPansPaginatedKey = (sessionKey?: string, limit?: number, offset?: numbe
     sessionKey ? ["pansPaginated", sessionKey, limit, offset] : null;
 const getPansByUserKey = (userId?: number, limit?: number, offset?: number) => 
     userId ? ["pansByUser", userId, limit, offset] : null;
-const getAvailableCountsKey = (sessionKey?: string) => sessionKey ? ["availableCounts", sessionKey] : null;
+export const getAvailableCountsKey = (sessionKey?: string) => sessionKey ? ["availableCounts", sessionKey] : null;
 const getInvitesKey = () => ["invites"];
 const getUserProfileKey = (userId: number) => ["userProfile", userId];
 const getUserStatsKey = (userId: number) => ["userStats", userId];

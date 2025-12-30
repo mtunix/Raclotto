@@ -3,8 +3,8 @@ import {List, Button, Space} from "antd";
 import {EditOutlined} from "@ant-design/icons";
 import {Ingredient, IngredientType} from "../../../model/ingredient";
 import {useTranslation} from "react-i18next";
-import {IngredientDisplay} from "../../../shared/components/common/IngredientDisplay";
-import {ConfirmDeleteButton} from "../../../shared/components/ui/ConfirmDeleteButton";
+import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDisplay";
+import {ConfirmDeleteButton} from "../../../shared/ConfirmDeleteButton";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
 
 interface IngredientListGroupItemProps {

@@ -105,6 +105,7 @@
     "dashboardTitle": "Dashboard"
   },
   "generate": {
+    "generateButton": "Generieren",
     "rollAnotherDice": "Nochmal würfeln",
     "restrictionsApplied": "Diätbeschränkungen angewendet",
     "availableIngredients": "Verfügbare Zutaten",
@@ -216,7 +217,16 @@
     "rating": "Bewertung",
     "ingredientCounts": "Zutaten + Soßen Anzahl",
     "ascending": "Aufsteigend",
-    "descending": "Absteigend"
+    "descending": "Absteigend",
+    "filters": "Filter",
+    "users": "Benutzer",
+    "ingredients": "Zutaten",
+    "clearFilters": "Filter löschen",
+    "filterByUser": "Nach Benutzer filtern",
+    "filterByRating": "Nach Bewertung filtern",
+    "filterByIngredients": "Nach Zutatenanzahl filtern",
+    "stars": "Sterne",
+    "sortAndFilters": "Sortieren & Filter"
   },
   "dashboard": {
     "rating": "Bewertung",
@@ -308,7 +318,21 @@
     "changeProfilePicture": "Profilbild ändern",
     "pictureUpdated": "Profilbild erfolgreich aktualisiert",
     "pictureUpdateFailed": "Fehler beim Aktualisieren des Profilbilds",
-    "defaultAvatar": "U"
+    "pictureHistory": "Profilbildverlauf",
+    "newPicture": "Neues Bild",
+    "currentPicture": "Aktuelles Bild",
+    "defaultAvatar": "U",
+    "mostUsedIngredient": "Häufigste Zutat",
+    "pansEaten": "Pfannen gegessen",
+    "avgIngredientsPerPan": "Durchschn. Zutaten",
+    "sessionsParticipated": "Sessions",
+    "bestSession": "Beste Session",
+    "sessionName": "Session",
+    "pansInSession": "Erstellte Pfannen",
+    "biggestPan": "Größte Pfanne",
+    "panName": "Pfannenname",
+    "ingredientCount": "Anzahl Zutaten",
+    "ingredients": "Zutaten"
   },
   "achievement": {
     "points": "Pkt",
