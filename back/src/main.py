@@ -10,5 +10,5 @@ if __name__ == "__main__":
     load_dotenv()
 
     api = App("raclotto-server", db, ConfigProduction)
-    DBTest.insert_dummy_data(api.db)
+    # DBTest.insert_dummy_data(api.db)
     api.run(port=8081)

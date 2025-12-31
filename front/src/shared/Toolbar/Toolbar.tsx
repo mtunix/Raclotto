@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../AuthSlice";
 import { useAppStore } from "../../AppSlice";
+import { useUserProfile } from "../../lib/api/swrHooks";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import "./Toolbar.css";
 
@@ -42,6 +43,11 @@ export function Toolbar(props: ToolbarProps) {
   const sessionName = props.sessionName || session?.name || "";
 
   const currentUser = useAuthStore((state) => state.user);
+  const { data: userProfile } = useUserProfile(currentUser?.id || 0);
+
+  const profilePicture =
+    userProfile?.profile_picture || currentUser?.profile_picture;
+  const userName = currentUser?.name;
 
   const routes: { [key: number]: string } = {
     0: `/${sessionId}/dashboard`,
@@ -130,7 +136,7 @@ export function Toolbar(props: ToolbarProps) {
               </Button>
             </Flex>
             <Avatar
-              src={getProfilePictureUrl(currentUser?.profile_picture)}
+              src={getProfilePictureUrl(profilePicture)}
               size={64}
               className="toolbar-profile-avatar"
               style={{
@@ -140,9 +146,9 @@ export function Toolbar(props: ToolbarProps) {
               }}
               onClick={handleProfileClick}
             >
-              {!currentUser?.profile_picture && (
+              {!profilePicture && (
                 <span className="toolbar-profile-avatar-text">
-                  {currentUser?.name?.charAt(0)?.toUpperCase() || "U"}
+                  {userName?.charAt(0)?.toUpperCase() || "U"}
                 </span>
               )}
             </Avatar>
@@ -174,7 +180,7 @@ export function Toolbar(props: ToolbarProps) {
           </Button>
         </Flex>
         <Avatar
-          src={getProfilePictureUrl(currentUser?.profile_picture)}
+          src={getProfilePictureUrl(profilePicture)}
           size={64}
           className="toolbar-profile-avatar"
           style={{
@@ -184,9 +190,9 @@ export function Toolbar(props: ToolbarProps) {
           }}
           onClick={handleProfileClick}
         >
-          {!currentUser?.profile_picture && (
+          {!profilePicture && (
             <span style={{ fontSize: "20px" }}>
-              {currentUser?.name?.charAt(0)?.toUpperCase() || "U"}
+              {userName?.charAt(0)?.toUpperCase() || "U"}
             </span>
           )}
         </Avatar>

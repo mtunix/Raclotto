@@ -156,6 +156,12 @@
     "export": "Export",
     "import": "Import",
     "reimport": "Reimport",
+    "prompt": "LLM Prompt",
+    "promptDescription": "View the ingredient JSON structure and LLM prompt for chat.",
+    "llmPrompt": "LLM Prompt",
+    "promptModalDescription": "Copy this prompt and paste it into your LLM chat along with your exported ingredients JSON.",
+    "viewPrompt": "View Prompt",
+    "copyPrompt": "Copy Prompt",
     "exportDescription": "View and copy all ingredients from this session as JSON.",
     "importDescription": "Import ingredients from JSON. You can review and edit them before importing.",
     "reimportDescription": "Update or delete existing ingredients from a JSON file. Ingredients not in the file will be removed.",
@@ -275,7 +281,8 @@
     "cameraPermissionDenied": "Camera permission denied. Please allow camera access in your browser settings.",
     "cameraNotFound": "No camera found on this device",
     "cameraInUse": "Camera is already in use by another application",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "invite": {
     "generateToken": "Generate Invite Token",

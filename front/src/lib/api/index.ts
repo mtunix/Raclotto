@@ -1047,7 +1047,7 @@ export class Api {
     sessionKey: string,
   ): Promise<{ session_key: string; session_id: number; ingredients: any[] }> {
     const endpoint = `${API_BASE}/ingredients/export?session_key=${sessionKey}`;
-    const response = await get(endpoint);
+    const response = await getRaw(endpoint);
     const data = response.data || response;
     return data as {
       session_key: string;

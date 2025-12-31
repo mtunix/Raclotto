@@ -177,6 +177,10 @@ export function ProfilePictureManager({
         const result = e.target?.result as string;
         setTempPicture(result);
         setHasStartedEditing(true);
+        // In directMode, immediately call onPictureChange so it's saved during registration
+        if (directMode) {
+          onPictureChange(result);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -265,6 +269,10 @@ export function ProfilePictureManager({
         setTempPicture(dataUrl);
         setHasStartedEditing(true);
         stopCamera();
+        // In directMode, immediately call onPictureChange so it's saved during registration
+        if (directMode) {
+          onPictureChange(dataUrl);
+        }
       }
     }
   };
@@ -278,6 +286,10 @@ export function ProfilePictureManager({
     }
     setIsCameraActive(false);
     stopCamera();
+    // In directMode, immediately call onPictureChange with null so it's removed during registration
+    if (directMode) {
+      onPictureChange(null);
+    }
   };
 
   const handleSave = async () => {
@@ -435,7 +447,7 @@ export function ProfilePictureManager({
         </div>
       )}
 
-      {directMode || !isOwnProfile ? (
+      {directMode ? (
         <div
           style={{
             display: "flex",

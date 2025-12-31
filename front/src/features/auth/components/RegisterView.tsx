@@ -6,6 +6,7 @@ import { useAuthStore } from "../../../AuthSlice";
 import { useTranslation } from "react-i18next";
 import { TagChipGroup } from "../../../shared/TagChipGroup";
 import { ProfilePictureManager } from "../../../shared/ProfilePictureManager";
+import { mutateUser } from "../../../lib/api/swrHooks";
 
 export function RegisterView() {
   const { t } = useTranslation();
@@ -211,6 +212,9 @@ export function RegisterView() {
         // Fetch updated user data
         const fetchUser = useAuthStore.getState().fetchUser;
         await fetchUser();
+
+        // Mutate user data to refresh profile picture in toolbar
+        mutateUser();
       } catch (e) {
         console.error("Failed to fetch or update user data:", e);
       }

@@ -156,6 +156,12 @@
     "export": "Exportieren",
     "import": "Importieren",
     "reimport": "Erneut importieren",
+    "prompt": "LLM-Eingabeaufforderung",
+    "promptDescription": "Zeigen Sie die JSON-Struktur der Zutaten und die LLM-Eingabeaufforderung für den Chat an.",
+    "llmPrompt": "LLM-Eingabeaufforderung",
+    "promptModalDescription": "Kopieren Sie diese Eingabeaufforderung und fügen Sie sie in Ihren LLM-Chat zusammen mit Ihrem exportierten JSON der Zutaten ein.",
+    "viewPrompt": "Eingabeaufforderung anzeigen",
+    "copyPrompt": "Eingabeaufforderung kopieren",
     "exportDescription": "Alle Zutaten aus dieser Session als JSON anzeigen und kopieren.",
     "importDescription": "Zutaten aus JSON importieren. Sie können sie vor dem Importieren überprüfen und bearbeiten.",
     "reimportDescription": "Bestehende Zutaten aus einer JSON-Datei aktualisieren oder löschen. Zutaten, die nicht in der Datei sind, werden entfernt.",
@@ -272,10 +278,11 @@
     "imageTooLarge": "Die Bildgröße muss weniger als 2MB betragen",
     "cameraError": "Kamera konnte nicht aufgerufen werden",
     "cameraNotSupported": "Kamera wird auf diesem Gerät oder Browser nicht unterstützt",
-    "cameraPermissionDenied": "Kamera-Berechtigung verweigert. Bitte erlauben Sie den Kamera-Zugriff in Ihren Browser-Einstellungen.",
+    "cameraPermissionDenied": "Kameraberechtigung verweigert. Bitte erlauben Sie Kamerazugriff in Ihren Browsereinstellungen.",
     "cameraNotFound": "Keine Kamera auf diesem Gerät gefunden",
     "cameraInUse": "Kamera wird bereits von einer anderen Anwendung verwendet",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "close": "Schließen"
   },
   "invite": {
     "generateToken": "Einladungstoken erstellen",

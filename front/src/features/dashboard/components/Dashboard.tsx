@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Row,
@@ -66,6 +66,10 @@ function IngredientListGroupItemRating(
 ) {
   const backgroundColor =
     props.ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
+  const icon =
+    props.ingredient.type === IngredientType.FILL
+      ? VectorGraphics.INGREDIENT
+      : VectorGraphics.SAUCE;
 
   return (
     <List.Item
@@ -74,6 +78,7 @@ function IngredientListGroupItemRating(
     >
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
+          <span style={{ marginRight: "8px" }}>{icon}</span>
           {props.ingredient.name}
         </span>
         <RatingViewer rating={props.ingredient.avg_rating} />
@@ -91,6 +96,10 @@ function IngredientListGroupItemCount(
 ) {
   const backgroundColor =
     props.ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
+  const icon =
+    props.ingredient.type === IngredientType.FILL
+      ? VectorGraphics.INGREDIENT
+      : VectorGraphics.SAUCE;
 
   return (
     <List.Item
@@ -99,6 +108,7 @@ function IngredientListGroupItemCount(
     >
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
+          <span style={{ marginRight: "8px" }}>{icon}</span>
           {props.ingredient.name}
         </span>
         <span className="dashboard-ingredient-count">
@@ -280,6 +290,16 @@ export function Dashboard() {
   const removeWidthCap = useAppStore((state) => state.removeWidthCap);
   const setRemoveWidthCap = useAppStore((state) => state.setRemoveWidthCap);
   const [isGlobal, setIsGlobal] = useState(true);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 568);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 568);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Use SWR hooks for data fetching with automatic revalidation
   const { data: statsData } = useStats(session?.key, isGlobal);
@@ -306,34 +326,22 @@ export function Dashboard() {
             alignItems: "center",
           }}
         >
-          <div>
-            <Tag
-              onClick={() => setIsGlobal(!isGlobal)}
-              style={{
-                backgroundColor: isGlobal ? "#1890ff" : "#f0f0f0",
-                borderColor: isGlobal ? "#1890ff" : "#d9d9d9",
-                color: isGlobal ? "#ffffff" : "#595959",
-                cursor: "pointer",
-                height: "40px",
-                lineHeight: "38px",
-                padding: "0 16px",
-                fontSize: "14px",
-                fontWeight: 500,
-                borderRadius: "6px",
-                border: "1px solid",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {isGlobal ? "Global" : "Session"}
-            </Tag>
-          </div>
+          <Button
+            type={isGlobal ? "primary" : "default"}
+            onClick={() => setIsGlobal(!isGlobal)}
+            size="large"
+          >
+            {isGlobal ? "Global" : "Session"}
+          </Button>
           <Button
             type="default"
             icon={removeWidthCap ? <CompressOutlined /> : <ExpandOutlined />}
             onClick={() => setRemoveWidthCap(!removeWidthCap)}
             size="large"
+            className="remove-width-cap-button"
           >
-            {removeWidthCap ? "Cap Width" : "Remove Width Cap"}
+            {!isSmallScreen &&
+              (removeWidthCap ? "Cap Width" : "Remove Width Cap")}
           </Button>
         </Col>
       </Row>

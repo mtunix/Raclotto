@@ -19,6 +19,8 @@ import { IngredientType } from "../../model/ingredient";
 import { useTranslation } from "react-i18next";
 import { postRaw } from "../../lib/api/api";
 import styles from "./GenerateView/GenerateView.module.css";
+import { useAuthStore } from "src/AuthSlice";
+import { useUserProfile } from "src/lib/api/swrHooks";
 
 // Add global styles for animations
 const globalStyles = `
@@ -81,7 +83,11 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
     null,
   );
   const [hasGenerationStarted, setHasGenerationStarted] = useState(false);
-
+  const currentUser = useAuthStore((state) => state.user);
+  const userId = currentUser?.id?.toString();
+  const targetUserId = userId || currentUser?.id?.toString() || "0";
+  const targetUserIdNumber = parseInt(targetUserId, 10);
+  const { mutate: mutateUserProfile } = useUserProfile(targetUserIdNumber);
   // Slot-machine style animation for standard view
   useEffect(() => {
     if (open && pan && !isBanditResult) {
@@ -125,6 +131,8 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
         },
       );
       setNewProfilePicture(data.data.attributes.imageBase64);
+      // Refetch profile data to update the display with the new image
+      await mutateUserProfile();
     } catch (error) {
       console.error("Error generating profile picture:", error);
       message.error(
