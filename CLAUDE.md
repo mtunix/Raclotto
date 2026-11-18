@@ -118,6 +118,14 @@ Known-broken frontend suites: `App.test.js`, `ErrorPage`, `GenerateView`, `Histo
 `SettingsView`, `MainScreen`, `StartScreen`, `Toolbar` fail to load (react-router needs
 `TextEncoder`, the CSS transform predates Jest 28, stale `../AppSlice` mock paths); `DialView`
 loads but 3 assertions are stale. The view suites need `FakeTransport` to be revived.
+`front/jest.ci.config.js` quarantines exactly these; take a suite off its list when it runs again.
+
+## CI
+
+`.github/workflows/ci.yml` runs on pushes to `master` and on pull requests: the backend suite,
+`tsc`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
+fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
+`front/.nvmrc`; actions are pinned to commit SHAs.
 
 ## Verify what you changed, not the whole repo
 
