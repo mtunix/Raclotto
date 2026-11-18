@@ -1,11 +1,9 @@
 // Needs FakeTransport to be revived: its API mocks went with the Api facade.
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
 import { MainScreen } from './MainScreen';
-import { mockUseAppStore, createMockIngredient, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
-import { IngredientType } from '../../api/generated/model';
+import { mockUseAppStore, createMockSession, mockLocalStorage } from '../../testUtils';
 
 const mockUseAppStoreDirect = jest.fn();
 jest.mock('../AppSlice', () => ({
@@ -47,11 +45,6 @@ describe('MainScreen', () => {
     });
 
     it('loads and displays ingredients', async () => {
-        const ingredients = [
-            createMockIngredient({ id: 1, name: 'Fill 1', type: IngredientType.FILL, available: true }),
-            createMockIngredient({ id: 2, name: 'Sauce 1', type: IngredientType.SAUCE, available: true }),
-        ];
-
         renderWithRouter(<MainScreen onSessionClosed={mockOnSessionClosed} />);
 
         await waitFor(() => {
@@ -61,12 +54,6 @@ describe('MainScreen', () => {
     });
 
     it('groups ingredients by type', async () => {
-        const ingredients = [
-            createMockIngredient({ id: 1, name: 'Fill 1', type: IngredientType.FILL }),
-            createMockIngredient({ id: 2, name: 'Fill 2', type: IngredientType.FILL }),
-            createMockIngredient({ id: 3, name: 'Sauce 1', type: IngredientType.SAUCE }),
-        ];
-
         renderWithRouter(<MainScreen onSessionClosed={mockOnSessionClosed} />);
 
         await waitFor(() => {
@@ -76,11 +63,6 @@ describe('MainScreen', () => {
     });
 
     it('separates available and unavailable ingredients', async () => {
-        const ingredients = [
-            createMockIngredient({ id: 1, name: 'Available', type: IngredientType.FILL, available: true }),
-            createMockIngredient({ id: 2, name: 'Unavailable', type: IngredientType.FILL, available: false }),
-        ];
-
         renderWithRouter(<MainScreen onSessionClosed={mockOnSessionClosed} />);
 
         await waitFor(() => {
@@ -98,8 +80,6 @@ describe('MainScreen', () => {
     });
 
     it('refreshes ingredients after onAdd callback', async () => {
-        const initialIngredients = [createMockIngredient({ id: 1, name: 'Ingredient 1', type: IngredientType.FILL })];
-
         renderWithRouter(<MainScreen onSessionClosed={mockOnSessionClosed} />);
 
         await waitFor(() => {

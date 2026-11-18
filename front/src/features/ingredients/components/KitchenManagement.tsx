@@ -31,7 +31,6 @@ export function KitchenManagement() {
     const session = useAppStore((state) => state.session);
     const sessionKey = session?.key || "";
     const [activeSegment, setActiveSegment] = useState<'ingredients' | 'sauces' | 'prepTypes'>('ingredients');
-    const [ingredientType, setIngredientType] = useState<IngredientType>(IngredientType.FILL);
     const [editingIngredient, setEditingIngredient] = useState<IngredientForUserDto | null>(null);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [isAddIngredientModalVisible, setIsAddIngredientModalVisible] = useState(false);
@@ -84,7 +83,7 @@ export function KitchenManagement() {
     const handleAddIngredientClick = useCallback((type: IngredientType) => {
         setAddIngredientModalType(type);
         setIsAddIngredientModalVisible(true);
-    }, [activeSegment]);
+    }, []);
 
     const onPrepTypeDelete = useCallback((type: PrepTypeDto) => {
         if (!sessionKey) return;
@@ -224,7 +223,7 @@ export function KitchenManagement() {
                 )}
             </>
         );
-    }, [prepTypes, loadingPrepTypes, onPrepTypeDelete, onPrepTypeAddClick, onPrepTypeAdd, onPrepTypeAddCancel, isAddingPrepType, newPrepTypeName, t]);
+    }, [prepTypes, loadingPrepTypes, onPrepTypeDelete, onPrepTypeAdd, onPrepTypeAddCancel, isAddingPrepType, newPrepTypeName, t]);
 
     return (
         <div style={{ padding: '8px 0' }}>
@@ -243,13 +242,7 @@ export function KitchenManagement() {
                             <Segmented
                                 value={activeSegment}
                                 onChange={(value) => {
-                                    const segment = value as 'ingredients' | 'sauces' | 'prepTypes';
-                                    setActiveSegment(segment);
-                                    if (segment === 'ingredients') {
-                                        setIngredientType(IngredientType.FILL);
-                                    } else if (segment === 'sauces') {
-                                        setIngredientType(IngredientType.SAUCE);
-                                    }
+                                    setActiveSegment(value as 'ingredients' | 'sauces' | 'prepTypes');
                                 }}
                                 options={[
                                     {

@@ -1,5 +1,5 @@
 import React from "react";
-import {Tag, Space} from "antd";
+import {Tag} from "antd";
 import {IngredientType} from "../../api/generated/model";
 import type {IngredientDto} from "../../api/generated/model";
 import {VectorGraphics} from "../../lib/vectorGraphics";

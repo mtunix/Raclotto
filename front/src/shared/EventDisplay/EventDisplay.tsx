@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, Space, Button } from "antd";
+import { Button } from "antd";
 import { CloseOutlined, BellOutlined } from "@ant-design/icons";
 import type { EventDto } from "../../api/generated/model";
 import "./EventDisplay.css";

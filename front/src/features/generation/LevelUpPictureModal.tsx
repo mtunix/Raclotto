@@ -60,7 +60,7 @@ export function LevelUpPictureModal({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one generation per open level; a new onClose or t must not start another
   }, [open, levelId]);
 
   const handleClose = () => {
@@ -199,7 +199,7 @@ export function LevelUpPictureModal({
             >
               <img
                 src={`data:${newProfilePicture.mime_type};base64,${newProfilePicture.image_base64}`}
-                alt="New Profile Picture"
+                alt={t("image.newAvatarAlt") || "Your new avatar"}
                 style={{
                   maxWidth: "100%",
                   maxHeight: "100%",

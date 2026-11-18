@@ -5,19 +5,12 @@ import {
   Col,
   Typography,
   Button,
-  Statistic,
-  Progress,
-  Divider,
   Rate,
   List,
   Space,
   Tag,
-  Switch,
 } from "antd";
 import {
-  TrophyOutlined,
-  FireOutlined,
-  StarOutlined,
   CompressOutlined,
   ExpandOutlined,
 } from "@ant-design/icons";

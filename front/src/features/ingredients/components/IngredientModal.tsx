@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Radio, Space, Button, message, Checkbox, Slider, Card, Row, Col } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Modal, Form, Input, Radio, Button, message, Checkbox, Slider, Card, Row, Col } from 'antd';
 import { useTranslation } from "react-i18next";
 import { IngredientType } from "../../../api/generated/model";
 import type { CreateIngredientBody, IngredientForUserDto, UpdateIngredientBody } from "../../../api/generated/model";
@@ -67,7 +67,7 @@ export function IngredientModal(props: IngredientModalProps) {
     ];
 
     // Get initial values for the form
-    const getInitialValues = () => {
+    const getInitialValues = useCallback(() => {
         if (props.mode === 'edit' && props.ingredient) {
             return {
                 name: props.ingredient.name ?? "",
@@ -99,7 +99,7 @@ export function IngredientModal(props: IngredientModalProps) {
                 sweet: false,
             };
         }
-    };
+    }, [props.mode, props.ingredient, props.initialType, props.context]);
 
     useEffect(() => {
         if (props.visible) {
@@ -154,7 +154,7 @@ export function IngredientModal(props: IngredientModalProps) {
                 form.setFieldsValue(getInitialValues());
             }
         }
-    }, [props.visible, props.mode, props.ingredient, props.initialType, props.context, form]);
+    }, [props.visible, props.mode, props.ingredient, props.initialType, props.context, form, getInitialValues]);
 
     const handleCategoryChange = (category: string | null) => {
         setSelectedCategory(category);
@@ -189,9 +189,6 @@ export function IngredientModal(props: IngredientModalProps) {
                 vegan: selectedCategory === "vegan",
                 fish: selectedCategory === "fish",
             };
-            
-            // Get form values for checkboxes that might not be in form
-            const formValues = form.getFieldsValue();
             
             // Combine all data
             const ingredientData: CreateIngredientBody = {

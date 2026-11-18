@@ -3,18 +3,10 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GenerateView } from './GenerateView';
-import { createMockIngredient, createMockPan, resetAllMocks, mockLocalStorage } from '../../../testUtils';
-import { IngredientType } from '../../../api/generated/model';
+import { resetAllMocks, mockLocalStorage } from '../../../testUtils';
 
 describe('GenerateView', () => {
-    const sessionKey = 'test-session';
     const mockOnGeneration = jest.fn();
-    const allIngredients = [
-        createMockIngredient({ id: 1, name: 'Fill 1', type: IngredientType.FILL }),
-        createMockIngredient({ id: 2, name: 'Fill 2', type: IngredientType.FILL }),
-        createMockIngredient({ id: 3, name: 'Sauce 1', type: IngredientType.SAUCE }),
-        createMockIngredient({ id: 4, name: 'Sauce 2', type: IngredientType.SAUCE }),
-    ];
 
     const setupLocalStorage = (fill: string, sauce: string) => {
         mockLocalStorage.getItem.mockImplementation((key: string) => {
@@ -88,14 +80,6 @@ describe('GenerateView', () => {
     it('displays generated pan after successful generation', async () => {
         const user = userEvent.setup();
         setupLocalStorage('1', '1');
-        const generatedPan = createMockPan({
-            id: 1,
-            name: 'Generated Pan',
-            ingredients: [
-                createMockIngredient({ id: 1, name: 'Ingredient 1', type: IngredientType.FILL }),
-                createMockIngredient({ id: 2, name: 'Sauce 1', type: IngredientType.SAUCE }),
-            ],
-        });
 
         render(<GenerateView />);
 

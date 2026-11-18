@@ -27,6 +27,12 @@ export function XpNotification() {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const phaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    // The XP-page timer reads the page when it fires; as an effect dep it would restart the animation.
+    const currentPageRef = useRef<PageType>(currentPage);
+
+    useEffect(() => {
+        currentPageRef.current = currentPage;
+    }, [currentPage]);
 
     const FADE_DURATION = 500; // 0.5 seconds fade, reused for auto and manual transitions
 
@@ -119,7 +125,6 @@ export function XpNotification() {
             
             const startTime = Date.now();
             const fillDuration = 2000; // 2 seconds to fill to 100%
-            let animationFrameId: number;
 
             const animateFill = () => {
                 const elapsed = Date.now() - startTime;
@@ -132,7 +137,7 @@ export function XpNotification() {
                 setProgressPercent(currentProgress);
 
                 if (progress < 1) {
-                    animationFrameId = requestAnimationFrame(animateFill);
+                    requestAnimationFrame(animateFill);
                 } else {
                     setIsAnimating(false);
                     // After filling, show level up message
@@ -204,7 +209,7 @@ export function XpNotification() {
                 }
             };
 
-            animationFrameId = requestAnimationFrame(animateFill);
+            requestAnimationFrame(animateFill);
         } else {
             // Normal XP gain (no level up)
             setLevelUpPhase('new-level-progress');
@@ -230,7 +235,6 @@ export function XpNotification() {
             // Animate progress bar from old to new
             const startTime = Date.now();
             const duration = 2500; // 2.5 seconds
-            let animationFrameId: number;
             
             // Calculate XP values for animation
             const oldXPInLevel = Math.max(0, xpNotification.oldXP - xpNotification.level.required_experience);
@@ -258,7 +262,7 @@ export function XpNotification() {
                 setProgressPercent(currentProgress);
 
                 if (progress < 1) {
-                    animationFrameId = requestAnimationFrame(animate);
+                    requestAnimationFrame(animate);
                 } else {
                     setIsAnimating(false);
                     setAnimatedXPInLevel(newXPInLevel);
@@ -266,7 +270,7 @@ export function XpNotification() {
                 }
             };
 
-            animationFrameId = requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
         }
 
         // Page transition logic
@@ -326,7 +330,7 @@ export function XpNotification() {
             clearTimeout(timeoutRef.current);
         }
         timeoutRef.current = setTimeout(() => {
-            if (currentPage === 'xp') {
+            if (currentPageRef.current === 'xp') {
                 const achievements = xpNotification.achievements || [];
                 // If there are achievements, transition to first achievement
                 if (achievements.length > 0) {

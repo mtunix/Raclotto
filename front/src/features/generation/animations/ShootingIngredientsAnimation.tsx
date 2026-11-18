@@ -8,13 +8,6 @@ interface ShootingIngredientsAnimationProps {
     fading?: boolean;
 }
 
-interface RocketPosition {
-    x: number;
-    y: number;
-    angle: number;
-    time: number; // Time along the rocket's flight path (0 to 1)
-}
-
 interface IngredientEjection {
     id: number;
     ingredient: string;

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from "react";
-import {Button, Row, Col, Form, InputNumber, Input, Checkbox, Card, Typography, Space, Alert, message, Modal, Rate} from "antd";
+import {Button, Row, Col, Form, InputNumber, Input, Checkbox, Card, Typography, Alert, message, Modal, Rate} from "antd";
 import {IngredientType} from "../../api/generated/model";
-import type {IngredientDto, IngredientForUserDto, PrepTypeDto} from "../../api/generated/model";
+import type {IngredientDto, IngredientForUserDto} from "../../api/generated/model";
 import styles from "./GenerateView/GenerateView.module.css";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../shared/IngredientDisplay/IngredientDisplay";
@@ -35,7 +35,6 @@ const INGREDIENT_ICONS = [
 
 interface BanditViewProps {
     ingredients: IngredientForUserDto[];
-    prepTypes: PrepTypeDto[];
     sessionKey: string;
     rollPreparationType: boolean;
     onRollPreparationTypeChange: (checked: boolean) => void;
@@ -59,14 +58,12 @@ export function BanditView(props: BanditViewProps) {
     const {t} = useTranslation();
     const {
         ingredients,
-        prepTypes,
         sessionKey,
         rollPreparationType,
         onRollPreparationTypeChange,
         rollCheese,
         onRollCheeseChange,
         onGenerate,
-        onRating
     } = props;
 
     const { data: counts } = useGetAvailableCounts({session_key: sessionKey}, {swr: {enabled: !!sessionKey}});
@@ -132,6 +129,7 @@ export function BanditView(props: BanditViewProps) {
         }
         setColumnStates(newColumnStates);
         setApiResultPan(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- allAvailableItems is a new array every render; reshuffle only when the column or item count changes
     }, [numColumns, allAvailableItems.length]);
 
     // Cleanup animations on unmount

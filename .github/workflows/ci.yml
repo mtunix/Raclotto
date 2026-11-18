@@ -43,6 +43,7 @@ jobs:
           cache-dependency-path: front/package-lock.json
       - run: npm ci
       - run: npx tsc --noEmit -p .
+      - run: npm run lint
       - run: npx jest --config jest.ci.config.js --ci
       # front/build/ is tracked, so the check build goes outside the checkout.
       - run: npm run build

@@ -80,7 +80,7 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
-    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --max-warnings 0",
     "gen:api": "cd .. && venv/bin/python -m back.src.api.openapi && cd front && orval",
     "gen:api:check": "npm run gen:api && git diff --exit-code -- ../back/openapi.json src/api/generated && test -z \"$(git status --porcelain -- ../back/openapi.json src/api/generated | tee /dev/stderr)\""
   },

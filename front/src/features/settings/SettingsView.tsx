@@ -5,23 +5,17 @@ import {
   Switch,
   Space,
   message,
-  Spin,
   Button,
   Tabs,
   Card,
   List,
-  Tag,
-  Alert,
-  ColorPicker,
   Modal,
   Radio,
   Select,
   Row,
   Col,
-  Typography,
   Checkbox,
   Slider,
-  Divider,
 } from "antd";
 import { CopyOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -64,8 +58,6 @@ import {
   toImported,
 } from "./ingredientImport";
 import "./SettingsView.css";
-
-const { Text } = Typography;
 
 type SettingsViewProps = {};
 
@@ -429,7 +421,7 @@ export function SettingsView(props: SettingsViewProps) {
         lactose,
       });
     }
-  }, [userData]);
+  }, [userData, setDietPrefs]);
 
   useEffect(() => {
     if (userError) {

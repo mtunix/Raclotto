@@ -62,9 +62,6 @@ export function BlenderSpinAnimation(props: BlenderSpinAnimationProps) {
             Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2)
         );
 
-        // Orbit radius around the blender
-        const orbitRadius = 120; // Distance from blender center for orbiting
-
         // Calculate delay spread: ingredients fly out one by one
         // Each ingredient's flight takes about 60% of total duration
         const flightDuration = duration * 0.6; // Individual flight duration
@@ -161,16 +158,6 @@ export function BlenderSpinAnimation(props: BlenderSpinAnimationProps) {
                 const deltaX = endX - orbitStartX;
                 const deltaY = endY - orbitStartY;
                 const baseSize = 64;
-                
-                // Calculate transform values for each keyframe
-                const translate20X = deltaX * 0.2;
-                const translate20Y = deltaY * 0.2;
-                const translate40X = deltaX * 0.4;
-                const translate40Y = deltaY * 0.4;
-                const translate60X = deltaX * 0.6;
-                const translate60Y = deltaY * 0.6;
-                const translate80X = deltaX * 0.8;
-                const translate80Y = deltaY * 0.8;
                 
                 return (
                     <div

@@ -5,23 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import {
-  Button,
-  Row,
-  Col,
-  Form,
-  Rate,
-  Spin,
-  Card,
-  Typography,
-  Divider,
-  Checkbox,
-  Tabs,
-  Modal,
-  InputNumber,
-  Input,
-  Slider,
-} from "antd";
+import { Spin, Tabs } from "antd";
 import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";
 import { createRating } from "../../../api/generated/endpoints/ratings/ratings";
@@ -30,7 +14,6 @@ import { useListIngredients } from "../../../api/generated/endpoints/ingredients
 import { useListPreparationTypes } from "../../../api/generated/endpoints/preparation-type/preparation-type";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientType } from "../../../api/generated/model";
-import { Util } from "../../../lib/util";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../../AppSlice";
 import { useIngredientStore, getLocalStorageNumber } from "./ingredientStore";
@@ -38,6 +21,9 @@ import { GenerationAnimation } from "../animations/GenerationAnimation";
 import { applyRollOutcome } from "../applyRollOutcome";
 // Import CSS module with type assertion
 import styles from "./GenerateView.module.css";
+import { PanResultModal } from "../PanResultModal";
+import { LegacyView } from "../LegacyView";
+import { getTotalIngredientTypeCount } from "./generateViewUtils";
 
 // Type assertion for CSS module classes
 const typedStyles = styles as {
@@ -46,18 +32,6 @@ const typedStyles = styles as {
   tabLabel: string;
   [key: string]: string;
 };
-import { PanResultModal } from "../PanResultModal";
-import { IngredientCountControl } from "../IngredientCountControl";
-import { LegacyView } from "../LegacyView";
-import {
-  getRandomEmoji,
-  getIngredientTypeCount,
-  getTotalIngredientTypeCount,
-  SAUCE_ICONS,
-  INGREDIENT_ICONS,
-} from "./generateViewUtils";
-
-const { Title, Text } = Typography;
 
 export function GenerateView() {
   // Define state and hooks at the top
@@ -112,7 +86,8 @@ export function GenerateView() {
     if (initialSauce > 0) {
       updateCount("sauce", initialSauce);
     }
-  }, []); // Empty dependency array to run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seeds the counts once on mount; later changes go through the store
+  }, []);
 
   // Check if we can generate based on counts and available ingredients
   const canGenerate = useCallback((): boolean => {
@@ -160,9 +135,6 @@ export function GenerateView() {
   const [apiComplete, setApiComplete] = useState(false);
   const [animationComplete, setAnimationComplete] = useState(false);
   const [animationDuration, setAnimationDuration] = useState(3000); // Default duration
-  const [visibleIngredients, setVisibleIngredients] = useState<Set<number>>(
-    new Set(),
-  );
   const [hasLeveledUp, setHasLeveledUp] = useState(false);
   const [newLevelId, setNewLevelId] = useState<number | undefined>(undefined);
 
@@ -171,7 +143,6 @@ export function GenerateView() {
   const apiCompleteRef = useRef<boolean>(false);
   const animationCompleteRef = useRef<boolean>(false);
   const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const animationTriggerRef = useRef<number[]>([]);
 
   // Get available ingredients for animation
   const availableIngredients = ingredients.filter(
@@ -189,11 +160,8 @@ export function GenerateView() {
     setAnimationComplete(false);
     setAnimationFading(false);
     animationStartTimeRef.current = null;
-    setVisibleIngredients(new Set());
     setHasLeveledUp(false);
     setNewLevelId(undefined);
-    animationTriggerRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
-    animationTriggerRef.current = [];
   }
 
   function onRating(rating: number) {
@@ -327,41 +295,6 @@ export function GenerateView() {
     }
   }, [apiComplete, animationComplete, generated, showResultModal]);
 
-  // Effect to trigger slot machine animations when modal opens
-  useEffect(() => {
-    if (showResultModal && generated && !isBanditResult) {
-      // Reset visible ingredients
-      setVisibleIngredients(new Set());
-
-      // Get all ingredients and sauces
-      const fillIngredients = generated.ingredients.filter(
-        (i) => i.type === IngredientType.FILL,
-      );
-      const sauceIngredients = generated.ingredients.filter(
-        (i) => i.type === IngredientType.SAUCE,
-      );
-      const allItems = [...fillIngredients, ...sauceIngredients];
-
-      // Animate items one by one with staggered delays
-      const timeoutIds: number[] = [];
-      allItems.forEach((item, index) => {
-        const timeoutId = window.setTimeout(() => {
-          setVisibleIngredients((prev) => {
-            const newSet = new Set(prev);
-            newSet.add(item.id);
-            return newSet;
-          });
-        }, index * 150); // 150ms delay between each item
-        timeoutIds.push(timeoutId);
-      });
-      animationTriggerRef.current = timeoutIds;
-
-      return () => {
-        timeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
-      };
-    }
-  }, [showResultModal, generated, isBanditResult]);
-
   // Effect to store generated ingredients in the ingredient store
   useEffect(() => {
     if (generated && showResultModal && !isBanditResult) {
@@ -470,7 +403,6 @@ export function GenerateView() {
                 children: (
                   <BanditView
                     ingredients={ingredients}
-                    prepTypes={prepTypes}
                     sessionKey={sessionKey}
                     rollPreparationType={rollPreparationType}
                     onRollPreparationTypeChange={setRollPreparationType}

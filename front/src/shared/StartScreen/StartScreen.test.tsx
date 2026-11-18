@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
 import { StartScreen, JoinSession, SessionSelector } from './StartScreen';
-import { mockUseAppStore, createMockIngredient, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
+import { mockUseAppStore, createMockSession, resetAllMocks } from '../../testUtils';
 import type { SessionDto } from '../../api/generated/model';
 
 const mockUseSessions: jest.Mock<{ data?: SessionDto[]; isLoading: boolean; error: Error | null }> = jest.fn(() => ({ data: [], isLoading: false, error: null }));

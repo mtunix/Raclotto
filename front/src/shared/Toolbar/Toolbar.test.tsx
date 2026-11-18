@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Toolbar } from './Toolbar';
-import { mockUseAppStore, createMockIngredientForUser, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
+import { createMockIngredientForUser, resetAllMocks } from '../../testUtils';
 import { IngredientType } from '../../api/generated/model';
 
 describe('Toolbar', () => {

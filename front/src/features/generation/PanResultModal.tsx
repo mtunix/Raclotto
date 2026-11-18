@@ -19,20 +19,6 @@ import { useTranslation } from "react-i18next";
 import styles from "./GenerateView/GenerateView.module.css";
 import { LevelUpPictureModal } from "./LevelUpPictureModal";
 
-// Add global styles for animations
-const globalStyles = `
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.6;
-      transform: scale(1.2);
-    }
-  }
-`;
-
 const { Title, Text } = Typography;
 
 interface PanResultModalProps {

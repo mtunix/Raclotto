@@ -109,8 +109,9 @@ venv/bin/python -m back.test.export_wire_fixtures   # rewrite lib/api/__fixtures
 cd front && BUILD_PATH=/tmp/raclotto-build npm run build   # front/build/ is tracked; build elsewhere
 ```
 
-`npm run lint` (ESLint 10, flat config in `eslint.config.mjs`) covers `src/**/*.{ts,tsx}` and fails
-on 4 pre-existing `import/first` errors in `GenerateView.tsx`; CI doesn't run it yet. TypeScript
+`npm run lint` (ESLint 10, flat config in `eslint.config.mjs`) covers `src/**/*.{ts,tsx}` with
+`--max-warnings 0`; CI runs it, so a warning fails the build. A deliberate exception gets a
+one-line `eslint-disable-next-line <rule> -- <why>`, never a file- or rule-wide disable. TypeScript
 stays on 6: TS 7's native compiler has no JS API yet, which `@typescript-eslint`,
 fork-ts-checker and `config/modules.js` need.
 
@@ -123,7 +124,7 @@ loads but 3 assertions are stale. The view suites need `FakeTransport` to be rev
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `master` and on pull requests: the backend suite,
-`tsc`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
+`tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
 fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
 `front/.nvmrc`; actions are pinned to commit SHAs.
 

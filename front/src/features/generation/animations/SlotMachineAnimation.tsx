@@ -79,17 +79,11 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
             
             // Calculate angle based on side
             let angle: number;
-            let startX: number;
-            let startY: number;
             
             if (side === "left") {
-                startX = -100;
-                startY = centerY + (Math.random() - 0.5) * window.innerHeight * 0.6;
                 // Angle towards center-right
                 angle = Math.random() * 60 + 15; // 15-75 degrees
             } else {
-                startX = window.innerWidth + 100;
-                startY = centerY + (Math.random() - 0.5) * window.innerHeight * 0.6;
                 // Angle towards center-left
                 angle = Math.random() * 60 + 105; // 105-165 degrees
             }
@@ -255,16 +249,6 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                 const deltaX = endX - startX;
                 const deltaY = endY - startY;
                 const baseSize = 64;
-                
-                // Calculate transform values for each keyframe
-                const translate20X = deltaX * 0.2;
-                const translate20Y = deltaY * 0.2;
-                const translate40X = deltaX * 0.4;
-                const translate40Y = deltaY * 0.4;
-                const translate60X = deltaX * 0.6;
-                const translate60Y = deltaY * 0.6;
-                const translate80X = deltaX * 0.8;
-                const translate80Y = deltaY * 0.8;
                 
                 return (
                     <div

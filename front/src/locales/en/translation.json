@@ -409,6 +409,7 @@
     "generatingProfilePicture": "Generating your new profile picture...",
     "generatingMessage": "Creating an artistic masterpiece just for you...",
     "yourNewProfilePicture": "Your New Profile Picture",
+    "newAvatarAlt": "Your new avatar",
     "profilePictureUpdated": "Your profile picture has been updated to reflect your new level!",
     "profilePictureGenerationFailed": "Failed to generate profile picture",
     "profilePictureError": "Error generating profile picture",

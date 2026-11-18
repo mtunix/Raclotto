@@ -1,7 +1,6 @@
 import React from "react";
 import { Row, Col, Card, Checkbox, Button } from "antd";
 import { IngredientCountControl } from "./IngredientCountControl";
-import { useIngredientStore } from "./GenerateView/ingredientStore";
 import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
 import { useAppStore } from "../../AppSlice";
 import { countOr } from "./countOr";

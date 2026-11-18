@@ -153,16 +153,6 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
                 const deltaY = endY - centerY;
                 const baseSize = 64;
                 
-                // Calculate transform values for each keyframe
-                const translate20X = deltaX * 0.2;
-                const translate20Y = deltaY * 0.2;
-                const translate40X = deltaX * 0.4;
-                const translate40Y = deltaY * 0.4;
-                const translate60X = deltaX * 0.6;
-                const translate60Y = deltaY * 0.6;
-                const translate80X = deltaX * 0.8;
-                const translate80Y = deltaY * 0.8;
-                
                 return (
                     <div
                         key={item.id}

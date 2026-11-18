@@ -1,6 +1,5 @@
 import React from "react";
 import { Card, Typography, InputNumber, Button, Form, Input } from "antd";
-import { useIngredientStore } from "./GenerateView/ingredientStore";
 import styles from "./GenerateView/GenerateView.module.css";
 
 const { Text } = Typography;

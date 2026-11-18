@@ -6,7 +6,7 @@ import {Toolbar} from "../Toolbar/Toolbar";
 import {EventDisplay} from "../EventDisplay/EventDisplay";
 import {dismissSessionEvent, useSessionEvents} from "../EventDisplay/sessionEvents";
 import {useAppStore} from "../../AppSlice";
-import {useSearchParams, useNavigate, useParams, Outlet, useLocation} from "react-router";
+import {useNavigate, useParams, Outlet, useLocation} from "react-router";
 import {useTranslation} from "react-i18next";
 import "./MainScreen.css";
 
@@ -21,8 +21,6 @@ export function MainScreen(props: MainScreenProps) {
     const navigate = useNavigate();
     const {sessionId} = useParams<{sessionId: string}>();
     const location = useLocation();
-    const [searchParams] = useSearchParams();
-    const popout = searchParams.get("popout") === "true";
 
     const sessionKey = session?.key || "";
     

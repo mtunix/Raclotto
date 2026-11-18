@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SettingsView } from './SettingsView';
-import { resetAllMocks, createMockIngredient, mockLocalStorage } from '../../testUtils';
+import { resetAllMocks, mockLocalStorage } from '../../testUtils';
 
 describe('SettingsView', () => {
     beforeEach(() => {

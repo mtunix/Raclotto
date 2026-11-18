@@ -1,18 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
-  Form,
-  Input,
   Button,
   Card,
-  Alert,
   Space,
-  Upload,
-  Avatar,
   Row,
   Col,
-  Radio,
-  Slider,
-  Checkbox,
   message,
   Typography,
   Spin,
@@ -21,10 +13,9 @@ import {
   Progress,
   Statistic,
   Rate,
-  Modal,
 } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { useAuthStore } from "../../AuthSlice";
 import { useTranslation } from "react-i18next";
 import { mutateMe, onErrorRetry } from "../../lib/api/swrHooks";
@@ -45,14 +36,12 @@ import { displayName } from "../../shared/displayName";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { getTextureBorderImage } from "../../lib/borderTextures";
-import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 
 const { Title, Text } = Typography;
 
 export function ProfileView() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId?: string }>();
-  const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
