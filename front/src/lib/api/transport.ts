@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useAuthStore } from "../../AuthSlice";
 
 /**
  * The transport is the seam between the API module and the network.
@@ -47,11 +46,24 @@ export class UnauthorizedError extends Error {
   }
 }
 
+/** Where the transport gets the bearer token and what it does on a 401; AuthSlice registers these. */
+export interface AuthHooks {
+  token(): string | null;
+  onUnauthorized(): void;
+}
+
+let auth: AuthHooks = { token: () => null, onUnauthorized: () => {} };
+
+/** Install the auth hooks; the transport can't import the auth store, which imports generated code. */
+export function setAuthHooks(hooks: AuthHooks): void {
+  auth = hooks;
+}
+
 export const API_BASE = "/api";
 const CONTENT_TYPE = "application/vnd.api+json";
 
 function headers(): Record<string, string> {
-  const token = useAuthStore.getState().token;
+  const token = auth.token();
   const result: Record<string, string> = {
     "Content-Type": CONTENT_TYPE,
     Accept: CONTENT_TYPE,
@@ -104,7 +116,7 @@ export const axiosTransport: Transport = {
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         // Clear auth state; the redirect is handled by ProtectedRoute
-        useAuthStore.getState().logout();
+        auth.onUnauthorized();
         throw new UnauthorizedError();
       }
       console.error("Error:", error);

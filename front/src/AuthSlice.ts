@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { getMe } from "./api/generated/endpoints/auth/auth";
 import type { MeDto } from "./api/generated/model";
+import { setAuthHooks } from "./lib/api/transport";
 
 interface AuthState {
   token: string | null;
@@ -98,3 +99,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 }));
+
+setAuthHooks({
+  token: () => useAuthStore.getState().token,
+  onUnauthorized: () => useAuthStore.getState().logout(),
+});
