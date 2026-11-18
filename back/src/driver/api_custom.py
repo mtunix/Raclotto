@@ -1,5 +1,6 @@
 from back.src.api.achievement_api import AchievementApi
 from back.src.api.event_api import EventApi
+from back.src.api.health_api import HealthApi
 from back.src.api.image_api import ImageApi
 from back.src.api.ingredient_api import IngredientApi
 from back.src.api.insult_api import InsultApi
@@ -27,4 +28,5 @@ apis_custom = [
     ImageApi,
     AuthApi,
     InviteApi,
+    HealthApi,
 ]

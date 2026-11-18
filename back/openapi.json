@@ -572,6 +572,20 @@
         "title": "GeneratedPictureDto",
         "type": "object"
       },
+      "HealthDto": {
+        "properties": {
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "HealthDto",
+        "type": "object"
+      },
       "ImportIngredientsBody": {
         "additionalProperties": false,
         "properties": {
@@ -3339,6 +3353,27 @@
         "summary": "Hide an event from the signed-in user; other users still see it.",
         "tags": [
           "events"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Liveness for container and load-balancer checks: the app is up and its database answers.",
+        "tags": [
+          "health"
         ]
       }
     },

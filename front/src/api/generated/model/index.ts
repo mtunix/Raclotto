@@ -32,6 +32,7 @@ export * from './generateProfilePictureBody';
 export * from './getAvailableCountsParams';
 export * from './getSessionByKeyParams';
 export * from './getStatsParams';
+export * from './healthDto';
 export * from './importedIngredient';
 export * from './importIngredientsBody';
 export * from './importIngredientsParams';

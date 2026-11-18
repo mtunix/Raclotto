@@ -97,6 +97,7 @@ class LevelsSpecTest(unittest.TestCase):
             "/ingredients/export", "/ingredients/import", "/ingredients/reimport",
             "/preparation_type", "/preparation_type/{prep_type_id}",
             "/achievements", "/achievements/{achievement_id}", "/achievements/leaderboard",
+            "/health",
             "/events", "/events/{event_id}/dismiss", "/events/configs", "/events/configs/{config_id}",
             "/images/profile-picture-history/{user_id}", "/images/generate-banana",
             "/images/generate-profile-picture", "/images/set-candidate-picture/{picture_id}",

@@ -1,6 +1,7 @@
 export * from './achievements/achievements';
 export * from './auth/auth';
 export * from './events/events';
+export * from './health/health';
 export * from './images/images';
 export * from './ingredients/ingredients';
 export * from './insults/insults';
