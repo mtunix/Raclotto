@@ -1,0 +1,71 @@
+.settings-editable-ingredient-card {
+    margin-bottom: 16px;
+    border-radius: 12px;
+}
+
+.settings-editable-ingredient-card-body {
+    padding: 16px;
+}
+
+.settings-user-tab,
+.settings-session-tab {
+    padding: 8px 0;
+}
+
+.settings-card {
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.settings-card-body {
+    padding: 24px;
+}
+
+.settings-section-divider {
+    margin-top: 32px;
+    margin-bottom: 24px;
+}
+
+.settings-section-divider-inner {
+    margin-bottom: 16px;
+}
+
+.settings-section-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    color: #1d1d1f;
+}
+
+.settings-alert-spacing {
+    margin-bottom: 24px;
+}
+
+.settings-form-item-spacing {
+    margin-bottom: 24px;
+}
+
+.settings-help-text {
+    margin-top: 8px;
+}
+
+.settings-help-text-small {
+    font-size: 14px;
+}
+
+.settings-save-button-large {
+    height: 56px;
+    font-size: 19px;
+    font-weight: 500;
+    border-radius: 12px;
+    letter-spacing: -0.022em;
+}
+
+.settings-save-button-medium {
+    height: 44px;
+    font-size: 17px;
+    font-weight: 500;
+    border-radius: 12px;
+    letter-spacing: -0.022em;
+}

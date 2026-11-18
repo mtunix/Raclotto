@@ -1,6 +1,6 @@
 import json
 
-from back.src.model.domain.base import SerializableMixin
+from back.src.entity.base import SerializableMixin
 
 
 class ApiView:

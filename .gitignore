@@ -2,3 +2,7 @@
 *.db
 **/node_modules/**
 **/__pycache__/**
+*.log
+.env
+.env.local
+.env.*.local
