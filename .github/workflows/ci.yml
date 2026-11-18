@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, dev]
   pull_request:
 
 permissions:
@@ -102,7 +102,7 @@ jobs:
       - if: failure()
         run: docker logs raclotto
       - name: Push to the GitHub container registry
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

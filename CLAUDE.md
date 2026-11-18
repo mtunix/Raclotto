@@ -87,7 +87,8 @@ Pan roll module, Achievement facts, Read-only achievement list, App test harness
 
 **Never add a `Co-Authored-By:` trailer** or any other authorship/tool attribution.
 
-`master` is the main branch; work on a feature branch.
+`dev` is where development happens: commit there, or on a feature branch off it that merges
+back into `dev`. `master` gets only releases, merged from `dev`; never commit to it directly.
 
 ## Commands
 
@@ -163,12 +164,12 @@ The README has the operator steps. The pieces:
 
 ## CI
 
-`.github/workflows/ci.yml` runs on pushes to `master` and on pull requests: the backend suite,
+`.github/workflows/ci.yml` runs on pushes to `master` and `dev` and on pull requests: the backend suite,
 `venv/bin/mypy`, `tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
 fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
 `front/.nvmrc`; actions are pinned to commit SHAs. After those pass, the `image` job builds the
 Docker image and smoke-tests it (healthy, serves the index and `/api/health`). On `master` it then
-pushes `ghcr.io/mtunix/raclotto:latest` and `:<sha>`; pull requests only build and test it.
+pushes `ghcr.io/mtunix/raclotto:latest` and `:<sha>`; `dev` and pull requests only build and test it.
 
 ## Verify what you changed, not the whole repo
 
