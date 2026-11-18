@@ -1,0 +1,22 @@
+# Raclotto without Docker (README "Deploying without Docker"). The checkout in /opt/raclotto
+# belongs to the admin who runs deploy/update.sh; the service may write only instance/.
+[Unit]
+Description=Raclotto
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=raclotto
+Group=raclotto
+WorkingDirectory=/opt/raclotto
+ExecStart=/opt/raclotto/venv/bin/python -m back.src.main
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/raclotto/instance
+
+[Install]
+WantedBy=multi-user.target

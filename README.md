@@ -53,3 +53,34 @@ services:
     ports:
       - "127.0.0.1:8081:8081"
 ```
+
+## Deploying without Docker
+
+What you need: Python 3.14, Node 24, git and systemd on the server, plus a reverse proxy for HTTPS.
+The checkout belongs to you, and the service runs as a `raclotto` user that can write only `instance/`.
+
+```bash
+sudo useradd --system --user-group --no-create-home --home-dir /nonexistent raclotto
+sudo mkdir /opt/raclotto && sudo chown "$USER": /opt/raclotto
+git clone https://github.com/mtunix/Raclotto /opt/raclotto && cd /opt/raclotto
+cp .env.example .env && sudo chgrp raclotto .env && chmod 640 .env
+# in .env: RACLOTTO_JWT_SECRET, RACLOTTO_TRUSTED_PROXY=127.0.0.1, RACLOTTO_ADMIN_PASSWORD for the first start
+mkdir instance && sudo chown raclotto: instance
+sudo cp deploy/raclotto.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable raclotto
+deploy/update.sh
+```
+
+`deploy/update.sh` is also the update: it pulls `master`, installs the requirements, builds the
+frontend into `static/` (`npm run build:static`) and restarts the service, which migrates the
+database. The app listens on `127.0.0.1:8081`. With Caddy as the proxy, the site block is:
+
+```
+raclotto.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8081
+}
+```
+
+- **Logs:** `journalctl -u raclotto -f`, and `instance/raclotto-api.log`.
+- **Back up:** `sudo -u raclotto venv/bin/python -m back.src.backup - > ~/raclotto-$(date +%F).db`.
+- **Restore:** `sudo systemctl stop raclotto && sudo install -o raclotto -g raclotto -m 600 raclotto-<date>.db instance/raclotto.db && sudo systemctl start raclotto`.

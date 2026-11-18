@@ -112,6 +112,7 @@ cd front && npm run gen:api              # back/openapi.json + api/generated/ fr
 cd front && npm run gen:api:check        # regenerate and fail on drift
 venv/bin/python -m back.test.export_wire_fixtures   # rewrite lib/api/__fixtures__/backendResponses.ts
 cd front && npm run build                # production bundle in front/build/ (ignored by git)
+cd front && npm run build:static         # the same into ../static/, where the backend serves it (ignored by git)
 ```
 
 `npm run lint` (ESLint 10, flat config in `eslint.config.mjs`) covers `src/**/*.{ts,tsx}` with
@@ -154,6 +155,9 @@ The README has the operator steps. The pieces:
   `GET /api/health`. `compose.yaml` runs it with the `data` volume at `/app/instance` behind Caddy
   (`deploy/Caddyfile`). `.dockerignore` is an allowlist: a new top-level path the app needs at
   runtime has to be added there.
+- **Without Docker (the alternative):** systemd runs `back.src.main` from a checkout
+  (`deploy/raclotto.service`); `deploy/update.sh` pulls, installs, builds the frontend into
+  `static/` (`npm run build:static`) and restarts. Keep both routes working when deployment changes.
 - `static/` is build output, ignored by git. Never commit a frontend build.
 - Base images are pinned by tag and digest, like the actions; bump both together.
 
