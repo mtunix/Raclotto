@@ -1,18 +1,26 @@
 import logging
 from pathlib import Path
-from typing import Dict, Type
+from typing import Dict, List, Optional, Type
 
 from flask import Config, Flask, Response, jsonify, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
-from back.src.api.base_api import ApiError, ApiErrorCode, init_api_rules
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules
+from back.src.api.serializer import serialize_error
 from back.src.driver.api_custom import apis_custom
 from back.src.utils import str_code_from_enum
 
 
 class App(Flask):
-    def __init__(self, name: str, db: SQLAlchemy, config: Type[Config]):
+    def __init__(
+        self,
+        name: str,
+        db: SQLAlchemy,
+        config: Type[Config],
+        apis: Optional[List[Type[BaseApi]]] = None,
+    ):
         super().__init__(name, static_folder="static", static_url_path="")
+        self.apis = apis_custom if apis is None else apis
         self.debug = True
         self.db = db
         self.config.from_object(config)
@@ -73,7 +81,7 @@ class App(Flask):
         self.run(port=port, host="0.0.0.0")
 
     def init_mikado_api(self):
-        api_rules = init_api_rules(apis_custom, self.db.session)
+        api_rules = init_api_rules(self.apis, self.db.session)
         self.register_blueprint(api_rules)
 
     def init_admin_user(self):
@@ -256,12 +264,10 @@ class App(Flask):
             title="Not Found",
             detail="The requested endpoint does not exist",
         )
-        return jsonify(
-            {"jsonapi": {"version": "1.0"}, "errors": [error.to_dict()]}
-        ), 404
+        return jsonify(serialize_error(error)), 404
 
     def invalid_api_usage(self, e):
-        return jsonify(e.to_dict()), e.status
+        return jsonify(serialize_error(e)), e.status
 
     def uncaught_mikado_error(self, e):
         e = ApiError(

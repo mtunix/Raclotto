@@ -83,5 +83,5 @@ def serialize_error(error: ApiError) -> Dict:
     """
     return {
         "jsonapi": {"version": JSONAPI_VERSION},
-        "errors": [error.to_dict()]
+        "errors": error.to_dicts()
     }

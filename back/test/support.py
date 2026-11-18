@@ -2,9 +2,11 @@
 
 import unittest
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Dict, Optional, Sequence, Tuple, Type
 
+from back.src.api.base_api import BaseApi
 from back.src.auth.jwt import generate_token
+from back.src.driver.api_custom import apis_custom
 from back.src.driver.app import App
 from back.src.driver.config import ConfigInMemory
 from back.src.driver.database import db
@@ -21,21 +23,24 @@ class ConfigTest(ConfigInMemory):
     DEBUG = False
 
 
-_app: Optional[App] = None
+_apps: Dict[Tuple[Type[BaseApi], ...], App] = {}
 
 
-def _get_app() -> App:
-    global _app
-    if _app is None:
-        _app = App("raclotto-test", db, ConfigTest)
-    return _app
+def get_app(extra_apis: Sequence[Type[BaseApi]] = ()) -> App:
+    """The test app, built once per set of extra API classes mounted next to the real ones."""
+    key = tuple(extra_apis)
+    if key not in _apps:
+        _apps[key] = App("raclotto-test", db, ConfigTest, apis=apis_custom + list(key))
+    return _apps[key]
 
 
 class AppTest(unittest.TestCase):
     """Fresh schema + default data (levels, achievements, preparation types) per test."""
 
+    extra_apis: Sequence[Type[BaseApi]] = ()
+
     def setUp(self):
-        self.app = _get_app()
+        self.app = get_app(self.extra_apis)
         self.ctx = self.app.app_context()
         self.ctx.push()
         db.session.remove()
@@ -96,13 +101,33 @@ class AppTest(unittest.TestCase):
         db.session.commit()
         return pan
 
-    def auth(self, user: User) -> dict:
+    def bearer(self, user: User) -> dict:
         token = generate_token(user.id, self.app.config["JWT_SECRET_KEY"])
+        return {"Authorization": f"Bearer {token}"}
+
+    def auth(self, user: User) -> dict:
         return {
-            "Authorization": f"Bearer {token}",
+            **self.bearer(user),
             "Content-Type": "application/vnd.api+json",
             "Accept": "application/vnd.api+json",
         }
+
+    def call(
+        self,
+        method: str,
+        path: str,
+        user: Optional[User] = None,
+        body: Optional[dict] = None,
+        query: Optional[dict] = None,
+    ):
+        """Call a typed endpoint with plain JSON, as the generated client does."""
+        return self.client.open(
+            "/api" + path,
+            method=method,
+            query_string=query,
+            json=body,
+            headers={"Accept": "application/json", **(self.bearer(user) if user else {})},
+        )
 
     def post(self, user: User, path: str, attributes: dict, **query):
         return self.client.post(
