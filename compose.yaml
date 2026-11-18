@@ -1,0 +1,41 @@
+# Raclotto behind Caddy, which gets and renews the HTTPS certificate for RACLOTTO_DOMAIN.
+# Reads .env next to this file; README "Deploying" has the steps.
+name: raclotto
+
+services:
+  app:
+    image: ${RACLOTTO_IMAGE:-ghcr.io/mtunix/raclotto:latest}
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Fixed by the image; set here so values in .env can't move them.
+      RACLOTTO_HOST: 0.0.0.0
+      RACLOTTO_PORT: "8081"
+      RACLOTTO_DATABASE_URL: sqlite:////app/instance/raclotto.db
+      # The app port isn't published, so every peer is Caddy.
+      RACLOTTO_TRUSTED_PROXY: "*"
+    volumes:
+      - data:/app/instance
+
+  caddy:
+    image: caddy:2.11.7-alpine@sha256:e70b164da81ef698b3ad19af799ea6086ce6d9e48ed4079eb9fe26f6fbf14ee5
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      RACLOTTO_DOMAIN: ${RACLOTTO_DOMAIN:?set RACLOTTO_DOMAIN in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  data:
+  caddy-data:
+  caddy-config:

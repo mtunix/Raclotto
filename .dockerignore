@@ -1,0 +1,12 @@
+# Only what the image build reads; everything else (venv, .env, instance/, .git) stays out.
+*
+!requirements.txt
+!alembic.ini
+!back/__init__.py
+!back/migrations/
+!back/src/
+!front/
+front/node_modules/
+front/build/
+front/coverage/
+**/__pycache__/

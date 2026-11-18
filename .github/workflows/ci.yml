@@ -71,3 +71,44 @@ jobs:
         working-directory: front
       - run: npm run gen:api:check
         working-directory: front
+
+  image:
+    name: Docker image
+    needs: [backend, frontend, contract]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: >-
+          docker build --tag raclotto:ci
+          --label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          --label org.opencontainers.image.revision=${{ github.sha }}
+          .
+      - name: Smoke-test the image
+        run: |
+          docker run --detach --name raclotto --publish 127.0.0.1:8081:8081 \
+            --env RACLOTTO_JWT_SECRET="$(openssl rand -base64 48)" raclotto:ci
+          # The first health check runs one interval (30 s) after the start.
+          for _ in $(seq 45); do
+            [ "$(docker inspect --format '{{.State.Health.Status}}' raclotto)" = healthy ] && break
+            sleep 2
+          done
+          docker inspect --format '{{.State.Health.Status}}' raclotto | grep --quiet --line-regexp healthy
+          curl --fail --silent --show-error http://127.0.0.1:8081/ | grep --quiet '<div id="root">'
+          curl --fail --silent --show-error --header 'Accept: application/json' http://127.0.0.1:8081/api/health
+      - if: failure()
+        run: docker logs raclotto
+      - name: Push to the GitHub container registry
+        if: github.event_name == 'push'
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "$TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          for tag in "$GITHUB_SHA" latest; do
+            docker tag raclotto:ci "$image:$tag"
+            docker push "$image:$tag"
+          done

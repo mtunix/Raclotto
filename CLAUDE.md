@@ -25,6 +25,7 @@ the module you are changing before inferring patterns from its neighbours.
 | App wiring | `driver/app.py`, `driver/api_custom.py`, `api/base_api.py` | Flask app, seeding, route registry, error handlers. |
 | Spec | `api/openapi.py` | Builds `back/openapi.json` from the endpoint declarations. |
 | Migrations | `driver/migrations.py`, `back/migrations/` | Alembic; the app migrates its database at startup (below). |
+| Frontend serving | `driver/app.py` (`App.serve`) | Files of the frontend build in `static/`; any other non-API path gets `index.html` for the browser router. |
 
 Schema changes ship with an Alembic revision (`venv/bin/alembic revision -m "..."`; render it with
 `--autogenerate` against a database at head via `RACLOTTO_DATABASE_URL`). At startup `migrate()`
@@ -101,6 +102,7 @@ venv/bin/mypy                                              # type check: back/sr
 venv/bin/python -m back.src.dev                            # dev server for `npm start`: Flask debug + reload, 127.0.0.1:8081
 venv/bin/python -m back.src.main                           # production server (waitress); needs RACLOTTO_JWT_SECRET
 venv/bin/alembic current                                   # revision of instance/raclotto.db (RACLOTTO_DATABASE_URL overrides)
+venv/bin/python -m back.src.backup DEST                    # consistent copy of the database while it runs; `-` for stdout
 
 cd front && CI=true npx jest <path>      # one test file — the edit loop
 cd front && CI=true npx jest             # whole frontend suite
@@ -138,14 +140,31 @@ otherwise; run them from the repo root.
 | `RACLOTTO_ADMIN_PASSWORD` | — | Creates user `admin` only when none exists; never changes an existing one. |
 | `RACLOTTO_HOST`, `RACLOTTO_PORT` | `127.0.0.1`, `8081` | Production listen address. The dev server always binds 127.0.0.1. |
 | `RACLOTTO_LOG_FILE` | `raclotto-api.log` | App log; a relative path is under the instance folder (`instance/raclotto-api.log`). Test and in-memory configs write no log file. |
+| `RACLOTTO_TRUSTED_PROXY` | — | The reverse proxy whose `X-Forwarded-For/-Proto/-Host` waitress believes (`127.0.0.1`, or `*` in compose). |
 | `GOOGLE_GENAI_API_KEY` | — | Image generation; unavailable without it. |
+
+`RACLOTTO_DOMAIN` and `RACLOTTO_IMAGE` are read only by `compose.yaml`.
+
+## Deployment
+
+The README has the operator steps. The pieces:
+
+- **Docker (the main route):** `Dockerfile` builds the frontend in a Node stage and copies the
+  build into `static/` of a Python image that runs `back.src.main`, healthchecked on
+  `GET /api/health`. `compose.yaml` runs it with the `data` volume at `/app/instance` behind Caddy
+  (`deploy/Caddyfile`). `.dockerignore` is an allowlist: a new top-level path the app needs at
+  runtime has to be added there.
+- `static/` is build output, ignored by git. Never commit a frontend build.
+- Base images are pinned by tag and digest, like the actions; bump both together.
 
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `master` and on pull requests: the backend suite,
 `venv/bin/mypy`, `tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
 fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
-`front/.nvmrc`; actions are pinned to commit SHAs.
+`front/.nvmrc`; actions are pinned to commit SHAs. After those pass, the `image` job builds the
+Docker image and smoke-tests it (healthy, serves the index and `/api/health`). On `master` it then
+pushes `ghcr.io/mtunix/raclotto:latest` and `:<sha>`; pull requests only build and test it.
 
 ## Verify what you changed, not the whole repo
 

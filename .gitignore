@@ -8,3 +8,4 @@
 .env.*.local
 front/build/
 front/coverage/
+static/
