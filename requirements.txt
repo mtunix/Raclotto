@@ -19,6 +19,7 @@ python-dateutil==4.0.0
 six==1.17.0
 SQLAlchemy==2.1.7
 typing_extensions==4.16.0
+waitress==3.0.2
 Werkzeug==3.1.9
 wonderwords==3.0.1
 google-genai==2.34.0

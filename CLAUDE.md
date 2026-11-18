@@ -96,7 +96,8 @@ Run from the repo root unless noted. The venv is `venv/`; it has drifted from
 ```bash
 venv/bin/python -m unittest discover -s back/test -t .     # whole backend suite
 venv/bin/python -m unittest back.test.integration.test_pan_roll   # one module
-venv/bin/python -m back.src.main                           # run the server (port 8081); migrates instance/raclotto.db
+venv/bin/python -m back.src.dev                            # dev server for `npm start`: Flask debug + reload, 127.0.0.1:8081
+venv/bin/python -m back.src.main                           # production server (waitress); needs RACLOTTO_JWT_SECRET
 venv/bin/alembic current                                   # revision of instance/raclotto.db (RACLOTTO_DATABASE_URL overrides)
 
 cd front && CI=true npx jest <path>      # one test file — the edit loop
@@ -120,6 +121,21 @@ Known-broken frontend suites: `App.test.js`, `ErrorPage`, `GenerateView`, `Histo
 `TextEncoder`, the CSS transform predates Jest 28, stale `../AppSlice` mock paths); `DialView`
 loads but 3 assertions are stale. The view suites need `FakeTransport` to be revived.
 `front/jest.ci.config.js` quarantines exactly these; take a suite off its list when it runs again.
+
+## Configuration
+
+Read from the environment (and a git-ignored `.env`; `.env.example` documents every variable) by
+`production_config` / `development_config` in `driver/config.py`, nowhere else. Both servers
+migrate `instance/raclotto.db` under the working directory unless `RACLOTTO_DATABASE_URL` says
+otherwise; run them from the repo root.
+
+| Variable | Default | |
+|---|---|---|
+| `RACLOTTO_JWT_SECRET` | — | Required in production: ≥ 32 bytes, not a value that was in source. Dev ignores it. |
+| `RACLOTTO_DATABASE_URL` | `sqlite:///raclotto.db` | `alembic` reads it too, but not from `.env`; give SQLite an absolute path so both open the same file. |
+| `RACLOTTO_ADMIN_PASSWORD` | — | Creates user `admin` only when none exists; never changes an existing one. |
+| `RACLOTTO_HOST`, `RACLOTTO_PORT` | `127.0.0.1`, `8081` | Production listen address. The dev server always binds 127.0.0.1. |
+| `GOOGLE_GENAI_API_KEY` | — | Image generation; unavailable without it. |
 
 ## CI
 

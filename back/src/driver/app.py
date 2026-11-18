@@ -21,7 +21,6 @@ class App(Flask):
     ):
         super().__init__(name, static_folder="static", static_url_path="")
         self.apis = apis_custom if apis is None else apis
-        self.debug = True
         self.db = db
         self.config.from_object(config)
         self.db.init_app(self)
@@ -56,7 +55,6 @@ class App(Flask):
         self.register_error_handler(404, self.page_not_found)
 
     def serve(self, path):
-        print(self.static_folder)
         if path != "" and Path(f"{self.static_folder}/{path}").exists():
             return send_from_directory(self.static_folder, path)
         else:
@@ -77,42 +75,44 @@ class App(Flask):
             self.logger.error(response.json)
         return response
 
-    def start(self, port: int):
-        self.run(port=port, host="0.0.0.0")
-
     def init_mikado_api(self):
         api_rules = init_api_rules(self.apis, self.db.session)
         self.register_blueprint(api_rules)
 
     def init_admin_user(self):
-        """Create admin user if it doesn't exist."""
+        """Create the admin user from ADMIN_PASSWORD if there is none; an existing admin is left alone."""
         from back.src.auth.password import hash_password
         from back.src.entity.user import User
         from back.src.repository.user_repository import UserRepository
 
         user_repository = UserRepository()
-        admin_user = user_repository.by_name("admin")
-        if not admin_user:
-            # Get the first level (Novice) for new users
-            from back.src.repository.level_repository import LevelRepository
+        if user_repository.by_name("admin"):
+            return
+        password = self.config.get("ADMIN_PASSWORD")
+        if not password:
+            logging.warning("No admin user exists and RACLOTTO_ADMIN_PASSWORD is not set; none was created")
+            return
 
-            level_repository = LevelRepository()
-            first_level = (
-                level_repository.all_ordered()[0]
-                if level_repository.all_ordered()
-                else None
-            )
+        # Get the first level (Novice) for new users
+        from back.src.repository.level_repository import LevelRepository
 
-            admin_user = User(
-                name="admin",
-                email="admin@raclotto.local",
-                password=hash_password("retina$if@admin!1234"),
-                experience_points=0,
-                level_id=first_level.id if first_level else None,
-            )
-            self.db.session.add(admin_user)
-            self.db.session.commit()
-            logging.info("Admin user created successfully")
+        level_repository = LevelRepository()
+        first_level = (
+            level_repository.all_ordered()[0]
+            if level_repository.all_ordered()
+            else None
+        )
+
+        admin_user = User(
+            name="admin",
+            email="admin@raclotto.local",
+            password=hash_password(password),
+            experience_points=0,
+            level_id=first_level.id if first_level else None,
+        )
+        self.db.session.add(admin_user)
+        self.db.session.commit()
+        logging.info("Admin user created successfully")
 
     def init_preparation_types(self):
         """Initialize default preparation types if they don't exist."""
