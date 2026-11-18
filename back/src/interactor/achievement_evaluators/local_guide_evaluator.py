@@ -5,7 +5,8 @@ from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
-    EvaluationResult
+    EvaluationResult,
+    PanRated,
 )
 
 
@@ -18,6 +19,8 @@ class LocalGuideEvaluator(AchievementEvaluator):
     
     REQUIRED_RATINGS_COUNT = 10
     
+    reacts_to = (PanRated,)
+
     def evaluate(
         self,
         pan: Pan,

@@ -215,62 +215,9 @@ class SessionApi(BaseApi):
                 detail="The specified session does not exist"
             )
         
-        # Evaluate "Last Pan standing" achievement when session is closed
-        from back.src.interactor.achievement_service import AchievementService
-        from back.src.repository.pan_repository import PanRepository
-        from back.src.repository.achievement_repository import AchievementRepository
-        from back.src.repository.user_repository import UserRepository
-        
-        achievement_service = AchievementService()
-        pan_repository = PanRepository()
-        achievement_repository = AchievementRepository()
-        user_repository = UserRepository()
-        
-        # Get all pans in the session
-        session_pans = pan_repository.by_session(session_key)
-        
-        if session_pans:
-            # Find the pan with the most recent timestamp
-            pans_with_timestamps = [p for p in session_pans if p.timestamp]
-            
-            if pans_with_timestamps:
-                last_pan = max(pans_with_timestamps, key=lambda p: p.timestamp)
-                # Get the user who created the last pan
-                last_pan_user = user_repository.by_id(last_pan.user_id)
-                
-                if last_pan_user:
-                    # Get the "Last Pan standing" achievement
-                    last_pan_achievement = achievement_repository.by_title("Last Pan standing")
-                    
-                    if last_pan_achievement:
-                        # Build evaluation context
-                        context = achievement_service._build_evaluation_context(last_pan_user, session)
-                        
-                        # Get the evaluator
-                        from back.src.interactor.achievement_registry import get_registry
-                        registry = get_registry()
-                        evaluator = registry.get_evaluator(last_pan_achievement)
-                        
-                        if evaluator and hasattr(evaluator, 'evaluate_for_session_close'):
-                            # Evaluate the achievement for session close
-                            result = evaluator.evaluate_for_session_close(
-                                session_pans, last_pan_user, context
-                            )
-                            
-                            if result.unlocked:
-                                # Check if user already has the achievement
-                                unlocked_achievement_ids = user_repository.get_unlocked_achievements(last_pan_user.id)
-                                if last_pan_achievement.id not in unlocked_achievement_ids:
-                                    achievement_service.unlock_achievement(
-                                        last_pan_user.id, last_pan_achievement.id
-                                    )
-                            
-                            # Update progress
-                            if result.progress is not None:
-                                achievement_service.update_progress(
-                                    last_pan_user.id, last_pan_achievement.id, result.progress
-                                )
-        
+        from back.src.interactor.achievements import Achievements, SessionClosed
+
+        Achievements().record(SessionClosed(session=session, actor=get_current_user()))
         db.session.commit()
         return serialize_single(session, "session")
     

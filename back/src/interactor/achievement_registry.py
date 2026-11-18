@@ -30,6 +30,11 @@ class AchievementRegistry:
         """
         return self._evaluators.get(achievement.title)
 
+    @property
+    def evaluators(self) -> Dict[str, AchievementEvaluator]:
+        """Achievement title -> evaluator."""
+        return self._evaluators
+
     def has_evaluator(self, achievement: Achievement) -> bool:
         """
         Check if an achievement has a registered evaluator.

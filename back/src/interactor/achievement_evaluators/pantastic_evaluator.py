@@ -5,7 +5,8 @@ from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
-    EvaluationResult
+    EvaluationResult,
+    PanRated,
 )
 
 
@@ -22,6 +23,11 @@ class PantasticEvaluator(AchievementEvaluator):
     
     MINIMUM_RATINGS_COUNT = 2
     
+    reacts_to = (PanRated,)
+
+    def audience(self, fact) -> str:
+        return "pan_owner"
+
     def _get_unique_rating_users(self, pan: Pan) -> Set[int]:
         """
         Get the set of unique user IDs who have rated this pan.

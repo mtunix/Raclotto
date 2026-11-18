@@ -1,8 +1,4 @@
-import random
-from random import sample
-
 from flask import request
-from wonderwords import RandomWord
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.api.constants import JSONAPI_VERSION
@@ -14,12 +10,45 @@ from back.src.api.serializer import (
 )
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
-from back.src.entity.ingredient import IngredientType
 from back.src.entity.pan import Pan
-from back.src.interactor.diet import Diet
+from back.src.interactor.pan_roll import PanRoll, RollError, RollOptions, RollOutcome
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.session_repository import SessionRepository
+
+_ROLL_ERRORS = {
+    RollError.SESSION_NOT_FOUND: (ApiErrorCode.resource_not_found, 404, "Session not found"),
+    RollError.PREPARATION_TYPE_NOT_FOUND: (ApiErrorCode.resource_not_found, 404, "Preparation type not found"),
+    RollError.PREPARATION_TYPE_NOT_IN_SESSION: (ApiErrorCode.incorrect_parameters, 400, "Invalid preparation type"),
+    RollError.NO_INGREDIENTS: (ApiErrorCode.incorrect_parameters, 400, "Invalid ingredient selection"),
+    RollError.INVALID_OPTIONS: (ApiErrorCode.missing_required_body_field, 400, "Invalid roll options"),
+}
+
+
+def _level_dict(level):
+    if level is None:
+        return None
+    return {"id": level.id, "name": level.name, "required_experience": level.required_experience}
+
+
+def _serialize_outcome(outcome: RollOutcome) -> dict:
+    """The pan as JSON:API data; reward, unlocked achievements and events in meta."""
+    response = serialize_single(outcome.pan, "pan")
+    reward = outcome.reward
+    response["meta"] = {
+        "newly_unlocked_achievements": serialize_collection(outcome.achievements, "achievement")["data"],
+        "events": serialize_collection(outcome.events, "event")["data"],
+        "reward": {
+            "xp_gained": reward.xp_gained,
+            "xp_before": reward.xp_before,
+            "xp_after": reward.xp_after,
+            "previous_level": _level_dict(reward.previous_level),
+            "level": _level_dict(reward.level),
+            "next_level": _level_dict(reward.next_level),
+            "leveled_up": reward.leveled_up,
+        },
+    }
+    return response
 
 
 class PanApi(BaseApi):
@@ -31,28 +60,8 @@ class PanApi(BaseApi):
         self.ingredient_repository = IngredientRepository()
         self.session_repository = SessionRepository()
 
-    @BaseApi.endpoint("/generate", ["POST"])
-    @require_auth
-    def generate(self):
-        """Generate a new Raclotto pan.
-
-        Query parameters:
-        - session_key: Session key (required)
-
-        Request body should contain:
-        - numFill: Number of fill ingredients (default: 3)
-        - numSauce: Number of sauce ingredients (default: 2)
-
-        :returns Pan: Generated pan
-        :status_code 200: Pan generated successfully
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        attributes = deserialize_attributes()
-        num_fill = attributes.get("numFill", 3)
-        num_sauce = attributes.get("numSauce", 2)
+    def _roll(self, options: RollOptions) -> dict:
         session_key = request.args.get("session_key")
-
         if not session_key:
             raise ApiError(
                 ApiErrorCode.missing_required_body_field,
@@ -60,463 +69,77 @@ class PanApi(BaseApi):
                 title="Missing session_key",
                 detail="session_key query parameter is required",
             )
+        try:
+            outcome = PanRoll().roll(get_current_user(), session_key, options)
+        except RollError as error:
+            code, status, title = _ROLL_ERRORS[error.kind]
+            raise ApiError(code, status=status, title=title, detail=error.detail)
+        return _serialize_outcome(outcome)
 
-        preferences = Diet.of(user)
+    @BaseApi.endpoint("/generate", ["POST"])
+    @require_auth
+    def generate(self):
+        """Roll a pan with a fixed number of fills and sauces.
 
-        # Get session
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
+        Query parameters:
+        - session_key: Session key (required)
+
+        Request body:
+        - numFill: Number of fill ingredients (default: 3)
+        - numSauce: Number of sauce ingredients (default: 2)
+        - preparation_type_id: Chosen preparation type (optional)
+        - roll_prep_type: Randomly pick a preparation type (optional)
+        - roll_cheese: Roll a cheese level (optional)
+
+        :returns Pan: Rolled pan; meta carries reward, newly_unlocked_achievements, events
+        :status_code 200: Pan generated successfully
+        :status_code 401: Not authenticated
+        """
+        attributes = deserialize_attributes()
+        return self._roll(
+            RollOptions(
+                num_fill=attributes.get("numFill", 3),
+                num_sauce=attributes.get("numSauce", 2),
+                preparation_type_id=attributes.get("preparation_type_id"),
+                roll_preparation_type=bool(attributes.get("roll_prep_type", False)),
+                roll_cheese=bool(attributes.get("roll_cheese", False)),
             )
-
-        # Select ingredients based on preferences
-        fills = self.ingredient_repository.filter_by_preferences(
-            session_key, preferences, IngredientType.FILL
         )
-        sauces = self.ingredient_repository.filter_by_preferences(
-            session_key, preferences, IngredientType.SAUCE
-        )
-
-        num_fill = min(num_fill, len(fills)) if len(fills) >= num_fill else len(fills)
-        num_sauce = (
-            min(num_sauce, len(sauces)) if len(sauces) >= num_sauce else len(sauces)
-        )
-
-        # Validate that at least one ingredient type is selected
-        if num_fill == 0 and num_sauce == 0:
-            raise ApiError(
-                ApiErrorCode.incorrect_parameters,
-                status=400,
-                title="Invalid ingredient selection",
-                detail="At least one fill or sauce ingredient must be selected",
-            )
-
-        # Sample ingredients explicitly handling zero values
-        selected_ingredients = []
-        if num_fill > 0:
-            selected_ingredients.extend(sample(fills, num_fill))
-        if num_sauce > 0:
-            selected_ingredients.extend(sample(sauces, num_sauce))
-
-        # Generate pan name
-        r = RandomWord()
-        pan_name = f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan"
-
-        # Get preparation type if requested
-        preparation_type_id = attributes.get("preparation_type_id")
-        rolled_preparation_type = False
-
-        # Handle cheese roll if requested
-        cheese_level = None
-        roll_cheese = attributes.get("roll_cheese", False)
-        rolled_cheese = False
-        if roll_cheese:
-            cheese_level = random.randint(0, 9)
-            rolled_cheese = True
-
-        if preparation_type_id:
-            from back.src.repository.preparation_type_repository import (
-                PreparationTypeRepository,
-            )
-
-            prep_type_repo = PreparationTypeRepository()
-            prep_type = prep_type_repo.by_id(preparation_type_id)
-            if not prep_type:
-                raise ApiError(
-                    ApiErrorCode.resource_not_found,
-                    status=404,
-                    title="Preparation type not found",
-                    detail="The specified preparation type does not exist",
-                )
-            # Verify the preparation type is available for this session (either default or session-specific)
-            if prep_type.session_id is not None and prep_type.session_id != session.id:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid preparation type",
-                    detail="The specified preparation type is not available for this session",
-                )
-
-        # Track when user joins the session (if not already in it)
-        # This is used for achievements like "Pandler"
-        from datetime import datetime
-
-        from sqlalchemy import update
-
-        from back.src.entity.user import user_sessions
-
-        # Check if user is already in the session
-        existing_join = (
-            db.session.query(user_sessions)
-            .filter(
-                user_sessions.c.user_id == user.id,
-                user_sessions.c.session_id == session.id,
-            )
-            .first()
-        )
-
-        if not existing_join:
-            # User is joining this session for the first time - add timestamp
-            try:
-                db.session.execute(
-                    user_sessions.insert().values(
-                        user_id=user.id, session_id=session.id, joined_at=datetime.now()
-                    )
-                )
-                db.session.flush()
-            except Exception:
-                # If insert fails (e.g., duplicate key), try to update timestamp if it's NULL
-                db.session.execute(
-                    update(user_sessions)
-                    .where(
-                        user_sessions.c.user_id == user.id,
-                        user_sessions.c.session_id == session.id,
-                    )
-                    .values(joined_at=datetime.now())
-                )
-                db.session.flush()
-
-        # Create pan
-        pan = Pan(
-            name=pan_name,
-            ingredients=selected_ingredients,
-            user_id=user.id,
-            session_id=session.id,
-            preparation_type_id=preparation_type_id,
-            cheese_level=cheese_level,
-            rolled_preparation_type=rolled_preparation_type,
-            rolled_cheese=rolled_cheese,
-        )
-        db.session.add(pan)
-        db.session.commit()
-
-        # Evaluate achievements for this pan
-        from back.src.interactor.achievement_service import AchievementService
-
-        achievement_service = AchievementService()
-        newly_unlocked_achievements = achievement_service.evaluate_achievements_for_pan(
-            pan, user
-        )
-
-        # Evaluate events for this pan
-        from back.src.interactor.event_service import EventService
-
-        event_service = EventService()
-        event_service.evaluate_events_for_session(session, {"pan": pan})
-
-        # Award XP for rolling the pan
-        from back.src.interactor.level_service import LevelService
-
-        level_service = LevelService()
-        level_service.award_xp_for_pan(user, pan)
-
-        db.session.commit()
-
-        # Serialize pan
-        pan_response = serialize_single(pan, "pan")
-
-        # Add newly unlocked achievements to response meta
-        if newly_unlocked_achievements:
-            achievements_data = serialize_collection(
-                newly_unlocked_achievements, "achievement"
-            )
-            if achievements_data and "data" in achievements_data:
-                pan_response["meta"] = pan_response.get("meta", {})
-                pan_response["meta"]["newly_unlocked_achievements"] = achievements_data[
-                    "data"
-                ]
-
-        return pan_response
 
     @BaseApi.endpoint("/generate/bandit", ["POST"])
     @require_auth
     def generate_bandit(self):
-        """Generate a new Raclotto pan using bandit mode (random fill/sauce distribution).
+        """Roll a pan with a random fill/sauce split (bandit mode).
 
         Query parameters:
         - session_key: Session key (required)
 
-        Request body should contain:
-        - total_columns: Total number of ingredients (fill + sauce) (required)
-        - roll_prep_type: Whether to randomly select a preparation type (optional, default: False)
+        Request body:
+        - total_columns: Total number of ingredients (required)
+        - roll_prep_type: Randomly pick a preparation type (optional)
+        - roll_cheese: Roll a cheese level (optional)
 
-        :returns Pan: Generated pan with randomly distributed fill/sauce ingredients
+        :returns Pan: Rolled pan; meta carries reward, newly_unlocked_achievements, events
         :status_code 200: Pan generated successfully
         :status_code 401: Not authenticated
         :status_code 400: Missing required fields
         """
-        user = get_current_user()
         attributes = deserialize_attributes()
         total_columns = attributes.get("total_columns")
-        roll_prep_type = attributes.get("roll_prep_type", False)
-        session_key = request.args.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing session_key",
-                detail="session_key query parameter is required",
-            )
-
-        if total_columns is None or total_columns < 1:
+        if total_columns is None:
             raise ApiError(
                 ApiErrorCode.missing_required_body_field,
                 status=400,
                 title="Missing required field",
                 detail="total_columns is required and must be at least 1",
             )
-
-        preferences = Diet.of(user)
-
-        # Get session
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
+        return self._roll(
+            RollOptions(
+                total_columns=int(total_columns),
+                roll_preparation_type=bool(attributes.get("roll_prep_type", False)),
+                roll_cheese=bool(attributes.get("roll_cheese", False)),
             )
-
-        # Select ingredients based on preferences
-        fills = self.ingredient_repository.filter_by_preferences(
-            session_key, preferences, IngredientType.FILL
         )
-        sauces = self.ingredient_repository.filter_by_preferences(
-            session_key, preferences, IngredientType.SAUCE
-        )
-
-        # Randomly determine num_fill and num_sauce such that num_fill + num_sauce = total_columns
-        # Ensure at least 1 of each type if possible
-        available_fill_count = len(fills)
-        available_sauce_count = len(sauces)
-
-        if available_fill_count == 0 and available_sauce_count == 0:
-            raise ApiError(
-                ApiErrorCode.incorrect_parameters,
-                status=400,
-                title="No ingredients available",
-                detail="No available ingredients found for this session",
-            )
-
-        # Determine random distribution
-        if total_columns == 1:
-            # Only one column - prefer fill if available, otherwise sauce
-            if available_fill_count > 0:
-                num_fill = 1
-                num_sauce = 0
-            else:
-                num_fill = 0
-                num_sauce = 1
-        else:
-            # Randomly distribute, but ensure at least 1 of each if both types are available
-            if available_fill_count > 0 and available_sauce_count > 0:
-                # At least 1 of each, rest randomly distributed
-                min_fill = 1
-                min_sauce = 1
-                remaining = total_columns - min_fill - min_sauce
-
-                if remaining < 0:
-                    # Not enough columns for both types - distribute proportionally
-                    if available_fill_count >= available_sauce_count:
-                        num_fill = min(total_columns, available_fill_count)
-                        num_sauce = 0
-                    else:
-                        num_fill = 0
-                        num_sauce = min(total_columns, available_sauce_count)
-                else:
-                    # Distribute remaining randomly
-                    fill_portion = random.randint(0, remaining)
-                    num_fill = min_fill + fill_portion
-                    num_sauce = min_sauce + (remaining - fill_portion)
-
-                    # Ensure we don't exceed available counts
-                    num_fill = min(num_fill, available_fill_count)
-                    num_sauce = min(num_sauce, available_sauce_count)
-
-                    # Adjust if total doesn't match (due to capacity limits)
-                    total_selected = num_fill + num_sauce
-                    if total_selected < total_columns:
-                        # Add remaining to whichever type has capacity
-                        remaining = total_columns - total_selected
-                        while remaining > 0:
-                            if (
-                                num_fill < available_fill_count
-                                and num_sauce < available_sauce_count
-                            ):
-                                # Both have capacity - randomly choose which to add to
-                                if random.random() < 0.5:
-                                    num_fill += 1
-                                    remaining -= 1
-                                else:
-                                    num_sauce += 1
-                                    remaining -= 1
-                            elif num_fill < available_fill_count:
-                                num_fill += min(
-                                    remaining, available_fill_count - num_fill
-                                )
-                                remaining -= min(
-                                    remaining, available_fill_count - num_fill
-                                )
-                            elif num_sauce < available_sauce_count:
-                                num_sauce += min(
-                                    remaining, available_sauce_count - num_sauce
-                                )
-                                remaining -= min(
-                                    remaining, available_sauce_count - num_sauce
-                                )
-                            else:
-                                # No more capacity in either - break
-                                break
-            elif available_fill_count > 0:
-                # Only fills available
-                num_fill = min(total_columns, available_fill_count)
-                num_sauce = 0
-            else:
-                # Only sauces available
-                num_fill = 0
-                num_sauce = min(total_columns, available_sauce_count)
-
-        # Ensure we have at least one ingredient
-        if num_fill == 0 and num_sauce == 0:
-            raise ApiError(
-                ApiErrorCode.incorrect_parameters,
-                status=400,
-                title="Invalid distribution",
-                detail="Could not create valid ingredient distribution",
-            )
-
-        # Sample ingredients
-        selected_ingredients = []
-        if num_fill > 0:
-            selected_ingredients.extend(sample(fills, num_fill))
-        if num_sauce > 0:
-            selected_ingredients.extend(sample(sauces, num_sauce))
-
-        # Generate pan name
-        r = RandomWord()
-        pan_name = f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan"
-
-        # Handle preparation type
-        preparation_type_id = None
-        rolled_preparation_type = False
-        if roll_prep_type:
-            from back.src.repository.preparation_type_repository import (
-                PreparationTypeRepository,
-            )
-
-            prep_type_repo = PreparationTypeRepository()
-            # Get all available prep types for this session (includes defaults)
-            all_prep_types = prep_type_repo.by_session(session.id)
-
-            if all_prep_types:
-                # Randomly select one
-                selected_prep_type = random.choice(all_prep_types)
-                preparation_type_id = selected_prep_type.id
-                rolled_preparation_type = True
-
-        # Handle cheese roll if requested
-        cheese_level = None
-        roll_cheese = attributes.get("roll_cheese", False)
-        rolled_cheese = False
-        if roll_cheese:
-            cheese_level = random.randint(0, 9)
-            rolled_cheese = True
-
-        # Track when user joins the session (if not already in it)
-        from datetime import datetime
-
-        from sqlalchemy import update
-
-        from back.src.entity.user import user_sessions
-
-        # Check if user is already in the session
-        existing_join = (
-            db.session.query(user_sessions)
-            .filter(
-                user_sessions.c.user_id == user.id,
-                user_sessions.c.session_id == session.id,
-            )
-            .first()
-        )
-
-        if not existing_join:
-            # User is joining this session for the first time - add timestamp
-            try:
-                db.session.execute(
-                    user_sessions.insert().values(
-                        user_id=user.id, session_id=session.id, joined_at=datetime.now()
-                    )
-                )
-                db.session.flush()
-            except Exception:
-                # If insert fails (e.g., duplicate key), try to update timestamp if it's NULL
-                db.session.execute(
-                    update(user_sessions)
-                    .where(
-                        user_sessions.c.user_id == user.id,
-                        user_sessions.c.session_id == session.id,
-                    )
-                    .values(joined_at=datetime.now())
-                )
-                db.session.flush()
-
-        # Create pan
-        pan = Pan(
-            name=pan_name,
-            ingredients=selected_ingredients,
-            user_id=user.id,
-            session_id=session.id,
-            preparation_type_id=preparation_type_id,
-            cheese_level=cheese_level,
-            rolled_preparation_type=rolled_preparation_type,
-            rolled_cheese=rolled_cheese,
-        )
-        db.session.add(pan)
-        db.session.commit()
-
-        # Evaluate achievements for this pan
-        from back.src.interactor.achievement_service import AchievementService
-
-        achievement_service = AchievementService()
-        newly_unlocked_achievements = achievement_service.evaluate_achievements_for_pan(
-            pan, user
-        )
-
-        # Evaluate events for this pan
-        from back.src.interactor.event_service import EventService
-
-        event_service = EventService()
-        event_service.evaluate_events_for_session(session, {"pan": pan})
-
-        # Award XP for rolling the pan
-        from back.src.interactor.level_service import LevelService
-
-        level_service = LevelService()
-        level_service.award_xp_for_pan(user, pan)
-
-        db.session.commit()
-
-        # Serialize pan
-        pan_response = serialize_single(pan, "pan")
-
-        # Add newly unlocked achievements to response meta
-        if newly_unlocked_achievements:
-            achievements_data = serialize_collection(
-                newly_unlocked_achievements, "achievement"
-            )
-            if achievements_data and "data" in achievements_data:
-                pan_response["meta"] = pan_response.get("meta", {})
-                pan_response["meta"]["newly_unlocked_achievements"] = achievements_data[
-                    "data"
-                ]
-
-        return pan_response
 
     @BaseApi.endpoint("", ["GET"])
     @require_auth
@@ -688,128 +311,32 @@ class PanApi(BaseApi):
     @BaseApi.endpoint("", ["POST"])
     @require_auth
     def create_pan(self):
-        """Create a new pan.
+        """Create a pan from hand-picked ingredients.
 
         Query parameters:
         - session_key: Session key (required)
 
-        Request body should contain pan attributes:
+        Request body:
         - name: Pan name (optional)
         - ingredients: List of ingredient IDs (required)
 
-        :returns Pan: Created pan
-        :status_code 201: Pan created successfully
+        :returns Pan: Created pan; meta carries reward, newly_unlocked_achievements, events
+        :status_code 200: Pan created successfully
         :status_code 401: Not authenticated
         :status_code 400: Missing session_key or ingredients
         """
-        user = get_current_user()
         attributes = deserialize_attributes()
-        session_key = request.args.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing session_key",
-                detail="session_key query parameter is required",
-            )
-
-        # Get session
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-
-        # Handle ingredients if provided as IDs
-        if "ingredients" in attributes:
-            ingredient_ids = attributes["ingredients"]
-            if not ingredient_ids or not isinstance(ingredient_ids, list):
-                raise ApiError(
-                    ApiErrorCode.missing_required_body_field,
-                    status=400,
-                    title="Missing required field",
-                    detail="ingredients must be a non-empty list",
-                )
-            ingredients = []
-            for ing_id in ingredient_ids:
-                ingredient = self.ingredient_repository.by_id(ing_id)
-                if ingredient:
-                    ingredients.append(ingredient)
-            attributes["ingredients"] = ingredients
-        else:
+        ingredient_ids = attributes.get("ingredients")
+        if not ingredient_ids or not isinstance(ingredient_ids, list):
             raise ApiError(
                 ApiErrorCode.missing_required_body_field,
                 status=400,
                 title="Missing required field",
-                detail="ingredients is required",
+                detail="ingredients must be a non-empty list",
             )
-
-        # Set user_id and session_id
-        attributes["user_id"] = user.id
-        attributes["session_id"] = session.id
-
-        # Track when user joins the session (if not already in it)
-        # This is used for achievements like "Pandler"
-        from datetime import datetime
-
-        from back.src.entity.user import user_sessions
-
-        # Check if user is already in the session
-        existing_join = (
-            db.session.query(user_sessions)
-            .filter(
-                user_sessions.c.user_id == user.id,
-                user_sessions.c.session_id == session.id,
-            )
-            .first()
+        return self._roll(
+            RollOptions(ingredient_ids=ingredient_ids, name=attributes.get("name") or None)
         )
-
-        if not existing_join:
-            # User is joining this session for the first time - add timestamp
-            db.session.execute(
-                user_sessions.insert().values(
-                    user_id=user.id, session_id=session.id, joined_at=datetime.now()
-                )
-            )
-            db.session.flush()
-
-        # Generate name if not provided
-        if "name" not in attributes or not attributes["name"]:
-            from wonderwords import RandomWord
-
-            r = RandomWord()
-            attributes["name"] = (
-                f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan"
-            )
-
-        pan = self.repository.create(attributes)
-        db.session.commit()
-
-        # Evaluate achievements for this pan
-        from back.src.interactor.achievement_service import AchievementService
-
-        achievement_service = AchievementService()
-        achievement_service.evaluate_achievements_for_pan(pan, user)
-
-        # Evaluate events for this pan
-        from back.src.interactor.event_service import EventService
-
-        event_service = EventService()
-        event_service.evaluate_events_for_session(session, {"pan": pan})
-
-        # Award XP for rolling the pan
-        from back.src.interactor.level_service import LevelService
-
-        level_service = LevelService()
-        level_service.award_xp_for_pan(user, pan)
-
-        db.session.commit()
-
-        return serialize_single(pan, "pan")
 
     @BaseApi.endpoint("/<int:pan_id>", ["PATCH"])
     @require_auth

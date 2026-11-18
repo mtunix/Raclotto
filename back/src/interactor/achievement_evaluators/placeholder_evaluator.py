@@ -12,6 +12,8 @@ from back.src.interactor.achievement_evaluator import (
 class PlaceholderEvaluator(AchievementEvaluator):
     """Placeholder evaluator for achievements that don't have specific implementations yet."""
     
+    reacts_to = ()
+
     def evaluate(
         self,
         pan: Pan,

@@ -6,7 +6,8 @@ from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
-    EvaluationResult
+    EvaluationResult,
+    PanRolled,
 )
 
 
@@ -21,6 +22,12 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
     the most pans, all of them can have the achievement.
     """
     
+    reacts_to = (PanRolled,)
+    revocable = True
+
+    def audience(self, fact) -> str:
+        return "session_members"
+
     def _count_pans_per_user(self, session_pans: List[Pan]) -> Dict[int, int]:
         """
         Count the number of pans per user in the session.

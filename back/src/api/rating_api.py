@@ -130,10 +130,15 @@ class RatingApi(BaseApi):
         # Evaluate achievements for this rating (e.g., "Local Guide" achievement)
         # Only evaluate on creation, not on update
         if not existing_rating:
-            from back.src.interactor.achievement_service import AchievementService
-            achievement_service = AchievementService()
-            achievement_service.evaluate_achievements_for_rating(rating, user)
-            db.session.commit()
+            from back.src.interactor.achievements import Achievements, PanRated
+            from back.src.repository.pan_repository import PanRepository
+
+            pan = PanRepository().by_id(rating.pan_id)
+            if pan is not None:
+                Achievements().record(
+                    PanRated(rating=rating, pan=pan, rater=user, session=pan.session)
+                )
+                db.session.commit()
         
         return serialize_single(rating, "rating")
     

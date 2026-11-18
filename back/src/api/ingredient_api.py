@@ -11,8 +11,8 @@ from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.user import User
+from back.src.interactor.achievements import Achievements, CatalogChanged, IngredientAdded
 from back.src.interactor.diet import Diet
-from back.src.repository.achievement_repository import AchievementRepository
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.session_repository import SessionRepository
 from back.src.repository.user_repository import UserRepository
@@ -25,8 +25,13 @@ class IngredientApi(BaseApi):
         super().__init__()
         self.repository = IngredientRepository()
         self.session_repository = SessionRepository()
-        self.achievement_repository = AchievementRepository()
         self.user_repository = UserRepository()
+
+    @staticmethod
+    def _catalog_changed(session) -> None:
+        """Let achievements react to a change in the session's catalog, then commit."""
+        Achievements().record(CatalogChanged(session=session, actor=get_current_user()))
+        db.session.commit()
 
     @BaseApi.endpoint("", ["GET"])
     @require_auth
@@ -106,88 +111,8 @@ class IngredientApi(BaseApi):
         ingredient = self.repository.create(attributes)
         db.session.commit()
 
-        # Check if this is a new ingredient (Connoisseur achievement)
-        from back.src.interactor.achievement_service import AchievementService
-
-        achievement_service = AchievementService()
-        connoisseur_achievement = self.achievement_repository.by_title("Connoisseur")
-
-        if connoisseur_achievement:
-            # Check if this ingredient name has never been used before
-            from back.src.interactor.achievement_evaluators.connoisseur_evaluator import (
-                ConnoisseurEvaluator,
-            )
-
-            evaluator = ConnoisseurEvaluator()
-
-            # Build evaluation context for the user
-            context = achievement_service._build_evaluation_context(user, session)
-
-            # Evaluate the achievement for the newly created ingredient
-            result = evaluator.evaluate_for_ingredient(ingredient, user, context)
-
-            if result.unlocked:
-                # Check if user already has the achievement
-                unlocked_achievement_ids = (
-                    self.user_repository.get_unlocked_achievements(user.id)
-                )
-                if connoisseur_achievement.id not in unlocked_achievement_ids:
-                    achievement_service.unlock_achievement(
-                        user.id, connoisseur_achievement.id
-                    )
-
-            # Update progress
-            if result.progress is not None:
-                achievement_service.update_progress(
-                    user.id, connoisseur_achievement.id, result.progress
-                )
-
-        # If a new sauce was added, check if any users with "King of the Sauce"
-        # achievement need to have it revoked
-        if ingredient.type == IngredientType.SAUCE:
-            # Find the "King of the Sauce" achievement
-            king_achievement = self.achievement_repository.by_title("King of the Sauce")
-
-            if king_achievement:
-                # Check if this is a session-specific achievement
-                if not king_achievement.is_global:
-                    # Session-specific: only re-evaluate users in this session
-                    user_ids_with_achievement = (
-                        self.user_repository.get_users_with_achievement(
-                            king_achievement.id
-                        )
-                    )
-                    user_ids_in_session = self.user_repository.get_users_in_session(
-                        session.id
-                    )
-
-                    # Only re-evaluate users who have the achievement AND are in this session
-                    users_to_re_evaluate = (
-                        user_ids_with_achievement & user_ids_in_session
-                    )
-                else:
-                    # Global: re-evaluate all users who have this achievement
-                    users_to_re_evaluate = (
-                        self.user_repository.get_users_with_achievement(
-                            king_achievement.id
-                        )
-                    )
-
-                # Re-evaluate the achievement for each affected user
-                for user_id in users_to_re_evaluate:
-                    user = self.user_repository.by_id(user_id)
-                    if user:
-                        # For global achievements, use any session; for session-specific, use the current session
-                        eval_session = (
-                            session
-                            if not king_achievement.is_global
-                            else (user.sessions[0] if user.sessions else session)
-                        )
-                        achievement_service.re_evaluate_achievement_for_user(
-                            user, king_achievement, eval_session
-                        )
-
-                db.session.commit()
+        Achievements().record(IngredientAdded(ingredient=ingredient, user=user, session=session))
+        db.session.commit()
 
         return serialize_single(ingredient, "ingredient")
 
@@ -240,6 +165,7 @@ class IngredientApi(BaseApi):
 
         updated = self.repository.update(ingredient_id, attributes)
         db.session.commit()
+        self._catalog_changed(updated.session)
 
         return serialize_single(updated, "ingredient")
 
@@ -280,6 +206,7 @@ class IngredientApi(BaseApi):
         # Mark as unavailable instead of deleting
         updated = self.repository.mark_unavailable(ingredient_id)
         db.session.commit()
+        self._catalog_changed(updated.session)
 
         return serialize_single(updated, "ingredient")
 
@@ -323,6 +250,7 @@ class IngredientApi(BaseApi):
 
         updated = self.repository.mark_available(ingredient_id)
         db.session.commit()
+        self._catalog_changed(updated.session)
 
         return serialize_single(updated, "ingredient")
 
@@ -593,6 +521,7 @@ class IngredientApi(BaseApi):
         # Create ingredients
         created_ingredients = self.repository.bulk_create(validated_data, session.id)
         db.session.commit()
+        self._catalog_changed(session)
 
         # Serialize response
         result_ingredients = []
@@ -804,17 +733,6 @@ class IngredientApi(BaseApi):
         # Find items to delete (in current but not in reimport)
         ids_to_delete = current_ids - reimport_ids
 
-        # Track if sauces changed for achievement re-evaluation
-        # Check if any sauces were deleted, added, or if new ones are being created
-        current_sauce_ids = {
-            ing.id for ing in current_ingredients if ing.type == IngredientType.SAUCE
-        }
-        deleted_sauce_ids = ids_to_delete & current_sauce_ids
-        new_sauces_count = sum(
-            1 for item in items_to_create if item.get("type") == IngredientType.SAUCE
-        )
-        sauces_changed = bool(deleted_sauce_ids) or new_sauces_count > 0
-
         # Perform operations
         created_ingredients = []
         if items_to_create:
@@ -832,50 +750,7 @@ class IngredientApi(BaseApi):
 
         db.session.commit()
 
-        # Trigger achievement re-evaluation if sauces changed
-        if sauces_changed:
-            from back.src.interactor.achievement_service import AchievementService
-
-            achievement_service = AchievementService()
-            king_achievement = self.achievement_repository.by_title("King of the Sauce")
-
-            if king_achievement:
-                # Check if this is a session-specific achievement
-                if not king_achievement.is_global:
-                    # Session-specific: only re-evaluate users in this session
-                    user_ids_with_achievement = (
-                        self.user_repository.get_users_with_achievement(
-                            king_achievement.id
-                        )
-                    )
-                    user_ids_in_session = self.user_repository.get_users_in_session(
-                        session.id
-                    )
-                    users_to_re_evaluate = (
-                        user_ids_with_achievement & user_ids_in_session
-                    )
-                else:
-                    # Global: re-evaluate all users who have this achievement
-                    users_to_re_evaluate = (
-                        self.user_repository.get_users_with_achievement(
-                            king_achievement.id
-                        )
-                    )
-
-                # Re-evaluate the achievement for each affected user
-                for user_id in users_to_re_evaluate:
-                    user = self.user_repository.by_id(user_id)
-                    if user:
-                        eval_session = (
-                            session
-                            if not king_achievement.is_global
-                            else (user.sessions[0] if user.sessions else session)
-                        )
-                        achievement_service.re_evaluate_achievement_for_user(
-                            user, king_achievement, eval_session
-                        )
-
-                db.session.commit()
+        self._catalog_changed(session)
 
         # Get all ingredients after reimport for response
         all_ingredients = self.repository.by_session(session_key)
