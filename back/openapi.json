@@ -110,6 +110,38 @@
         "title": "ApiErrorSourceDto",
         "type": "object"
       },
+      "AuthResultDto": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MeDto"
+          }
+        },
+        "required": [
+          "token",
+          "user"
+        ],
+        "title": "AuthResultDto",
+        "type": "object"
+      },
+      "CreateInviteBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "CreateInviteBody",
+        "type": "object"
+      },
       "CreatePanBody": {
         "additionalProperties": false,
         "description": "A hand-picked pan; ingredients outside the session are ignored.",
@@ -310,6 +342,23 @@
         "title": "IngredientDto",
         "type": "object"
       },
+      "IngredientRatingDto": {
+        "properties": {
+          "avg_rating": {
+            "title": "Avg Rating",
+            "type": "number"
+          },
+          "ingredient": {
+            "$ref": "#/components/schemas/IngredientDto"
+          }
+        },
+        "required": [
+          "ingredient",
+          "avg_rating"
+        ],
+        "title": "IngredientRatingDto",
+        "type": "object"
+      },
       "IngredientType": {
         "enum": [
           1,
@@ -321,6 +370,74 @@
           "FILL",
           "SAUCE"
         ]
+      },
+      "InviteDto": {
+        "description": "An invite as its creator sees it; the token is what the registration link carries.",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_used": {
+            "title": "Is Used",
+            "type": "boolean"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Used At"
+          }
+        },
+        "required": [
+          "id",
+          "token",
+          "email",
+          "expires_at",
+          "is_used",
+          "used_at"
+        ],
+        "title": "InviteDto",
+        "type": "object"
+      },
+      "InviteLookupDto": {
+        "description": "What the registration page shows for a valid invite link.",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "expires_at"
+        ],
+        "title": "InviteLookupDto",
+        "type": "object"
       },
       "JsonApiDto": {
         "properties": {
@@ -366,6 +483,187 @@
           "required_experience"
         ],
         "title": "LevelDto",
+        "type": "object"
+      },
+      "LoginBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name_or_email": {
+            "minLength": 1,
+            "title": "Name Or Email",
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name_or_email",
+          "password"
+        ],
+        "title": "LoginBody",
+        "type": "object"
+      },
+      "MeDto": {
+        "description": "The signed-in user, including what only they see.",
+        "properties": {
+          "border_style": {
+            "enum": [
+              "solid",
+              "dashed",
+              "dotted",
+              "double"
+            ],
+            "title": "Border Style",
+            "type": "string"
+          },
+          "border_texture": {
+            "anyOf": [
+              {
+                "enum": [
+                  "cheese",
+                  "bread",
+                  "sauce-01",
+                  "sauce-02",
+                  "herbs-01",
+                  "herbs-02"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Border Texture"
+          },
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "experience_points": {
+            "title": "Experience Points",
+            "type": "integer"
+          },
+          "fish": {
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "glow_effect": {
+            "title": "Glow Effect",
+            "type": "boolean"
+          },
+          "gluten": {
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lactose": {
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "language": {
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meat": {
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "next_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          },
+          "vegan": {
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "title": "Vegetarian",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "profile_picture",
+          "border_style",
+          "border_texture",
+          "glow_effect",
+          "email",
+          "meat",
+          "vegetarian",
+          "vegan",
+          "fish",
+          "histamine",
+          "fructose",
+          "lactose",
+          "gluten",
+          "language",
+          "experience_points",
+          "level",
+          "next_level"
+        ],
+        "title": "MeDto",
         "type": "object"
       },
       "PanDto": {
@@ -633,6 +931,52 @@
         "title": "RatingDto",
         "type": "object"
       },
+      "RegisterBody": {
+        "additionalProperties": false,
+        "description": "Sign up with an unused invite; the email must be the one the invite was made for.",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Profile Picture"
+          },
+          "token": {
+            "minLength": 1,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "email",
+          "name",
+          "password"
+        ],
+        "title": "RegisterBody",
+        "type": "object"
+      },
       "RewardDto": {
         "properties": {
           "level": {
@@ -793,6 +1137,165 @@
         "title": "RollPanBody",
         "type": "object"
       },
+      "SessionPanCountDto": {
+        "properties": {
+          "pan_count": {
+            "title": "Pan Count",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "session_name": {
+            "title": "Session Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "session_name",
+          "pan_count"
+        ],
+        "title": "SessionPanCountDto",
+        "type": "object"
+      },
+      "TokenDto": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "TokenDto",
+        "type": "object"
+      },
+      "UpdateMeBody": {
+        "additionalProperties": false,
+        "description": "Omitted fields are left unchanged; null is only a value where the type says so.",
+        "properties": {
+          "border_style": {
+            "default": null,
+            "enum": [
+              "solid",
+              "dashed",
+              "dotted",
+              "double"
+            ],
+            "title": "Border Style",
+            "type": "string"
+          },
+          "border_texture": {
+            "anyOf": [
+              {
+                "enum": [
+                  "cheese",
+                  "bread",
+                  "sauce-01",
+                  "sauce-02",
+                  "herbs-01",
+                  "herbs-02"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Border Texture"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Color"
+          },
+          "fish": {
+            "default": null,
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "default": null,
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "glow_effect": {
+            "default": null,
+            "title": "Glow Effect",
+            "type": "boolean"
+          },
+          "gluten": {
+            "default": null,
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "default": null,
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "lactose": {
+            "default": null,
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "language": {
+            "default": null,
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "meat": {
+            "default": null,
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "default": null,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Profile Picture"
+          },
+          "vegan": {
+            "default": null,
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "default": null,
+            "title": "Vegetarian",
+            "type": "boolean"
+          }
+        },
+        "title": "UpdateMeBody",
+        "type": "object"
+      },
       "UpdatePanBody": {
         "additionalProperties": false,
         "properties": {
@@ -828,8 +1331,197 @@
         "title": "UpdateRatingBody",
         "type": "object"
       },
+      "UserProfileDto": {
+        "description": "Any user's profile page; their email, diet and language stay private.",
+        "properties": {
+          "achievements": {
+            "items": {
+              "$ref": "#/components/schemas/AchievementDto"
+            },
+            "title": "Achievements",
+            "type": "array"
+          },
+          "border_style": {
+            "enum": [
+              "solid",
+              "dashed",
+              "dotted",
+              "double"
+            ],
+            "title": "Border Style",
+            "type": "string"
+          },
+          "border_texture": {
+            "anyOf": [
+              {
+                "enum": [
+                  "cheese",
+                  "bread",
+                  "sauce-01",
+                  "sauce-02",
+                  "herbs-01",
+                  "herbs-02"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Border Texture"
+          },
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "experience_points": {
+            "title": "Experience Points",
+            "type": "integer"
+          },
+          "glow_effect": {
+            "title": "Glow Effect",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "next_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "profile_picture",
+          "border_style",
+          "border_texture",
+          "glow_effect",
+          "experience_points",
+          "level",
+          "next_level",
+          "achievements"
+        ],
+        "title": "UserProfileDto",
+        "type": "object"
+      },
+      "UserStatsDto": {
+        "properties": {
+          "average_ingredients_per_pan": {
+            "title": "Average Ingredients Per Pan",
+            "type": "number"
+          },
+          "average_rating_received": {
+            "title": "Average Rating Received",
+            "type": "number"
+          },
+          "best_rated_ingredient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IngredientRatingDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "favorite_ingredient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IngredientDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "most_ingredients_pan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PanDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "most_pans_session": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SessionPanCountDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sessions_participated": {
+            "title": "Sessions Participated",
+            "type": "integer"
+          },
+          "total_achievement_points": {
+            "title": "Total Achievement Points",
+            "type": "integer"
+          },
+          "total_pans": {
+            "title": "Total Pans",
+            "type": "integer"
+          },
+          "total_ratings_given": {
+            "title": "Total Ratings Given",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_pans",
+          "total_ratings_given",
+          "average_rating_received",
+          "favorite_ingredient",
+          "best_rated_ingredient",
+          "total_achievement_points",
+          "average_ingredients_per_pan",
+          "most_pans_session",
+          "sessions_participated",
+          "most_ingredients_pan"
+        ],
+        "title": "UserStatsDto",
+        "type": "object"
+      },
       "UserSummaryDto": {
-        "description": "A user as shown next to their content: name, avatar and card decoration.\n\nRows store styles that are no longer offered (the removed 3D borders); they fall back\nto the defaults instead of failing the response.",
+        "description": "A user as shown next to their content: name, avatar and card decoration.",
         "properties": {
           "border_style": {
             "enum": [
@@ -915,6 +1607,397 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/auth/invite/{token}": {
+      "get": {
+        "operationId": "lookupInvite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteLookupDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "summary": "Look up an unused invite for the registration page.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResultDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Sign in with name or email and password.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "getMe",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the signed-in user.",
+        "tags": [
+          "auth"
+        ]
+      },
+      "patch": {
+        "operationId": "updateMe",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change the signed-in user's name, diet, language, picture or card decoration.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "refreshToken",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Issue a new token for the signed-in user.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResultDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          }
+        },
+        "summary": "Register a new user with an invite token and sign them in.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/invites": {
+      "get": {
+        "operationId": "listInvites",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InviteDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the invites the signed-in user created, newest first.",
+        "tags": [
+          "invites"
+        ]
+      },
+      "post": {
+        "operationId": "createInvite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Invite someone by email; any signed-in user may.",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/invites/{invite_id}": {
+      "delete": {
+        "operationId": "revokeInvite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Revoke an unused invite the signed-in user created.",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
     "/levels": {
       "get": {
         "operationId": "listLevels",
@@ -1798,6 +2881,118 @@
         "summary": "Change a rating's stars.",
         "tags": [
           "ratings"
+        ]
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "operationId": "getUserProfile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a user's public profile: card, level and achievements.",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{user_id}/stats": {
+      "get": {
+        "operationId": "getUserStats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserStatsDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a user's pan, rating and achievement statistics.",
+        "tags": [
+          "users"
         ]
       }
     }

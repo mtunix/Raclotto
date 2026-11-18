@@ -267,6 +267,7 @@
     "inviteTokenPlaceholder": "Einladungstoken eingeben",
     "noAccount": "Noch kein Konto?",
     "haveAccount": "Bereits ein Konto?",
+    "invalidCredentials": "E-Mail/Name oder Passwort ist falsch",
     "registrationFailed": "Registrierung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.",
     "logout": "Abmelden",
     "profilePicture": "Profilbild",

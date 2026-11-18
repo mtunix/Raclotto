@@ -1,4 +1,4 @@
-"""Writes real responses of the typed pan and rating endpoints as frontend test fixtures.
+"""Writes real responses of the typed endpoints as frontend test fixtures.
 
     venv/bin/python -m back.test.export_wire_fixtures
 
@@ -9,6 +9,7 @@ generated client disagree. Rerun after changing a DTO and regenerating the clien
 import json
 from pathlib import Path
 
+from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.profile_picture_history import ProfilePictureHistory
@@ -31,6 +32,8 @@ class _Recorder(AppTest):
             "Ada", experience_points=95, meat=True, color="#ff8800",
             border_style="dashed", border_texture="cheese", glow_effect=True,
         )
+        ana.email = "ada@example.com"
+        ana.password = hash_password("secret")
         ben = self.make_user("Ben", meat=True)
         session = self.make_session("s1", creator=ana)
         db.session.add(ProfilePictureHistory(user_id=ana.id, profile_picture="/static/pictures/ada.png"))
@@ -48,10 +51,27 @@ class _Recorder(AppTest):
         ))
         rating = self.ok(self.call("POST", "/ratings", ben, body={"pan_id": roll["pan"]["id"], "rating": 4.5}))
         page = self.ok(self.call("GET", "/pans", ana, query={**query, "limit": 1}))
+        login = self.ok(self.call("POST", "/auth/login", body={"name_or_email": "Ada", "password": "secret"}))
+        me = self.ok(self.call("GET", "/auth/me", ana))
+        profile = self.ok(self.call("GET", f"/users/{ana.id}", ben))
+        stats = self.ok(self.call("GET", f"/users/{ana.id}/stats", ben))
+        invite = self.ok(self.call("POST", "/invites", ana, body={"email": "carl@example.com"}))
 
         assert roll["reward"]["leveled_up"] and roll["events"] and roll["achievements"], roll
         assert page["has_more"] and page["items"][0]["ratings"], page
-        return {"rollOutcome": ("RollOutcomeDto", roll), "rating": ("RatingDto", rating), "panPage": ("PanPageDto", page)}
+        assert me["level"] == roll["reward"]["level"] and me["next_level"], me
+        assert profile["achievements"] and "email" not in profile, profile
+        assert stats["best_rated_ingredient"] and stats["most_ingredients_pan"], stats
+        return {
+            "rollOutcome": ("RollOutcomeDto", roll),
+            "rating": ("RatingDto", rating),
+            "panPage": ("PanPageDto", page),
+            "loginResult": ("AuthResultDto", login),
+            "me": ("MeDto", me),
+            "userProfile": ("UserProfileDto", profile),
+            "userStats": ("UserStatsDto", stats),
+            "invite": ("InviteDto", invite),
+        }
 
 
 def render(fixtures: dict) -> str:

@@ -1,31 +1,23 @@
 import React from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
+import { useGetMe } from "../../api/generated/endpoints/auth/auth";
 import { rollPan, useListPans } from "../../api/generated/endpoints/pans/pans";
-import type { RollOutcomeDto } from "../../api/generated/model";
+import { useGetUserProfile } from "../../api/generated/endpoints/users/users";
+import type { MeDto, RollOutcomeDto } from "../../api/generated/model";
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
-import { panPage, rollOutcome } from "../../lib/api/__fixtures__/backendResponses";
+import { me, panPage, rollOutcome, userProfile } from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
 import { setTransport, Transport } from "../../lib/api/transport";
-import { User } from "../../model/user";
 import { applyRollOutcome } from "./applyRollOutcome";
 
-const user: User = {
-    id: rollOutcome.pan.user_id,
-    name: "Ada",
-    email: "ada@example.com",
-    meat: true,
-    vegetarian: true,
-    vegan: true,
-    fish: false,
-    histamine: true,
-    fructose: true,
-    lactose: true,
-    gluten: true,
-    experience_points: 95,
-    level: { id: 1, name: "level.one", required_experience: 0 },
-    next_level: { id: 2, name: "level.two", required_experience: 100 },
+// The fixture user is the roller after the roll; this is them before it.
+const user: MeDto = {
+    ...me,
+    experience_points: rollOutcome.reward.xp_before,
+    level: rollOutcome.reward.previous_level,
+    next_level: rollOutcome.reward.level,
 };
 
 // The fixture is a real level-up roll; these variants change only the reward.
@@ -65,13 +57,20 @@ it("applies a roll response as the backend sends it", async () => {
 });
 
 it("updates the signed-in user's XP and level from the reward", () => {
+    expect(user.id).toBe(rollOutcome.pan.user_id);
+
     applyRollOutcome(rollOutcome, "s1");
 
+    // The backend's own view of the user after the roll.
+    expect(useAuthStore.getState().user).toEqual(me);
+});
+
+it("keeps the known level when the reward has none", () => {
+    applyRollOutcome(withReward({ level: null, next_level: null }), "s1");
+
     const updated = useAuthStore.getState().user!;
-    expect(updated.experience_points).toBe(rollOutcome.reward.xp_after);
-    expect(updated.level?.id).toBe(rollOutcome.reward.level?.id);
-    expect(updated.next_level?.id).toBe(rollOutcome.reward.next_level?.id);
-    expect(updated.name).toBe("Ada");
+    expect(updated.level).toEqual(user.level);
+    expect(updated.next_level).toBeNull();
 });
 
 it("shows the XP notification with the unlocked achievements", () => {
@@ -120,5 +119,26 @@ it("refetches every cached pan list", async () => {
             { session_key: "s1", limit: 1, offset: 0 },
             { user_id: user.id, limit: 1, offset: 0 },
         ]),
+    );
+});
+
+it("refetches the signed-in user and their profile", async () => {
+    fake.on("GET", "/auth/me", me);
+    fake.on("GET", `/users/${user.id}`, userProfile);
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+    const signedIn = renderHook(() => useGetMe(), { wrapper });
+    const profile = renderHook(() => useGetUserProfile(user.id), { wrapper });
+    await waitFor(() => expect(signedIn.result.current.data).toEqual(me));
+    await waitFor(() => expect(profile.result.current.data).toEqual(userProfile));
+    const fetched = fake.requests.length;
+
+    act(() => {
+        applyRollOutcome(rollOutcome, "s1");
+    });
+
+    await waitFor(() => expect(fake.requests.length).toBeGreaterThanOrEqual(fetched + 2));
+    expect(fake.requests.slice(fetched).map((r) => r.path)).toEqual(
+        expect.arrayContaining(["/auth/me", `/users/${user.id}`]),
     );
 });

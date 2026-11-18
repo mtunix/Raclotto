@@ -1,15 +1,15 @@
 /**
  * The JSON:API envelope, as the backend actually emits it.
  *
- * Wire facts (back/src/api/serializer.py, base_api.py, driver/auth_api.py):
+ * Wire facts (back/src/api/serializer.py, base_api.py):
  * - Resource endpoints answer `{ jsonapi, data: Resource | Resource[], meta? }`
  *   where `Resource = { type, id, attributes }`. `id` is a string for
- *   serializer-built resources and a number for hand-built ones (auth, invite).
+ *   serializer-built resources and may be a number for hand-built ones.
  *   `id` is never repeated inside `attributes`.
  * - "Plain" endpoints (stats, leaderboard, available-counts, ingredient
  *   export/import) put an ordinary JSON value in `data` — no resource wrapper.
  * - Nested objects inside attributes (a pan's ingredients/ratings/
- *   preparation_type, a user's level/achievements) are plain dicts carrying
+ *   preparation_type) are plain dicts carrying
  *   their own `id`, not resources.
  * - Errors: `{ jsonapi, errors: [...] }` with a non-2xx status.
  */
@@ -68,8 +68,4 @@ export function collection(body: unknown): Fields[] {
 /** `data` is a plain (non-resource) JSON value. */
 export function plain<T>(body: unknown): T {
   return asDocument(body).data as T;
-}
-
-export function meta<M = Record<string, unknown>>(body: unknown): M {
-  return (asDocument(body).meta ?? {}) as M;
 }

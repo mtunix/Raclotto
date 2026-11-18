@@ -10,8 +10,6 @@ import { Achievement } from "../../model/achievement";
 import { Event } from "../../model/event";
 import { EventConfig } from "../../model/eventConfig";
 import { Ingredient, IngredientType } from "../../model/ingredient";
-import { Invite } from "../../model/invite";
-import { Level } from "../../model/level";
 import { Pan } from "../../model/pan";
 import { PrepType } from "../../model/prepType";
 import {
@@ -21,7 +19,6 @@ import {
 } from "../../model/profilePicture";
 import { RaclottoSession } from "../../model/raclottoSession";
 import { Rating } from "../../model/rating";
-import { User, UserStats } from "../../model/user";
 import { toId } from "./jsonapi";
 
 type Raw = Record<string, unknown>;
@@ -37,17 +34,6 @@ const optStr = (v: unknown): string | null =>
 const optNum = (v: unknown): number | null =>
   typeof v === "number" ? v : null;
 const list = (v: unknown): Raw[] => (Array.isArray(v) ? (v as Raw[]) : []);
-
-export function toLevel(r: Raw): Level {
-  return {
-    id: toId(r.id),
-    name: str(r.name),
-    required_experience: num(r.required_experience),
-  };
-}
-
-const optLevel = (v: unknown): Level | null =>
-  v && typeof v === "object" ? toLevel(v as Raw) : null;
 
 export function toIngredient(r: Raw): Ingredient {
   const ingredient: Ingredient = {
@@ -161,82 +147,6 @@ export function toEventConfig(r: Raw): EventConfig {
     session_id: optNum(r.session_id),
     enabled: bool(r.enabled, true),
     frequency_minutes: optNum(r.frequency_minutes),
-  };
-}
-
-export function toInvite(r: Raw): Invite {
-  return {
-    id: toId(r.id),
-    token: str(r.token),
-    email: str(r.email),
-    expires_at: str(r.expires_at),
-    is_used: bool(r.is_used),
-    used_at: optStr(r.used_at),
-  };
-}
-
-/**
- * User (GET/PATCH /auth/me, GET /users/:id). `level`/`next_level` are only
- * sent by the GET endpoints and `achievements` only by /users/:id; absent keys
- * stay absent so spreading a PATCH result over a known user keeps its level.
- */
-export function toUser(r: Raw): User {
-  const user: User = {
-    id: toId(r.id),
-    name: str(r.name),
-    email: str(r.email),
-    meat: bool(r.meat),
-    vegetarian: bool(r.vegetarian, true),
-    vegan: bool(r.vegan, true),
-    fish: bool(r.fish),
-    histamine: bool(r.histamine, true),
-    fructose: bool(r.fructose, true),
-    lactose: bool(r.lactose, true),
-    gluten: bool(r.gluten, true),
-    profile_picture: optStr(r.profile_picture),
-    border_texture: optStr(r.border_texture),
-    glow_effect: bool(r.glow_effect),
-  };
-  if (typeof r.color === "string") user.color = r.color;
-  if (typeof r.language === "string") user.language = r.language;
-  if (typeof r.border_style === "string") user.border_style = r.border_style;
-  if (typeof r.experience_points === "number")
-    user.experience_points = r.experience_points;
-  if ("level" in r) user.level = optLevel(r.level) ?? undefined;
-  if ("next_level" in r) user.next_level = optLevel(r.next_level);
-  // The GET endpoints send a level but omit next_level at the max level
-  else if ("level" in r) user.next_level = null;
-  if ("achievements" in r) user.achievements = list(r.achievements).map(toAchievement);
-  return user;
-}
-
-export function toUserStats(r: Raw): UserStats {
-  // Embedded ingredients only carry id/name/type (+avg_rating); the
-  // ingredient mapper fills the dietary flags with their defaults.
-  const optIngredient = (v: unknown) =>
-    v && typeof v === "object" ? toIngredient(v as Raw) : null;
-  const best = r.best_rated_ingredient as Raw | null | undefined;
-  const biggest = r.most_ingredients_pan as Raw | null | undefined;
-  return {
-    total_pans: num(r.total_pans),
-    total_ratings_given: num(r.total_ratings_given),
-    average_rating_received: num(r.average_rating_received),
-    favorite_ingredient: optIngredient(r.favorite_ingredient),
-    best_rated_ingredient: best
-      ? { ...toIngredient(best), avg_rating: num(best.avg_rating) }
-      : null,
-    total_achievement_points: num(r.total_achievement_points),
-    average_ingredients_per_pan: num(r.average_ingredients_per_pan),
-    most_pans_session: (r.most_pans_session ?? null) as UserStats["most_pans_session"],
-    sessions_participated: num(r.sessions_participated),
-    most_ingredients_pan: biggest
-      ? {
-          id: toId(biggest.id),
-          name: str(biggest.name),
-          ingredient_count: num(biggest.ingredient_count),
-          ingredients: list(biggest.ingredients).map(toIngredient),
-        }
-      : null,
   };
 }
 

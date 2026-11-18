@@ -10,9 +10,6 @@ import type { UserSummaryDtoProfilePicture } from './userSummaryDtoProfilePictur
 
 /**
  * A user as shown next to their content: name, avatar and card decoration.
-
-Rows store styles that are no longer offered (the removed 3D borders); they fall back
-to the defaults instead of failing the response.
  */
 export interface UserSummaryDto {
   border_style: UserSummaryDtoBorderStyle;

@@ -1,18 +1,7 @@
 import { IngredientType } from "../../model/ingredient";
 import { flatten } from "./jsonapi";
-import {
-    toAchievement,
-    toPan,
-    toSession,
-    toUser,
-    toUserStats,
-} from "./mappers";
-import {
-    achievementResource,
-    levelDict,
-    panAttributes,
-    userAttributes,
-} from "./__fixtures__/wire";
+import { toAchievement, toPan, toSession } from "./mappers";
+import { achievementResource, panAttributes } from "./__fixtures__/wire";
 
 describe("toPan", () => {
     it("maps nested ingredients, ratings and preparation type", () => {
@@ -76,71 +65,5 @@ describe("toSession", () => {
         expect(session.key).toBe("abc");
         expect(session.active).toBe(false);
         expect(session.timestamp).toBeInstanceOf(Date);
-    });
-});
-
-describe("toUser", () => {
-    it("maps a GET user with level and treats a missing next_level as max level", () => {
-        const user = toUser({
-            ...userAttributes(),
-            id: 7,
-            level: levelDict(9, "Legend", 5000),
-        });
-        expect(user.level).toEqual({ id: 9, name: "Legend", required_experience: 5000 });
-        expect(user.next_level).toBeNull();
-    });
-
-    it("leaves level keys absent for a PATCH response so spreading keeps the known level", () => {
-        const known = toUser({
-            ...userAttributes(),
-            id: 7,
-            level: levelDict(2, "Cook", 100),
-            next_level: levelDict(3, "Chef", 140),
-        });
-        const patched = toUser({ ...userAttributes(), id: 7, name: "Ada L." });
-
-        expect("level" in patched).toBe(false);
-        expect("next_level" in patched).toBe(false);
-        const merged = { ...known, ...patched };
-        expect(merged.name).toBe("Ada L.");
-        expect(merged.level?.id).toBe(2);
-    });
-
-    it("maps profile achievements", () => {
-        const user = toUser({
-            ...userAttributes(),
-            id: 7,
-            achievements: [
-                { id: 1, title: "A", description: "a", value: 5, hidden: false },
-            ],
-        });
-        expect(user.achievements).toEqual([
-            { id: 1, title: "A", description: "a", value: 5, hidden: false },
-        ]);
-    });
-});
-
-describe("toUserStats", () => {
-    it("maps embedded ingredient summaries through the ingredient mapper", () => {
-        const stats = toUserStats({
-            total_pans: 3,
-            best_rated_ingredient: { id: 1, name: "Potato", type: 1, avg_rating: 4.5 },
-            favorite_ingredient: null,
-            most_ingredients_pan: {
-                id: 11,
-                name: "Big",
-                ingredient_count: 1,
-                ingredients: [{ id: 2, name: "Aioli", type: 2 }],
-            },
-        });
-        expect(stats.total_pans).toBe(3);
-        expect(stats.favorite_ingredient).toBeNull();
-        expect(stats.best_rated_ingredient).toMatchObject({
-            id: 1,
-            name: "Potato",
-            avg_rating: 4.5,
-            meat: false,
-        });
-        expect(stats.most_ingredients_pan?.ingredients[0].type).toBe(IngredientType.SAUCE);
     });
 });

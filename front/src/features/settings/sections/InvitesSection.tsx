@@ -2,16 +2,8 @@ import React from "react";
 import { Card, Alert, Form, Input, Button, List, Space, Tag } from "antd";
 import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
 import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
+import type { InviteDto } from "../../../api/generated/model";
 import "../SettingsView.css";
-
-interface InviteToken {
-    id: number;
-    token: string;
-    email: string;
-    expires_at: string;
-    is_used: boolean;
-    used_at: string | null;
-}
 
 interface InvitesSectionProps {
     t: (key: string) => string;
@@ -19,7 +11,7 @@ interface InvitesSectionProps {
     setInviteError: (v: string | null) => void;
     inviteLoading: boolean;
     loadingInvites: boolean;
-    invites: InviteToken[];
+    invites: InviteDto[];
     onInviteFinish: (values: { email: string }) => void | Promise<void>;
     handleCopyToken: (token: string) => void;
     handleRevoke: (id: number) => void;
@@ -99,7 +91,7 @@ export function InvitesSection(props: InvitesSectionProps) {
                 <List
                     loading={loadingInvites}
                     dataSource={invites}
-                    renderItem={(invite: InviteToken) => (
+                    renderItem={(invite: InviteDto) => (
                         <List.Item
                             actions={[
                                 <Space key="actions" size="small">

@@ -1,16 +1,17 @@
 import { create } from "zustand";
-import { Api } from "./lib/api";
-import { User } from "./model/user";
+import { getMe } from "./api/generated/endpoints/auth/auth";
+import type { MeDto } from "./api/generated/model";
 
 interface AuthState {
   token: string | null;
-  user: User | null;
+  user: MeDto | null;
   userId: number | null;
   isAuthenticated: boolean;
   isLoadingUser: boolean;
   setToken: (token: string | null) => void;
-  setUser: (user: User | null) => void;
-  login: (token: string, userId: number) => void;
+  setUser: (user: MeDto | null) => void;
+  /** Sign in with what login/register returned; only the token and user id are persisted. */
+  login: (token: string, user: MeDto) => void;
   logout: () => void;
   fetchUser: () => Promise<void>;
 }
@@ -64,13 +65,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     saveAuthToStorage(token, state.userId);
   },
 
-  setUser: (user: User | null) => {
+  setUser: (user: MeDto | null) => {
     set({ user });
   },
 
-  login: (token: string, userId: number) => {
-    set({ token, userId, isAuthenticated: true, user: null });
-    saveAuthToStorage(token, userId);
+  login: (token: string, user: MeDto) => {
+    set({ token, userId: user.id, isAuthenticated: true, user });
+    saveAuthToStorage(token, user.id);
   },
 
   logout: () => {
@@ -88,12 +89,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       set({ isLoadingUser: true });
-      const userData = await Api.getCurrentUser();
+      const userData = await getMe();
       set({ user: userData, isLoadingUser: false });
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       set({ isLoadingUser: false });
-      // On auth error, logout is handled by api.ts
+      // On auth error, logout is handled by the transport
     }
   },
 }));

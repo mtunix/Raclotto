@@ -1,5 +1,7 @@
 import useSWR, { mutate as swrMutate } from "swr";
+import { getGetMeKey } from "../../api/generated/endpoints/auth/auth";
 import { getListPansKey } from "../../api/generated/endpoints/pans/pans";
+import { getGetUserProfileKey } from "../../api/generated/endpoints/users/users";
 import { Api } from "./index";
 import { ApiError } from "./types";
 
@@ -23,7 +25,6 @@ export const onErrorRetry = (
 // Cache key generators
 const getIngredientsKey = (sessionKey?: string) => sessionKey ? ["ingredients", sessionKey] : null;
 const getPrepTypesKey = (sessionKey?: string) => sessionKey ? ["prepTypes", sessionKey] : null;
-const getCurrentUserKey = () => ["currentUser"];
 const getSessionKey = (sessionKey?: string) => sessionKey ? ["session", sessionKey] : null;
 const getStatsKey = (sessionKey?: string, isGlobal?: boolean) => ["stats", sessionKey || null, isGlobal || false];
 const getLeaderboardKey = () => ["leaderboard"];
@@ -31,14 +32,10 @@ const getAchievementsKey = () => ["achievements"];
 const getEventConfigsKey = (sessionKey?: string) => sessionKey ? ["eventConfigs", sessionKey] : ["eventConfigs"];
 const getEventsKey = (sessionKey?: string) => sessionKey ? ["events", sessionKey] : null;
 export const getAvailableCountsKey = (sessionKey?: string) => sessionKey ? ["availableCounts", sessionKey] : null;
-const getInvitesKey = () => ["invites"];
-const getUserProfileKey = (userId: number) => ["userProfile", userId];
-const getUserStatsKey = (userId: number) => ["userStats", userId];
 
 // Fetcher functions
 const ingredientsFetcher = ([, sessionKey]: [string, string]) => Api.listIngredients(sessionKey);
 const prepTypesFetcher = ([, sessionKey]: [string, string]) => Api.listPrepTypes(sessionKey);
-const currentUserFetcher = () => Api.getCurrentUser();
 const sessionFetcher = ([, sessionKey]: [string, string]) => Api.getSessionByKey(sessionKey);
 const statsFetcher = ([, sessionKey, isGlobal]: [string, string | null, boolean]) =>
     Api.getStats(isGlobal ? undefined : (sessionKey || undefined));
@@ -47,9 +44,6 @@ const achievementsFetcher = () => Api.listAchievements();
 const eventConfigsFetcher = ([, sessionKey]: [string, string?]) => Api.getEventConfigs(sessionKey);
 const eventsFetcher = ([, sessionKey]: [string, string]) => Api.getEvents(sessionKey);
 const availableCountsFetcher = ([, sessionKey]: [string, string]) => Api.getAvailableIngredientCounts(sessionKey);
-const invitesFetcher = () => Api.listInvites();
-const userProfileFetcher = ([, userId]: [string, number]) => Api.getUserProfile(userId);
-const userStatsFetcher = ([, userId]: [string, number]) => Api.getUserStats(userId);
 
 // SWR Hooks
 export function useIngredients(sessionKey?: string) {
@@ -64,15 +58,6 @@ export function useIngredients(sessionKey?: string) {
 export function usePrepTypes(sessionKey?: string) {
     const key = getPrepTypesKey(sessionKey);
     return useSWR(key, prepTypesFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useCurrentUser() {
-    const key = getCurrentUserKey();
-    return useSWR(key, currentUserFetcher, {
         onErrorRetry: onErrorRetry,
         revalidateOnFocus: false,
         revalidateOnReconnect: true
@@ -145,33 +130,6 @@ export function useAvailableIngredientCounts(sessionKey?: string) {
     });
 }
 
-export function useInvites() {
-    const key = getInvitesKey();
-    return useSWR(key, invitesFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useUserProfile(userId: number) {
-    const key = getUserProfileKey(userId);
-    return useSWR(key, userProfileFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useUserStats(userId: number) {
-    const key = getUserStatsKey(userId);
-    return useSWR(key, userStatsFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
 // Mutation helpers for cache invalidation
 export function mutateIngredients(sessionKey?: string) {
     const key = getIngredientsKey(sessionKey);
@@ -187,9 +145,8 @@ export function mutatePrepTypes(sessionKey?: string) {
     }
 }
 
-export function mutateUser() {
-    const key = getCurrentUserKey();
-    return swrMutate(key);
+export function mutateMe() {
+    return swrMutate(getGetMeKey());
 }
 
 export function mutateSession(sessionKey?: string) {
@@ -234,7 +191,7 @@ export function mutatePanLists() {
 
 export function mutateUserProfile(userId?: number) {
     if (userId) {
-        return swrMutate(getUserProfileKey(userId));
+        return swrMutate(getGetUserProfileKey(userId));
     }
 }
 
@@ -245,8 +202,4 @@ export function mutateAvailableCounts(sessionKey?: string) {
     }
 }
 
-export function mutateInvites() {
-    const key = getInvitesKey();
-    return swrMutate(key);
-}
 

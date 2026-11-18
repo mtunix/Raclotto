@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Form, Input, Button, Card, Alert, Space, Avatar } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Api } from "../../../lib/api";
+import {
+  lookupInvite,
+  register,
+  updateMe,
+} from "../../../api/generated/endpoints/auth/auth";
 import { useAuthStore } from "../../../AuthSlice";
 import { useTranslation } from "react-i18next";
 import { TagChipGroup } from "../../../shared/TagChipGroup";
 import { ProfilePictureManager } from "../../../shared/ProfilePictureManager";
-import { mutateUser } from "../../../lib/api/swrHooks";
+import { mutateMe } from "../../../lib/api/swrHooks";
 import { normalizeDiet } from "../../../model/diet";
 import { useDietPreferences } from "../../../shared/useDietPreferences";
 
@@ -14,7 +18,8 @@ export function RegisterView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const login = useAuthStore((state) => state.login);
+  const signIn = useAuthStore((state) => state.login);
+  const setUser = useAuthStore((state) => state.setUser);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
@@ -39,10 +44,11 @@ export function RegisterView() {
     const fetchInvite = async () => {
       try {
         setLoading(true);
-        const invite = await Api.getInviteByToken(token);
-        if (!cancelled && invite && invite.token && invite.email) {
+        // The generated client puts path parameters into the URL as they are.
+        const invite = await lookupInvite(encodeURIComponent(token));
+        if (!cancelled && invite.email) {
           form.setFieldsValue({
-            token: invite.token,
+            token,
             email: invite.email,
           });
           setInvitePrefilled(true);
@@ -93,37 +99,21 @@ export function RegisterView() {
     setLoading(true);
     setError(null);
     try {
-      const result = await Api.register(
-        values.token,
-        values.email,
-        values.name,
-        values.password,
-        profilePicture || undefined,
-      );
-      const userId = result.user.id || 0;
+      const { token, user } = await register({
+        token: values.token,
+        email: values.email,
+        name: values.name,
+        password: values.password,
+        ...(profilePicture ? { profile_picture: profilePicture } : {}),
+      });
+      signIn(token, user);
 
-      // Store token and userId only
-      login(result.token, userId);
-
-      // Fetch full user data and update dietary preferences
+      // Registration takes no diet; the new user's preferences are saved right after
       try {
-        const user = await Api.getCurrentUser();
-        const userLanguage = user.language || "de";
-        // Update dietary preferences
-        const updateData = {
-          ...normalizeDiet(tagValues),
-          language: userLanguage,
-        };
-        await Api.updateCurrentUser(updateData);
-
-        // Fetch updated user data
-        const fetchUser = useAuthStore.getState().fetchUser;
-        await fetchUser();
-
-        // Mutate user data to refresh profile picture in toolbar
-        mutateUser();
+        setUser(await updateMe(normalizeDiet(tagValues)));
+        mutateMe();
       } catch (e) {
-        console.error("Failed to fetch or update user data:", e);
+        console.error("Failed to save dietary preferences:", e);
       }
       navigate("/");
     } catch (err: any) {

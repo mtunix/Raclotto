@@ -5,8 +5,8 @@ import {
   mutateAchievements,
   mutateAvailableCounts,
   mutateEvents,
+  mutateMe,
   mutatePanLists,
-  mutateUser,
   mutateUserProfile,
 } from "../../lib/api/swrHooks";
 
@@ -53,7 +53,7 @@ export function applyRollOutcome(outcome: RollOutcomeDto, sessionKey: string): L
   mutateAvailableCounts(sessionKey);
   if (user) {
     mutateUserProfile(user.id);
-    mutateUser();
+    mutateMe();
   }
   if (achievements.length > 0) mutateAchievements();
   if (events.length > 0) mutateEvents(sessionKey);

@@ -14,7 +14,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../AuthSlice";
 import { useAppStore } from "../../AppSlice";
-import { useUserProfile } from "../../lib/api/swrHooks";
+import { useGetUserProfile } from "../../api/generated/endpoints/users/users";
+import { onErrorRetry } from "../../lib/api/swrHooks";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import "./Toolbar.css";
 
@@ -43,7 +44,10 @@ export function Toolbar(props: ToolbarProps) {
   const sessionName = props.sessionName || session?.name || "";
 
   const currentUser = useAuthStore((state) => state.user);
-  const { data: userProfile } = useUserProfile(currentUser?.id || 0);
+  // The profile, not the signed-in user, is refetched when the picture changes.
+  const { data: userProfile } = useGetUserProfile(currentUser?.id ?? 0, {
+    swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
+  });
 
   const profilePicture =
     userProfile?.profile_picture || currentUser?.profile_picture;

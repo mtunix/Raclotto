@@ -27,15 +27,18 @@ import { ReloadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../AuthSlice";
 import { useTranslation } from "react-i18next";
+import { mutateMe, onErrorRetry } from "../../lib/api/swrHooks";
+import { updateMe } from "../../api/generated/endpoints/auth/auth";
 import {
-  useUserProfile,
-  useUserStats,
-  mutateUser,
-} from "../../lib/api/swrHooks";
-import { Achievement } from "../../model/achievement";
-import type { PanDto } from "../../api/generated/model";
+  useGetUserProfile,
+  useGetUserStats,
+} from "../../api/generated/endpoints/users/users";
+import type {
+  AchievementDto,
+  PanDto,
+  UserStatsDto,
+} from "../../api/generated/model";
 import { usePanPages } from "../history/usePanPages";
-import { UserStats } from "../../model/user";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
 import { VectorGraphics } from "../../lib/vectorGraphics";
@@ -60,14 +63,21 @@ export function ProfileView() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isRegeneratingPicture, setIsRegeneratingPicture] = useState(false);
 
+  const swr = {
+    onErrorRetry,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  };
   const {
     data: userProfile,
     isLoading: loadingProfile,
     error: profileError,
     mutate: mutateUserProfile,
-  } = useUserProfile(targetUserIdNumber);
-  const { data: userStats, isLoading: loadingStats } =
-    useUserStats(targetUserIdNumber);
+  } = useGetUserProfile(targetUserIdNumber, { swr });
+  const { data: userStats, isLoading: loadingStats } = useGetUserStats(
+    targetUserIdNumber,
+    { swr },
+  );
 
   // Get user's pans (all sessions)
   const {
@@ -98,21 +108,9 @@ export function ProfileView() {
 
     setIsUpdatingProfile(true);
     try {
-      // Send null explicitly to remove profile picture, undefined to keep current
-      const response = await Api.updateCurrentUser({
-        profile_picture: newPicture,
-      });
-
-      // Update local user state with the response from the API
-      const updatedUser = { ...currentUser, ...response };
-      setUser(updatedUser);
-
-      // Refetch user data from auth store to ensure consistency
-      const fetchUser = useAuthStore.getState().fetchUser;
-      await fetchUser();
-
-      // Invalidate SWR cache for current user
-      await mutateUser();
+      // null removes the profile picture
+      setUser(await updateMe({ profile_picture: newPicture }));
+      await mutateMe();
 
       // Re-fetch profile data to update the display immediately
       await mutateUserProfile();
@@ -189,8 +187,10 @@ export function ProfileView() {
   }
 
   const profileData = userProfile;
-  const stats: Partial<UserStats> = userStats ?? {};
-  const achievements = profileData.achievements ?? [];
+  const stats: Partial<UserStatsDto> = userStats ?? {};
+  const achievements = profileData.achievements;
+  // Only the signed-in user's own email is sent to them.
+  const email = isOwnProfile ? currentUser?.email : null;
 
   return (
     <div style={{ padding: "24px 0" }}>
@@ -261,7 +261,7 @@ export function ProfileView() {
             <Title level={2} style={{ margin: 0, marginBottom: "8px" }}>
               {profileData.name || t("profile.unknownUser")}
             </Title>
-            {profileData.email && (
+            {email && (
               <Text
                 type="secondary"
                 style={{
@@ -270,7 +270,7 @@ export function ProfileView() {
                   marginBottom: "8px",
                 }}
               >
-                {profileData.email}
+                {email}
               </Text>
             )}
             {profileData.level && (
@@ -480,7 +480,7 @@ export function ProfileView() {
               >
                 <div>
                   <IngredientDisplay
-                    ingredient={stats.best_rated_ingredient}
+                    ingredient={stats.best_rated_ingredient.ingredient}
                     variant="badge"
                     showTags={false}
                     showIcon={true}
@@ -521,12 +521,11 @@ export function ProfileView() {
             <Col xs={24} sm={12}>
               <Statistic
                 title={t("profile.ingredientCount") || "Ingredient Count"}
-                value={stats.most_ingredients_pan.ingredient_count}
+                value={stats.most_ingredients_pan.ingredients.length}
               />
             </Col>
           </Row>
-          {stats.most_ingredients_pan.ingredients &&
-            stats.most_ingredients_pan.ingredients.length > 0 && (
+          {stats.most_ingredients_pan.ingredients.length > 0 && (
               <div style={{ marginTop: "16px" }}>
                 <Text strong style={{ display: "block", marginBottom: "12px" }}>
                   {t("profile.ingredients") || "Ingredients"}
@@ -536,7 +535,7 @@ export function ProfileView() {
                   style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
                 >
                   {stats.most_ingredients_pan.ingredients.map(
-                    (ingredient: any) => (
+                    (ingredient) => (
                       <div key={ingredient.id} style={{ marginBottom: "8px" }}>
                         <IngredientDisplay
                           ingredient={ingredient}
@@ -560,7 +559,7 @@ export function ProfileView() {
       >
         {achievements.length > 0 ? (
           <Row gutter={[16, 16]}>
-            {achievements.map((achievement: Achievement) => (
+            {achievements.map((achievement: AchievementDto) => (
               <Col xs={24} sm={12} md={8} lg={6} key={achievement.id}>
                 <Card
                   size="small"

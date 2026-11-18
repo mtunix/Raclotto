@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import Optional, cast
 
 from back.src.driver.database import db
@@ -9,6 +10,14 @@ from back.src.repository.level_repository import LevelRepository
 from back.src.repository.user_repository import UserRepository
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class LevelProgress:
+    # None only while no levels exist.
+    level: Optional[Level]
+    # None at the highest level.
+    next_level: Optional[Level]
 
 
 class LevelService:
@@ -26,6 +35,20 @@ class LevelService:
         :return: Level instance or None if no level found
         """
         return self.level_repository.by_experience(experience_points)
+
+    def progress_of(self, user: User) -> LevelProgress:
+        """The user's level and the next one, read-only.
+
+        A user without a stored level is shown the one their XP reaches, else the lowest; levels
+        are stored only on registration and when XP is awarded.
+        """
+        level = (
+            user.level
+            or self.level_repository.by_experience(int(user.experience_points or 0))
+            or next(iter(self.level_repository.all_ordered()), None)
+        )
+        next_level = self.level_repository.next_level(level) if level is not None else None
+        return LevelProgress(level=level, next_level=next_level)
 
     def update_user_level(self, user: User) -> Optional[Level]:
         """

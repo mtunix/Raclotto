@@ -267,6 +267,7 @@
     "inviteTokenPlaceholder": "Enter invite token",
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
+    "invalidCredentials": "Invalid email/name or password",
     "registrationFailed": "Registration failed. Please check your information.",
     "logout": "Logout",
     "profilePicture": "Profile Picture",

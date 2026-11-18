@@ -10,28 +10,23 @@ import { Achievement } from "../../model/achievement";
 import { Event } from "../../model/event";
 import { EventConfig } from "../../model/eventConfig";
 import { Ingredient } from "../../model/ingredient";
-import { Invite } from "../../model/invite";
 import { PrepType } from "../../model/prepType";
 import {
   GeneratedProfilePicture,
   ProfilePictureHistory,
 } from "../../model/profilePicture";
 import { RaclottoSession } from "../../model/raclottoSession";
-import { AuthResult, User, UserStats } from "../../model/user";
-import { collection, flatten, meta, plain, Resource, single } from "./jsonapi";
+import { collection, plain, Resource, single } from "./jsonapi";
 import {
   toAchievement,
   toEvent,
   toEventConfig,
   toIngredient,
-  toInvite,
   toPan,
   toPrepType,
   toProfilePictureHistory,
   toGeneratedProfilePicture,
   toSession,
-  toUser,
-  toUserStats,
 } from "./mappers";
 import { HttpMethod, RequestOptions, transport } from "./transport";
 import {
@@ -51,43 +46,6 @@ function request(method: HttpMethod, path: string, options?: RequestOptions) {
 function resourceBody(type: string, attributes: object, id?: number) {
   return { data: id === undefined ? { type, attributes } : { type, id, attributes } };
 }
-
-function authResult(body: unknown): AuthResult {
-  const fields = single(body);
-  const { token } = meta<{ token?: string }>(body);
-  if (!token) {
-    throw new Error("Invalid auth response: missing token");
-  }
-  return {
-    token,
-    user: {
-      id: fields.id,
-      name: String(fields.name ?? ""),
-      email: String(fields.email ?? ""),
-      profile_picture: (fields.profile_picture as string | null) ?? null,
-    },
-  };
-}
-
-export type UserUpdate = Partial<
-  Pick<
-    User,
-    | "name"
-    | "meat"
-    | "vegetarian"
-    | "vegan"
-    | "fish"
-    | "histamine"
-    | "fructose"
-    | "lactose"
-    | "gluten"
-    | "color"
-    | "language"
-    | "border_style"
-    | "border_texture"
-    | "glow_effect"
-  >
-> & { profile_picture?: string | null };
 
 export type NewIngredient = Omit<Ingredient, "id" | "available">;
 
@@ -246,75 +204,6 @@ export const Api = {
   async listAchievements(): Promise<Achievement[]> {
     const body = await request("GET", "/achievements");
     return collection(body).map(toAchievement);
-  },
-
-
-  async login(emailOrName: string, password: string): Promise<AuthResult> {
-    const body = await request("POST", "/auth/login", {
-      body: resourceBody("login", { email: emailOrName, password }),
-    });
-    return authResult(body);
-  },
-
-  async register(
-    token: string,
-    email: string,
-    name: string,
-    password: string,
-    profile_picture?: string,
-  ): Promise<AuthResult> {
-    const body = await request("POST", "/auth/register", {
-      body: resourceBody("register", {
-        token,
-        email,
-        name,
-        password,
-        ...(profile_picture ? { profile_picture } : {}),
-      }),
-    });
-    return authResult(body);
-  },
-
-  async getInviteByToken(token: string): Promise<Invite> {
-    const body = await request("GET", `/auth/invite/${encodeURIComponent(token)}`);
-    return toInvite(single(body));
-  },
-
-  async getCurrentUser(): Promise<User> {
-    return toUser(single(await request("GET", "/auth/me")));
-  },
-
-  async updateCurrentUser(attributes: UserUpdate): Promise<User> {
-    const body = await request("PATCH", "/auth/me", {
-      body: resourceBody("user", attributes),
-    });
-    return toUser(single(body));
-  },
-
-  async getUserProfile(userId: number): Promise<User> {
-    return toUser(single(await request("GET", `/users/${userId}`)));
-  },
-
-  async getUserStats(userId: number): Promise<UserStats> {
-    return toUserStats(single(await request("GET", `/users/${userId}/stats`)));
-  },
-
-
-  async createInvite(email: string): Promise<Invite> {
-    const body = await request("POST", "/invites", {
-      body: resourceBody("inviteToken", { email }),
-    });
-    // The backend returns `{data: resource}` without the `jsonapi` marker, so
-    // the response renderer wraps it once more: `{jsonapi, data: {data: resource}}`.
-    return toInvite(flatten(plain<{ data: Resource }>(body).data));
-  },
-
-  async listInvites(): Promise<Invite[]> {
-    return collection(await request("GET", "/invites")).map(toInvite);
-  },
-
-  async revokeInvite(inviteId: number): Promise<void> {
-    await request("DELETE", `/invites/${inviteId}`);
   },
 
 

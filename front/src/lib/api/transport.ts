@@ -39,6 +39,14 @@ export interface Transport {
   ): Promise<unknown>;
 }
 
+/** What a request rejects with when the backend answers 401; the auth state is cleared by then. */
+export class UnauthorizedError extends Error {
+  constructor() {
+    super("Unauthorized");
+    this.name = "UnauthorizedError";
+  }
+}
+
 export const API_BASE = "/api";
 const CONTENT_TYPE = "application/vnd.api+json";
 
@@ -97,7 +105,7 @@ export const axiosTransport: Transport = {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         // Clear auth state; the redirect is handled by ProtectedRoute
         useAuthStore.getState().logout();
-        throw new Error("Unauthorized");
+        throw new UnauthorizedError();
       }
       console.error("Error:", error);
       throw error;

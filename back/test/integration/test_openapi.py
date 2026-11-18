@@ -83,6 +83,9 @@ class LevelsSpecTest(unittest.TestCase):
             "/levels", "/levels/{level_id}",
             "/pans", "/pans/generate", "/pans/generate/bandit", "/pans/{pan_id}",
             "/ratings", "/ratings/{rating_id}",
+            "/auth/register", "/auth/login", "/auth/me", "/auth/invite/{token}", "/auth/refresh",
+            "/invites", "/invites/{invite_id}",
+            "/users/{user_id}", "/users/{user_id}/stats",
         })
 
 
@@ -146,6 +149,57 @@ class PansAndRatingsSpecTest(unittest.TestCase):
 
         self.assertEqual(set(body["properties"]), {"pan_id", "rating"})
         self.assertEqual(body["properties"]["rating"]["maximum"], 5)
+
+
+class UsersAndAuthSpecTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = build_openapi(get_app())
+        cls.schemas = cls.spec["components"]["schemas"]
+
+    def test_operation_ids_and_auth(self):
+        operations = {
+            (path, method): (operation["operationId"], "security" in operation)
+            for path, methods in self.spec["paths"].items()
+            if path.startswith(("/auth", "/invites", "/users"))
+            for method, operation in methods.items()
+        }
+        self.assertEqual(operations, {
+            ("/auth/register", "post"): ("register", False),
+            ("/auth/login", "post"): ("login", False),
+            ("/auth/invite/{token}", "get"): ("lookupInvite", False),
+            ("/auth/me", "get"): ("getMe", True),
+            ("/auth/me", "patch"): ("updateMe", True),
+            ("/auth/refresh", "post"): ("refreshToken", True),
+            ("/invites", "post"): ("createInvite", True),
+            ("/invites", "get"): ("listInvites", True),
+            ("/invites/{invite_id}", "delete"): ("revokeInvite", True),
+            ("/users/{user_id}", "get"): ("getUserProfile", True),
+            ("/users/{user_id}/stats", "get"): ("getUserStats", True),
+        })
+
+    def test_public_profile_leaves_out_private_fields(self):
+        profile = set(self.schemas["UserProfileDto"]["properties"])
+        me = set(self.schemas["MeDto"]["properties"])
+
+        self.assertEqual(me - profile, {
+            "email", "language", "meat", "vegetarian", "vegan", "fish",
+            "histamine", "fructose", "lactose", "gluten",
+        })
+        self.assertEqual(profile - me, {"achievements"})
+
+    def test_update_me_takes_only_optional_known_fields(self):
+        body = self.schemas["UpdateMeBody"]
+
+        self.assertNotIn("required", body)
+        self.assertEqual(body["additionalProperties"], False)
+        self.assertNotIn("password", body["properties"])
+
+    def test_stats_embed_the_shared_pan_and_ingredient_shapes(self):
+        stats = self.schemas["UserStatsDto"]["properties"]
+
+        self.assertEqual(stats["most_ingredients_pan"]["anyOf"][0], {"$ref": "#/components/schemas/PanDto"})
+        self.assertEqual(stats["favorite_ingredient"]["anyOf"][0], {"$ref": "#/components/schemas/IngredientDto"})
 
 
 class ProbeSpecTest(unittest.TestCase):

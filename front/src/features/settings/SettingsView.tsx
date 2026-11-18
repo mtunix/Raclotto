@@ -29,14 +29,19 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Api } from "../../lib/api";
 import {
-  useCurrentUser,
   useSession,
-  useInvites,
-  mutateUser,
+  mutateMe,
   mutateSession,
-  mutateInvites,
   mutatePanLists,
+  onErrorRetry,
 } from "../../lib/api/swrHooks";
+import { updateMe, useGetMe } from "../../api/generated/endpoints/auth/auth";
+import {
+  createInvite,
+  revokeInvite,
+  useListInvites,
+} from "../../api/generated/endpoints/invites/invites";
+import type { MeDto } from "../../api/generated/model";
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
 import { UserSettingsSection as UserSettingsSectionComponent } from "./sections/UserSettingsSection";
@@ -51,15 +56,6 @@ import "./SettingsView.css";
 const { Text } = Typography;
 
 type SettingsViewProps = {};
-
-interface InviteToken {
-  id: number;
-  token: string;
-  email: string;
-  expires_at: string;
-  is_used: boolean;
-  used_at: string | null;
-}
 
 interface EditableIngredientItemProps {
   ingredient: Ingredient;
@@ -275,14 +271,23 @@ export function SettingsView(props: SettingsViewProps) {
   const setSession = useAppStore((state) => state.setSession);
 
   // Use SWR hooks for data fetching
+  const swr = {
+    onErrorRetry,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  };
   const {
     data: userData,
     isLoading: userLoading,
     error: userError,
-  } = useCurrentUser();
+  } = useGetMe({ swr });
   const { data: sessionData, isLoading: sessionWaiting } =
     useSession(sessionKey);
-  const { data: invitesData = [], isLoading: loadingInvites } = useInvites();
+  const {
+    data: invites = [],
+    isLoading: loadingInvites,
+    mutate: mutateInvites,
+  } = useListInvites({ swr });
 
   // User settings state
   const {
@@ -294,9 +299,10 @@ export function SettingsView(props: SettingsViewProps) {
     tagValues;
   let [userName, setUserName] = useState("");
   let [userColor, setUserColor] = useState<string>("#1890ff");
-  let [userLanguage, setUserLanguage] = useState<string>("de");
-  let [borderStyle, setBorderStyle] = useState<string>("solid");
-  let [borderTexture, setBorderTexture] = useState<string | null>(null);
+  let [userLanguage, setUserLanguage] = useState<MeDto["language"]>("de");
+  let [borderStyle, setBorderStyle] = useState<MeDto["border_style"]>("solid");
+  let [borderTexture, setBorderTexture] =
+    useState<MeDto["border_texture"]>(null);
   let [glowEffect, setGlowEffect] = useState<boolean>(false);
   let [userSaving, setUserSaving] = useState(false);
 
@@ -304,9 +310,9 @@ export function SettingsView(props: SettingsViewProps) {
   const [initialUserState, setInitialUserState] = useState<{
     name: string;
     color: string;
-    language: string;
-    border_style: string;
-    border_texture: string | null;
+    language: MeDto["language"];
+    border_style: MeDto["border_style"];
+    border_texture: MeDto["border_texture"];
     glow_effect: boolean;
     meat: boolean;
     vegetarian: boolean;
@@ -348,7 +354,6 @@ export function SettingsView(props: SettingsViewProps) {
   // Invites state
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
-  const invites = invitesData as InviteToken[];
 
   let options = [
     { name: "meat", key: "tags.meat" },
@@ -364,12 +369,8 @@ export function SettingsView(props: SettingsViewProps) {
   // Update local state when SWR data changes
   useEffect(() => {
     if (userData) {
-      const name = userData.name;
-      const color = userData.color || "#1890ff";
-      const language = userData.language || "de";
-      const border_style = userData.border_style || "solid";
-      const border_texture = userData.border_texture || null;
-      const glow_effect = userData.glow_effect || false;
+      const { name, color, language, border_style, border_texture, glow_effect } =
+        userData;
       const { meat, vegetarian, vegan, fish, gluten, histamine, fructose, lactose } =
         userData;
 
@@ -470,7 +471,7 @@ export function SettingsView(props: SettingsViewProps) {
         ...diet,
       };
 
-      await Api.updateCurrentUser(updateData);
+      const me = await updateMe(updateData);
 
       // Change i18n language if it changed
       if (userLanguage !== initialUserState?.language) {
@@ -492,22 +493,12 @@ export function SettingsView(props: SettingsViewProps) {
       setDietPrefs(diet);
 
       // Invalidate cache to trigger refetch
-      mutateUser();
+      mutateMe();
 
       // Pan cards show their author's border preferences
       mutatePanLists();
 
-      // Update auth store with new color, language, and border preferences
-      if (currentUser) {
-        setUser({
-          ...currentUser,
-          color: userColor,
-          language: userLanguage,
-          border_style: borderStyle,
-          border_texture: borderTexture,
-          glow_effect: glowEffect,
-        });
-      }
+      setUser(me);
 
       message.success(t("common.saved") || "Saved");
       triggerSettingsRefresh();
@@ -515,7 +506,7 @@ export function SettingsView(props: SettingsViewProps) {
       console.error("Failed to save user settings:", error);
       message.error(t("settings.saveFailed") || "Failed to save settings");
       // Reload from backend to revert changes
-      mutateUser();
+      mutateMe();
     } finally {
       setUserSaving(false);
     }
@@ -823,7 +814,7 @@ export function SettingsView(props: SettingsViewProps) {
     setInviteLoading(true);
     setInviteError(null);
     try {
-      await Api.createInvite(values.email);
+      await createInvite({ email: values.email });
       // Invalidate cache to trigger refetch
       mutateInvites();
       message.success(t("invite.tokenCreated"));
@@ -836,7 +827,7 @@ export function SettingsView(props: SettingsViewProps) {
 
   const handleRevoke = async (inviteId: number) => {
     try {
-      await Api.revokeInvite(inviteId);
+      await revokeInvite(inviteId);
       // Invalidate cache to trigger refetch
       mutateInvites();
       message.success(t("invite.tokenRevoked"));

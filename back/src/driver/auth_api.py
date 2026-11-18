@@ -1,20 +1,31 @@
-from datetime import datetime
-
-from flask import request
+from flask import current_app
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.auth.password import hash_password, verify_password
 from back.src.driver.database import db
-from back.src.dto.user import BORDER_STYLES, BORDER_TEXTURES
+from back.src.dto.auth import AuthResultDto, LoginBody, RegisterBody, TokenDto
+from back.src.dto.invite import CreateInviteBody, InviteDto, InviteLookupDto
+from back.src.dto.user import MeDto, UpdateMeBody
 from back.src.entity.invite_token import InviteToken
 from back.src.entity.user import User
+from back.src.interactor.diet import Diet
+from back.src.interactor.level_service import LevelService
 from back.src.repository.invite_token_repository import InviteTokenRepository
+from back.src.repository.level_repository import LevelRepository
 from back.src.repository.profile_picture_history_repository import (
     ProfilePictureHistoryRepository,
 )
 from back.src.repository.user_repository import UserRepository
+
+
+def _token(user: User) -> str:
+    return generate_token(user.id, current_app.config.get("JWT_SECRET_KEY"))
+
+
+def _me(user: User) -> MeDto:
+    return MeDto.of(user, LevelService().progress_of(user))
 
 
 class AuthApi(BaseApi):
@@ -25,36 +36,10 @@ class AuthApi(BaseApi):
         self.user_repository = UserRepository()
         self.invite_token_repository = InviteTokenRepository()
 
-    @BaseApi.endpoint("/register", ["POST"])
-    def register(self):
-        """Register a new user with an invite token.
-
-        Request body should contain:
-        - token: The invite token
-        - email: User's email
-        - name: User's name
-        - password: User's password
-
-        :returns User: Created user object
-        :status_code 201: User created successfully
-        :status_code 400: Invalid request or token
-        """
-        data = request.json.get("data", {}).get("attributes", {})
-        token_str = data.get("token")
-        email = data.get("email")
-        name = data.get("name")
-        password = data.get("password")
-
-        if not all([token_str, email, name, password]):
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required fields",
-                detail="token, email, name, and password are required",
-            )
-
-        # Find and validate invite token
-        invite_token = self.invite_token_repository.by_token(token_str)
+    @BaseApi.endpoint("/register", ["POST"], body=RegisterBody, response=AuthResultDto, operation_id="register")
+    def register(self, body: RegisterBody) -> AuthResultDto:
+        """Register a new user with an invite token and sign them in."""
+        invite_token = self.invite_token_repository.by_token(body.token)
         if not invite_token:
             raise ApiError(
                 ApiErrorCode.invalid_token,
@@ -71,7 +56,7 @@ class AuthApi(BaseApi):
                 detail="The invite token has already been used or has expired",
             )
 
-        if invite_token.email.lower() != email.lower():
+        if invite_token.email.lower() != body.email.lower():
             raise ApiError(
                 ApiErrorCode.incorrect_parameters,
                 status=400,
@@ -79,11 +64,7 @@ class AuthApi(BaseApi):
                 detail="The provided email does not match the invite token's email",
             )
 
-        # Check if user with email or name already exists
-        existing_user = self.user_repository.by_email(email)
-        if not existing_user:
-            existing_user = self.user_repository.by_name(name)
-        if existing_user:
+        if self.user_repository.by_email(body.email) or self.user_repository.by_name(body.name):
             raise ApiError(
                 ApiErrorCode.incorrect_parameters,
                 status=400,
@@ -91,199 +72,51 @@ class AuthApi(BaseApi):
                 detail="A user with this email or name already exists",
             )
 
-        # Get optional profile_picture
-        profile_picture = data.get("profile_picture")
-
-        # Get the first level (Novice) for new users
-        from back.src.repository.level_repository import LevelRepository
-
-        level_repository = LevelRepository()
-        first_level = (
-            level_repository.all_ordered()[0]
-            if level_repository.all_ordered()
-            else None
-        )
-
-        # Create new user
+        first_level = next(iter(LevelRepository().all_ordered()), None)
         user = User(
-            name=name,
-            email=email,
-            password=hash_password(password),
+            name=body.name,
+            email=body.email,
+            password=hash_password(body.password),
             experience_points=0,
             level_id=first_level.id if first_level else None,
         )
         db.session.add(user)
-        db.session.flush()  # Get user.id
+        db.session.flush()
 
-        # Add initial profile picture to history if provided
-        if profile_picture:
-            history_repo = ProfilePictureHistoryRepository()
-            history_repo.add_profile_picture(
+        if body.profile_picture:
+            ProfilePictureHistoryRepository().add_profile_picture(
                 user_id=user.id,
-                profile_picture_url=profile_picture,
+                profile_picture_url=body.profile_picture,
                 level_id=first_level.id if first_level else None,
             )
 
-        # Mark invite token as used
         invite_token.mark_as_used()
         db.session.commit()
 
-        # Generate JWT token
-        from flask import current_app
+        return AuthResultDto(token=_token(user), user=_me(user))
 
-        secret_key = current_app.config.get("JWT_SECRET_KEY")
-        jwt_token = generate_token(user.id, secret_key)
-
-        # Return dict with jsonapi structure - serialize_wrapper will detect and return as-is
-        return {
-            "jsonapi": {"version": "1.0"},
-            "data": {
-                "type": "user",
-                "id": user.id,
-                "attributes": {
-                    "name": user.name,
-                    "email": user.email,
-                    "profile_picture": user.get_profile_picture(),
-                },
-            },
-            "meta": {"token": jwt_token},
-        }
-
-    @BaseApi.endpoint("/login", ["POST"])
-    def login(self):
-        """Login with email/name and password.
-
-        Request body should contain:
-        - email: User's email or name
-        - password: User's password
-
-        :returns User: User object with JWT token
-        :status_code 200: Login successful
-        :status_code 401: Invalid credentials
-        """
-        data = request.json.get("data", {}).get("attributes", {})
-        email_or_name = data.get("email") or data.get("name")
-        password = data.get("password")
-
-        if not email_or_name or not password:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required fields",
-                detail="email/name and password are required",
-            )
-
-        # Find user by email or name
-        user = self.user_repository.by_email_or_name(email_or_name)
-
-        if not user or not verify_password(password, user.password):
+    @BaseApi.endpoint("/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login")
+    def login(self, body: LoginBody) -> AuthResultDto:
+        """Sign in with name or email and password."""
+        user = self.user_repository.by_email_or_name(body.name_or_email)
+        if not user or not verify_password(body.password, user.password):
             raise ApiError(
                 ApiErrorCode.invalid_token,
                 status=401,
                 title="Invalid credentials",
                 detail="Invalid email/name or password",
             )
+        return AuthResultDto(token=_token(user), user=_me(user))
 
-        # Generate JWT token
-        from flask import current_app
-
-        secret_key = current_app.config.get("JWT_SECRET_KEY")
-        jwt_token = generate_token(user.id, secret_key)
-
-        # Return dict with jsonapi structure - serialize_wrapper will detect and return as-is
-        return {
-            "jsonapi": {"version": "1.0"},
-            "data": {
-                "type": "user",
-                "id": user.id,
-                "attributes": {
-                    "name": user.name,
-                    "email": user.email,
-                    "profile_picture": user.get_profile_picture(),
-                },
-            },
-            "meta": {"token": jwt_token},
-        }
-
-    @BaseApi.endpoint("/me", ["GET"])
+    @BaseApi.endpoint("/me", ["GET"], response=MeDto, operation_id="getMe")
     @require_auth
-    def me(self):
-        """Get current authenticated user information.
+    def me(self) -> MeDto:
+        """Get the signed-in user."""
+        return _me(get_current_user())
 
-        :returns User: Current user object
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        from back.src.api.constants import JSONAPI_VERSION
-        from back.src.api.serializer import serialize_entity
-
-        user = get_current_user()
-        # Serialize user but exclude password
-        entity_data = serialize_entity(user, "user")
-        if entity_data and "attributes" in entity_data:
-            # Remove password from attributes for security
-            entity_data["attributes"].pop("password", None)
-            # Also remove relationships that shouldn't be exposed
-            entity_data["attributes"].pop("sessions", None)
-            entity_data["attributes"].pop("achievements", None)
-            # Include level information
-            from back.src.repository.level_repository import LevelRepository
-
-            level_repository = LevelRepository()
-
-            if user.level:
-                current_level = user.level
-                next_level = level_repository.next_level(current_level)
-                entity_data["attributes"]["level"] = {
-                    "id": current_level.id,
-                    "name": current_level.name,
-                    "required_experience": current_level.required_experience,
-                }
-                if next_level:
-                    entity_data["attributes"]["next_level"] = {
-                        "id": next_level.id,
-                        "name": next_level.name,
-                        "required_experience": next_level.required_experience,
-                    }
-            else:
-                # If user has no level, assign the first level (Novice)
-                first_level = (
-                    level_repository.all_ordered()[0]
-                    if level_repository.all_ordered()
-                    else None
-                )
-                if first_level:
-                    user.level_id = first_level.id
-                    db.session.commit()
-                    entity_data["attributes"]["level"] = {
-                        "id": first_level.id,
-                        "name": first_level.name,
-                        "required_experience": first_level.required_experience,
-                    }
-                    next_level = level_repository.next_level(first_level)
-                    if next_level:
-                        entity_data["attributes"]["next_level"] = {
-                            "id": next_level.id,
-                            "name": next_level.name,
-                            "required_experience": next_level.required_experience,
-                        }
-
-        return {"jsonapi": {"version": JSONAPI_VERSION}, "data": entity_data}
-
-    @BaseApi.endpoint("/invite/<string:token>", ["GET"])
-    def get_invite(self, token: str):
-        """Fetch invite token details by token string for registration.
-
-        This is used by the registration page to prefill email when a user
-        opens a link like /register?token=... .
-
-        :param token: Invite token string
-        :returns InviteToken: Minimal invite token data
-        :status_code 200: Success
-        :status_code 400: Invalid or expired token
-        """
-        from back.src.api.constants import JSONAPI_VERSION
-
+    @BaseApi.endpoint("/invite/<string:token>", ["GET"], response=InviteLookupDto, operation_id="lookupInvite")
+    def get_invite(self, token: str) -> InviteLookupDto:
+        """Look up an unused invite for the registration page."""
         invite_token = self.invite_token_repository.by_token(token)
         if not invite_token or not invite_token.is_valid():
             raise ApiError(
@@ -292,152 +125,33 @@ class AuthApi(BaseApi):
                 title="Invalid invite token",
                 detail="The invite token does not exist, has been used, or has expired",
             )
+        return InviteLookupDto.model_validate(invite_token)
 
-        return {
-            "jsonapi": {"version": JSONAPI_VERSION},
-            "data": {
-                "type": "inviteToken",
-                "id": invite_token.id,
-                "attributes": {
-                    "token": invite_token.token,
-                    "email": invite_token.email,
-                    "expires_at": invite_token.expires_at.isoformat(),
-                    "is_used": invite_token.is_used,
-                },
-            },
-        }
-
-    @BaseApi.endpoint("/me", ["PATCH"])
+    @BaseApi.endpoint("/me", ["PATCH"], body=UpdateMeBody, response=MeDto, operation_id="updateMe")
     @require_auth
-    def update_me(self):
-        """Update current authenticated user information.
-
-        Request body should contain user attributes to update:
-        - name: User name (optional)
-        - meat: Boolean (optional)
-        - vegetarian: Boolean (optional)
-        - vegan: Boolean (optional)
-        - histamine: Boolean (optional)
-        - fructose: Boolean (optional)
-        - lactose: Boolean (optional)
-        - gluten: Boolean (optional)
-        - color: String (optional)
-        - language: String (optional, 'en' or 'de')
-        - profile_picture: String (optional, base64 encoded image)
-        - border_style: String (optional, 'solid', 'dashed', 'dotted', 'double', 'ridge', 'groove', 'inset', 'outset')
-        - border_texture: String (optional, 'cheese', 'bread', 'sauce-01', 'sauce-02', 'herbs-01', 'herbs-02', or null)
-        - glow_effect: Boolean (optional, unlocked at level 7)
-
-        :returns User: Updated user object
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        from back.src.api.deserializer import deserialize_attributes
-        from back.src.api.serializer import serialize_single
-        from back.src.driver.database import db
-
+    def update_me(self, body: UpdateMeBody) -> MeDto:
+        """Change the signed-in user's name, diet, language, picture or card decoration."""
         user = get_current_user()
-        attributes = deserialize_attributes()
-
-        # Update allowed fields
-        if "name" in attributes:
-            user.name = attributes["name"]
-        if "meat" in attributes:
-            user.meat = attributes["meat"]
-        if "vegetarian" in attributes:
-            user.vegetarian = attributes["vegetarian"]
-        if "vegan" in attributes:
-            user.vegan = attributes["vegan"]
-        if "fish" in attributes:
-            user.fish = attributes["fish"]
-        if "histamine" in attributes:
-            user.histamine = attributes["histamine"]
-        if "fructose" in attributes:
-            user.fructose = attributes["fructose"]
-        if "lactose" in attributes:
-            user.lactose = attributes["lactose"]
-        if "gluten" in attributes:
-            user.gluten = attributes["gluten"]
-        if "color" in attributes:
-            user.color = attributes["color"]
-        if "language" in attributes:
-            user.language = attributes["language"]
-        if "profile_picture" in attributes:
-            profile_picture = attributes["profile_picture"]
-            # Always add to history, even if None (to track removal)
-            history_repo = ProfilePictureHistoryRepository()
-            history_repo.add_profile_picture(
-                user_id=user.id,
-                profile_picture_url=profile_picture,
-                level_id=user.level_id,
-            )
-        if "border_style" in attributes:
-            # Validate border_style (3D effects removed: ridge, groove, inset, outset)
-            allowed_styles = list(BORDER_STYLES)
-            if attributes["border_style"] in allowed_styles:
-                user.border_style = attributes["border_style"]
-            else:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid border_style",
-                    detail=f"border_style must be one of: {', '.join(allowed_styles)}",
-                )
-        if "border_texture" in attributes:
-            # Validate border_texture
-            allowed_textures = [*BORDER_TEXTURES, None]
-            if (
-                attributes["border_texture"] in allowed_textures
-                or attributes["border_texture"] is None
-            ):
-                user.border_texture = attributes["border_texture"]
-            else:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid border_texture",
-                    detail=f"border_texture must be one of: {', '.join([t for t in allowed_textures if t])}, or null",
-                )
-        if "glow_effect" in attributes:
-            user.glow_effect = bool(attributes["glow_effect"])
-
-        from back.src.interactor.diet import Diet
-
+        for field in body.model_fields_set - {"profile_picture"}:
+            setattr(user, field, getattr(body, field))
         Diet.of(user).apply_to(user)
 
+        if "profile_picture" in body.model_fields_set:
+            # This commits, so it runs after the other changes: a rejected one rolls back both.
+            ProfilePictureHistoryRepository().add_profile_picture(
+                user_id=user.id,
+                profile_picture_url=body.profile_picture,
+                level_id=user.level_id,
+            )
+
         db.session.commit()
+        return _me(user)
 
-        # Serialize user but exclude password
-        from back.src.api.constants import JSONAPI_VERSION
-        from back.src.api.serializer import serialize_entity
-
-        entity_data = serialize_entity(user, "user")
-        if entity_data and "attributes" in entity_data:
-            # Remove password from attributes for security
-            entity_data["attributes"].pop("password", None)
-
-        return {"jsonapi": {"version": JSONAPI_VERSION}, "data": entity_data}
-
-    @BaseApi.endpoint("/refresh", ["POST"])
+    @BaseApi.endpoint("/refresh", ["POST"], response=TokenDto, operation_id="refreshToken")
     @require_auth
-    def refresh(self):
-        """Refresh JWT token.
-
-        :returns Token: New JWT token
-        :status_code 200: Token refreshed
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        from flask import current_app
-
-        secret_key = current_app.config.get("JWT_SECRET_KEY")
-        jwt_token = generate_token(user.id, secret_key)
-
-        # Return dict with jsonapi structure - serialize_wrapper will detect and return as-is
-        return {
-            "jsonapi": {"version": "1.0"},
-            "data": {"type": "token", "attributes": {"token": jwt_token}},
-        }
+    def refresh(self) -> TokenDto:
+        """Issue a new token for the signed-in user."""
+        return TokenDto(token=_token(get_current_user()))
 
 
 class InviteApi(BaseApi):
@@ -447,88 +161,35 @@ class InviteApi(BaseApi):
         super().__init__()
         self.invite_token_repository = InviteTokenRepository()
 
-    @BaseApi.endpoint("", ["POST"])
+    @BaseApi.endpoint("", ["POST"], body=CreateInviteBody, response=InviteDto, operation_id="createInvite")
     @require_auth
-    def create_invite(self):
-        """Generate a new invite token.
-
-        Request body should contain:
-        - email: Email of the intended recipient
-
-        :returns InviteToken: Created invite token
-        :status_code 201: Invite token created
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        data = request.json.get("data", {}).get("attributes", {})
-        email = data.get("email")
-
-        if not email:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="email is required",
-            )
-
-        # Create invite token
-        from flask import current_app
-
+    def create_invite(self, body: CreateInviteBody) -> InviteDto:
+        """Invite someone by email; any signed-in user may."""
         expiration_days = current_app.config.get("INVITE_TOKEN_EXPIRATION_DAYS", 7)
-
         invite_token = InviteToken(
             token=InviteToken.generate_token(),
-            email=email,
-            created_by_user_id=user.id,
+            email=body.email,
+            created_by_user_id=get_current_user().id,
             expires_at=InviteToken.create_expiration_date(expiration_days),
         )
         db.session.add(invite_token)
         db.session.commit()
+        return InviteDto.model_validate(invite_token)
 
-        return {
-            "data": {
-                "type": "inviteToken",
-                "id": invite_token.id,
-                "attributes": {
-                    "token": invite_token.token,
-                    "email": invite_token.email,
-                    "expires_at": invite_token.expires_at.isoformat(),
-                    "is_used": invite_token.is_used,
-                },
-            }
-        }
-
-    @BaseApi.endpoint("", ["GET"])
+    @BaseApi.endpoint("", ["GET"], response=list[InviteDto], operation_id="listInvites")
     @require_auth
-    def list_invites(self):
-        """List all invite tokens created by the current user.
+    def list_invites(self) -> list[InviteDto]:
+        """List the invites the signed-in user created, newest first."""
+        invites = self.invite_token_repository.by_creator(get_current_user().id)
+        return [InviteDto.model_validate(invite) for invite in invites]
 
-        :returns List[InviteToken]: List of invite tokens
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        from back.src.api.serializer import serialize_collection
-
-        user = get_current_user()
-        invites = self.invite_token_repository.by_creator(user.id)
-
-        return serialize_collection(invites, "inviteToken")
-
-    @BaseApi.endpoint("/<int:invite_id>", ["DELETE"])
+    @BaseApi.endpoint("/<int:invite_id>", ["DELETE"], status=204, operation_id="revokeInvite")
     @require_auth
-    def revoke_invite(self, invite_id):
-        """Revoke an unused invite token.
-
-        :param invite_id: ID of the invite token to revoke
-        :returns Success: Confirmation
-        :status_code 200: Invite revoked
-        :status_code 401: Not authenticated
-        :status_code 404: Invite not found
-        """
-        user = get_current_user()
+    def revoke_invite(self, invite_id: int) -> None:
+        """Revoke an unused invite the signed-in user created."""
         invite = self.invite_token_repository.by_id(invite_id)
-        # Verify the invite belongs to the user
-        if invite and invite.created_by_user_id != user.id:
+        # Someone else's invite is reported as missing.
+        if invite and invite.created_by_user_id != get_current_user().id:
             invite = None
 
         if not invite:
@@ -549,5 +210,3 @@ class InviteApi(BaseApi):
 
         db.session.delete(invite)
         db.session.commit()
-
-        return {}, 204

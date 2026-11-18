@@ -38,12 +38,6 @@ export const panAttributes = () => ({
     preparation_type: { id: 2, name: "Grilled", session_id: null },
 });
 
-export const levelDict = (id: number, name: string, required_experience: number) => ({
-    id,
-    name,
-    required_experience,
-});
-
 export const achievementResource = (id: number, title: string) => ({
     type: "achievement",
     id: String(id),
@@ -54,25 +48,4 @@ export const achievementResource = (id: number, title: string) => ({
         hidden: false,
         is_global: true,
     },
-});
-
-export const userAttributes = () => ({
-    name: "Ada",
-    email: "ada@example.com",
-    meat: true,
-    vegetarian: true,
-    vegan: true,
-    fish: false,
-    histamine: true,
-    fructose: true,
-    lactose: true,
-    gluten: true,
-    color: "#ff0000",
-    language: "en",
-    border_style: "solid",
-    border_texture: null,
-    glow_effect: false,
-    experience_points: 100,
-    level_id: 2,
-    profile_picture: null,
 });
