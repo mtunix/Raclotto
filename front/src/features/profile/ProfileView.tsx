@@ -33,9 +33,9 @@ import {
   usePansByUser,
   mutateUser,
 } from "../../lib/api/swrHooks";
-import { postRaw } from "../../lib/api/api";
 import { Achievement } from "../../model/achievement";
 import { Pan } from "../../model/pan";
+import { UserStats } from "../../model/user";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
 import { VectorGraphics } from "../../lib/vectorGraphics";
@@ -178,11 +178,9 @@ export function ProfileView() {
     try {
       // Call the new profile picture generation endpoint
       // This endpoint includes the user's previous picture as context for Gemini
-      const data = await postRaw("/api/images/generate-profile-picture", {
-        level_id: profileData.level.id,
-      });
-
-      const imageBase64 = data?.data?.attributes?.imageBase64;
+      const { imageBase64 } = await Api.generateProfilePicture(
+        profileData.level?.id,
+      );
 
       if (!imageBase64) {
         throw new Error("No image data returned from server");
@@ -229,12 +227,9 @@ export function ProfileView() {
     );
   }
 
-  const profileData = userProfile.attributes || userProfile;
-  const stats = userStats || {};
-  // Achievements might be in attributes or directly in profileData
-  const achievements =
-    profileData.achievements ||
-    (userProfile.achievements ? userProfile.achievements : []);
+  const profileData = userProfile;
+  const stats: Partial<UserStats> = userStats ?? {};
+  const achievements = profileData.achievements ?? [];
 
   return (
     <div style={{ padding: "24px 0" }}>

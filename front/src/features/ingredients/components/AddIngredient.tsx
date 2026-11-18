@@ -95,7 +95,7 @@ export function AddIngredient(props?: AddIngredientProps) {
         };
 
         if (!sessionKey) return;
-        Api.add(sessionKey, ingredientData).then(() => {
+        Api.addIngredient(sessionKey, ingredientData).then(() => {
             // Clear form fields
             setName("");
             setCategory("vegetarian");

@@ -8,8 +8,6 @@ import {
   Rate,
   Divider,
   Button,
-  Spin,
-  message,
 } from "antd";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
 import { PreparationTypeCard } from "./PreparationTypeCard/PreparationTypeCard";
@@ -17,10 +15,8 @@ import { CheeseSlider } from "./CheeseSlider";
 import { Pan } from "../../model/pan";
 import { IngredientType } from "../../model/ingredient";
 import { useTranslation } from "react-i18next";
-import { postRaw } from "../../lib/api/api";
 import styles from "./GenerateView/GenerateView.module.css";
-import { useAuthStore } from "src/AuthSlice";
-import { useUserProfile } from "src/lib/api/swrHooks";
+import { LevelUpPictureModal } from "./LevelUpPictureModal";
 
 // Add global styles for animations
 const globalStyles = `
@@ -50,18 +46,6 @@ interface PanResultModalProps {
   previousLevelId?: number;
 }
 
-interface ProfilePictureResponse {
-  data: {
-    attributes: {
-      imageBase64: string;
-      format: string;
-      userId: number;
-      levelId: number;
-      createdAt: string;
-    };
-  };
-}
-
 export const PanResultModal: React.FC<PanResultModalProps> = ({
   open,
   pan,
@@ -76,18 +60,8 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
   const [visibleIngredients, setVisibleIngredients] = useState<Set<number>>(
     new Set(),
   );
-  const [isGeneratingProfilePicture, setIsGeneratingProfilePicture] =
-    useState(false);
   const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
-  const [newProfilePicture, setNewProfilePicture] = useState<string | null>(
-    null,
-  );
   const [hasGenerationStarted, setHasGenerationStarted] = useState(false);
-  const currentUser = useAuthStore((state) => state.user);
-  const userId = currentUser?.id?.toString();
-  const targetUserId = userId || currentUser?.id?.toString() || "0";
-  const targetUserIdNumber = parseInt(targetUserId, 10);
-  const { mutate: mutateUserProfile } = useUserProfile(targetUserIdNumber);
   // Slot-machine style animation for standard view
   useEffect(() => {
     if (open && pan && !isBanditResult) {
@@ -119,36 +93,11 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
     }
   }, [open, pan, isBanditResult]);
 
-  const generateProfilePicture = async () => {
-    if (!hasLeveledUp || !newLevelId) return;
-
-    setIsGeneratingProfilePicture(true);
-    try {
-      const data: ProfilePictureResponse = await postRaw(
-        "/api/images/generate-profile-picture",
-        {
-          level_id: newLevelId,
-        },
-      );
-      setNewProfilePicture(data.data.attributes.imageBase64);
-      // Refetch profile data to update the display with the new image
-      await mutateUserProfile();
-    } catch (error) {
-      console.error("Error generating profile picture:", error);
-      message.error(
-        t("image.profilePictureError") || "Error generating profile picture",
-      );
-    } finally {
-      setIsGeneratingProfilePicture(false);
-    }
-  };
-
   const handleModalClose = () => {
     // If user leveled up, start generating profile picture and show spinner modal
     if (hasLeveledUp && newLevelId && !hasGenerationStarted) {
       setHasGenerationStarted(true);
       setShowProfilePictureModal(true);
-      generateProfilePicture();
     } else {
       // Otherwise, just close normally
       resetState();
@@ -163,8 +112,6 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
   };
 
   const resetState = () => {
-    setNewProfilePicture(null);
-    setIsGeneratingProfilePicture(false);
     setVisibleIngredients(new Set());
     setHasGenerationStarted(false);
   };
@@ -292,163 +239,11 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
           </div>
         </Modal>
 
-        {/* Profile Picture Generation Modal */}
-        <Modal
-          open={showProfilePictureModal && !newProfilePicture}
-          footer={null}
-          width="90%"
-          className={`${styles.modalContainer} profile-picture-spinner-modal`}
-          centered
-          closable={false}
-          styles={{
-            body: {
-              padding: "32px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: "400px",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            },
-          }}
-        >
-          <div style={{ textAlign: "center", width: "100%" }}>
-            <div style={{ marginBottom: "24px", fontSize: "48px" }}>✨🎨✨</div>
-            <Spin
-              tip={
-                t("image.generatingProfilePicture") ||
-                "Generating your new profile picture..."
-              }
-              size="large"
-            />
-            <div
-              style={{
-                marginTop: "32px",
-                fontSize: "14px",
-                color: "#fff",
-                opacity: 0.9,
-                fontStyle: "italic",
-              }}
-            >
-              {t("image.generatingMessage") ||
-                "Creating an artistic masterpiece just for you..."}
-            </div>
-            <div
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "20px",
-                  animation: "pulse 1s infinite",
-                }}
-              >
-                🌟
-              </span>
-              <span
-                style={{
-                  fontSize: "20px",
-                  animation: "pulse 1s infinite 0.2s",
-                }}
-              >
-                🎭
-              </span>
-              <span
-                style={{
-                  fontSize: "20px",
-                  animation: "pulse 1s infinite 0.4s",
-                }}
-              >
-                🖼️
-              </span>
-            </div>
-          </div>
-          <style>{`
-            @keyframes pulse {
-              0%, 100% {
-                opacity: 1;
-                transform: scale(1);
-              }
-              50% {
-                opacity: 0.6;
-                transform: scale(1.2);
-              }
-            }
-          `}</style>
-        </Modal>
-
-        {/* Profile Picture Display Modal */}
-        {showProfilePictureModal && newProfilePicture && (
-          <Modal
-            open={showProfilePictureModal}
-            onCancel={handleProfilePictureModalClose}
-            footer={null}
-            width="90%"
-            className={`${styles.modalContainer} profile-picture-modal`}
-            centered
-            closable
-            styles={{
-              body: {
-                padding: "32px",
-              },
-            }}
-          >
-            <div style={{ textAlign: "center" }}>
-              <Card
-                className={styles.gradientCard}
-                bodyStyle={{ padding: "28px" }}
-              >
-                <Title level={2} className={styles.whiteTitle}>
-                  {t("image.yourNewProfilePicture") ||
-                    "Your New Profile Picture"}
-                </Title>
-                <Text style={{ color: "#fff", fontSize: "16px" }}>
-                  {t("image.profilePictureUpdated") ||
-                    "Your profile picture has been updated for your new level!"}
-                </Text>
-              </Card>
-
-              <Card
-                style={{
-                  marginTop: "24px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: "400px",
-                }}
-              >
-                <img
-                  src={`data:image/png;base64,${newProfilePicture}`}
-                  alt="New Profile Picture"
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                    borderRadius: "8px",
-                  }}
-                />
-              </Card>
-
-              <Divider className={styles.customDivider} />
-
-              <Row>
-                <Col span={24}>
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    onClick={handleProfilePictureModalClose}
-                    className={styles.closeButton}
-                  >
-                    {t("common.close") || "Close"}
-                  </Button>
-                </Col>
-              </Row>
-            </div>
-          </Modal>
-        )}
+        <LevelUpPictureModal
+          open={showProfilePictureModal}
+          levelId={newLevelId}
+          onClose={handleProfilePictureModalClose}
+        />
       </>
     );
   }
@@ -587,162 +382,11 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
         </div>
       </Modal>
 
-      {/* Profile Picture Generation Modal */}
-      <Modal
-        open={showProfilePictureModal && !newProfilePicture}
-        footer={null}
-        width="90%"
-        className={`${styles.modalContainer} profile-picture-spinner-modal`}
-        centered
-        closable={false}
-        styles={{
-          body: {
-            padding: "32px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          },
-        }}
-      >
-        <div style={{ textAlign: "center", width: "100%" }}>
-          <div style={{ marginBottom: "24px", fontSize: "48px" }}>✨🎨✨</div>
-          <Spin
-            tip={
-              t("image.generatingProfilePicture") ||
-              "Generating your new profile picture..."
-            }
-            size="large"
-          />
-          <div
-            style={{
-              marginTop: "32px",
-              fontSize: "14px",
-              color: "#fff",
-              opacity: 0.9,
-              fontStyle: "italic",
-            }}
-          >
-            {t("image.generatingMessage") ||
-              "Creating an artistic masterpiece just for you..."}
-          </div>
-          <div
-            style={{
-              marginTop: "24px",
-              display: "flex",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "20px",
-                animation: "pulse 1s infinite",
-              }}
-            >
-              🌟
-            </span>
-            <span
-              style={{
-                fontSize: "20px",
-                animation: "pulse 1s infinite 0.2s",
-              }}
-            >
-              🎭
-            </span>
-            <span
-              style={{
-                fontSize: "20px",
-                animation: "pulse 1s infinite 0.4s",
-              }}
-            >
-              🖼️
-            </span>
-          </div>
-        </div>
-        <style>{`
-          @keyframes pulse {
-            0%, 100% {
-              opacity: 1;
-              transform: scale(1);
-            }
-            50% {
-              opacity: 0.6;
-              transform: scale(1.2);
-            }
-          }
-        `}</style>
-      </Modal>
-
-      {/* Profile Picture Display Modal */}
-      {showProfilePictureModal && newProfilePicture && (
-        <Modal
-          open={showProfilePictureModal}
-          onCancel={handleProfilePictureModalClose}
-          footer={null}
-          width="90%"
-          className={`${styles.modalContainer} profile-picture-modal`}
-          centered
-          closable
-          styles={{
-            body: {
-              padding: "32px",
-            },
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <Card
-              className={styles.gradientCard}
-              bodyStyle={{ padding: "28px" }}
-            >
-              <Title level={2} className={styles.whiteTitle}>
-                {t("image.yourNewProfilePicture") || "Your New Profile Picture"}
-              </Title>
-              <Text style={{ color: "#fff", fontSize: "16px" }}>
-                {t("image.profilePictureUpdated") ||
-                  "Your profile picture has been updated for your new level!"}
-              </Text>
-            </Card>
-
-            <Card
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "400px",
-              }}
-            >
-              <img
-                src={`data:image/png;base64,${newProfilePicture}`}
-                alt="New Profile Picture"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  borderRadius: "8px",
-                }}
-              />
-            </Card>
-
-            <Divider className={styles.customDivider} />
-
-            <Row>
-              <Col span={24}>
-                <Button
-                  type="primary"
-                  size="large"
-                  block
-                  onClick={handleProfilePictureModalClose}
-                  className={styles.closeButton}
-                >
-                  {t("common.close") || "Close"}
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        </Modal>
-      )}
+      <LevelUpPictureModal
+        open={showProfilePictureModal}
+        levelId={newLevelId}
+        onClose={handleProfilePictureModalClose}
+      />
     </>
   );
 };

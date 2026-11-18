@@ -212,7 +212,7 @@ export function IngredientModal(props: IngredientModalProps) {
                 // Add mode: create new ingredient
                 if (!sessionKey) return;
                 
-                await Api.add(sessionKey, ingredientData);
+                await Api.addIngredient(sessionKey, ingredientData);
                 mutateIngredients(sessionKey);
                 message.success(t("ingredient.added") || "Ingredient added successfully");
                 

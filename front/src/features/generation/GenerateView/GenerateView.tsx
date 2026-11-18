@@ -34,9 +34,9 @@ import { Pan } from "../../../model/pan";
 import { Util } from "../../../lib/util";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../../AppSlice";
-import { useAuthStore } from "../../../AuthSlice";
 import { useIngredientStore, getLocalStorageNumber } from "./ingredientStore";
 import { GenerationAnimation } from "../animations/GenerationAnimation";
+import { applyRollOutcome } from "../applyRollOutcome";
 // Import CSS module with type assertion
 import styles from "./GenerateView.module.css";
 
@@ -64,9 +64,6 @@ export function GenerateView() {
   // Define state and hooks at the top
   const { t } = useTranslation();
   const session = useAppStore((state) => state.session);
-  const currentUser = useAuthStore((state) => state.user);
-  const showXpNotification = useAppStore((state) => state.showXpNotification);
-  const setUser = useAuthStore((state) => state.setUser);
 
   // Ingredient store hooks - only managing the entered counts
   const {
@@ -259,81 +256,22 @@ export function GenerateView() {
     }, animationDuration);
 
     try {
-      // Store old XP before generation
-      const oldXP = currentUser?.experience_points || 0;
-      const oldLevelId = currentUser?.level?.id;
-
-      const data = await Api.generate(
+      const outcome = await Api.generate(
         sessionKey,
         numFill,
         numSauce,
         preparationTypeId,
         rollCheese,
       );
-      if (data && "generated" in data && data.generated) {
-        setGenerated(data.generated);
-        apiCompleteRef.current = true;
-        setApiComplete(true);
+      setGenerated(outcome.pan);
+      apiCompleteRef.current = true;
+      setApiComplete(true);
 
-        // Extract achievements from response
-        const achievements = data.achievements || [];
-
-        // Fetch updated user profile to get new XP
-        if (currentUser?.id) {
-          try {
-            const updatedProfile = await Api.getUserProfile(currentUser.id);
-            const newXP = updatedProfile.experience_points || 0;
-            const newLevel = updatedProfile.level;
-            const nextLevel = updatedProfile.next_level || null;
-            const levelUp =
-              oldLevelId !== undefined &&
-              newLevel?.id !== oldLevelId &&
-              newLevel?.id !== undefined;
-
-            // Update auth store with new user data
-            if (currentUser) {
-              setUser({
-                ...currentUser,
-                experience_points: newXP,
-                level: newLevel,
-                next_level: nextLevel,
-              });
-            }
-
-            // Track level-up for profile picture generation
-            if (levelUp && newLevel?.id) {
-              setHasLeveledUp(true);
-              setNewLevelId(newLevel.id);
-            }
-
-            // Show XP notification if XP increased
-            if (newXP > oldXP && newLevel) {
-              const xpGained = newXP - oldXP;
-              showXpNotification(
-                xpGained,
-                oldXP,
-                newXP,
-                newLevel,
-                nextLevel,
-                levelUp,
-                achievements,
-              );
-            }
-          } catch (profileError) {
-            console.error(
-              "Failed to fetch updated user profile:",
-              profileError,
-            );
-            // Continue even if profile fetch fails
-          }
-        }
-      } else {
-        // If no data, still mark as complete
-        apiCompleteRef.current = true;
-        setApiComplete(true);
-        if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
-        setWaiting(false);
-        setShowAnimation(false);
+      // Track level-up for profile picture generation
+      const levelUp = applyRollOutcome(outcome, sessionKey);
+      if (levelUp.leveledUp) {
+        setHasLeveledUp(true);
+        setNewLevelId(levelUp.newLevelId);
       }
     } catch (error) {
       console.error("Failed to generate pan:", error);

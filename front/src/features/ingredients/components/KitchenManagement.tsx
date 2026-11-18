@@ -38,7 +38,7 @@ export function KitchenManagement() {
 
     const onDelete = useCallback((ingredient: Ingredient) => {
         if (sessionKey) {
-            Api.delete(sessionKey, ingredient).then(() => {
+            Api.deleteIngredient(sessionKey, ingredient.id).then(() => {
                 mutateIngredients(sessionKey);
             }).catch((error) => {
                 console.error("Failed to delete ingredient:", error);
@@ -48,7 +48,7 @@ export function KitchenManagement() {
 
     const onRefill = useCallback((ingredient: Ingredient) => {
         if (sessionKey) {
-            Api.refill(sessionKey, ingredient).then(() => {
+            Api.refill(ingredient.id).then(() => {
                 mutateIngredients(sessionKey);
             }).catch((error) => {
                 console.error("Failed to refill ingredient:", error);
@@ -89,7 +89,7 @@ export function KitchenManagement() {
             return;
         }
         
-        Api.delete(sessionKey, type).then(() => {
+        Api.deletePrepType(type.id).then(() => {
             message.success(t("ingredient.preparationTypeDeleted") || "Preparation type deleted");
             mutatePrepTypes(sessionKey);
         }).catch((error: any) => {
@@ -113,7 +113,7 @@ export function KitchenManagement() {
 
     const onPrepTypeAdd = useCallback(() => {
         if (!sessionKey || !newPrepTypeName.trim()) return;
-        Api.add(sessionKey, { name: newPrepTypeName.trim() } as any, "preparation_type").then(() => {
+        Api.addPrepType(sessionKey, newPrepTypeName.trim()).then(() => {
             setIsAddingPrepType(false);
             setNewPrepTypeName("");
             mutatePrepTypes(sessionKey);

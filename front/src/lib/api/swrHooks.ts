@@ -1,13 +1,23 @@
 import useSWR, { mutate as swrMutate } from "swr";
 import { Api } from "./index";
-import { Ingredient } from "../../model/ingredient";
-import { PrepType } from "../../model/prepType";
-import { Pan } from "../../model/pan";
-import { Event } from "../../model/event";
-import { EventConfig } from "../../model/eventConfig";
-import { RaclottoSession } from "../../model/raclottoSession";
-import { StatsResponse, LeaderboardEntry } from "./types";
-import { onErrorRetry } from "./api";
+import { ApiError } from "./types";
+
+export const onErrorRetry = (
+    error: ApiError,
+    key: string,
+    config: unknown,
+    revalidate: (options: { retryCount: number }) => void,
+    { retryCount }: { retryCount: number },
+) => {
+    if (error.status === 404) return;
+
+    if (retryCount >= 10) return;
+
+    setTimeout(
+        () => revalidate({ retryCount: retryCount + 1 }),
+        200 * retryCount,
+    );
+};
 
 // Cache key generators
 const getIngredientsKey = (sessionKey?: string) => sessionKey ? ["ingredients", sessionKey] : null;
@@ -29,99 +39,24 @@ const getUserProfileKey = (userId: number) => ["userProfile", userId];
 const getUserStatsKey = (userId: number) => ["userStats", userId];
 
 // Fetcher functions
-const ingredientsFetcher = async (key: [string, string]): Promise<Ingredient[]> => {
-    const [, sessionKey] = key;
-    const data = await Api.get("ingredients", sessionKey);
-    const ingredientsData = Array.isArray(data) ? data as Ingredient[] : [];
-    return ingredientsData;
-};
-
-const prepTypesFetcher = async (key: [string, string]): Promise<PrepType[]> => {
-    const [, sessionKey] = key;
-    const data = await Api.get("preparation_type", sessionKey);
-    const prepTypesData = Array.isArray(data) ? data as PrepType[] : [];
-    return prepTypesData;
-};
-
-const currentUserFetcher = async (): Promise<any> => {
-    return await Api.getCurrentUser();
-};
-
-const sessionFetcher = async (key: [string, string]): Promise<RaclottoSession> => {
-    const [, sessionKey] = key;
-    return await Api.getSessionByKey(sessionKey);
-};
-
-const statsFetcher = async (key: [string, string | null, boolean]): Promise<StatsResponse> => {
-    const [, sessionKey, isGlobal] = key;
-    return await Api.getStats(isGlobal ? undefined : (sessionKey || undefined));
-};
-
-const leaderboardFetcher = async (): Promise<LeaderboardEntry[]> => {
-    return await Api.getLeaderboard();
-};
-
-const achievementsFetcher = async (): Promise<any[]> => {
-    const data = await Api.get("achievements");
-    if (Array.isArray(data)) {
-        return data.map((item: any) => {
-            const attributes = item.attributes || item;
-            return {
-                id: item.id ? (typeof item.id === 'string' ? parseInt(item.id, 10) : Number(item.id)) : attributes.id,
-                title: attributes.title || item.title || '',
-                name: attributes.title || item.title || attributes.name || item.name || '', // Support both for compatibility
-                description: attributes.description || item.description || '',
-                value: attributes.value !== undefined ? attributes.value : (item.value !== undefined ? item.value : 0),
-                points: attributes.value !== undefined ? attributes.value : (item.value !== undefined ? item.value : 0), // Support both for compatibility
-                hidden: attributes.hidden !== undefined ? attributes.hidden : (item.hidden !== undefined ? item.hidden : false),
-                unlocked: attributes.unlocked !== undefined ? attributes.unlocked : (item.unlocked !== undefined ? item.unlocked : undefined),
-                progress: attributes.progress !== undefined ? attributes.progress : (item.progress !== undefined ? item.progress : undefined),
-                icon: attributes.icon || item.icon,
-                category: attributes.category || item.category
-            };
-        });
-    }
-    return [];
-};
-
-const eventConfigsFetcher = async (key: [string, string?]): Promise<EventConfig[]> => {
-    const [, sessionKey] = key;
-    return await Api.getEventConfigs(sessionKey);
-};
-
-const eventsFetcher = async (key: [string, string]): Promise<Event[]> => {
-    const [, sessionKey] = key;
-    return await Api.getEvents(sessionKey);
-};
-
-const pansPaginatedFetcher = async (key: [string, string, number, number]): Promise<{ data: Pan[]; hasMore: boolean; total: number }> => {
-    const [, sessionKey, limit, offset] = key;
-    return await Api.getPansPaginated(sessionKey, limit, offset);
-};
-
-const pansByUserFetcher = async (key: [string, number, number, number]): Promise<{ data: Pan[]; hasMore: boolean; total: number }> => {
-    const [, userId, limit, offset] = key;
-    return await Api.getPansByUser(userId, limit, offset);
-};
-
-const availableCountsFetcher = async (key: [string, string]): Promise<{fill_count: number; sauce_count: number}> => {
-    const [, sessionKey] = key;
-    return await Api.getAvailableIngredientCounts(sessionKey);
-};
-
-const invitesFetcher = async (): Promise<any[]> => {
-    return await Api.listInvites();
-};
-
-const userProfileFetcher = async (key: [string, number]): Promise<any> => {
-    const [, userId] = key;
-    return await Api.getUserProfile(userId);
-};
-
-const userStatsFetcher = async (key: [string, number]): Promise<any> => {
-    const [, userId] = key;
-    return await Api.getUserStats(userId);
-};
+const ingredientsFetcher = ([, sessionKey]: [string, string]) => Api.listIngredients(sessionKey);
+const prepTypesFetcher = ([, sessionKey]: [string, string]) => Api.listPrepTypes(sessionKey);
+const currentUserFetcher = () => Api.getCurrentUser();
+const sessionFetcher = ([, sessionKey]: [string, string]) => Api.getSessionByKey(sessionKey);
+const statsFetcher = ([, sessionKey, isGlobal]: [string, string | null, boolean]) =>
+    Api.getStats(isGlobal ? undefined : (sessionKey || undefined));
+const leaderboardFetcher = () => Api.getLeaderboard();
+const achievementsFetcher = () => Api.listAchievements();
+const eventConfigsFetcher = ([, sessionKey]: [string, string?]) => Api.getEventConfigs(sessionKey);
+const eventsFetcher = ([, sessionKey]: [string, string]) => Api.getEvents(sessionKey);
+const pansPaginatedFetcher = ([, sessionKey, limit, offset]: [string, string, number, number]) =>
+    Api.getPansPaginated(sessionKey, limit, offset);
+const pansByUserFetcher = ([, userId, limit, offset]: [string, number, number, number]) =>
+    Api.getPansByUser(userId, limit, offset);
+const availableCountsFetcher = ([, sessionKey]: [string, string]) => Api.getAvailableIngredientCounts(sessionKey);
+const invitesFetcher = () => Api.listInvites();
+const userProfileFetcher = ([, userId]: [string, number]) => Api.getUserProfile(userId);
+const userStatsFetcher = ([, userId]: [string, number]) => Api.getUserStats(userId);
 
 // SWR Hooks
 export function useIngredients(sessionKey?: string) {
@@ -320,6 +255,19 @@ export function mutatePansPaginated(sessionKey?: string) {
     // Invalidate all paginated pans for this session
     if (sessionKey) {
         return swrMutate((key) => Array.isArray(key) && key[0] === "pansPaginated" && key[1] === sessionKey);
+    }
+}
+
+export function mutatePansByUser(userId?: number) {
+    // Invalidate all pages of this user's pans
+    if (userId) {
+        return swrMutate((key) => Array.isArray(key) && key[0] === "pansByUser" && key[1] === userId);
+    }
+}
+
+export function mutateUserProfile(userId?: number) {
+    if (userId) {
+        return swrMutate(getUserProfileKey(userId));
     }
 }
 

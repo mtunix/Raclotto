@@ -7,8 +7,8 @@ import styles from "./GenerateView/GenerateView.module.css";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../shared/IngredientDisplay/IngredientDisplay";
 import {Api} from "../../lib/api";
-import {useAuthStore} from "../../AuthSlice";
-import {useAppStore} from "../../AppSlice";
+import {applyRollOutcome} from "./applyRollOutcome";
+import {LevelUpPictureModal} from "./LevelUpPictureModal";
 import {useAvailableIngredientCounts} from "./hooks/useAvailableIngredientCounts";
 
 const {Text, Title} = Typography;
@@ -54,9 +54,6 @@ interface ColumnState {
 
 export function BanditView(props: BanditViewProps) {
     const {t} = useTranslation();
-    const currentUser = useAuthStore((state) => state.user);
-    const showXpNotification = useAppStore((state) => state.showXpNotification);
-    const setUser = useAuthStore((state) => state.setUser);
     const {
         ingredients,
         prepTypes,
@@ -79,6 +76,8 @@ export function BanditView(props: BanditViewProps) {
     const [showBanditModal, setShowBanditModal] = useState(false);
     const [showResult, setShowResult] = useState(false);
     const [currentRating, setCurrentRating] = useState<number>(0);
+    const [pendingLevelUpId, setPendingLevelUpId] = useState<number | undefined>(undefined);
+    const [showLevelUpPicture, setShowLevelUpPicture] = useState(false);
     const animationRefs = useRef<number[]>([]);
     const stopTimeouts = useRef<NodeJS.Timeout[]>([]);
     const stoppedColumnsRef = useRef<Set<number>>(new Set());
@@ -159,51 +158,15 @@ export function BanditView(props: BanditViewProps) {
         animationRefs.current = [];
 
         try {
-            // Store old XP before generation
-            const oldXP = currentUser?.experience_points || 0;
-            const oldLevelId = currentUser?.level?.id;
-
             // Call API first to get the result
-            const response = await Api.generateBandit(sessionKey, numColumns, rollPreparationType, rollCheese);
-            
-            if (!response || !response.generated) {
-                throw new Error("Invalid response from bandit API");
-            }
-
-            const pan = response.generated;
+            const outcome = await Api.generateBandit(sessionKey, numColumns, rollPreparationType, rollCheese);
+            const pan = outcome.pan;
             setApiResultPan(pan);
 
-            // Extract achievements from response
-            const achievements = response.achievements || [];
-
-            // Fetch updated user profile to get new XP
-            if (currentUser?.id) {
-                try {
-                    const updatedProfile = await Api.getUserProfile(currentUser.id);
-                    const newXP = updatedProfile.experience_points || 0;
-                    const newLevel = updatedProfile.level;
-                    const nextLevel = updatedProfile.next_level || null;
-                    const levelUp = oldLevelId !== undefined && newLevel?.id !== oldLevelId && newLevel?.id !== undefined;
-
-                    // Update auth store with new user data
-                    if (currentUser) {
-                        setUser({
-                            ...currentUser,
-                            experience_points: newXP,
-                            level: newLevel,
-                            next_level: nextLevel,
-                        });
-                    }
-
-                    // Show XP notification if XP increased
-                    if (newXP > oldXP && newLevel) {
-                        const xpGained = newXP - oldXP;
-                        showXpNotification(xpGained, oldXP, newXP, newLevel, nextLevel, levelUp, achievements);
-                    }
-                } catch (profileError) {
-                    console.error("Failed to fetch updated user profile:", profileError);
-                    // Continue even if profile fetch fails
-                }
+            // Remember a level-up so closing the result offers the new profile picture
+            const levelUp = applyRollOutcome(outcome, sessionKey);
+            if (levelUp.leveledUp) {
+                setPendingLevelUpId(levelUp.newLevelId);
             }
 
             // Extract ingredients from the pan result
@@ -883,6 +846,9 @@ export function BanditView(props: BanditViewProps) {
                         setShowResult(false);
                         setApiResultPan(null);
                         setCurrentRating(0);
+                        if (pendingLevelUpId) {
+                            setShowLevelUpPicture(true);
+                        }
                     }
                 }}
                 footer={null}
@@ -984,6 +950,15 @@ export function BanditView(props: BanditViewProps) {
                     )}
                 </div>
             </Modal>
+
+            <LevelUpPictureModal
+                open={showLevelUpPicture}
+                levelId={pendingLevelUpId}
+                onClose={() => {
+                    setShowLevelUpPicture(false);
+                    setPendingLevelUpId(undefined);
+                }}
+            />
 
             <style>{`
                 @keyframes emojiSpin {

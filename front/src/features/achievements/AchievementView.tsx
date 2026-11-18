@@ -11,18 +11,7 @@ type AchievementViewProps = {};
 
 export function AchievementView(props: AchievementViewProps) {
     const {t} = useTranslation();
-    const { data: achievementsData = [], isLoading: waiting } = useAchievements();
-    
-    // Transform data to Achievement format (fetcher already handles most of this)
-    const achievements = achievementsData.map((item: any) => ({
-        id: item.id,
-        title: item.title || item.name || '',
-        description: item.description || '',
-        value: item.value !== undefined ? item.value : (item.points !== undefined ? item.points : 0),
-        hidden: item.hidden || false,
-        unlocked: item.unlocked,
-        progress: item.progress
-    } as Achievement));
+    const { data: achievements = [], isLoading: waiting } = useAchievements();
 
     if (waiting) {
         return (

@@ -1,40 +1,6 @@
 import { create } from "zustand";
 import { Api } from "./lib/api";
-
-interface Level {
-  id: number;
-  name: string;
-  required_experience: number;
-}
-
-interface NextLevel {
-  id: number;
-  name: string;
-  required_experience: number;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  meat: boolean;
-  vegetarian: boolean;
-  vegan: boolean;
-  fish: boolean;
-  histamine: boolean;
-  fructose: boolean;
-  lactose: boolean;
-  gluten: boolean;
-  color?: string;
-  profile_picture?: string | null;
-  language?: string;
-  experience_points?: number;
-  level?: Level;
-  next_level?: NextLevel;
-  border_style?: string;
-  border_texture?: string | null;
-  glow_effect?: boolean;
-}
+import { User } from "./model/user";
 
 interface AuthState {
   token: string | null;
@@ -123,7 +89,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoadingUser: true });
       const userData = await Api.getCurrentUser();
-      set({ user: userData as User, isLoadingUser: false });
+      set({ user: userData, isLoadingUser: false });
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       set({ isLoadingUser: false });

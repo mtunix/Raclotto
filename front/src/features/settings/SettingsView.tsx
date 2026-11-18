@@ -44,6 +44,8 @@ import { SessionSettingsSection as SessionSettingsSectionComponent } from "./sec
 import { EventSettingsSection as EventSettingsSectionComponent } from "./sections/EventSettingsSection";
 import { InvitesSection as InvitesSectionComponent } from "./sections/InvitesSection";
 import { changeLanguage } from "../../i18n";
+import { normalizeDiet } from "../../model/diet";
+import { useDietPreferences } from "../../shared/useDietPreferences";
 import "./SettingsView.css";
 
 const { Text } = Typography;
@@ -283,14 +285,13 @@ export function SettingsView(props: SettingsViewProps) {
   const { data: invitesData = [], isLoading: loadingInvites } = useInvites();
 
   // User settings state
-  let [meat, setMeat] = useState(false);
-  let [vegetarian, setVegetarian] = useState(true);
-  let [vegan, setVegan] = useState(true);
-  let [fish, setFish] = useState(false);
-  let [gluten, setGluten] = useState(true);
-  let [histamine, setHistamine] = useState(true);
-  let [fructose, setFructose] = useState(true);
-  let [lactose, setLactose] = useState(true);
+  const {
+    prefs: tagValues,
+    setPrefs: setDietPrefs,
+    setChecked,
+  } = useDietPreferences();
+  const { meat, vegetarian, vegan, fish, gluten, histamine, fructose, lactose } =
+    tagValues;
   let [userName, setUserName] = useState("");
   let [userColor, setUserColor] = useState<string>("#1890ff");
   let [userLanguage, setUserLanguage] = useState<string>("de");
@@ -363,36 +364,26 @@ export function SettingsView(props: SettingsViewProps) {
   // Update local state when SWR data changes
   useEffect(() => {
     if (userData) {
-      // Handle both flattened and nested attribute structures
-      const attributes = userData.attributes || userData;
-      const name = attributes.name || "";
-      const color = attributes.color || "#1890ff";
-      const language = attributes.language || "de";
-      const border_style = attributes.border_style || "solid";
-      const border_texture = attributes.border_texture || null;
-      const glow_effect = attributes.glow_effect || false;
-      const meat = attributes.meat || false;
-      const vegetarian =
-        attributes.vegetarian !== undefined ? attributes.vegetarian : true;
-      const vegan = attributes.vegan !== undefined ? attributes.vegan : true;
-      const fish = attributes.fish || false;
-      const gluten = attributes.gluten !== undefined ? attributes.gluten : true;
-      const histamine =
-        attributes.histamine !== undefined ? attributes.histamine : true;
-      const fructose =
-        attributes.fructose !== undefined ? attributes.fructose : true;
-      const lactose =
-        attributes.lactose !== undefined ? attributes.lactose : true;
+      const name = userData.name;
+      const color = userData.color || "#1890ff";
+      const language = userData.language || "de";
+      const border_style = userData.border_style || "solid";
+      const border_texture = userData.border_texture || null;
+      const glow_effect = userData.glow_effect || false;
+      const { meat, vegetarian, vegan, fish, gluten, histamine, fructose, lactose } =
+        userData;
 
       setUserName(name);
-      setMeat(meat);
-      setVegetarian(vegetarian);
-      setVegan(vegan);
-      setFish(fish);
-      setGluten(gluten);
-      setHistamine(histamine);
-      setFructose(fructose);
-      setLactose(lactose);
+      setDietPrefs({
+        meat,
+        vegetarian,
+        vegan,
+        fish,
+        gluten,
+        histamine,
+        fructose,
+        lactose,
+      });
       setUserColor(color);
       setUserLanguage(language);
       setBorderStyle(border_style);
@@ -432,43 +423,6 @@ export function SettingsView(props: SettingsViewProps) {
   }, [sessionData]);
 
   // User settings functions
-  function setChecked(type: string, checked: boolean) {
-    // Update local state immediately for responsive UI
-    switch (type) {
-      case "vegetarian":
-        if (!checked) {
-          setVegan(true);
-        }
-        setVegetarian(checked);
-        break;
-      case "meat":
-        if (!checked) {
-          setVegetarian(true);
-          setVegan(true);
-        }
-        setMeat(checked);
-        break;
-      case "vegan":
-        setVegan(checked);
-        break;
-      case "fish":
-        setFish(checked);
-        break;
-      case "gluten":
-        setGluten(checked);
-        break;
-      case "histamine":
-        setHistamine(checked);
-        break;
-      case "fructose":
-        setFructose(checked);
-        break;
-      case "lactose":
-        setLactose(checked);
-        break;
-    }
-  }
-
   function onUserNameChanged(e: React.ChangeEvent<HTMLInputElement>) {
     setUserName(e.target.value);
   }
@@ -504,38 +458,17 @@ export function SettingsView(props: SettingsViewProps) {
     setUserSaving(true);
 
     try {
-      const updateData: any = {
+      // Apply the diet hierarchy the backend enforces (meat -> vegetarian -> vegan)
+      const diet = normalizeDiet(tagValues);
+      const updateData = {
         name: userName,
         color: userColor,
         language: userLanguage,
         border_style: borderStyle,
         border_texture: borderTexture,
         glow_effect: glowEffect,
-        meat,
-        vegetarian,
-        vegan,
-        fish,
-        gluten,
-        histamine,
-        fructose,
-        lactose,
+        ...diet,
       };
-
-      // Handle hierarchical logic:
-      // If meat is checked, vegetarian and vegan must be true (hierarchy: meat -> vegetarian -> vegan)
-      if (meat) {
-        updateData.vegetarian = true;
-        updateData.vegan = true;
-      }
-      // If vegetarian is checked, vegan must be true
-      else if (vegetarian) {
-        updateData.vegan = true;
-      }
-      // If all are unchecked, ensure at least one is true (default to vegetarian and vegan)
-      else if (!meat && !vegetarian && !vegan) {
-        updateData.vegetarian = true;
-        updateData.vegan = true;
-      }
 
       await Api.updateCurrentUser(updateData);
 
@@ -552,26 +485,11 @@ export function SettingsView(props: SettingsViewProps) {
         border_style: borderStyle,
         border_texture: borderTexture,
         glow_effect: glowEffect,
-        meat,
-        vegetarian:
-          updateData.vegetarian !== undefined
-            ? updateData.vegetarian
-            : vegetarian,
-        vegan: updateData.vegan !== undefined ? updateData.vegan : vegan,
-        fish,
-        gluten,
-        histamine,
-        fructose,
-        lactose,
+        ...diet,
       });
 
-      // Update local state to match backend response
-      if (updateData.vegetarian !== undefined) {
-        setVegetarian(updateData.vegetarian);
-      }
-      if (updateData.vegan !== undefined) {
-        setVegan(updateData.vegan);
-      }
+      // Update local state to match what the backend stored
+      setDietPrefs(diet);
 
       // Invalidate cache to trigger refetch
       mutateUser();
@@ -603,17 +521,6 @@ export function SettingsView(props: SettingsViewProps) {
     } finally {
       setUserSaving(false);
     }
-  };
-
-  const tagValues = {
-    meat,
-    vegetarian,
-    vegan,
-    fish,
-    gluten,
-    histamine,
-    fructose,
-    lactose,
   };
 
   // Session settings functions

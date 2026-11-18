@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Form, Input, Button, Card, Alert, Space, Avatar } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Api } from "../../../lib/api";
@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import { TagChipGroup } from "../../../shared/TagChipGroup";
 import { ProfilePictureManager } from "../../../shared/ProfilePictureManager";
 import { mutateUser } from "../../../lib/api/swrHooks";
+import { normalizeDiet } from "../../../model/diet";
+import { useDietPreferences } from "../../../shared/useDietPreferences";
 
 export function RegisterView() {
   const { t } = useTranslation();
@@ -18,14 +20,7 @@ export function RegisterView() {
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   // Dietary preferences state
-  const [meat, setMeat] = useState(false);
-  const [vegetarian, setVegetarian] = useState(true);
-  const [vegan, setVegan] = useState(true);
-  const [fish, setFish] = useState(false);
-  const [gluten, setGluten] = useState(true);
-  const [histamine, setHistamine] = useState(true);
-  const [fructose, setFructose] = useState(true);
-  const [lactose, setLactose] = useState(true);
+  const { prefs: tagValues, setChecked } = useDietPreferences();
 
   const [form] = Form.useForm();
   const [invitePrefilled, setInvitePrefilled] = useState(false);
@@ -83,78 +78,6 @@ export function RegisterView() {
     { name: "lactose", key: "tags.lactose" },
   ];
 
-  function setChecked(type: string, checked: boolean) {
-    // Update local state immediately for responsive UI
-    switch (type) {
-      case "vegetarian":
-        if (!checked) {
-          setVegan(true);
-        }
-        setVegetarian(checked);
-        break;
-      case "meat":
-        if (!checked) {
-          setVegetarian(true);
-          setVegan(true);
-        }
-        setMeat(checked);
-        break;
-      case "vegan":
-        setVegan(checked);
-        break;
-      case "fish":
-        setFish(checked);
-        break;
-      case "gluten":
-        setGluten(checked);
-        break;
-      case "histamine":
-        setHistamine(checked);
-        break;
-      case "fructose":
-        setFructose(checked);
-        break;
-      case "lactose":
-        setLactose(checked);
-        break;
-    }
-  }
-
-  function getValue(type: string): boolean {
-    switch (type) {
-      case "meat":
-        return meat;
-      case "vegetarian":
-        return vegetarian;
-      case "vegan":
-        return vegan;
-      case "gluten":
-        return gluten;
-      case "histamine":
-        return histamine;
-      case "fructose":
-        return fructose;
-      case "lactose":
-        return lactose;
-      default:
-        return false;
-    }
-  }
-
-  const tagValues = useMemo(
-    () => ({
-      meat,
-      vegetarian,
-      vegan,
-      fish,
-      gluten,
-      histamine,
-      fructose,
-      lactose,
-    }),
-    [meat, vegetarian, vegan, fish, gluten, histamine, fructose, lactose],
-  );
-
   const onFinish = async (values: {
     token: string;
     email: string;
@@ -187,26 +110,10 @@ export function RegisterView() {
         const user = await Api.getCurrentUser();
         const userLanguage = user.language || "de";
         // Update dietary preferences
-        const updateData: any = {
-          meat: meat,
-          vegetarian: vegetarian,
-          vegan: vegan,
-          fish: fish,
-          histamine: histamine,
-          fructose: fructose,
-          lactose: lactose,
-          gluten: gluten,
+        const updateData = {
+          ...normalizeDiet(tagValues),
           language: userLanguage,
         };
-        // Handle hierarchical logic: if meat is unchecked, ensure vegetarian and vegan are true
-        if (!meat) {
-          updateData.vegetarian = true;
-          updateData.vegan = true;
-        }
-        // If vegetarian is unchecked, ensure vegan is true
-        if (!vegetarian) {
-          updateData.vegan = true;
-        }
         await Api.updateCurrentUser(updateData);
 
         // Fetch updated user data

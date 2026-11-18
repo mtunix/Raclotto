@@ -12,28 +12,9 @@ import {
 } from "antd";
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { getRaw, postRaw } from "../lib/api/api";
+import { Api } from "../lib/api";
+import { ProfilePictureEntry } from "../model/profilePicture";
 import { getProfilePictureUrl } from "../lib/utils/profilePictureUrl";
-
-interface ProfilePictureEntry {
-  id: number;
-  profile_picture: string;
-  created_at: string;
-  level_id: number | null;
-  level_name: string | null;
-  is_candidate?: boolean;
-}
-
-interface ProfilePictureHistoryResponse {
-  data: {
-    attributes: {
-      history: ProfilePictureEntry[];
-      total_count: number;
-      user_id: number;
-      user_name: string;
-    };
-  };
-}
 
 interface ProfilePictureManagerProps {
   currentPicture?: string | null;
@@ -91,15 +72,8 @@ export function ProfilePictureManager({
       const fetchHistory = async () => {
         try {
           setLoadingHistory(true);
-          const response = (await getRaw(
-            `/api/images/profile-picture-history/${userId}`,
-          )) as ProfilePictureHistoryResponse;
-          const historyData = (response.data.attributes.history || []).map(
-            (entry) => ({
-              ...entry,
-              is_candidate: entry.is_candidate || false,
-            }),
-          );
+          const { history: historyData } =
+            await Api.getProfilePictureHistory(userId);
           setHistory(historyData);
 
           // Set the candidate picture ID for UI purposes
@@ -303,36 +277,19 @@ export function ProfilePictureManager({
           // Wait a bit for the backend to process the picture
           await new Promise((resolve) => setTimeout(resolve, 500));
 
-          const historyResponse = (await getRaw(
-            `/api/images/profile-picture-history/${userId}`,
-          )) as ProfilePictureHistoryResponse;
-          const updatedHistory = (
-            historyResponse.data.attributes.history || []
-          ).map((entry) => ({
-            ...entry,
-            is_candidate: entry.is_candidate || false,
-          }));
+          const { history: updatedHistory } =
+            await Api.getProfilePictureHistory(userId);
           setHistory(updatedHistory);
 
           // Find the most recently added picture and set it as candidate
           if (updatedHistory.length > 0) {
             const newestPicture = updatedHistory[0]; // Assuming most recent is first
             if (!newestPicture.is_candidate) {
-              await postRaw(
-                `/api/images/set-candidate-picture/${newestPicture.id}`,
-                {},
-              );
+              await Api.setCandidatePicture(newestPicture.id);
 
               // Refetch history again to show the updated candidate status
-              const updatedHistoryResponse = (await getRaw(
-                `/api/images/profile-picture-history/${userId}`,
-              )) as ProfilePictureHistoryResponse;
-              const finalHistory = (
-                updatedHistoryResponse.data.attributes.history || []
-              ).map((entry) => ({
-                ...entry,
-                is_candidate: entry.is_candidate || false,
-              }));
+              const { history: finalHistory } =
+                await Api.getProfilePictureHistory(userId);
               setHistory(finalHistory);
             }
           }
@@ -355,22 +312,15 @@ export function ProfilePictureManager({
   };
 
   const handleSetCandidate = async (pictureId: number) => {
-    if (!isOwnProfile) return;
+    if (!isOwnProfile || !userId) return;
 
     setSettingCandidate(true);
     try {
-      await postRaw(`/api/images/set-candidate-picture/${pictureId}`, {});
+      await Api.setCandidatePicture(pictureId);
 
       // Refetch history from server to ensure is_candidate flag is correctly set
-      const historyResponse = (await getRaw(
-        `/api/images/profile-picture-history/${userId}`,
-      )) as ProfilePictureHistoryResponse;
-      const updatedHistory = (
-        historyResponse.data.attributes.history || []
-      ).map((entry) => ({
-        ...entry,
-        is_candidate: entry.is_candidate || false,
-      }));
+      const { history: updatedHistory } =
+        await Api.getProfilePictureHistory(userId);
       setHistory(updatedHistory);
       setCandidatePictureId(pictureId);
       message.success(
