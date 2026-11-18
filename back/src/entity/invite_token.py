@@ -4,10 +4,9 @@ from datetime import datetime, timedelta
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
-class InviteToken(SerializableMixin, BaseModel):
+class InviteToken(BaseModel):
     __tablename__ = "invite_token"
 
     id = Column(Integer, primary_key=True)

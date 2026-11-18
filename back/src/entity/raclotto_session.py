@@ -4,10 +4,9 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
-class RaclottoSession(SerializableMixin, BaseModel):
+class RaclottoSession(BaseModel):
     __tablename__ = "session"
 
     id = Column(Integer, primary_key=True)

@@ -22,14 +22,6 @@ def get_session_const():
     )
 
 
-def get_dict_session():
-    return get_session().as_dict()
-
-
-def get_dict_session_const():
-    return get_session_const().as_dict()
-
-
 def get_json_gen_pan():
     return f"""{{
         "session_key": "{get_session_const().key}",

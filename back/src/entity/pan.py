@@ -57,12 +57,3 @@ class Pan(DomainMixin, BaseModel):
             .select_from(Rating)\
             .where(cls.id == Rating.pan_id)\
             .group_by(Rating.pan_id)
-
-    def as_dict(self):
-        cols = super().as_dict()
-        cols["rating"] = self.rating
-        cols["ratings"] = [x.as_dict() for x in self.ratings]
-        cols["ingredients"] = [x.as_dict() for x in self.ingredients]
-        if self.preparation_type:
-            cols["preparation_type"] = self.preparation_type.as_dict()
-        return cols

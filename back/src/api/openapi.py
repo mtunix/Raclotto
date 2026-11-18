@@ -1,7 +1,7 @@
-"""OpenAPI 3.1 document of the typed endpoints, built from their `BaseApi.endpoint` declarations.
+"""OpenAPI 3.1 document of the API, built from the `BaseApi.endpoint` declarations.
 
 `venv/bin/python -m back.src.api.openapi` (from the repo root) writes `back/openapi.json`, the
-input of the frontend's generated client. Legacy endpoints are left out.
+input of the frontend's generated client.
 """
 
 import inspect
@@ -113,10 +113,8 @@ def _operations(app: Flask) -> Iterator[_Operation]:
             continue
         func = BaseApi.endpoints[".".join(rule.endpoint.split(".")[-2:])]
         typed = typed_endpoint(func)
-        if typed is None:
-            continue
         if not rule.rule.startswith(API_PREFIX + "/"):
-            raise ValueError(f"typed endpoint {rule.rule} is not mounted below {API_PREFIX}")
+            raise ValueError(f"endpoint {rule.rule} is not mounted below {API_PREFIX}")
         tag = view_class.url_prefix.strip("/")
         if not tag:
             raise ValueError(f"{view_class.__name__} needs a url_prefix to tag its operations")

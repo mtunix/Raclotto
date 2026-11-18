@@ -3,10 +3,9 @@ from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
-class UserAchievementProgress(SerializableMixin, BaseModel):
+class UserAchievementProgress(BaseModel):
     """Tracks progress towards achievements for users."""
     __tablename__ = "user_achievement_progress"
 

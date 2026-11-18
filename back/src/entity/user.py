@@ -4,7 +4,6 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, T
 from sqlalchemy.orm import relationship
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
 # Lazy import to avoid circular imports
@@ -39,7 +38,7 @@ user_event_dismissals = Table(
 )
 
 
-class User(SerializableMixin, BaseModel):
+class User(BaseModel):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
@@ -102,28 +101,3 @@ class User(SerializableMixin, BaseModel):
             )
             return latest[0].profile_picture if latest else None
         return None
-
-    def get_profile_picture_with_level(self):
-        """Get the latest profile picture with its associated level."""
-        if self.profile_picture_history:
-            # Sort by created_at descending and get the first (most recent)
-            latest = sorted(
-                self.profile_picture_history, key=lambda x: x.created_at, reverse=True
-            )
-            if latest:
-                return {
-                    "profile_picture": latest[0].profile_picture,
-                    "level_id": latest[0].level_id,
-                    "level": latest[0].level.as_dict() if latest[0].level else None,
-                    "created_at": latest[0].created_at.isoformat(),
-                }
-        return None
-
-    def as_dict(self):
-        """Override as_dict to exclude password for security and include profile_picture."""
-        cols = super().as_dict()
-        # Remove password from serialization
-        cols.pop("password", None)
-        # Include the latest profile picture from history
-        cols["profile_picture"] = self.get_profile_picture()
-        return cols

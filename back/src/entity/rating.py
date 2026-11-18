@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SessionMixin, SerializableMixin
+from back.src.entity.mixin import SessionMixin
 
 
-class Rating(SerializableMixin, SessionMixin, BaseModel):
+class Rating(SessionMixin, BaseModel):
     __tablename__ = "rating"
 
     id = Column(Integer, primary_key=True)

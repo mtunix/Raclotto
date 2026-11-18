@@ -60,7 +60,7 @@ export function setAuthHooks(hooks: AuthHooks): void {
 }
 
 export const API_BASE = "/api";
-const CONTENT_TYPE = "application/vnd.api+json";
+const CONTENT_TYPE = "application/json";
 
 function headers(): Record<string, string> {
   const token = auth.token();
@@ -99,7 +99,7 @@ function dropEmpty(
   return result;
 }
 
-/** Production adapter: axios, JSON:API headers, bearer token, 401 → logout. */
+/** Production adapter: axios, JSON headers, bearer token, 401 → logout. */
 export const axiosTransport: Transport = {
   async request(method, path, options = {}) {
     try {

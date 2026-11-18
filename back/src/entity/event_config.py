@@ -2,10 +2,9 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
-class EventConfig(SerializableMixin, BaseModel):
+class EventConfig(BaseModel):
     __tablename__ = "event_config"
 
     id = Column(Integer, primary_key=True)

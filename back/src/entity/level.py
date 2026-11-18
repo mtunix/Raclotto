@@ -1,10 +1,9 @@
 from sqlalchemy import Column, Integer, String
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
-class Level(SerializableMixin, BaseModel):
+class Level(BaseModel):
     __tablename__ = "level"
 
     id = Column(Integer, primary_key=True)

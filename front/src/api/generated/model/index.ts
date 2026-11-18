@@ -63,7 +63,6 @@ export * from './insultDtoTitle';
 export * from './inviteDto';
 export * from './inviteDtoUsedAt';
 export * from './inviteLookupDto';
-export * from './jsonApiDto';
 export * from './leaderboardEntryDto';
 export * from './levelDto';
 export * from './listEventConfigsParams';

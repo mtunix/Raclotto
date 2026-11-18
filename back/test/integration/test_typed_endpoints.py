@@ -2,7 +2,7 @@ import unittest
 
 from pydantic import BaseModel, TypeAdapter
 
-from back.src.api.base_api import TypedEndpoint
+from back.src.api.base_api import BaseApi, TypedEndpoint
 from back.src.dto.base import ApiErrorDto, ErrorResponseDto
 from back.src.dto.level import LevelDto
 from back.src.repository.level_repository import LevelRepository
@@ -20,6 +20,7 @@ class TypedEndpointTest(AppTest):
     def assert_errors(self, response, status: int) -> list:
         self.assertEqual(response.status_code, status, response.get_data(as_text=True))
         body = ErrorResponseDto.model_validate(response.json)
+        self.assertEqual(set(response.json), set(ErrorResponseDto.model_fields))
         for error in response.json["errors"]:
             self.assertEqual(set(error), set(ApiErrorDto.model_fields))
         return body.errors
@@ -50,12 +51,16 @@ class TypedEndpointTest(AppTest):
             "required_experience": level.required_experience,
         })
 
-    def test_missing_level_keeps_error_format(self):
+    def test_missing_level_is_an_error_body(self):
         response = self.call("GET", "/levels/9999", self.user)
 
         [error] = self.assert_errors(response, 404)
         self.assertEqual(error.code, "api_error_code.resource_not_found")
-        self.assertEqual(response.json["jsonapi"], {"version": "1.0"})
+        self.assertEqual(set(response.json), {"errors"})
+
+    def test_unknown_endpoint_is_an_error_body(self):
+        [error] = self.assert_errors(self.call("GET", "/nowhere"), 404)
+        self.assertEqual(error.code, "api_error_code.endpoint_not_found")
 
     def test_levels_require_auth(self):
         [error] = self.assert_errors(self.call("GET", "/levels"), 401)
@@ -107,47 +112,34 @@ class TypedEndpointTest(AppTest):
 
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response.get_data(), b"")
+        self.assertNotIn("Content-Type", response.headers)
 
-    def test_typed_endpoints_accept_both_json_media_types(self):
-        for media_type in ("application/json", "application/vnd.api+json"):
-            with self.subTest(media_type):
-                response = self.client.post(
-                    "/api/probe/echo",
-                    data=ProbeBody(name="x", count=1).model_dump_json(),
-                    headers={"Content-Type": media_type, "Accept": media_type},
-                )
-                self.assertEqual(response.status_code, 201, response.json)
+    def test_endpoints_accept_json(self):
+        response = self.client.post(
+            "/api/probe/echo",
+            data=ProbeBody(name="x", count=1).model_dump_json(),
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+        )
+        self.assertEqual(response.status_code, 201, response.json)
         for accept in ("*/*", "application/*", None):
             with self.subTest(accept=accept):
                 headers = {**self.bearer(self.user), **({"Accept": accept} if accept else {})}
                 self.assertEqual(self.client.get("/api/levels", headers=headers).status_code, 200)
 
-    def test_typed_endpoints_reject_other_media_types(self):
-        response = self.client.get("/api/levels", headers={**self.bearer(self.user), "Accept": "text/html"})
-        self.assert_errors(response, 406)
+    def test_endpoints_reject_other_media_types(self):
+        for accept in ("text/html", "application/vnd.api+json"):
+            with self.subTest(accept=accept):
+                response = self.client.get("/api/levels", headers={**self.bearer(self.user), "Accept": accept})
+                self.assert_errors(response, 406)
 
-        response = self.client.post(
-            "/api/probe/echo", data="name=x", headers={"Content-Type": "application/x-www-form-urlencoded"}
-        )
-        self.assert_errors(response, 415)
-
-    def test_legacy_endpoints_still_require_json_api_media_type(self):
-        response = self.client.get("/api/probe/legacy", headers={"Accept": "application/json"})
-        self.assert_errors(response, 406)
-
-        response = self.client.post(
-            "/api/probe/legacy",
-            json={"data": {"attributes": {"text": "Soggy"}}},
-            headers={"Accept": "application/vnd.api+json"},
-        )
-        self.assert_errors(response, 415)
-
-        response = self.client.post(
-            "/api/probe/legacy",
-            data="{}",
-            headers={"Accept": "application/vnd.api+json", "Content-Type": "application/vnd.api+json"},
-        )
-        self.assertEqual(response.json, {"jsonapi": {"version": "1.0"}, "data": {"echo": True}})
+        for content_type in ("application/x-www-form-urlencoded", "application/vnd.api+json"):
+            with self.subTest(content_type=content_type):
+                response = self.client.post(
+                    "/api/probe/echo",
+                    data=ProbeBody(name="x", count=1).model_dump_json(),
+                    headers={"Content-Type": content_type},
+                )
+                self.assert_errors(response, 415)
 
 
 class TypedEndpointDeclarationTest(unittest.TestCase):
@@ -167,3 +159,10 @@ class TypedEndpointDeclarationTest(unittest.TestCase):
                 args = {"query": None, "body": None, "response": None, "status": 200, "operation_id": None}
                 with self.assertRaises((ValueError, TypeError)):
                     TypedEndpoint.declare(methods, **{**args, **kwargs})
+
+    def test_rejects_an_endpoint_without_a_response(self):
+        with self.assertRaises(ValueError):
+            class UndeclaredApi(BaseApi):
+                @BaseApi.endpoint("/undeclared", ["GET"])
+                def undeclared(self):
+                    pass

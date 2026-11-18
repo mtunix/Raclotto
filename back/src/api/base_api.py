@@ -17,7 +17,6 @@ from werkzeug.datastructures import MultiDict
 
 from ..utils import str_code_from_enum, un_camel_case
 from ..driver.database import db
-from .constants import JSONAPI_VERSION
 
 
 class ApiErrorCode(Enum):
@@ -65,17 +64,21 @@ class ApiValidationError(ApiError):
         return [error.to_dict() for error in self.errors]
 
 
-JSON_MIMETYPES = ("application/json", "application/vnd.api+json")
+def serialize_error(error: ApiError) -> Dict[str, List[dict]]:
+    return {"errors": error.to_dicts()}
 
-# An auth decorator sets this on its wrapper to the check it runs, so typed endpoints can
-# run the check on its own and the OpenAPI export can see the endpoint needs a token.
+
+JSON_MIMETYPE = "application/json"
+
+# An auth decorator sets this on its wrapper to the check it runs, so endpoints can run the
+# check on its own and the OpenAPI export can see the endpoint needs a token.
 AUTH_GUARD = "auth_guard"
 TYPED_MARKER = "_typed_endpoint"
 
 
 @dataclass(frozen=True)
 class TypedEndpoint:
-    """What a typed endpoint declares: request DTOs, the response DTO, its status and its error statuses."""
+    """What an endpoint declares: request DTOs, the response DTO, its status and its error statuses."""
 
     query: Optional[type[BaseModel]]
     body: Optional[type[BaseModel]]
@@ -92,9 +95,9 @@ class TypedEndpoint:
                 response: Any, status: int, operation_id: Optional[str],
                 errors: Sequence[int] = ()) -> TypedEndpoint:
         if len(methods) != 1:
-            raise ValueError(f"a typed endpoint serves exactly one method, got {methods}")
+            raise ValueError(f"an endpoint serves exactly one method, got {methods}")
         if (response is None) != (status == 204):
-            raise ValueError("a typed endpoint declares response= or status=204, not both")
+            raise ValueError("an endpoint declares either response= or status=204")
         if body is not None and methods[0].upper() == "GET":
             raise ValueError("a GET endpoint takes no body")
         for dto in (query, body):
@@ -119,6 +122,24 @@ class TypedEndpoint:
             return get_args(self.response)[0]
         return self.response
 
+    def check_media_types(self) -> None:
+        """Raises ApiError 415 for a body that isn't JSON and 406 when JSON isn't acceptable."""
+        if self.body is not None and request.mimetype != JSON_MIMETYPE:
+            raise ApiError(
+                ApiErrorCode.incorrect_header,
+                status=415,
+                title="Unsupported Media Type",
+                detail="Content-Type must be application/json"
+            )
+        # A missing Accept header accepts anything.
+        if request.headers.get('Accept') and request.accept_mimetypes.best_match([JSON_MIMETYPE]) is None:
+            raise ApiError(
+                ApiErrorCode.incorrect_header,
+                status=406,
+                title="Not Acceptable",
+                detail="Accept header must allow application/json"
+            )
+
     def parse_request(self) -> Dict[str, BaseModel]:
         """The `query=` / `body=` kwargs for the handler; raises ApiValidationError."""
         parsed: Dict[str, BaseModel] = {}
@@ -141,7 +162,9 @@ class TypedEndpoint:
         if self.status == 204:
             if result is not None:
                 raise TypeError(f"{handler.__qualname__} declares status=204 but returned {type(result).__name__}")
-            return current_app.response_class(status=204)
+            response = current_app.response_class(status=204)
+            del response.headers["Content-Type"]
+            return response
         if not _matches(result, self.response):
             raise TypeError(
                 f"{handler.__qualname__} declares response={_type_name(self.response)} "
@@ -156,8 +179,8 @@ class TypedEndpoint:
 _ERROR_STATUSES = {status.value for status in HTTPStatus if status.value >= 400}
 
 
-def typed_endpoint(func: Callable) -> Optional[TypedEndpoint]:
-    return getattr(func, TYPED_MARKER, None)
+def typed_endpoint(func: Callable) -> TypedEndpoint:
+    return getattr(func, TYPED_MARKER)
 
 
 def _is_model(value: Any) -> bool:
@@ -222,98 +245,6 @@ def _routed_endpoint() -> Callable:
     return BaseApi.endpoints[f"{blueprint_name}.{endpoint}"]
 
 
-def requires_json_api_accept(func):
-    """Decorator to require JSON API Accept header."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if typed_endpoint(_routed_endpoint()) is not None:
-            # A missing Accept header accepts anything.
-            if request.headers.get('Accept') and request.accept_mimetypes.best_match(JSON_MIMETYPES) is None:
-                raise ApiError(
-                    ApiErrorCode.incorrect_header,
-                    status=406,
-                    title="Not Acceptable",
-                    detail="Accept header must allow application/json"
-                )
-            return func(*args, **kwargs)
-        accept = request.headers.get('Accept', '')
-        if 'application/vnd.api+json' not in accept and '*/*' not in accept:
-            raise ApiError(
-                ApiErrorCode.incorrect_header,
-                status=406,
-                title="Not Acceptable",
-                detail="Accept header must include application/vnd.api+json"
-            )
-        return func(*args, **kwargs)
-    return wrapper
-
-
-def requires_json_api_mimetype(func):
-    """Decorator to require JSON API Content-Type for POST/PATCH requests."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        typed = typed_endpoint(_routed_endpoint())
-        if typed is not None:
-            if typed.body is not None and request.mimetype not in JSON_MIMETYPES:
-                raise ApiError(
-                    ApiErrorCode.incorrect_header,
-                    status=415,
-                    title="Unsupported Media Type",
-                    detail="Content-Type must be application/json"
-                )
-            return func(*args, **kwargs)
-        if request.method in ['POST', 'PATCH', 'PUT']:
-            content_type = request.headers.get('Content-Type', '')
-            if 'application/vnd.api+json' not in content_type:
-                raise ApiError(
-                    ApiErrorCode.incorrect_header,
-                    status=415,
-                    title="Unsupported Media Type",
-                    detail="Content-Type must be application/vnd.api+json"
-                )
-        return func(*args, **kwargs)
-    return wrapper
-
-
-def mime_renderer(func):
-    """Decorator to render response as JSON API."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-        
-        # If result is already a Response, return it
-        from flask import Response
-        if isinstance(result, Response):
-            return result
-        
-        # If result is a tuple (data, status) or (data, status, headers)
-        if isinstance(result, tuple):
-            data, status = result[0], result[1] if len(result) > 1 else 200
-            headers = result[2] if len(result) > 2 else {}
-            
-            # If data is already a dict with jsonapi, return as JSON
-            if isinstance(data, dict) and 'jsonapi' in data:
-                return jsonify(data), status, headers
-            
-            # Otherwise wrap in JSON API format
-            return jsonify({
-                'jsonapi': {'version': JSONAPI_VERSION},
-                'data': data
-            }), status, headers
-        
-        # If result is a dict with jsonapi, return as JSON
-        if isinstance(result, dict) and 'jsonapi' in result:
-            return jsonify(result), 200
-        
-        # Otherwise wrap in JSON API format
-        return jsonify({
-            'jsonapi': {'version': JSONAPI_VERSION},
-            'data': result
-        }), 200
-    
-    return wrapper
-
-
 def catch_integrity_errors(session: scoped_session):
     """Decorator to catch database integrity errors."""
     def decorator(func):
@@ -353,69 +284,34 @@ def catch_processing_exceptions(func):
 
 
 class BaseApi(View):
-    """Base API class without Flask-Restless dependencies."""
-    
+    """Routes requests to the endpoints its subclasses declare with `BaseApi.endpoint`."""
+
     init_every_request = False
-    
-    decorators = [
-        requires_json_api_accept,
-        requires_json_api_mimetype,
-        mime_renderer
-    ]
-    
+
     method_marker = "_method"
     route_marker = "_route"
     endpoints: Dict[str, Callable[..., Any]] = {}
-    
+
     url_prefix = ""
     blueprint_name = ""
-    
+
     logger = logging.getLogger("api.api_rules")
     session: scoped_session = db.session
-    
-    success = {"success": True}
-    
+
     def dispatch_request(self, **kwargs: Any) -> ft.ResponseReturnValue:
         endpoint = self.get_endpoint()
-        
-        typed = typed_endpoint(endpoint)
-        if typed is not None:
-            meth = self.typed_wrapper(endpoint, typed)
-        else:
-            meth = self.serialize_wrapper(endpoint)
+        meth = self.typed_wrapper(endpoint, typed_endpoint(endpoint))
         meth = catch_integrity_errors(self.session)(meth)
         meth = catch_processing_exceptions(meth)
-        
+
         return meth(self, **kwargs)
-    
-    def serialize_wrapper(self, func):
-        """Wrapper to serialize response to JSON API format."""
-        @wraps(func)
-        def new_func(*args, **kwargs):
-            result = func(*args, **kwargs)
-            
-            # If result is already a tuple, return as-is
-            if isinstance(result, tuple):
-                return result
-            
-            # If result is a dict with 'jsonapi' key, it's already formatted
-            if isinstance(result, dict) and 'jsonapi' in result:
-                return result
-            
-            # If result is None, return 204
-            if result is None:
-                return {}, 204
-            
-            # Otherwise, return as data
-            return result
-        
-        return new_func
-    
+
     @staticmethod
     def typed_wrapper(func, typed: TypedEndpoint):
         """Validates the request into DTOs, calls the handler and renders its DTO as plain JSON."""
         @wraps(func)
         def new_func(api, **kwargs):
+            typed.check_media_types()
             try:
                 dtos = typed.parse_request()
             except ApiValidationError:
@@ -461,28 +357,20 @@ class BaseApi(View):
     def endpoint(cls, route: str, methods: List[str], *, query: Optional[type[BaseModel]] = None,
                  body: Optional[type[BaseModel]] = None, response: Any = None, status: int = 200,
                  operation_id: Optional[str] = None, errors: Sequence[int] = ()):
-        """Decorator to mark method as endpoint.
-        
-        Declaring `response=` (or `status=204`) makes it a typed endpoint: the handler gets
-        `query=`/`body=` as validated DTOs, returns the response DTO and appears in the OpenAPI spec.
-        `errors=` lists the error statuses the handler and what it calls can answer with.
+        """Decorator to mark a method as endpoint; it must declare `response=` or `status=204`.
+
+        The handler gets `query=`/`body=` as validated DTOs, returns the response DTO and appears
+        in the OpenAPI spec. `errors=` lists the error statuses the handler and what it calls can
+        answer with.
         """
-        typed = None
-        if any(arg is not None for arg in (query, body, response, operation_id)) or status != 200 or errors:
-            typed = TypedEndpoint.declare(methods, query, body, response, status, operation_id, errors)
+        typed = TypedEndpoint.declare(methods, query, body, response, status, operation_id, errors)
 
         def wrapper(func):
             setattr(func, cls.route_marker, route)
             setattr(func, cls.method_marker, methods)
-            if typed is not None:
-                setattr(func, TYPED_MARKER, typed)
-            
-            @wraps(func)
-            def inner(*args, **kwargs):
-                return func(*args, **kwargs)
-            
-            return inner
-        
+            setattr(func, TYPED_MARKER, typed)
+            return func
+
         return wrapper
 
 

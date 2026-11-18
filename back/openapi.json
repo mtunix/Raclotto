@@ -394,13 +394,9 @@
             },
             "title": "Errors",
             "type": "array"
-          },
-          "jsonapi": {
-            "$ref": "#/components/schemas/JsonApiDto"
           }
         },
         "required": [
-          "jsonapi",
           "errors"
         ],
         "title": "ErrorResponseDto",
@@ -1124,19 +1120,6 @@
           "expires_at"
         ],
         "title": "InviteLookupDto",
-        "type": "object"
-      },
-      "JsonApiDto": {
-        "properties": {
-          "version": {
-            "title": "Version",
-            "type": "string"
-          }
-        },
-        "required": [
-          "version"
-        ],
-        "title": "JsonApiDto",
         "type": "object"
       },
       "LeaderboardEntryDto": {

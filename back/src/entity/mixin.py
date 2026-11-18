@@ -12,11 +12,6 @@ class SessionMixin(object):
         return relationship("RaclottoSession", uselist=False, lazy="selectin")
 
 
-class SerializableMixin(object):
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-
-class DomainMixin(SerializableMixin, SessionMixin):
+class DomainMixin(SessionMixin):
     name = Column(String)
 

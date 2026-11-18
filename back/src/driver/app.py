@@ -5,8 +5,7 @@ from typing import Dict, List, Optional, Type
 from flask import Config, Flask, Response, jsonify, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules
-from back.src.api.serializer import serialize_error
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules, serialize_error
 from back.src.driver.api_custom import apis_custom
 from back.src.utils import str_code_from_enum
 
@@ -255,8 +254,6 @@ class App(Flask):
 
     @staticmethod
     def page_not_found(_):
-        from back.src.api.base_api import ApiError
-
         code = ApiErrorCode.endpoint_not_found
         error = ApiError(
             code,
@@ -268,9 +265,3 @@ class App(Flask):
 
     def invalid_api_usage(self, e):
         return jsonify(serialize_error(e)), e.status
-
-    def uncaught_mikado_error(self, e):
-        e = ApiError(
-            e.args[0], title="Uncaught RaclottoError.", detail=str(e), status=500
-        )
-        return jsonify(e.to_dict()), e.status

@@ -138,13 +138,6 @@ class AppTest(unittest.TestCase):
         token = generate_token(user.id, self.app.config["JWT_SECRET_KEY"])
         return {"Authorization": f"Bearer {token}"}
 
-    def auth(self, user: User) -> dict:
-        return {
-            **self.bearer(user),
-            "Content-Type": "application/vnd.api+json",
-            "Accept": "application/vnd.api+json",
-        }
-
     def call(
         self,
         method: str,
@@ -153,19 +146,11 @@ class AppTest(unittest.TestCase):
         body: Optional[dict] = None,
         query: Optional[dict] = None,
     ):
-        """Call a typed endpoint with plain JSON, as the generated client does."""
+        """Call an endpoint with plain JSON, as the generated client does."""
         return self.client.open(
             "/api" + path,
             method=method,
             query_string=query,
             json=body,
             headers={"Accept": "application/json", **(self.bearer(user) if user else {})},
-        )
-
-    def post(self, user: User, path: str, attributes: dict, **query):
-        return self.client.post(
-            "/api" + path,
-            query_string=query,
-            json={"data": {"attributes": attributes}},
-            headers=self.auth(user),
         )

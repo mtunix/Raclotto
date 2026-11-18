@@ -1,9 +1,10 @@
 import enum
+import re
 import unittest
 
 from flask import Flask
 
-from back.src.api.base_api import BaseApi, init_api_rules, typed_endpoint
+from back.src.api.base_api import BaseApi, init_api_rules
 from back.src.api.openapi import SPEC_PATH, build_openapi, render_openapi
 from back.src.driver.api_custom import apis_custom
 from back.src.driver.database import db
@@ -31,7 +32,7 @@ class CommittedSpecTest(unittest.TestCase):
 
         self.assertTrue(
             SPEC_PATH.exists() and SPEC_PATH.read_text() == expected,
-            f"{SPEC_PATH} is out of date with the typed endpoints; run `cd front && npm run gen:api`",
+            f"{SPEC_PATH} is out of date with the endpoints; run `cd front && npm run gen:api`",
         )
 
 
@@ -357,13 +358,19 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
 
 
 class EveryEndpointTypedTest(unittest.TestCase):
-    def test_no_legacy_endpoint_is_left(self):
-        get_app()
+    def test_every_endpoint_is_in_the_spec(self):
+        app = get_app()
         production = {un_camel_case(api.__name__) for api in apis_custom}
-        endpoints = {name: func for name, func in BaseApi.endpoints.items() if name.split(".")[0] in production}
+        routes = set()
+        for rule in app.url_map.iter_rules():
+            name = ".".join(rule.endpoint.split(".")[-2:])
+            if name.split(".")[0] in production:
+                path = re.sub(r"<(?:\w+:)?(\w+)>", r"{\1}", rule.rule.removeprefix("/api"))
+                routes |= {(path, method.lower()) for method in getattr(BaseApi.endpoints[name], BaseApi.method_marker)}
+        operations = {(path, method) for path, item in build_openapi(app)["paths"].items() for method in item}
 
-        self.assertEqual({name.split(".")[0] for name in endpoints}, production)
-        self.assertEqual([name for name, func in sorted(endpoints.items()) if typed_endpoint(func) is None], [])
+        self.assertEqual({path.split("/")[1] for path, _ in routes}, {api.url_prefix.strip("/") for api in apis_custom})
+        self.assertEqual(routes, operations)
 
 
 class ProbeSpecTest(unittest.TestCase):

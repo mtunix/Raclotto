@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String
-from back.src.entity.mixin import SerializableMixin
 from back.src.driver.database import BaseModel
 
 
-class PreparationType(SerializableMixin, BaseModel):
+class PreparationType(BaseModel):
     __tablename__ = "preparation_type"
 
     id = Column(Integer, primary_key=True)

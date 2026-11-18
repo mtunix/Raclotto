@@ -1,4 +1,4 @@
-"""Base classes for the wire shapes of typed endpoints, and the error body every endpoint shares."""
+"""Base classes for the request and response DTOs, and the error body every endpoint shares."""
 
 from pydantic import BaseModel, ConfigDict
 
@@ -29,10 +29,5 @@ class ApiErrorDto(ResponseDto):
     source: ApiErrorSourceDto | None
 
 
-class JsonApiDto(ResponseDto):
-    version: str
-
-
 class ErrorResponseDto(ResponseDto):
-    jsonapi: JsonApiDto
     errors: list[ApiErrorDto]

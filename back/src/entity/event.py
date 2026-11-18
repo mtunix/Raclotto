@@ -3,10 +3,9 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 
 from back.src.driver.database import BaseModel
-from back.src.entity.mixin import SerializableMixin
 
 
-class Event(SerializableMixin, BaseModel):
+class Event(BaseModel):
     __tablename__ = "event"
 
     id = Column(Integer, primary_key=True)

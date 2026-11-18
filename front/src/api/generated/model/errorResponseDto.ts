@@ -5,9 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ApiErrorDto } from './apiErrorDto';
-import type { JsonApiDto } from './jsonApiDto';
 
 export interface ErrorResponseDto {
   errors: ApiErrorDto[];
-  jsonapi: JsonApiDto;
 }
