@@ -1,13 +1,6 @@
 import { Ingredient } from "../../model/ingredient";
 import { Pan } from "../../model/pan";
 
-/** One page of pans plus pagination info. */
-export interface PanPage {
-  data: Pan[];
-  hasMore: boolean;
-  total: number;
-}
-
 /**
  * Stats response structure
  */

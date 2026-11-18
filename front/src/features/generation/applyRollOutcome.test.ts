@@ -1,14 +1,21 @@
+import React from "react";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { SWRConfig } from "swr";
+import { rollPan, useListPans } from "../../api/generated/endpoints/pans/pans";
+import type { RollOutcomeDto } from "../../api/generated/model";
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
-import { RollOutcome } from "../../model/rollOutcome";
+import { panPage, rollOutcome } from "../../lib/api/__fixtures__/backendResponses";
+import { FakeTransport } from "../../lib/api/fakeTransport";
+import { setTransport, Transport } from "../../lib/api/transport";
 import { User } from "../../model/user";
 import { applyRollOutcome } from "./applyRollOutcome";
 
 const user: User = {
-    id: 7,
+    id: rollOutcome.pan.user_id,
     name: "Ada",
     email: "ada@example.com",
-    meat: false,
+    meat: true,
     vegetarian: true,
     vegan: true,
     fish: false,
@@ -16,77 +23,102 @@ const user: User = {
     fructose: true,
     lactose: true,
     gluten: true,
-    experience_points: 100,
-    level: { id: 2, name: "Cook", required_experience: 100 },
-    next_level: { id: 3, name: "Chef", required_experience: 140 },
+    experience_points: 95,
+    level: { id: 1, name: "level.one", required_experience: 0 },
+    next_level: { id: 2, name: "level.two", required_experience: 100 },
 };
 
-const outcome = (leveledUp: boolean, xpGained = 42): RollOutcome => ({
-    pan: {
-        id: 11,
-        name: "Pan",
-        user: "",
-        timestamp: "",
-        snacked: false,
-        ingredients: [],
-        ratings: [],
-        rating: 0,
-    },
-    reward: {
-        xp_gained: xpGained,
-        xp_before: 100,
-        xp_after: 100 + xpGained,
-        level: leveledUp
-            ? { id: 3, name: "Chef", required_experience: 140 }
-            : { id: 2, name: "Cook", required_experience: 100 },
-        previous_level: { id: 2, name: "Cook", required_experience: 100 },
-        next_level: leveledUp
-            ? { id: 4, name: "Master", required_experience: 300 }
-            : { id: 3, name: "Chef", required_experience: 140 },
-        leveled_up: leveledUp,
-    },
-    achievements: [
-        { id: 3, title: "First Pan", description: "", value: 10, hidden: false },
-    ],
-    events: [],
+// The fixture is a real level-up roll; these variants change only the reward.
+const withReward = (reward: Partial<RollOutcomeDto["reward"]>): RollOutcomeDto => ({
+    ...rollOutcome,
+    reward: { ...rollOutcome.reward, ...reward },
 });
 
+let fake: FakeTransport;
+let previous: Transport;
+
 beforeEach(() => {
+    fake = new FakeTransport();
+    previous = setTransport(fake);
     useAuthStore.setState({ user });
     useAppStore.getState().hideXpNotification();
 });
 
+afterEach(() => {
+    setTransport(previous);
+});
+
+it("applies a roll response as the backend sends it", async () => {
+    fake.on("POST", "/pans/generate", rollOutcome);
+
+    const outcome = await rollPan({ num_fill: 2, num_sauce: 1 }, { session_key: "s1" });
+    const levelUp = applyRollOutcome(outcome, "s1");
+
+    expect(fake.last("POST", "/pans/generate")).toEqual({
+        method: "POST",
+        path: "/pans/generate",
+        query: { session_key: "s1" },
+        body: { num_fill: 2, num_sauce: 1 },
+    });
+    expect(outcome.pan.author?.name).toBe("Ada");
+    expect(levelUp).toEqual({ leveledUp: true, newLevelId: rollOutcome.reward.level?.id });
+});
+
 it("updates the signed-in user's XP and level from the reward", () => {
-    applyRollOutcome(outcome(true), "sess");
+    applyRollOutcome(rollOutcome, "s1");
 
     const updated = useAuthStore.getState().user!;
-    expect(updated.experience_points).toBe(142);
-    expect(updated.level?.id).toBe(3);
-    expect(updated.next_level?.id).toBe(4);
+    expect(updated.experience_points).toBe(rollOutcome.reward.xp_after);
+    expect(updated.level?.id).toBe(rollOutcome.reward.level?.id);
+    expect(updated.next_level?.id).toBe(rollOutcome.reward.next_level?.id);
     expect(updated.name).toBe("Ada");
 });
 
 it("shows the XP notification with the unlocked achievements", () => {
-    applyRollOutcome(outcome(false), "sess");
+    applyRollOutcome(withReward({ leveled_up: false }), "s1");
 
+    const { reward, achievements } = rollOutcome;
     expect(useAppStore.getState().xpNotification).toMatchObject({
         visible: true,
-        xpGained: 42,
-        oldXP: 100,
-        newXP: 142,
+        xpGained: reward.xp_gained,
+        oldXP: reward.xp_before,
+        newXP: reward.xp_after,
         levelUp: false,
-        level: { id: 2 },
-        nextLevel: { id: 3 },
-        achievements: [{ id: 3, title: "First Pan" }],
+        level: { id: reward.level?.id },
+        nextLevel: { id: reward.next_level?.id },
+        achievements: achievements.map(({ id, title }) => expect.objectContaining({ id, title })),
     });
 });
 
-it("reports a level-up with the reached level", () => {
-    expect(applyRollOutcome(outcome(true), "sess")).toEqual({ leveledUp: true, newLevelId: 3 });
-    expect(applyRollOutcome(outcome(false), "sess")).toEqual({ leveledUp: false });
+it("reports a level-up only when the reward says so", () => {
+    expect(applyRollOutcome(withReward({ leveled_up: false }), "s1")).toEqual({ leveledUp: false });
+    expect(applyRollOutcome(withReward({ level: null }), "s1")).toEqual({ leveledUp: false });
 });
 
 it("does not notify when no XP was gained", () => {
-    applyRollOutcome(outcome(false, 0), "sess");
+    applyRollOutcome(withReward({ xp_gained: 0 }), "s1");
     expect(useAppStore.getState().xpNotification.visible).toBe(false);
+});
+
+it("refetches every cached pan list", async () => {
+    fake.on("GET", "/pans", panPage);
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+        React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+    const session = renderHook(() => useListPans({ session_key: "s1", limit: 1, offset: 0 }), { wrapper });
+    const author = renderHook(() => useListPans({ user_id: user.id, limit: 1, offset: 0 }), { wrapper });
+    await waitFor(() => expect(session.result.current.data).toEqual(panPage));
+    await waitFor(() => expect(author.result.current.data).toEqual(panPage));
+    const fetched = fake.requests.length;
+
+    act(() => {
+        applyRollOutcome(rollOutcome, "s1");
+    });
+
+    await waitFor(() => expect(fake.requests.length).toBe(fetched + 2));
+    expect(fake.requests.slice(fetched).map((r) => r.query)).toEqual(
+        expect.arrayContaining([
+            { session_key: "s1", limit: 1, offset: 0 },
+            { user_id: user.id, limit: 1, offset: 0 },
+        ]),
+    );
 });

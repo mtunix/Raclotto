@@ -7,6 +7,7 @@ from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.auth.password import hash_password, verify_password
 from back.src.driver.database import db
+from back.src.dto.user import BORDER_STYLES, BORDER_TEXTURES
 from back.src.entity.invite_token import InviteToken
 from back.src.entity.user import User
 from back.src.repository.invite_token_repository import InviteTokenRepository
@@ -372,7 +373,7 @@ class AuthApi(BaseApi):
             )
         if "border_style" in attributes:
             # Validate border_style (3D effects removed: ridge, groove, inset, outset)
-            allowed_styles = ["solid", "dashed", "dotted", "double"]
+            allowed_styles = list(BORDER_STYLES)
             if attributes["border_style"] in allowed_styles:
                 user.border_style = attributes["border_style"]
             else:
@@ -384,15 +385,7 @@ class AuthApi(BaseApi):
                 )
         if "border_texture" in attributes:
             # Validate border_texture
-            allowed_textures = [
-                "cheese",
-                "bread",
-                "sauce-01",
-                "sauce-02",
-                "herbs-01",
-                "herbs-02",
-                None,
-            ]
+            allowed_textures = [*BORDER_TEXTURES, None]
             if (
                 attributes["border_texture"] in allowed_textures
                 or attributes["border_texture"] is None

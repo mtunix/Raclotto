@@ -2,6 +2,8 @@ import random
 import unittest
 
 from back.src.driver.database import db
+from back.src.dto.pan import RollOutcomeDto
+from back.src.dto.user import UserSummaryDto
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.pan import Pan
 from back.src.entity.user import user_sessions
@@ -134,51 +136,114 @@ class TestPanRoll(AppTest):
 class TestRollRoutes(AppTest):
     def setUp(self):
         super().setUp()
-        self.user = self.make_user("ana", meat=True)
+        self.user = self.make_user("ana", meat=True, color="#00ff00", border_texture="cheese")
         self.session = self.make_session("s1", creator=self.user)
-        self.make_ingredient(self.session, "Pork", FILL, meat=True)
-        self.make_ingredient(self.session, "Potato", FILL)
-        self.make_ingredient(self.session, "Aioli", SAUCE, vegetarian=True)
+        self.pork = self.make_ingredient(self.session, "Pork", FILL, meat=True)
+        self.potato = self.make_ingredient(self.session, "Potato", FILL)
+        self.aioli = self.make_ingredient(self.session, "Aioli", SAUCE, vegetarian=True)
 
-    def test_generate_returns_pan_with_outcome_meta(self):
-        response = self.post(self.user, "/pans/generate", {"numFill": 2, "numSauce": 1}, session_key="s1")
+    def roll(self, path: str, body: dict, user=None, **query):
+        return self.call("POST", path, user or self.user, body=body, query={"session_key": "s1", **query})
 
+    def assert_outcome(self, response) -> RollOutcomeDto:
         self.assertEqual(response.status_code, 200, response.json)
-        body = response.json
-        self.assertEqual(body["data"]["type"], "pan")
-        self.assertEqual(len(body["data"]["attributes"]["ingredients"]), 3)
-        reward = body["meta"]["reward"]
-        self.assertEqual(reward["xp_after"] - reward["xp_before"], reward["xp_gained"])
-        self.assertIn("leveled_up", reward)
-        self.assertIsInstance(body["meta"]["events"], list)
-        titles = [a["attributes"]["title"] for a in body["meta"]["newly_unlocked_achievements"]]
-        self.assertIn("First Blood!", titles)
+        self.assertEqual(set(response.json), {"pan", "reward", "achievements", "events"})
+        return RollOutcomeDto.model_validate(response.json)
 
-    def test_bandit_and_hand_picked_routes_share_the_envelope(self):
-        bandit = self.post(self.user, "/pans/generate/bandit", {"total_columns": 2}, session_key="s1")
-        picked = self.post(self.user, "/pans", {"ingredients": [1, 3]}, session_key="s1")
+    def test_generate_returns_the_roll_outcome(self):
+        outcome = self.assert_outcome(self.roll("/pans/generate", {"num_fill": 2, "num_sauce": 1}))
 
-        for response in (bandit, picked):
-            self.assertEqual(response.status_code, 200, response.json)
-            self.assertEqual(set(response.json["meta"]), {"reward", "events", "newly_unlocked_achievements"})
+        self.assertEqual(len(outcome.pan.ingredients), 3)
+        self.assertEqual(outcome.reward.xp_after - outcome.reward.xp_before, outcome.reward.xp_gained)
+        self.assertGreater(outcome.reward.xp_gained, 0)
+        self.assertIn("First Blood!", [a.title for a in outcome.achievements])
+        self.assertEqual(outcome.events, [])
 
-    def test_triggered_events_are_serialized_in_meta(self):
+    def test_every_roll_route_names_the_author(self):
+        for path, body in (
+            ("/pans/generate", {"num_fill": 1, "num_sauce": 1}),
+            ("/pans/generate/bandit", {"total_columns": 2}),
+            ("/pans", {"ingredients": [self.pork.id, self.aioli.id]}),
+        ):
+            with self.subTest(path):
+                pan = self.assert_outcome(self.roll(path, body)).pan
+                self.assertEqual(pan.user_id, self.user.id)
+                self.assertEqual(pan.author, UserSummaryDto(
+                    id=self.user.id, name="ana", color="#00ff00", profile_picture=None,
+                    border_style="solid", border_texture="cheese", glow_effect=False,
+                ))
+
+    def test_classic_roll_defaults_to_three_fills_and_two_sauces(self):
+        outcome = self.assert_outcome(self.roll("/pans/generate", {}))
+
+        # Two fills and one sauce are all the session offers.
+        self.assertEqual(len(outcome.pan.ingredients), 3)
+        self.assertIsNone(outcome.pan.preparation_type)
+        self.assertFalse(outcome.pan.rolled_cheese)
+
+    def test_rolled_preparation_type_and_cheese_come_back_on_the_pan(self):
+        pan = self.assert_outcome(
+            self.roll("/pans/generate/bandit", {"total_columns": 2, "roll_prep_type": True, "roll_cheese": True})
+        ).pan
+
+        self.assertTrue(pan.rolled_preparation_type)
+        self.assertEqual(pan.preparation_type.id, pan.preparation_type_id)
+        self.assertTrue(pan.rolled_cheese)
+        self.assertIn(pan.cheese_level, range(10))
+
+    def test_hand_picked_pan_keeps_its_name(self):
+        named = self.assert_outcome(self.roll("/pans", {"ingredients": [self.potato.id], "name": "Mine"})).pan
+        unnamed = self.assert_outcome(self.roll("/pans", {"ingredients": [self.potato.id], "name": ""})).pan
+
+        self.assertEqual(named.name, "Mine")
+        self.assertEqual([i.name for i in named.ingredients], ["Potato"])
+        self.assertTrue(unnamed.name)
+        self.assertNotEqual(unnamed.name, "")
+
+    def test_triggered_events_come_back_typed(self):
         ben = self.make_user("ben", meat=True)
-        self.post(self.user, "/pans/generate", {"numFill": 1, "numSauce": 1}, session_key="s1")
-        response = self.post(ben, "/pans/generate", {"numFill": 1, "numSauce": 1}, session_key="s1")
+        self.assert_outcome(self.roll("/pans/generate", {"num_fill": 1, "num_sauce": 1}))
+        outcome = self.assert_outcome(self.roll("/pans/generate", {"num_fill": 1, "num_sauce": 1}, user=ben))
 
-        self.assertEqual(response.status_code, 200, response.json)
-        events = response.json["meta"]["events"]
-        self.assertEqual([e["attributes"]["event_type"] for e in events], ["pan_swap"])
+        [event] = outcome.events
+        self.assertEqual(event.event_type, "pan_swap")
+        self.assertEqual(event.data.pan2_user_name, "ana")
+        self.assertEqual(event.data.pan1_id, outcome.pan.id)
 
     def test_roll_errors_map_to_http_errors(self):
-        missing = self.post(self.user, "/pans/generate", {}, session_key="nope")
-        empty = self.post(self.user, "/pans/generate", {"numFill": 0, "numSauce": 0}, session_key="s1")
-        no_key = self.post(self.user, "/pans/generate", {})
+        missing = self.roll("/pans/generate", {}, session_key="nope")
+        empty = self.roll("/pans/generate", {"num_fill": 0, "num_sauce": 0})
+        foreign = self.roll("/pans", {"ingredients": [999]})
+        no_key = self.call("POST", "/pans/generate", self.user, body={})
 
         self.assertEqual(missing.status_code, 404)
+        self.assertEqual(missing.json["errors"][0]["title"], "Session not found")
         self.assertEqual(empty.status_code, 400)
+        self.assertEqual(empty.json["errors"][0]["title"], "Invalid ingredient selection")
+        self.assertEqual(foreign.status_code, 400)
         self.assertEqual(no_key.status_code, 400)
+        self.assertEqual(no_key.json["errors"][0]["source"], {"pointer": "/query/session_key"})
+
+    def test_invalid_roll_bodies_point_at_the_field(self):
+        for path, body, pointer in (
+            ("/pans/generate/bandit", {"total_columns": 0}, "/body/total_columns"),
+            ("/pans/generate/bandit", {}, "/body/total_columns"),
+            ("/pans/generate", {"num_fill": -1}, "/body/num_fill"),
+            ("/pans/generate", {"numFill": 2}, "/body/numFill"),
+            ("/pans", {"ingredients": []}, "/body/ingredients"),
+            ("/pans", {"ingredients": [1], "user_id": 2}, "/body/user_id"),
+        ):
+            with self.subTest(path=path, body=body):
+                response = self.roll(path, body)
+                self.assertEqual(response.status_code, 400, response.json)
+                self.assertEqual([e["source"]["pointer"] for e in response.json["errors"]], [pointer])
+        self.assertEqual(db.session.query(Pan).count(), 0)
+
+    def test_rolling_requires_auth(self):
+        for path in ("/pans/generate", "/pans/generate/bandit", "/pans"):
+            with self.subTest(path):
+                response = self.client.post(f"/api{path}", query_string={"session_key": "s1"}, json={})
+                self.assertEqual(response.status_code, 401)
 
 
 if __name__ == "__main__":

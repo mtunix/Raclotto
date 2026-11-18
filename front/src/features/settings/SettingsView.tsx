@@ -35,7 +35,7 @@ import {
   mutateUser,
   mutateSession,
   mutateInvites,
-  mutatePansPaginated,
+  mutatePanLists,
 } from "../../lib/api/swrHooks";
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
@@ -494,10 +494,8 @@ export function SettingsView(props: SettingsViewProps) {
       // Invalidate cache to trigger refetch
       mutateUser();
 
-      // Invalidate pans cache so HistoryView shows updated border preferences
-      if (sessionKey) {
-        mutatePansPaginated(sessionKey);
-      }
+      // Pan cards show their author's border preferences
+      mutatePanLists();
 
       // Update auth store with new color, language, and border preferences
       if (currentUser) {

@@ -1,15 +1,14 @@
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
+import type { RollOutcomeDto } from "../../api/generated/model";
 import {
   mutateAchievements,
   mutateAvailableCounts,
   mutateEvents,
-  mutatePansByUser,
-  mutatePansPaginated,
+  mutatePanLists,
   mutateUser,
   mutateUserProfile,
 } from "../../lib/api/swrHooks";
-import { RollOutcome } from "../../model/rollOutcome";
 
 export interface LevelUp {
   leveledUp: boolean;
@@ -23,7 +22,7 @@ export interface LevelUp {
  * roll invalidates. Returns the level-up (if any) so the caller can offer the
  * level-up profile picture.
  */
-export function applyRollOutcome(outcome: RollOutcome, sessionKey: string): LevelUp {
+export function applyRollOutcome(outcome: RollOutcomeDto, sessionKey: string): LevelUp {
   const { reward, achievements, events } = outcome;
   const { user, setUser } = useAuthStore.getState();
 
@@ -50,11 +49,10 @@ export function applyRollOutcome(outcome: RollOutcome, sessionKey: string): Leve
       );
   }
 
-  mutatePansPaginated(sessionKey);
+  mutatePanLists();
   mutateAvailableCounts(sessionKey);
   if (user) {
     mutateUserProfile(user.id);
-    mutatePansByUser(user.id);
     mutateUser();
   }
   if (achievements.length > 0) mutateAchievements();

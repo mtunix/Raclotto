@@ -1,9 +1,9 @@
-import React, {useState, useEffect, useCallback} from "react";
-import {Api} from "../../../lib/api";
-import {usePansPaginated, mutatePansPaginated} from "../../../lib/api/swrHooks";
+import React, {useEffect, useState} from "react";
+import {createPan, getPan} from "../../../api/generated/endpoints/pans/pans";
+import {createRating} from "../../../api/generated/endpoints/ratings/ratings";
+import type {PanDto} from "../../../api/generated/model";
+import {mutatePanLists} from "../../../lib/api/swrHooks";
 import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar} from "antd";
-import {Pan} from "../../../model/pan";
-import {IngredientType} from "../../../model/ingredient";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
 import {useAuthStore} from "../../../AuthSlice";
@@ -13,6 +13,8 @@ import {useNavigate, useParams} from "react-router-dom";
 import {getTextureBorderImage} from "../../../lib/borderTextures";
 import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
 import { PanResultModal } from "../../generation/PanResultModal";
+import { applyRollOutcome, LevelUp } from "../../generation/applyRollOutcome";
+import { usePanPages } from "../usePanPages";
 import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
 import {getUniqueUsers, getUniqueRatings, getIngredientCountRanges, filterPans, sortPans} from "./historyUtils";
@@ -28,12 +30,11 @@ export function HistoryView() {
     const session = useAppStore((state) => state.session);
     const sessionKey = session?.key || "";
     const currentUser = useAuthStore((state) => state.user);
-    let [offset, setOffset] = useState(0);
-    let [allPans, setAllPans] = useState<Pan[]>([]);
     let [cloningPanId, setCloningPanId] = useState<number | null>(null);
     const [cloneConfirmVisible, setCloneConfirmVisible] = useState(false);
-    const [cloneResultVisible, setCloneResultVisible] = useState(false);
-    const [selectedPan, setSelectedPan] = useState<Pan | null>(null);
+    const [selectedPan, setSelectedPan] = useState<PanDto | null>(null);
+    const [clonedPan, setClonedPan] = useState<PanDto | null>(null);
+    const [cloneLevelUp, setCloneLevelUp] = useState<LevelUp>({ leveledUp: false });
     const [sortField, setSortField] = useState<'time' | 'rating' | 'counts'>('time');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -42,79 +43,47 @@ export function HistoryView() {
     const [filtersExpanded, setFiltersExpanded] = useState(false);
     const screens = useBreakpoint();
     const isMobile = screens.xs || screens.sm;
-    const limit = 12;
+    const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({ session_key: sessionKey });
 
-    // Use SWR hook for the current page
-    const { data: currentPageData, isLoading: waiting } = usePansPaginated(sessionKey, limit, offset);
-    
-    // Reset when session changes
+    // Reset the filters when the session changes
     useEffect(() => {
-        if (sessionKey) {
-            setOffset(0);
-            setAllPans([]);
-            setSelectedUsers([]);
-            setSelectedRatings([]);
-            setSelectedIngredientCounts([]);
-        }
+        setSelectedUsers([]);
+        setSelectedRatings([]);
+        setSelectedIngredientCounts([]);
     }, [sessionKey]);
-    
-    // Update accumulated pans when new page data arrives
-    useEffect(() => {
-        if (currentPageData) {
-            if (offset === 0) {
-                // Reset - replace all pans
-                // Always set when at offset 0, especially important when remounting with cached data
-                setAllPans(currentPageData.data);
-            } else {
-                // Append new page
-                setAllPans(prev => {
-                    // Avoid duplicates by checking if we already have these pans
-                    const existingIds = new Set(prev.map(p => p.id));
-                    const newPans = currentPageData.data.filter(p => !existingIds.has(p.id));
-                    return [...prev, ...newPans];
-                });
-            }
-        }
-    }, [currentPageData, offset]);
-
-    const loadMore = useCallback(() => {
-        if (currentPageData?.hasMore) {
-            setOffset(prev => prev + limit);
-        }
-    }, [currentPageData, limit]);
-
-    const hasMore = currentPageData?.hasMore || false;
-    // Use currentPageData directly when at offset 0 and allPans is empty (handles remount case)
-    const pans = (offset === 0 && allPans.length === 0 && currentPageData?.data) 
-        ? currentPageData.data 
-        : allPans;
 
     function onRating(id: number, rating: number) {
         if (!sessionKey) return;
-        Api.rate(sessionKey, id, rating).then(() => {
-            // Invalidate cache to refresh ratings
-            mutatePansPaginated(sessionKey);
-        }).catch((error) => {
-            console.error("Failed to submit rating:", error);
-        });
-    }
-    
-    function onClonePan(pan: Pan) {
-        if (!sessionKey) return;
-        setCloningPanId(pan.id);
-        Api.clonePan(sessionKey, pan).then(() => {
-            message.success(t("history.panCloned") || "Pan cloned successfully");
-            // Invalidate cache to refresh pans
-            mutatePansPaginated(sessionKey);
-        }).catch((error) => {
-            console.error("Failed to clone pan:", error);
-            message.error(t("history.panCloneFailed") || "Failed to clone pan");
-        }).finally(() => {
-            setCloningPanId(null);
-        });
+        createRating({ pan_id: id, rating })
+            .then(() => {
+                mutatePanLists();
+                return getPan(id);
+            })
+            .then(replacePan)
+            .catch((error) => {
+                console.error("Failed to submit rating:", error);
+            });
     }
 
-    function handleCloneClick(pan: Pan) {
+    function onClonePan(pan: PanDto) {
+        if (!sessionKey) return;
+        setCloningPanId(pan.id);
+        createPan({ name: pan.name, ingredients: pan.ingredients.map((ing) => ing.id) }, { session_key: sessionKey })
+            .then((outcome) => {
+                message.success(t("history.panCloned") || "Pan cloned successfully");
+                setCloneLevelUp(applyRollOutcome(outcome, sessionKey));
+                setClonedPan(outcome.pan);
+            })
+            .catch((error) => {
+                console.error("Failed to clone pan:", error);
+                message.error(t("history.panCloneFailed") || "Failed to clone pan");
+            })
+            .finally(() => {
+                setCloningPanId(null);
+            });
+    }
+
+    function handleCloneClick(pan: PanDto) {
         setSelectedPan(pan);
         setCloneConfirmVisible(true);
     }
@@ -125,10 +94,8 @@ export function HistoryView() {
             return;
         }
 
-        const panToClone = selectedPan;
         setCloneConfirmVisible(false);
-        onClonePan(panToClone);
-        setCloneResultVisible(true);
+        onClonePan(selectedPan);
     }
 
     function handleCloneCancel() {
@@ -136,7 +103,8 @@ export function HistoryView() {
     }
 
     function handleCloneResultClose() {
-        setCloneResultVisible(false);
+        setClonedPan(null);
+        setCloneLevelUp({ leveledUp: false });
         setSelectedPan(null);
     }
 
@@ -193,14 +161,15 @@ export function HistoryView() {
         );
     }
 
-    const renderPanCard = (pan: Pan) => {
-        const borderColor = pan.user_color || "#d9d9d9";
+    const renderPanCard = (pan: PanDto) => {
+        const author = pan.author;
+        const borderColor = author?.color ?? "#d9d9d9";
         // All borders are 5px
         const borderWidth = '5px';
-        const borderStyle = pan.user_border_style || 'solid';
-        const borderTexture = pan.user_border_texture;
+        const borderStyle = author?.border_style ?? 'solid';
+        const borderTexture = author?.border_texture ?? null;
         const textureBorderImage = getTextureBorderImage(borderTexture);
-        const glowEffect = pan.user_glow_effect || false;
+        const glowEffect = author?.glow_effect ?? false;
 
         // Build border style object
         // Note: We need to explicitly override the global .ant-card { border: none; } rule
@@ -270,21 +239,8 @@ export function HistoryView() {
         // Check if current user has rated this pan
         let userRatingValue: number | undefined = undefined;
         
-        if (currentUser && currentUser.id && pan.ratings && Array.isArray(pan.ratings) && pan.ratings.length > 0) {
-            const currentUserRating = pan.ratings.find((r) => {
-                if (!r) return false;
-                // Handle both string and number comparisons
-                const ratingUserId = typeof r.user_id === 'string' ? parseInt(r.user_id, 10) : r.user_id;
-                const userId = typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) : currentUser.id;
-                return ratingUserId === userId;
-            });
-            if (currentUserRating && currentUserRating.rating !== undefined && currentUserRating.rating !== null) {
-                const ratingNum = Number(currentUserRating.rating);
-                // Ensure it's a valid number and within valid range (0-5, or 0.5-5 if allowHalf)
-                if (!isNaN(ratingNum) && ratingNum >= 0 && ratingNum <= 5) {
-                    userRatingValue = ratingNum;
-                }
-            }
+        if (currentUser) {
+            userRatingValue = pan.ratings.find((r) => r.user_id === currentUser.id)?.rating;
         }
         
         const cardContent = (
@@ -296,26 +252,26 @@ export function HistoryView() {
                                     {pan.name}
                                 </Title>
                                 <Space size="small" align="center">
-                                    {pan.user_id && (
+                                    {author && (
                                         <Avatar
-                                            src={pan.user_profile_picture}
+                                            src={author.profile_picture}
                                             size={32}
                                             style={{ 
                                                 cursor: 'pointer',
                                                 border: '2px solid #d9d9d9',
                                                 flexShrink: 0
                                             }}
-                                            onClick={() => handleProfileClick(pan.user_id)}
+                                            onClick={() => handleProfileClick(author.id)}
                                         >
-                                            {!pan.user_profile_picture && (
+                                            {!author.profile_picture && (
                                                 <span style={{ fontSize: '14px' }}>
-                                                    {pan.user?.charAt(0)?.toUpperCase() || 'U'}
+                                                    {author.name.charAt(0).toUpperCase() || 'U'}
                                                 </span>
                                             )}
                                         </Avatar>
                                     )}
                                     <Text type="secondary" style={{ fontSize: '0.8rem' }}>
-                                        {t("history.consumedBy")} <strong>{pan.user}</strong>
+                                        {t("history.consumedBy")} <strong>{author?.name ?? "Unknown"}</strong>
                                     </Text>
                                 </Space>
                                 <Text type="secondary" style={{ fontSize: '0.7rem' }}>
@@ -420,17 +376,17 @@ export function HistoryView() {
             />
 
             <PanResultModal
-                open={cloneResultVisible}
-                pan={selectedPan}
+                open={clonedPan !== null}
+                pan={clonedPan}
                 isBanditResult={false}
-                rollCheese={!!selectedPan?.cheese_level}
+                rollCheese={clonedPan?.rolled_cheese ?? false}
                 onClose={handleCloneResultClose}
                 onRating={(rating) => {
-                    if (!sessionKey || !selectedPan) return;
-                    Api.rate(sessionKey, selectedPan.id, rating).catch((error) => {
-                        console.error("Failed to rate cloned pan from history:", error);
-                    });
+                    if (!clonedPan) return;
+                    onRating(clonedPan.id, rating);
                 }}
+                hasLeveledUp={cloneLevelUp.leveledUp}
+                newLevelId={cloneLevelUp.newLevelId}
             />
             {pans.length > 0 && (
                 <>
@@ -525,7 +481,7 @@ export function HistoryView() {
                         <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '24px' }}>
                             <Button 
                                 type="primary" 
-                                loading={waiting && offset > 0}
+                                loading={waiting}
                                 onClick={loadMore}
                                 size="large"
                             >

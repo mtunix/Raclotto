@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Iterable, Optional
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.user import User
 from back.src.driver.database import db
@@ -28,6 +28,13 @@ class UserRepository(BaseRepository[User]):
         """
         return db.session.query(User).filter_by(name=name).first()
     
+    def by_ids(self, ids: Iterable[int]) -> Dict[int, User]:
+        """The users with these ids, loaded together and keyed by id; unknown ids are left out."""
+        wanted = set(ids)
+        if not wanted:
+            return {}
+        return {user.id: user for user in db.session.query(User).filter(User.id.in_(wanted))}
+
     def by_email_or_name(self, identifier: str) -> Optional[User]:
         """
         Get user by email or name.

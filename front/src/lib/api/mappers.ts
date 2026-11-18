@@ -21,9 +21,8 @@ import {
 } from "../../model/profilePicture";
 import { RaclottoSession } from "../../model/raclottoSession";
 import { Rating } from "../../model/rating";
-import { Reward, RollOutcome } from "../../model/rollOutcome";
 import { User, UserStats } from "../../model/user";
-import { Resource, flatten, toId } from "./jsonapi";
+import { toId } from "./jsonapi";
 
 type Raw = Record<string, unknown>;
 
@@ -93,9 +92,8 @@ export function toRating(r: Raw): Rating {
 }
 
 /**
- * Pan. The list/detail endpoints enrich a pan with its author's display fields
- * (`user`, `user_color`, ...); roll endpoints don't. Missing author fields map
- * to the same defaults the backend uses for an unknown author.
+ * Pan as GET /stats still sends it (`Pan.as_dict()`, no author fields). The
+ * migrated pan endpoints return the generated `PanDto` instead.
  */
 export function toPan(r: Raw): Pan {
   const pan: Pan = {
@@ -269,38 +267,5 @@ export function toGeneratedProfilePicture(r: Raw): GeneratedProfilePicture {
     userId: num(r.userId),
     levelId: optNum(r.levelId),
     createdAt: optStr(r.createdAt),
-  };
-}
-
-export function toReward(r: Raw): Reward {
-  return {
-    xp_gained: num(r.xp_gained),
-    xp_before: num(r.xp_before),
-    xp_after: num(r.xp_after),
-    level: optLevel(r.level),
-    previous_level: optLevel(r.previous_level),
-    next_level: optLevel(r.next_level),
-    leveled_up: bool(r.leveled_up),
-  };
-}
-
-export interface RollMeta {
-  newly_unlocked_achievements: Resource[];
-  reward: Raw;
-  events: Resource[];
-}
-
-/** The roll envelope: pan in `data`, everything it caused in `meta`. */
-export function toRollOutcome(pan: Raw, meta: Partial<RollMeta>): RollOutcome {
-  if (!meta.reward || typeof meta.reward !== "object") {
-    throw new Error("Invalid roll response: missing meta.reward");
-  }
-  return {
-    pan: toPan(pan),
-    reward: toReward(meta.reward),
-    achievements: (meta.newly_unlocked_achievements ?? []).map((a) =>
-      toAchievement(flatten(a)),
-    ),
-    events: (meta.events ?? []).map((e) => toEvent(flatten(e))),
   };
 }

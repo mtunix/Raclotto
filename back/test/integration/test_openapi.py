@@ -79,7 +79,73 @@ class LevelsSpecTest(unittest.TestCase):
         )
 
     def test_legacy_endpoints_are_left_out(self):
-        self.assertEqual(set(self.spec["paths"]), {"/levels", "/levels/{level_id}"})
+        self.assertEqual(set(self.spec["paths"]), {
+            "/levels", "/levels/{level_id}",
+            "/pans", "/pans/generate", "/pans/generate/bandit", "/pans/{pan_id}",
+            "/ratings", "/ratings/{rating_id}",
+        })
+
+
+class PansAndRatingsSpecTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = build_openapi(get_app())
+        cls.schemas = cls.spec["components"]["schemas"]
+
+    def test_operation_ids(self):
+        operations = {
+            (path, method): operation["operationId"]
+            for path, methods in self.spec["paths"].items()
+            if path.startswith(("/pans", "/ratings"))
+            for method, operation in methods.items()
+        }
+        self.assertEqual(operations, {
+            ("/pans/generate", "post"): "rollPan",
+            ("/pans/generate/bandit", "post"): "rollBanditPan",
+            ("/pans", "post"): "createPan",
+            ("/pans", "get"): "listPans",
+            ("/pans/{pan_id}", "get"): "getPan",
+            ("/pans/{pan_id}", "patch"): "updatePan",
+            ("/pans/{pan_id}", "delete"): "deletePan",
+            ("/ratings", "get"): "listRatings",
+            ("/ratings", "post"): "createRating",
+            ("/ratings/{rating_id}", "get"): "getRating",
+            ("/ratings/{rating_id}", "patch"): "updateRating",
+            ("/ratings/{rating_id}", "delete"): "deleteRating",
+        })
+
+    def test_roll_takes_the_session_key_and_returns_the_outcome(self):
+        operation = self.spec["paths"]["/pans/generate"]["post"]
+
+        self.assertEqual(
+            [(p["name"], p["in"], p["required"]) for p in operation["parameters"]],
+            [("session_key", "query", True)],
+        )
+        self.assertEqual(
+            operation["responses"]["200"]["content"]["application/json"]["schema"],
+            {"$ref": "#/components/schemas/RollOutcomeDto"},
+        )
+
+    def test_every_pan_field_is_required_and_the_author_nullable(self):
+        pan = self.schemas["PanDto"]
+
+        self.assertEqual(set(pan["required"]), set(pan["properties"]))
+        self.assertEqual(pan["properties"]["author"]["anyOf"], [
+            {"$ref": "#/components/schemas/UserSummaryDto"}, {"type": "null"},
+        ])
+
+    def test_patch_body_takes_only_name_and_snacked(self):
+        body = self.schemas["UpdatePanBody"]
+
+        self.assertEqual(set(body["properties"]), {"name", "snacked"})
+        self.assertNotIn("required", body)
+        self.assertEqual(body["additionalProperties"], False)
+
+    def test_rating_body_has_no_user(self):
+        body = self.schemas["CreateRatingBody"]
+
+        self.assertEqual(set(body["properties"]), {"pan_id", "rating"})
+        self.assertEqual(body["properties"]["rating"]["maximum"], 5)
 
 
 class ProbeSpecTest(unittest.TestCase):

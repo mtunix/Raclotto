@@ -1,11 +1,6 @@
 import { FakeTransport } from "./fakeTransport";
 import { setTransport, Transport } from "./transport";
-import {
-    achievementResource,
-    enrichedPanAttributes,
-    rollDocument,
-    userAttributes,
-} from "./__fixtures__/wire";
+import { achievementResource, userAttributes } from "./__fixtures__/wire";
 
 // setupTests.js replaces the API module with a stub for component tests;
 // these tests exercise the real module through the fake transport.
@@ -23,104 +18,6 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-});
-
-describe("Api.generate", () => {
-    it("posts generation parameters and returns the roll outcome", async () => {
-        fake.on("POST", "/pans/generate", rollDocument());
-
-        const outcome = await Api.generate("sess", 3, 1, 2, true);
-
-        expect(fake.last("POST", "/pans/generate")).toEqual({
-            method: "POST",
-            path: "/pans/generate",
-            query: { session_key: "sess" },
-            body: {
-                data: {
-                    type: "generationParameters",
-                    attributes: {
-                        numFill: 3,
-                        numSauce: 1,
-                        preparation_type_id: 2,
-                        roll_cheese: true,
-                    },
-                },
-            },
-        });
-        expect(outcome.pan.id).toBe(11);
-        expect(outcome.pan.ingredients).toHaveLength(2);
-        expect(outcome.reward.xp_gained).toBe(42);
-        expect(outcome.reward.leveled_up).toBe(false);
-        expect(outcome.achievements.map((a) => a.title)).toEqual(["First Pan"]);
-        expect(outcome.events.map((e) => e.id)).toEqual([9]);
-    });
-
-    it("omits optional parameters that were not given", async () => {
-        fake.on("POST", "/pans/generate", rollDocument());
-
-        await Api.generate("sess", 2, 0);
-
-        expect(fake.last("POST", "/pans/generate")?.body).toEqual({
-            data: {
-                type: "generationParameters",
-                attributes: { numFill: 2, numSauce: 0 },
-            },
-        });
-    });
-});
-
-describe("Api.generateBandit", () => {
-    it("returns the same outcome shape as the legacy generator", async () => {
-        fake.on("POST", "/pans/generate/bandit", rollDocument({ leveled_up: true }));
-
-        const outcome = await Api.generateBandit("sess", 4, false);
-
-        expect(fake.last("POST", "/pans/generate/bandit")?.body).toEqual({
-            data: {
-                type: "generationParameters",
-                attributes: { total_columns: 4, roll_prep_type: false },
-            },
-        });
-        expect(outcome.reward.leveled_up).toBe(true);
-        expect(outcome.reward.level?.id).toBe(3);
-    });
-});
-
-describe("Api.getPansPaginated", () => {
-    const page = (ids: number[], meta: Record<string, unknown>) => ({
-        jsonapi: { version: "1.0" },
-        data: ids.map((id) => ({
-            type: "pan",
-            id: String(id),
-            attributes: enrichedPanAttributes(),
-        })),
-        meta,
-    });
-
-    it("maps pans and pagination meta", async () => {
-        fake.on("GET", "/pans", page([1, 2], { total: 5, limit: 2, offset: 2, has_more: true }));
-
-        const result = await Api.getPansPaginated("sess", 2, 2);
-
-        expect(fake.last("GET", "/pans")?.query).toEqual({
-            session_key: "sess",
-            limit: 2,
-            offset: 2,
-        });
-        expect(result.data.map((p) => p.id)).toEqual([1, 2]);
-        expect(result.data[0].user).toBe("Ada");
-        expect(result.hasMore).toBe(true);
-        expect(result.total).toBe(5);
-    });
-
-    it("reports the last page", async () => {
-        fake.on("GET", "/pans", page([5], { total: 5, limit: 2, offset: 4, has_more: false }));
-
-        const result = await Api.getPansByUser(7, 2, 4);
-
-        expect(fake.last("GET", "/pans")?.query).toEqual({ user_id: 7, limit: 2, offset: 4 });
-        expect(result.hasMore).toBe(false);
-    });
 });
 
 describe("Api.listAchievements", () => {

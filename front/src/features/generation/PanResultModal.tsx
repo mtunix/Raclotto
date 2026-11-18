@@ -12,7 +12,7 @@ import {
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
 import { PreparationTypeCard } from "./PreparationTypeCard/PreparationTypeCard";
 import { CheeseSlider } from "./CheeseSlider";
-import { Pan } from "../../model/pan";
+import type { PanDto } from "../../api/generated/model";
 import { IngredientType } from "../../model/ingredient";
 import { useTranslation } from "react-i18next";
 import styles from "./GenerateView/GenerateView.module.css";
@@ -36,7 +36,7 @@ const { Title, Text } = Typography;
 
 interface PanResultModalProps {
   open: boolean;
-  pan: Pan | null;
+  pan: PanDto | null;
   isBanditResult: boolean;
   rollCheese: boolean;
   onClose: () => void;

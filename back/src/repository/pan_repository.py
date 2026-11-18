@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 from back.src.repository.base_repository import BaseRepository
@@ -36,6 +36,28 @@ class PanRepository(BaseRepository[Pan]):
         except NoResultFound:
             return []
     
+    def page(
+        self,
+        session_key: Optional[str] = None,
+        user_id: Optional[int] = None,
+        limit: Optional[int] = None,
+        offset: int = 0,
+    ) -> Tuple[List[Pan], int]:
+        """Pans matching every given filter, newest first, and how many match in total.
+
+        An unknown session key matches nothing. Without a limit every pan from `offset` on is returned.
+        """
+        query = db.session.query(Pan)
+        if session_key is not None:
+            query = query.join(Pan.session).filter(RaclottoSession.key == session_key)
+        if user_id is not None:
+            query = query.filter(Pan.user_id == user_id)
+        total = query.count()
+        query = query.order_by(Pan.timestamp.desc(), Pan.id.desc()).offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+        return query.all(), total
+
     def by_user(self, user_id: int, limit: Optional[int] = None, offset: int = 0) -> List[Pan]:
         """
         Get pans for a user with optional pagination.

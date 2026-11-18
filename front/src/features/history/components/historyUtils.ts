@@ -1,4 +1,4 @@
-import {Pan} from "../../../model/pan";
+import type {PanDto} from "../../../api/generated/model";
 import {IngredientType} from "../../../model/ingredient";
 
 export interface FilterOptions {
@@ -7,17 +7,17 @@ export interface FilterOptions {
     selectedIngredientCounts: string[];
 }
 
-export function getUniqueUsers(pans: Pan[]): Array<{ id: number; name: string }> {
+export function getUniqueUsers(pans: PanDto[]): Array<{ id: number; name: string }> {
     const userMap = new Map<number, string>();
     pans.forEach(pan => {
-        if (pan.user_id && pan.user) {
-            userMap.set(pan.user_id, pan.user);
+        if (pan.author) {
+            userMap.set(pan.author.id, pan.author.name);
         }
     });
     return Array.from(userMap.entries()).map(([id, name]) => ({id, name}));
 }
 
-export function getUniqueRatings(pans: Pan[]): number[] {
+export function getUniqueRatings(pans: PanDto[]): number[] {
     const ratings = new Set<number>();
     pans.forEach(pan => {
         if (pan.rating && pan.rating > 0) {
@@ -28,7 +28,7 @@ export function getUniqueRatings(pans: Pan[]): number[] {
     return Array.from(ratings).sort((a, b) => b - a); // Sort descending
 }
 
-export function getIngredientCountRanges(pans: Pan[]): string[] {
+export function getIngredientCountRanges(pans: PanDto[]): string[] {
     const ranges = new Set<string>();
     pans.forEach(pan => {
         const totalCount = pan.ingredients.length;
@@ -42,10 +42,10 @@ export function getIngredientCountRanges(pans: Pan[]): string[] {
     return Array.from(ranges).sort((a, b) => rangeOrder.indexOf(a) - rangeOrder.indexOf(b));
 }
 
-export function filterPans(pans: Pan[], filters: FilterOptions): Pan[] {
+export function filterPans(pans: PanDto[], filters: FilterOptions): PanDto[] {
     return pans.filter(pan => {
         // User filter
-        if (filters.selectedUsers.length > 0 && (!pan.user_id || !filters.selectedUsers.includes(pan.user_id))) {
+        if (filters.selectedUsers.length > 0 && !filters.selectedUsers.includes(pan.user_id)) {
             return false;
         }
 
@@ -75,7 +75,7 @@ export function filterPans(pans: Pan[], filters: FilterOptions): Pan[] {
     });
 }
 
-export function sortPans(pans: Pan[], sortField: 'time' | 'rating' | 'counts', sortDirection: 'asc' | 'desc'): Pan[] {
+export function sortPans(pans: PanDto[], sortField: 'time' | 'rating' | 'counts', sortDirection: 'asc' | 'desc'): PanDto[] {
     const sorted = [...pans];
 
     switch (sortField) {

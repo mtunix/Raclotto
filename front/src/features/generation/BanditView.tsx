@@ -2,11 +2,11 @@ import React, {useState, useEffect, useRef} from "react";
 import {Button, Row, Col, Form, InputNumber, Input, Checkbox, Card, Typography, Space, Alert, message, Modal, Rate} from "antd";
 import {Ingredient, IngredientType} from "../../model/ingredient";
 import {PrepType} from "../../model/prepType";
-import {Pan} from "../../model/pan";
 import styles from "./GenerateView/GenerateView.module.css";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../shared/IngredientDisplay/IngredientDisplay";
-import {Api} from "../../lib/api";
+import {rollBanditPan} from "../../api/generated/endpoints/pans/pans";
+import type {PanDto} from "../../api/generated/model";
 import {applyRollOutcome} from "./applyRollOutcome";
 import {LevelUpPictureModal} from "./LevelUpPictureModal";
 import {useAvailableIngredientCounts} from "./hooks/useAvailableIngredientCounts";
@@ -39,7 +39,7 @@ interface BanditViewProps {
     onRollPreparationTypeChange: (checked: boolean) => void;
     rollCheese: boolean;
     onRollCheeseChange: (checked: boolean) => void;
-    onGenerate: (pan: Pan) => Promise<void>;
+    onGenerate: (pan: PanDto) => Promise<void>;
     onRating?: (rating: number, panId: number) => void;
 }
 
@@ -71,7 +71,7 @@ export function BanditView(props: BanditViewProps) {
     const [numColumns, setNumColumns] = useState(3);
     const [isSpinning, setIsSpinning] = useState(false);
     const [columnStates, setColumnStates] = useState<ColumnState[]>([]);
-    const [apiResultPan, setApiResultPan] = useState<Pan | null>(null);
+    const [apiResultPan, setApiResultPan] = useState<PanDto | null>(null);
     const [lockedColumns, setLockedColumns] = useState<Set<number>>(new Set());
     const [showBanditModal, setShowBanditModal] = useState(false);
     const [showResult, setShowResult] = useState(false);
@@ -159,7 +159,10 @@ export function BanditView(props: BanditViewProps) {
 
         try {
             // Call API first to get the result
-            const outcome = await Api.generateBandit(sessionKey, numColumns, rollPreparationType, rollCheese);
+            const outcome = await rollBanditPan(
+                {total_columns: numColumns, roll_prep_type: rollPreparationType, roll_cheese: rollCheese},
+                {session_key: sessionKey},
+            );
             const pan = outcome.pan;
             setApiResultPan(pan);
 

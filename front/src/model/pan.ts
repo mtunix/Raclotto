@@ -2,6 +2,7 @@ import { Ingredient } from "./ingredient";
 import { Rating } from "./rating";
 import { PrepType } from "./prepType";
 
+/** A pan as GET /stats returns it; the pan endpoints return the generated `PanDto`. */
 export interface Pan {
     id: number;
     name: string;

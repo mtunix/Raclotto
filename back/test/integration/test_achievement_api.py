@@ -15,11 +15,8 @@ class TestAchievementApi(AppTest):
         ingredient = self.make_ingredient(self.session, "Test Ingredient", IngredientType.FILL)
         for _ in range(count):
             pan = self.make_pan(owner, self.session, [ingredient])
-            response = self.post(
-                self.user, "/ratings", {"rating": 5, "pan_id": pan.id},
-                session_key=self.session.key,
-            )
-            self.assertIn(response.status_code, (200, 201), response.json)
+            response = self.call("POST", "/ratings", self.user, body={"rating": 5, "pan_id": pan.id})
+            self.assertEqual(response.status_code, 200, response.json)
 
     def local_guide_attributes(self) -> dict:
         response = self.client.get("/api/achievements", headers=self.auth(self.user))
@@ -56,7 +53,8 @@ class TestAchievementApi(AppTest):
         owner = self.make_user("owner")
         pan = self.make_pan(owner, self.session, [self.make_ingredient(self.session, "X")])
         for stars in (3, 4, 5):
-            self.post(self.user, "/ratings", {"rating": stars, "pan_id": pan.id}, session_key=self.session.key)
+            response = self.call("POST", "/ratings", self.user, body={"rating": stars, "pan_id": pan.id})
+            self.assertEqual(response.status_code, 200, response.json)
         self.assertAlmostEqual(self.local_guide_attributes()["progress"], 0.1, places=2)
 
     def test_unlocked_after_ten_ratings(self):

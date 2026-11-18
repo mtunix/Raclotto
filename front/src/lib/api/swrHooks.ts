@@ -1,4 +1,5 @@
 import useSWR, { mutate as swrMutate } from "swr";
+import { getListPansKey } from "../../api/generated/endpoints/pans/pans";
 import { Api } from "./index";
 import { ApiError } from "./types";
 
@@ -29,10 +30,6 @@ const getLeaderboardKey = () => ["leaderboard"];
 const getAchievementsKey = () => ["achievements"];
 const getEventConfigsKey = (sessionKey?: string) => sessionKey ? ["eventConfigs", sessionKey] : ["eventConfigs"];
 const getEventsKey = (sessionKey?: string) => sessionKey ? ["events", sessionKey] : null;
-const getPansPaginatedKey = (sessionKey?: string, limit?: number, offset?: number) => 
-    sessionKey ? ["pansPaginated", sessionKey, limit, offset] : null;
-const getPansByUserKey = (userId?: number, limit?: number, offset?: number) => 
-    userId ? ["pansByUser", userId, limit, offset] : null;
 export const getAvailableCountsKey = (sessionKey?: string) => sessionKey ? ["availableCounts", sessionKey] : null;
 const getInvitesKey = () => ["invites"];
 const getUserProfileKey = (userId: number) => ["userProfile", userId];
@@ -49,10 +46,6 @@ const leaderboardFetcher = () => Api.getLeaderboard();
 const achievementsFetcher = () => Api.listAchievements();
 const eventConfigsFetcher = ([, sessionKey]: [string, string?]) => Api.getEventConfigs(sessionKey);
 const eventsFetcher = ([, sessionKey]: [string, string]) => Api.getEvents(sessionKey);
-const pansPaginatedFetcher = ([, sessionKey, limit, offset]: [string, string, number, number]) =>
-    Api.getPansPaginated(sessionKey, limit, offset);
-const pansByUserFetcher = ([, userId, limit, offset]: [string, number, number, number]) =>
-    Api.getPansByUser(userId, limit, offset);
 const availableCountsFetcher = ([, sessionKey]: [string, string]) => Api.getAvailableIngredientCounts(sessionKey);
 const invitesFetcher = () => Api.listInvites();
 const userProfileFetcher = ([, userId]: [string, number]) => Api.getUserProfile(userId);
@@ -139,24 +132,6 @@ export function useEvents(sessionKey?: string) {
         onErrorRetry: onErrorRetry,
         refreshInterval: 10000, // Poll every 10 seconds (replaces manual polling)
         revalidateOnFocus: true,
-        revalidateOnReconnect: true
-    });
-}
-
-export function usePansPaginated(sessionKey?: string, limit: number = 12, offset: number = 0) {
-    const key = getPansPaginatedKey(sessionKey, limit, offset);
-    return useSWR(key, pansPaginatedFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function usePansByUser(userId?: number, limit: number = 12, offset: number = 0) {
-    const key = getPansByUserKey(userId, limit, offset);
-    return useSWR(key, pansByUserFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
         revalidateOnReconnect: true
     });
 }
@@ -251,18 +226,10 @@ export function mutateEvents(sessionKey?: string) {
     }
 }
 
-export function mutatePansPaginated(sessionKey?: string) {
-    // Invalidate all paginated pans for this session
-    if (sessionKey) {
-        return swrMutate((key) => Array.isArray(key) && key[0] === "pansPaginated" && key[1] === sessionKey);
-    }
-}
-
-export function mutatePansByUser(userId?: number) {
-    // Invalidate all pages of this user's pans
-    if (userId) {
-        return swrMutate((key) => Array.isArray(key) && key[0] === "pansByUser" && key[1] === userId);
-    }
+/** Every cached page of `listPans`, whatever its filter. */
+export function mutatePanLists() {
+    const [path] = getListPansKey();
+    return swrMutate((key) => Array.isArray(key) && key[0] === path);
 }
 
 export function mutateUserProfile(userId?: number) {

@@ -1,5 +1,6 @@
 /**
- * The API module: one typed function per backend endpoint.
+ * The API module: one typed function per legacy (JSON:API) backend endpoint.
+ * Typed endpoints are called through the generated client in `src/api/generated/`.
  *
  * Each function is a thin request through the {@link transport} seam whose
  * response is unwrapped by `jsonapi.ts` and mapped by exactly one mapper per
@@ -10,19 +11,15 @@ import { Event } from "../../model/event";
 import { EventConfig } from "../../model/eventConfig";
 import { Ingredient } from "../../model/ingredient";
 import { Invite } from "../../model/invite";
-import { Pan } from "../../model/pan";
 import { PrepType } from "../../model/prepType";
 import {
   GeneratedProfilePicture,
   ProfilePictureHistory,
 } from "../../model/profilePicture";
 import { RaclottoSession } from "../../model/raclottoSession";
-import { Rating } from "../../model/rating";
-import { RollOutcome } from "../../model/rollOutcome";
 import { AuthResult, User, UserStats } from "../../model/user";
 import { collection, flatten, meta, plain, Resource, single } from "./jsonapi";
 import {
-  RollMeta,
   toAchievement,
   toEvent,
   toEventConfig,
@@ -32,24 +29,19 @@ import {
   toPrepType,
   toProfilePictureHistory,
   toGeneratedProfilePicture,
-  toRating,
-  toRollOutcome,
   toSession,
   toUser,
   toUserStats,
 } from "./mappers";
-import { HttpMethod, QueryValue, RequestOptions, transport } from "./transport";
+import { HttpMethod, RequestOptions, transport } from "./transport";
 import {
   AvailableIngredientCounts,
   IngredientExport,
   IngredientImportResult,
   IngredientReimportResult,
   LeaderboardEntry,
-  PanPage,
   StatsResponse,
 } from "./types";
-
-export type { PanPage } from "./types";
 
 function request(method: HttpMethod, path: string, options?: RequestOptions) {
   return transport().request(method, path, options);
@@ -58,24 +50,6 @@ function request(method: HttpMethod, path: string, options?: RequestOptions) {
 /** JSON:API request document for a resource of `type`. */
 function resourceBody(type: string, attributes: object, id?: number) {
   return { data: id === undefined ? { type, attributes } : { type, id, attributes } };
-}
-
-async function roll(path: string, options: RequestOptions): Promise<RollOutcome> {
-  const body = await request("POST", path, options);
-  return toRollOutcome(single(body), meta<Partial<RollMeta>>(body));
-}
-
-async function pansPage(
-  query: Record<string, QueryValue> & { limit: number; offset: number },
-): Promise<PanPage> {
-  const body = await request("GET", "/pans", { query });
-  const pans = collection(body).map(toPan);
-  const { total = 0, has_more } = meta<{ total?: number; has_more?: boolean }>(body);
-  return {
-    data: pans,
-    hasMore: has_more ?? query.offset + pans.length < total,
-    total,
-  };
 }
 
 function authResult(body: unknown): AuthResult {
@@ -253,67 +227,6 @@ export const Api = {
 
   async deletePrepType(prepTypeId: number): Promise<void> {
     await request("DELETE", `/preparation_type/${prepTypeId}`);
-  },
-
-
-  generate(
-    sessionKey: string,
-    numFill: number,
-    numSauce: number,
-    preparationTypeId?: number,
-    rollCheese?: boolean,
-  ): Promise<RollOutcome> {
-    return roll("/pans/generate", {
-      query: { session_key: sessionKey },
-      body: resourceBody("generationParameters", {
-        numFill,
-        numSauce,
-        ...(preparationTypeId ? { preparation_type_id: preparationTypeId } : {}),
-        ...(rollCheese !== undefined ? { roll_cheese: rollCheese } : {}),
-      }),
-    });
-  },
-
-  generateBandit(
-    sessionKey: string,
-    totalColumns: number,
-    rollPrepType: boolean,
-    rollCheese?: boolean,
-  ): Promise<RollOutcome> {
-    return roll("/pans/generate/bandit", {
-      query: { session_key: sessionKey },
-      body: resourceBody("generationParameters", {
-        total_columns: totalColumns,
-        roll_prep_type: rollPrepType,
-        ...(rollCheese !== undefined ? { roll_cheese: rollCheese } : {}),
-      }),
-    });
-  },
-
-  clonePan(sessionKey: string, pan: Pan): Promise<RollOutcome> {
-    return roll("/pans", {
-      query: { session_key: sessionKey },
-      body: resourceBody("pan", {
-        name: pan.name,
-        ingredients: pan.ingredients.map((ing) => ing.id),
-      }),
-    });
-  },
-
-  getPansPaginated(sessionKey: string, limit = 12, offset = 0): Promise<PanPage> {
-    return pansPage({ session_key: sessionKey, limit, offset });
-  },
-
-  getPansByUser(userId: number, limit = 12, offset = 0): Promise<PanPage> {
-    return pansPage({ user_id: userId, limit, offset });
-  },
-
-  async rate(sessionKey: string, panId: number, rating: number): Promise<Rating> {
-    const body = await request("POST", "/ratings", {
-      query: { session_key: sessionKey },
-      body: resourceBody("rating", { pan_id: panId, rating }),
-    });
-    return toRating(single(body));
   },
 
 

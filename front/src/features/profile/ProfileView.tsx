@@ -30,11 +30,11 @@ import { useTranslation } from "react-i18next";
 import {
   useUserProfile,
   useUserStats,
-  usePansByUser,
   mutateUser,
 } from "../../lib/api/swrHooks";
 import { Achievement } from "../../model/achievement";
-import { Pan } from "../../model/pan";
+import type { PanDto } from "../../api/generated/model";
+import { usePanPages } from "../history/usePanPages";
 import { UserStats } from "../../model/user";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
@@ -70,51 +70,12 @@ export function ProfileView() {
     useUserStats(targetUserIdNumber);
 
   // Get user's pans (all sessions)
-  const [offset, setOffset] = useState(0);
-  const limit = 12;
-  const { data: currentPageData, isLoading: loadingPans } = usePansByUser(
-    targetUserIdNumber,
-    limit,
-    offset,
-  );
-  const [allPans, setAllPans] = useState<Pan[]>([]);
-
-  // Reset when user changes
-  useEffect(() => {
-    if (targetUserIdNumber) {
-      setOffset(0);
-      setAllPans([]);
-    }
-  }, [targetUserIdNumber]);
-
-  // Update accumulated pans when new page data arrives
-  useEffect(() => {
-    if (currentPageData) {
-      if (offset === 0) {
-        setAllPans(currentPageData.data);
-      } else {
-        setAllPans((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id));
-          const newPans = currentPageData.data.filter(
-            (p) => !existingIds.has(p.id),
-          );
-          return [...prev, ...newPans];
-        });
-      }
-    }
-  }, [currentPageData, offset]);
-
-  const loadMore = useCallback(() => {
-    if (currentPageData?.hasMore) {
-      setOffset((prev) => prev + limit);
-    }
-  }, [currentPageData, limit]);
-
-  const hasMore = currentPageData?.hasMore || false;
-  const pans =
-    offset === 0 && allPans.length === 0 && currentPageData?.data
-      ? currentPageData.data
-      : allPans;
+  const {
+    pans,
+    hasMore,
+    loadMore,
+    isLoading: loadingPans,
+  } = usePanPages({ user_id: targetUserIdNumber });
 
   const formatDate = (dateString: string) => {
     try {
@@ -644,7 +605,7 @@ export function ProfileView() {
 
       {/* Pans History */}
       <Card title={t("profile.pansHistory") || "Pans History"}>
-        {loadingPans && offset === 0 ? (
+        {loadingPans && pans.length === 0 ? (
           <div
             style={{
               display: "flex",
@@ -658,13 +619,13 @@ export function ProfileView() {
         ) : pans.length > 0 ? (
           <>
             <Row gutter={[16, 16]}>
-              {pans.map((pan: Pan) => {
-                const borderColor = pan.user_color || "#d9d9d9";
+              {pans.map((pan: PanDto) => {
+                const borderColor = pan.author?.color ?? "#d9d9d9";
                 const borderWidth = "5px";
-                const borderStyle = pan.user_border_style || "solid";
-                const borderTexture = pan.user_border_texture;
+                const borderStyle = pan.author?.border_style ?? "solid";
+                const borderTexture = pan.author?.border_texture ?? null;
                 const textureBorderImage = getTextureBorderImage(borderTexture);
-                const glowEffect = pan.user_glow_effect || false;
+                const glowEffect = pan.author?.glow_effect ?? false;
 
                 const cssBorderStyle =
                   borderStyle as React.CSSProperties["borderStyle"];
@@ -832,7 +793,7 @@ export function ProfileView() {
               >
                 <Button
                   type="primary"
-                  loading={loadingPans && offset > 0}
+                  loading={loadingPans}
                   onClick={loadMore}
                   size="large"
                 >

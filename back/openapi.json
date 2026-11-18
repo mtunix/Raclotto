@@ -1,6 +1,44 @@
 {
   "components": {
     "schemas": {
+      "AchievementDto": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "hidden": {
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_global": {
+            "title": "Is Global",
+            "type": "boolean"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "value",
+          "hidden",
+          "is_global"
+        ],
+        "title": "AchievementDto",
+        "type": "object"
+      },
       "ApiErrorDto": {
         "properties": {
           "code": {
@@ -72,6 +110,60 @@
         "title": "ApiErrorSourceDto",
         "type": "object"
       },
+      "CreatePanBody": {
+        "additionalProperties": false,
+        "description": "A hand-picked pan; ingredients outside the session are ignored.",
+        "properties": {
+          "ingredients": {
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 1,
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          }
+        },
+        "required": [
+          "ingredients"
+        ],
+        "title": "CreatePanBody",
+        "type": "object"
+      },
+      "CreateRatingBody": {
+        "additionalProperties": false,
+        "description": "Rate a pan as the signed-in user; rating the same pan again changes the rating.",
+        "properties": {
+          "pan_id": {
+            "title": "Pan Id",
+            "type": "integer"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "multipleOf": 0.5,
+            "title": "Rating",
+            "type": "number"
+          }
+        },
+        "required": [
+          "pan_id",
+          "rating"
+        ],
+        "title": "CreateRatingBody",
+        "type": "object"
+      },
       "ErrorResponseDto": {
         "properties": {
           "errors": {
@@ -91,6 +183,144 @@
         ],
         "title": "ErrorResponseDto",
         "type": "object"
+      },
+      "EventDto": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PanSwapDataDto"
+          },
+          "event_type": {
+            "const": "pan_swap",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "event_type",
+          "message",
+          "data",
+          "created_at"
+        ],
+        "title": "EventDto",
+        "type": "object"
+      },
+      "IngredientDto": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "fish": {
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "gluten": {
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lactose": {
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "meat": {
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "spicy": {
+            "title": "Spicy",
+            "type": "integer"
+          },
+          "sweet": {
+            "title": "Sweet",
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IngredientType"
+          },
+          "vegan": {
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "title": "Vegetarian",
+            "type": "boolean"
+          },
+          "wildcard": {
+            "title": "Wildcard",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "available",
+          "meat",
+          "vegetarian",
+          "vegan",
+          "fish",
+          "gluten",
+          "histamine",
+          "fructose",
+          "lactose",
+          "spicy",
+          "wildcard",
+          "sweet",
+          "session_id"
+        ],
+        "title": "IngredientDto",
+        "type": "object"
+      },
+      "IngredientType": {
+        "enum": [
+          1,
+          2
+        ],
+        "title": "IngredientType",
+        "type": "integer",
+        "x-enum-varnames": [
+          "FILL",
+          "SAUCE"
+        ]
       },
       "JsonApiDto": {
         "properties": {
@@ -136,6 +366,538 @@
           "required_experience"
         ],
         "title": "LevelDto",
+        "type": "object"
+      },
+      "PanDto": {
+        "properties": {
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserSummaryDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cheese_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cheese Level"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientDto"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "preparation_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrepTypeDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preparation_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preparation Type Id"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "number"
+          },
+          "ratings": {
+            "items": {
+              "$ref": "#/components/schemas/RatingDto"
+            },
+            "title": "Ratings",
+            "type": "array"
+          },
+          "rolled_cheese": {
+            "title": "Rolled Cheese",
+            "type": "boolean"
+          },
+          "rolled_preparation_type": {
+            "title": "Rolled Preparation Type",
+            "type": "boolean"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "snacked": {
+            "title": "Snacked",
+            "type": "boolean"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "user_id",
+          "session_id",
+          "timestamp",
+          "snacked",
+          "preparation_type_id",
+          "preparation_type",
+          "cheese_level",
+          "rolled_preparation_type",
+          "rolled_cheese",
+          "rating",
+          "ratings",
+          "ingredients",
+          "author"
+        ],
+        "title": "PanDto",
+        "type": "object"
+      },
+      "PanPageDto": {
+        "properties": {
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PanDto"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "title": "PanPageDto",
+        "type": "object"
+      },
+      "PanSwapDataDto": {
+        "properties": {
+          "pan1_id": {
+            "title": "Pan1 Id",
+            "type": "integer"
+          },
+          "pan1_user_id": {
+            "title": "Pan1 User Id",
+            "type": "integer"
+          },
+          "pan1_user_name": {
+            "title": "Pan1 User Name",
+            "type": "string"
+          },
+          "pan2_id": {
+            "title": "Pan2 Id",
+            "type": "integer"
+          },
+          "pan2_user_id": {
+            "title": "Pan2 User Id",
+            "type": "integer"
+          },
+          "pan2_user_name": {
+            "title": "Pan2 User Name",
+            "type": "string"
+          },
+          "time_window_minutes": {
+            "title": "Time Window Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pan1_id",
+          "pan1_user_id",
+          "pan1_user_name",
+          "pan2_id",
+          "pan2_user_id",
+          "pan2_user_name",
+          "time_window_minutes"
+        ],
+        "title": "PanSwapDataDto",
+        "type": "object"
+      },
+      "PrepTypeDto": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "session_id"
+        ],
+        "title": "PrepTypeDto",
+        "type": "object"
+      },
+      "RatingDto": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "pan_id": {
+            "title": "Pan Id",
+            "type": "integer"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "number"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "rating",
+          "user_id",
+          "pan_id",
+          "session_id"
+        ],
+        "title": "RatingDto",
+        "type": "object"
+      },
+      "RewardDto": {
+        "properties": {
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "leveled_up": {
+            "title": "Leveled Up",
+            "type": "boolean"
+          },
+          "next_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "xp_after": {
+            "title": "Xp After",
+            "type": "integer"
+          },
+          "xp_before": {
+            "title": "Xp Before",
+            "type": "integer"
+          },
+          "xp_gained": {
+            "title": "Xp Gained",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "xp_gained",
+          "xp_before",
+          "xp_after",
+          "previous_level",
+          "level",
+          "next_level",
+          "leveled_up"
+        ],
+        "title": "RewardDto",
+        "type": "object"
+      },
+      "RollBanditPanBody": {
+        "additionalProperties": false,
+        "properties": {
+          "roll_cheese": {
+            "default": false,
+            "title": "Roll Cheese",
+            "type": "boolean"
+          },
+          "roll_prep_type": {
+            "default": false,
+            "title": "Roll Prep Type",
+            "type": "boolean"
+          },
+          "total_columns": {
+            "minimum": 1,
+            "title": "Total Columns",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_columns"
+        ],
+        "title": "RollBanditPanBody",
+        "type": "object"
+      },
+      "RollOutcomeDto": {
+        "description": "The rolled pan and everything the roll caused for the roller.",
+        "properties": {
+          "achievements": {
+            "items": {
+              "$ref": "#/components/schemas/AchievementDto"
+            },
+            "title": "Achievements",
+            "type": "array"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventDto"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "pan": {
+            "$ref": "#/components/schemas/PanDto"
+          },
+          "reward": {
+            "$ref": "#/components/schemas/RewardDto"
+          }
+        },
+        "required": [
+          "pan",
+          "reward",
+          "achievements",
+          "events"
+        ],
+        "title": "RollOutcomeDto",
+        "type": "object"
+      },
+      "RollPanBody": {
+        "additionalProperties": false,
+        "properties": {
+          "num_fill": {
+            "default": 3,
+            "minimum": 0,
+            "title": "Num Fill",
+            "type": "integer"
+          },
+          "num_sauce": {
+            "default": 2,
+            "minimum": 0,
+            "title": "Num Sauce",
+            "type": "integer"
+          },
+          "preparation_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Preparation Type Id"
+          },
+          "roll_cheese": {
+            "default": false,
+            "title": "Roll Cheese",
+            "type": "boolean"
+          },
+          "roll_prep_type": {
+            "default": false,
+            "title": "Roll Prep Type",
+            "type": "boolean"
+          }
+        },
+        "title": "RollPanBody",
+        "type": "object"
+      },
+      "UpdatePanBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "default": null,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "snacked": {
+            "default": null,
+            "title": "Snacked",
+            "type": "boolean"
+          }
+        },
+        "title": "UpdatePanBody",
+        "type": "object"
+      },
+      "UpdateRatingBody": {
+        "additionalProperties": false,
+        "properties": {
+          "rating": {
+            "maximum": 5,
+            "minimum": 0,
+            "multipleOf": 0.5,
+            "title": "Rating",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rating"
+        ],
+        "title": "UpdateRatingBody",
+        "type": "object"
+      },
+      "UserSummaryDto": {
+        "description": "A user as shown next to their content: name, avatar and card decoration.\n\nRows store styles that are no longer offered (the removed 3D borders); they fall back\nto the defaults instead of failing the response.",
+        "properties": {
+          "border_style": {
+            "enum": [
+              "solid",
+              "dashed",
+              "dotted",
+              "double"
+            ],
+            "title": "Border Style",
+            "type": "string"
+          },
+          "border_texture": {
+            "anyOf": [
+              {
+                "enum": [
+                  "cheese",
+                  "bread",
+                  "sauce-01",
+                  "sauce-02",
+                  "herbs-01",
+                  "herbs-02"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Border Texture"
+          },
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "glow_effect": {
+            "title": "Glow Effect",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "profile_picture",
+          "border_style",
+          "border_texture",
+          "glow_effect"
+        ],
+        "title": "UserSummaryDto",
         "type": "object"
       }
     },
@@ -245,6 +1007,797 @@
         "summary": "Get a level by id.",
         "tags": [
           "levels"
+        ]
+      }
+    },
+    "/pans": {
+      "get": {
+        "operationId": "listPans",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "User Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Limit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanPageDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List pans newest first, filtered by session and/or user, one page at a time.",
+        "tags": [
+          "pans"
+        ]
+      },
+      "post": {
+        "operationId": "createPan",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RollOutcomeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a pan from hand-picked ingredients.",
+        "tags": [
+          "pans"
+        ]
+      }
+    },
+    "/pans/generate": {
+      "post": {
+        "operationId": "rollPan",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollPanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RollOutcomeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Roll a pan with a fixed number of fills and sauces.",
+        "tags": [
+          "pans"
+        ]
+      }
+    },
+    "/pans/generate/bandit": {
+      "post": {
+        "operationId": "rollBanditPan",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollBanditPanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RollOutcomeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Roll a pan with a random fill/sauce split (bandit mode).",
+        "tags": [
+          "pans"
+        ]
+      }
+    },
+    "/pans/{pan_id}": {
+      "delete": {
+        "operationId": "deletePan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pan_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a pan.",
+        "tags": [
+          "pans"
+        ]
+      },
+      "get": {
+        "operationId": "getPan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pan_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a pan by id.",
+        "tags": [
+          "pans"
+        ]
+      },
+      "patch": {
+        "operationId": "updatePan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pan_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rename a pan or mark it eaten.",
+        "tags": [
+          "pans"
+        ]
+      }
+    },
+    "/ratings": {
+      "get": {
+        "operationId": "listRatings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RatingDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List ratings, optionally only those of one session.",
+        "tags": [
+          "ratings"
+        ]
+      },
+      "post": {
+        "operationId": "createRating",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRatingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rate a pan as the signed-in user, or change the rating they gave it.",
+        "tags": [
+          "ratings"
+        ]
+      }
+    },
+    "/ratings/{rating_id}": {
+      "delete": {
+        "operationId": "deleteRating",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rating_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a rating.",
+        "tags": [
+          "ratings"
+        ]
+      },
+      "get": {
+        "operationId": "getRating",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rating_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a rating by id.",
+        "tags": [
+          "ratings"
+        ]
+      },
+      "patch": {
+        "operationId": "updateRating",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rating_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRatingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change a rating's stars.",
+        "tags": [
+          "ratings"
         ]
       }
     }

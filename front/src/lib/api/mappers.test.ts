@@ -3,32 +3,18 @@ import { flatten } from "./jsonapi";
 import {
     toAchievement,
     toPan,
-    toRollOutcome,
     toSession,
     toUser,
     toUserStats,
 } from "./mappers";
 import {
     achievementResource,
-    enrichedPanAttributes,
     levelDict,
     panAttributes,
-    rollDocument,
     userAttributes,
 } from "./__fixtures__/wire";
 
 describe("toPan", () => {
-    it("maps a roll pan and a listed pan to the same shape", () => {
-        const rolled = toPan({ ...panAttributes(), id: 11 });
-        const listed = toPan({ ...enrichedPanAttributes(), id: 11 });
-
-        expect(Object.keys(rolled).sort()).toEqual(Object.keys(listed).sort());
-        expect(rolled.user).toBe("");
-        expect(listed.user).toBe("Ada");
-        expect(listed.user_glow_effect).toBe(true);
-        expect(listed.user_border_texture).toBe("cheese");
-    });
-
     it("maps nested ingredients, ratings and preparation type", () => {
         const pan = toPan({ ...panAttributes(), id: 11 });
 
@@ -156,50 +142,5 @@ describe("toUserStats", () => {
             meat: false,
         });
         expect(stats.most_ingredients_pan?.ingredients[0].type).toBe(IngredientType.SAUCE);
-    });
-});
-
-describe("toRollOutcome", () => {
-    it("maps pan, reward, achievements and events from the roll envelope", () => {
-        const doc = rollDocument({ leveled_up: true });
-        const outcome = toRollOutcome(flatten(doc.data), doc.meta);
-
-        expect(outcome.pan.id).toBe(11);
-        expect(outcome.reward).toEqual({
-            xp_gained: 42,
-            xp_before: 100,
-            xp_after: 142,
-            level: { id: 3, name: "Chef", required_experience: 140 },
-            previous_level: { id: 2, name: "Cook", required_experience: 100 },
-            next_level: { id: 4, name: "Master", required_experience: 300 },
-            leveled_up: true,
-        });
-        expect(outcome.achievements.map((a) => [a.id, a.title])).toEqual([[3, "First Pan"]]);
-        expect(outcome.events).toEqual([
-            {
-                id: 9,
-                event_type: "pan_duel",
-                message: "Duel!",
-                data: { pan1_id: 11 },
-                created_at: "2026-11-18T19:00:01",
-            },
-        ]);
-    });
-
-    it("accepts null levels", () => {
-        const doc = rollDocument();
-        const outcome = toRollOutcome(flatten(doc.data), {
-            ...doc.meta,
-            reward: { ...doc.meta.reward, level: null, previous_level: null, next_level: null },
-        });
-        expect(outcome.reward.level).toBeNull();
-        expect(outcome.reward.next_level).toBeNull();
-    });
-
-    it("rejects a roll response without a reward", () => {
-        const doc = rollDocument();
-        expect(() =>
-            toRollOutcome(flatten(doc.data), { newly_unlocked_achievements: [], events: [] }),
-        ).toThrow(/missing meta.reward/);
     });
 });
