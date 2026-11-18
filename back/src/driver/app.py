@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple, Type
 
 from flask import Config, Flask, Response, jsonify, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.exceptions import NotFound
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules, serialize_error
 from back.src.driver.api_custom import apis_custom
@@ -30,8 +31,11 @@ class App(Flask):
         db: SQLAlchemy,
         config: Type[Config],
         apis: Optional[List[Type[BaseApi]]] = None,
+        frontend_folder: Optional[Path] = None,
     ) -> None:
-        super().__init__(name, static_folder="static", static_url_path="")
+        # No Flask static route: it would answer every path before `serve` can fall back to index.html.
+        super().__init__(name, static_folder=None)
+        self.frontend_folder = Path(self.root_path) / "static" if frontend_folder is None else frontend_folder
         self.apis = apis_custom if apis is None else apis
         self.db = db
         self.config.from_object(config)
@@ -67,11 +71,15 @@ class App(Flask):
         self.register_error_handler(404, self.page_not_found)
 
     def serve(self, path: str) -> Response:
-        assert self.static_folder is not None  # set in __init__
-        if path != "" and Path(f"{self.static_folder}/{path}").exists():
-            return send_from_directory(self.static_folder, path)
-        else:
-            return send_from_directory(self.static_folder, "index.html")
+        """A file of the frontend build, else its index.html, so the browser router gets `/login`, `/<session>`, …"""
+        if path == "api" or path.startswith("api/"):
+            raise NotFound()
+        if path and (self.frontend_folder / path).is_file():
+            return send_from_directory(self.frontend_folder, path)
+        if "." in path.rsplit("/", 1)[-1]:
+            # A missing asset, e.g. a chunk of an older build: the index in its place would hide that.
+            raise NotFound()
+        return send_from_directory(self.frontend_folder, "index.html")
 
     def log_on_error(self, response: Response) -> Response:
         if 400 <= response.status_code < 500:
