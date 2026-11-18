@@ -132,17 +132,22 @@ class TypedEndpointTest(AppTest):
         self.assert_errors(response, 415)
 
     def test_legacy_endpoints_still_require_json_api_media_type(self):
-        response = self.client.get(
-            "/api/achievements", headers={**self.bearer(self.user), "Accept": "application/json"}
-        )
+        response = self.client.get("/api/probe/legacy", headers={"Accept": "application/json"})
         self.assert_errors(response, 406)
 
         response = self.client.post(
-            "/api/insults",
+            "/api/probe/legacy",
             json={"data": {"attributes": {"text": "Soggy"}}},
-            headers={**self.bearer(self.user), "Accept": "application/vnd.api+json"},
+            headers={"Accept": "application/vnd.api+json"},
         )
         self.assert_errors(response, 415)
+
+        response = self.client.post(
+            "/api/probe/legacy",
+            data="{}",
+            headers={"Accept": "application/vnd.api+json", "Content-Type": "application/vnd.api+json"},
+        )
+        self.assertEqual(response.json, {"jsonapi": {"version": "1.0"}, "data": {"echo": True}})
 
 
 class TypedEndpointDeclarationTest(unittest.TestCase):

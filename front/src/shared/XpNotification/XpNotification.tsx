@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { Card, Progress, Tag, Typography } from "antd";
 import { useAppStore } from "../../AppSlice";
 import { useTranslation } from "react-i18next";
-import { Achievement } from "../../model/achievement";
+import type { AchievementDto } from "../../api/generated/model";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import "./XpNotification.css";
 
@@ -540,7 +540,7 @@ export function XpNotification() {
         }
     };
 
-    const renderAchievementPage = (achievement: Achievement) => (
+    const renderAchievementPage = (achievement: AchievementDto) => (
         <div className="xp-notification-page achievement-page" style={{ opacity: pageOpacity }}>
             <div className="achievement-unlocked">
                 <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '8px' }}>

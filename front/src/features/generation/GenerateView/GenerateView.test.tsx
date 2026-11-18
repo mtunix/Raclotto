@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GenerateView } from './GenerateView';
 import { mockApi, createMockIngredient, createMockPan, resetAllMocks, mockLocalStorage } from '../../../testUtils';
-import { IngredientType } from '../../../model/ingredient';
+import { IngredientType } from '../../../api/generated/model';
 
 describe('GenerateView', () => {
     const sessionKey = 'test-session';

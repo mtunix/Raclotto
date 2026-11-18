@@ -11,7 +11,8 @@ import {
   message,
 } from "antd";
 import { useTranslation } from "react-i18next";
-import { Api } from "../../lib/api";
+import { generateProfilePicture } from "../../api/generated/endpoints/images/images";
+import type { GeneratedPictureDto } from "../../api/generated/model";
 import { mutateUserProfile } from "../../lib/api/swrHooks";
 import { useAuthStore } from "../../AuthSlice";
 import styles from "./GenerateView/GenerateView.module.css";
@@ -35,18 +36,17 @@ export function LevelUpPictureModal({
   onClose,
 }: LevelUpPictureModalProps) {
   const { t } = useTranslation();
-  const [newProfilePicture, setNewProfilePicture] = useState<string | null>(
-    null,
-  );
+  const [newProfilePicture, setNewProfilePicture] =
+    useState<GeneratedPictureDto | null>(null);
 
   useEffect(() => {
     if (!open || !levelId) return;
     let cancelled = false;
     setNewProfilePicture(null);
-    Api.generateProfilePicture(levelId)
+    generateProfilePicture({ level_id: levelId })
       .then((picture) => {
         if (cancelled) return;
-        setNewProfilePicture(picture.imageBase64);
+        setNewProfilePicture(picture);
         // Refetch profile data to update the display with the new image
         mutateUserProfile(useAuthStore.getState().user?.id);
       })
@@ -198,7 +198,7 @@ export function LevelUpPictureModal({
               }}
             >
               <img
-                src={`data:image/png;base64,${newProfilePicture}`}
+                src={`data:${newProfilePicture.mime_type};base64,${newProfilePicture.image_base64}`}
                 alt="New Profile Picture"
                 style={{
                   maxWidth: "100%",

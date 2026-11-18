@@ -1,7 +1,8 @@
 import React from "react";
 import {Spin, Card, Row, Col, Tag, Typography, Space, Progress} from "antd";
-import {useAchievements} from "../../lib/api/swrHooks";
-import {Achievement} from "../../model/achievement";
+import {useListAchievements} from "../../api/generated/endpoints/achievements/achievements";
+import type {AchievementStatusDto} from "../../api/generated/model";
+import {onErrorRetry} from "../../lib/api/swrHooks";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import {useTranslation} from "react-i18next";
 
@@ -11,7 +12,9 @@ type AchievementViewProps = {};
 
 export function AchievementView(props: AchievementViewProps) {
     const {t} = useTranslation();
-    const { data: achievements = [], isLoading: waiting } = useAchievements();
+    const { data: achievements = [], isLoading: waiting } = useListAchievements({
+        swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
+    });
 
     if (waiting) {
         return (
@@ -29,13 +32,13 @@ export function AchievementView(props: AchievementViewProps) {
         return 'default';
     };
 
-    const renderAchievementCard = (achievement: Achievement) => {
+    const renderAchievementCard = (achievement: AchievementStatusDto) => {
         const isHidden = achievement.hidden;
-        const isUnlocked = achievement.unlocked === true;
+        const isUnlocked = achievement.unlocked;
         const displayTitle = isHidden ? "???" : achievement.title;
         const displayDescription = isHidden ? "???" : achievement.description;
         const progress = achievement.progress;
-        const showProgress = progress !== undefined && progress !== null;
+        const showProgress = progress !== null;
 
         return (
             <Col xs={24} sm={12} md={8} lg={6} key={achievement.id}>

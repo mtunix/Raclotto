@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { MainScreen } from './MainScreen';
 import { mockApi, mockUseAppStore, createMockIngredient, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
-import { IngredientType } from '../../model/ingredient';
+import { IngredientType } from '../../api/generated/model';
 
 const mockUseAppStoreDirect = jest.fn();
 jest.mock('../AppSlice', () => ({

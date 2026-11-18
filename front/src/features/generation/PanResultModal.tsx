@@ -13,7 +13,7 @@ import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisp
 import { PreparationTypeCard } from "./PreparationTypeCard/PreparationTypeCard";
 import { CheeseSlider } from "./CheeseSlider";
 import type { PanDto } from "../../api/generated/model";
-import { IngredientType } from "../../model/ingredient";
+import { IngredientType } from "../../api/generated/model";
 import { useTranslation } from "react-i18next";
 import styles from "./GenerateView/GenerateView.module.css";
 import { LevelUpPictureModal } from "./LevelUpPictureModal";

@@ -29,6 +29,7 @@ import { useAuthStore } from "../../AuthSlice";
 import { useTranslation } from "react-i18next";
 import { mutateMe, onErrorRetry } from "../../lib/api/swrHooks";
 import { updateMe } from "../../api/generated/endpoints/auth/auth";
+import { generateProfilePicture } from "../../api/generated/endpoints/images/images";
 import {
   useGetUserProfile,
   useGetUserStats,
@@ -43,7 +44,6 @@ import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisp
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { getTextureBorderImage } from "../../lib/borderTextures";
-import { Api } from "../../lib/api";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 
 const { Title, Text } = Typography;
@@ -137,11 +137,11 @@ export function ProfileView() {
     try {
       // Call the new profile picture generation endpoint
       // This endpoint includes the user's previous picture as context for Gemini
-      const { imageBase64 } = await Api.generateProfilePicture(
-        profileData.level?.id,
-      );
+      const { image_base64 } = await generateProfilePicture({
+        level_id: profileData.level?.id,
+      });
 
-      if (!imageBase64) {
+      if (!image_base64) {
         throw new Error("No image data returned from server");
       }
 

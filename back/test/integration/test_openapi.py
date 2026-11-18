@@ -3,11 +3,13 @@ import unittest
 
 from flask import Flask
 
-from back.src.api.base_api import BaseApi, init_api_rules
+from back.src.api.base_api import BaseApi, init_api_rules, typed_endpoint
 from back.src.api.openapi import SPEC_PATH, build_openapi, render_openapi
+from back.src.driver.api_custom import apis_custom
 from back.src.driver.database import db
 from back.src.dto.base import RequestDto, ResponseDto
 from back.test.integration.probe_api import ProbeApi
+from back.src.utils import un_camel_case
 from back.test.support import get_app
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponseDto"}
@@ -78,7 +80,7 @@ class LevelsSpecTest(unittest.TestCase):
             set(schema["required"]), {"id", "name", "label_en", "label_de", "required_experience"}
         )
 
-    def test_legacy_endpoints_are_left_out(self):
+    def test_every_path_is_in_the_spec(self):
         self.assertEqual(set(self.spec["paths"]), {
             "/levels", "/levels/{level_id}",
             "/pans", "/pans/generate", "/pans/generate/bandit", "/pans/{pan_id}",
@@ -90,6 +92,12 @@ class LevelsSpecTest(unittest.TestCase):
             "/ingredients", "/ingredients/{ingredient_id}", "/ingredients/refill", "/ingredients/available-counts",
             "/ingredients/export", "/ingredients/import", "/ingredients/reimport",
             "/preparation_type", "/preparation_type/{prep_type_id}",
+            "/achievements", "/achievements/{achievement_id}", "/achievements/leaderboard",
+            "/events", "/events/{event_id}/dismiss", "/events/configs", "/events/configs/{config_id}",
+            "/images/profile-picture-history/{user_id}", "/images/generate-banana",
+            "/images/generate-profile-picture", "/images/set-candidate-picture/{picture_id}",
+            "/insults", "/insults/{insult_id}",
+            "/stats",
         })
 
 
@@ -278,6 +286,83 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
     def test_session_timestamp_is_a_date_time(self):
         self.assertEqual(self.schemas["SessionDto"]["properties"]["timestamp"],
                          {"format": "date-time", "title": "Timestamp", "type": "string"})
+
+
+class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = build_openapi(get_app())
+        cls.schemas = cls.spec["components"]["schemas"]
+
+    def test_operation_ids_and_error_statuses(self):
+        operations = {
+            (path, method): (operation["operationId"], sorted(int(s) for s in operation["responses"]))
+            for path, methods in self.spec["paths"].items()
+            if path.startswith(("/achievements", "/events", "/images", "/insults", "/stats"))
+            for method, operation in methods.items()
+        }
+        self.assertEqual(operations, {
+            ("/achievements", "get"): ("listAchievements", [200, 401]),
+            ("/achievements/{achievement_id}", "get"): ("getAchievement", [200, 401, 404]),
+            ("/achievements/leaderboard", "get"): ("getLeaderboard", [200, 401]),
+            ("/events", "get"): ("listEvents", [200, 400, 401, 404]),
+            ("/events/{event_id}/dismiss", "post"): ("dismissEvent", [204, 401, 404]),
+            ("/events/configs", "get"): ("listEventConfigs", [200, 400, 401]),
+            ("/events/configs", "post"): ("saveEventConfig", [200, 400, 401, 404]),
+            ("/events/configs/{config_id}", "patch"): ("updateEventConfig", [200, 400, 401, 404]),
+            ("/images/profile-picture-history/{user_id}", "get"): ("getProfilePictureHistory", [200, 401, 404]),
+            ("/images/generate-banana", "post"): ("generateImage", [200, 400, 401, 500]),
+            ("/images/generate-profile-picture", "post"): ("generateProfilePicture", [200, 400, 401, 500]),
+            ("/images/set-candidate-picture/{picture_id}", "post"): ("setCandidatePicture", [204, 401, 403, 404]),
+            ("/insults", "get"): ("listInsults", [200, 401]),
+            ("/insults", "post"): ("createInsult", [200, 400, 401]),
+            ("/insults/{insult_id}", "get"): ("getInsult", [200, 401, 404]),
+            ("/insults/{insult_id}", "patch"): ("updateInsult", [200, 400, 401, 404]),
+            ("/insults/{insult_id}", "delete"): ("deleteInsult", [204, 401, 404]),
+            ("/stats", "get"): ("getStats", [200, 400, 401]),
+        })
+
+    def test_an_achievement_status_adds_only_unlocked_and_progress(self):
+        status = self.schemas["AchievementStatusDto"]
+        plain = self.schemas["AchievementDto"]
+
+        self.assertEqual(set(status["properties"]) - set(plain["properties"]), {"unlocked", "progress"})
+        self.assertEqual(set(status["required"]), set(status["properties"]))
+
+    def test_event_configs_take_the_event_type_of_events(self):
+        event_type = self.schemas["EventDto"]["properties"]["event_type"]
+
+        self.assertEqual(self.schemas["EventConfigDto"]["properties"]["event_type"], event_type)
+        self.assertEqual(self.schemas["SaveEventConfigBody"]["properties"]["event_type"], event_type)
+        self.assertEqual(self.schemas["SaveEventConfigBody"]["required"], ["event_type", "enabled"])
+        self.assertNotIn("required", self.schemas["UpdateEventConfigBody"])
+
+    def test_stats_embed_the_shared_shapes(self):
+        stats = self.schemas["StatsDto"]["properties"]
+
+        self.assertEqual(stats["pans"]["items"], {"$ref": "#/components/schemas/PanDto"})
+        self.assertEqual(stats["ingredients_top_rated"]["items"], {"$ref": "#/components/schemas/IngredientRatingDto"})
+        self.assertEqual(self.schemas["IngredientUsageDto"]["properties"]["ingredient"],
+                         {"$ref": "#/components/schemas/IngredientDto"})
+        self.assertEqual(stats["leaderboard"]["items"], {"$ref": "#/components/schemas/LeaderboardEntryDto"})
+
+    def test_picture_history_entries_carry_the_shared_level(self):
+        level = self.schemas["ProfilePictureDto"]["properties"]["level"]
+
+        self.assertEqual(level["anyOf"], [{"$ref": "#/components/schemas/LevelDto"}, {"type": "null"}])
+        self.assertEqual(self.spec["paths"]["/images/profile-picture-history/{user_id}"]["get"]["responses"]["200"]
+                         ["content"]["application/json"]["schema"],
+                         {"type": "array", "items": {"$ref": "#/components/schemas/ProfilePictureDto"}})
+
+
+class EveryEndpointTypedTest(unittest.TestCase):
+    def test_no_legacy_endpoint_is_left(self):
+        get_app()
+        production = {un_camel_case(api.__name__) for api in apis_custom}
+        endpoints = {name: func for name, func in BaseApi.endpoints.items() if name.split(".")[0] in production}
+
+        self.assertEqual({name.split(".")[0] for name in endpoints}, production)
+        self.assertEqual([name for name, func in sorted(endpoints.items()) if typed_endpoint(func) is None], [])
 
 
 class ProbeSpecTest(unittest.TestCase):

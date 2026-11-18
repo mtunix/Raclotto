@@ -29,7 +29,7 @@ import type { PanDto } from "../../../api/generated/model";
 import { useListIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
 import { useListPreparationTypes } from "../../../api/generated/endpoints/preparation-type/preparation-type";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
-import { IngredientType } from "../../../model/ingredient";
+import { IngredientType } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../../AppSlice";

@@ -1,13 +1,14 @@
 import React from "react";
 import {Tag, Space} from "antd";
-import {Ingredient, IngredientType} from "../../model/ingredient";
+import {IngredientType} from "../../api/generated/model";
+import type {IngredientDto} from "../../api/generated/model";
 import {VectorGraphics} from "../../lib/vectorGraphics";
 import {useTranslation} from "react-i18next";
 import {getTagColors} from "../../lib/tagColors";
 import "./IngredientDisplay.css";
 
 interface IngredientDisplayProps {
-    ingredient: Ingredient;
+    ingredient: IngredientDto;
     variant?: "card" | "badge" | "compact";
     showTags?: boolean;
     showIcon?: boolean;

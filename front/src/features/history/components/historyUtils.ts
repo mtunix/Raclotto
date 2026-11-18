@@ -1,5 +1,5 @@
 import type {PanDto} from "../../../api/generated/model";
-import {IngredientType} from "../../../model/ingredient";
+import {IngredientType} from "../../../api/generated/model";
 
 export interface FilterOptions {
     selectedUsers: number[];

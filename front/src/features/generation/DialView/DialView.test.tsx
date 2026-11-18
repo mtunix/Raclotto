@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DialView } from './DialView';
 import { createMockIngredient, resetAllMocks } from '../../../testUtils';
-import { IngredientType } from '../../../model/ingredient';
+import { IngredientType } from '../../../api/generated/model';
 
 describe('DialView', () => {
     const mockOnChange = jest.fn();

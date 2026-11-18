@@ -3,11 +3,13 @@ import unittest
 from flask import Flask
 
 from back.src.api.base_api import BaseApi, TypedEndpoint, init_api_rules
+from back.src.api.image_api import GeminiImageGenerator, set_image_generator
 from back.src.api.openapi import build_openapi
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
 from back.src.dto.base import RequestDto, ResponseDto
 from back.src.entity.preparation_type import PreparationType
+from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.rating import Rating
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.test.support import AppTest, get_app
@@ -216,4 +218,59 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             self.call("DELETE", f"/preparation_type/{own.id}"),
             self.call("DELETE", f"/preparation_type/{default.id}", self.ana),
             self.call("DELETE", "/preparation_type/999", self.ana),
+        )
+
+    def test_list_events(self):
+        self.assert_answers(
+            "listEvents",
+            self.call("GET", "/events", query={"session_key": "s1"}),
+            self.call("GET", "/events", self.ana),
+            self.call("GET", "/events", self.ana, query={"session_key": "nope"}),
+        )
+
+    def test_save_event_config(self):
+        self.assert_answers(
+            "saveEventConfig",
+            self.call("POST", "/events/configs", body={"event_type": "pan_swap", "enabled": True}),
+            self.call("POST", "/events/configs", self.ana, body={"event_type": "rain", "enabled": True}),
+            self.call("POST", "/events/configs", self.ana,
+                      body={"event_type": "pan_swap", "enabled": True, "session_key": "nope"}),
+        )
+
+    def test_generate_profile_picture(self):
+        previous = set_image_generator(GeminiImageGenerator(api_key=None))
+        try:
+            self.assert_answers(
+                "generateProfilePicture",
+                self.call("POST", "/images/generate-profile-picture", body={}),
+                self.call("POST", "/images/generate-profile-picture", self.ana, body={"level_id": "first"}),
+                self.call("POST", "/images/generate-profile-picture", self.ana, body={}),
+            )
+        finally:
+            set_image_generator(previous)
+
+    def test_set_candidate_picture(self):
+        picture = ProfilePictureHistory(user_id=self.ben.id, profile_picture="/static/ben.png")
+        db.session.add(picture)
+        db.session.commit()
+        self.assert_answers(
+            "setCandidatePicture",
+            self.call("POST", f"/images/set-candidate-picture/{picture.id}"),
+            self.call("POST", f"/images/set-candidate-picture/{picture.id}", self.ana),
+            self.call("POST", "/images/set-candidate-picture/999", self.ana),
+        )
+
+    def test_update_insult(self):
+        self.assert_answers(
+            "updateInsult",
+            self.call("PATCH", "/insults/999", body={"title": "x"}),
+            self.call("PATCH", "/insults/999", self.ana, body={}),
+            self.call("PATCH", "/insults/999", self.ana, body={"title": "x"}),
+        )
+
+    def test_stats(self):
+        self.assert_answers(
+            "getStats",
+            self.call("GET", "/stats"),
+            self.call("GET", "/stats", self.ana, query={"session_key": ""}),
         )

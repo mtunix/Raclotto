@@ -1,46 +1,24 @@
-from flask import request
-from back.src.api.base_api import BaseApi, ApiError, ApiErrorCode
-from back.src.api.serializer import serialize_single, serialize_collection, serialize_entity
-from back.src.api.constants import JSONAPI_VERSION
-from back.src.api.deserializer import deserialize_attributes
-from back.src.auth.middleware import require_auth, get_current_user
-from back.src.interactor.event_service import EventService
-from back.src.repository.session_repository import SessionRepository
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
+from back.src.dto.event import EventConfigDto, EventDto, SaveEventConfigBody, UpdateEventConfigBody
+from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.interactor.event_service import EventService
+from back.src.repository.event_config_repository import EventConfigRepository
+from back.src.repository.session_repository import SessionRepository
 
 
 class EventApi(BaseApi):
     url_prefix = "/events"
-    
+
     def __init__(self):
         super().__init__()
         self.event_service = EventService()
         self.session_repository = SessionRepository()
-    
-    @BaseApi.endpoint("", ["GET"])
-    @require_auth
-    def get_events(self):
-        """Get pending events for a session.
-        
-        Query parameters:
-        - session_key: Session key (required)
-        
-        :returns List[Event]: List of pending events
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        session_key = request.args.get('session_key')
-        
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key query parameter is required"
-            )
-        
-        # Verify session exists
+        self.config_repository = EventConfigRepository()
+
+    def _session(self, session_key: str) -> RaclottoSession:
         session = self.session_repository.by_key(session_key)
         if not session:
             raise ApiError(
@@ -49,147 +27,57 @@ class EventApi(BaseApi):
                 title="Session not found",
                 detail="The specified session does not exist"
             )
-        
-        # Get pending events
-        events = self.event_service.get_pending_events(session_key, user.id)
-        
-        return serialize_collection(events, "event")
-    
-    @BaseApi.endpoint("/<int:event_id>/dismiss", ["POST"])
+        return session
+
+    @BaseApi.endpoint("", ["GET"], query=SessionKeyQuery, response=list[EventDto], operation_id="listEvents",
+                      errors=(404,))
     @require_auth
-    def dismiss_event(self, event_id: int):
-        """Dismiss an event for the current user.
-        
-        :param event_id: Event ID
-        :returns dict: Success message
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Event not found
-        """
-        user = get_current_user()
-        
-        success = self.event_service.dismiss_event(event_id, user.id)
-        if not success:
+    def get_events(self, query: SessionKeyQuery) -> list[EventDto]:
+        """List a session's events the signed-in user has not dismissed, newest first."""
+        self._session(query.session_key)
+        events = self.event_service.get_pending_events(query.session_key, get_current_user().id)
+        return [EventDto.model_validate(event) for event in events]
+
+    @BaseApi.endpoint("/<int:event_id>/dismiss", ["POST"], status=204, operation_id="dismissEvent", errors=(404,))
+    @require_auth
+    def dismiss_event(self, event_id: int) -> None:
+        """Hide an event from the signed-in user; other users still see it."""
+        if not self.event_service.dismiss_event(event_id, get_current_user().id):
             raise ApiError(
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Event not found",
                 detail="The specified event does not exist or has already been dismissed"
             )
-        
         db.session.commit()
-        
-        return {
-            "jsonapi": {"version": JSONAPI_VERSION},
-            "data": {
-                "type": "event_dismissal",
-                "id": str(event_id),
-                "attributes": {
-                    "dismissed": True
-                }
-            }
-        }
-    
-    @BaseApi.endpoint("/configs", ["GET"])
+
+    @BaseApi.endpoint("/configs", ["GET"], query=SessionFilterQuery, response=list[EventConfigDto],
+                      operation_id="listEventConfigs")
     @require_auth
-    def get_event_configs(self):
-        """Get event configurations for a session.
-        
-        Query parameters:
-        - session_key: Session key (optional, if not provided returns global configs)
-        
-        :returns List[EventConfig]: List of event configurations
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        session_key = request.args.get('session_key')
-        session_id = None
-        
-        if session_key:
-            session = self.session_repository.by_key(session_key)
-            if session:
-                session_id = session.id
-        
-        configs = self.event_service.get_all_configs(session_id)
-        
-        return serialize_collection(configs, "event_config")
-    
-    @BaseApi.endpoint("/configs", ["POST"])
+    def get_event_configs(self, query: SessionFilterQuery) -> list[EventConfigDto]:
+        """List the global event configs and the session's own; without a known session, every config."""
+        session = self.session_repository.by_key(query.session_key) if query.session_key is not None else None
+        configs = self.event_service.get_all_configs(session.id if session else None)
+        return [EventConfigDto.model_validate(config) for config in configs]
+
+    @BaseApi.endpoint("/configs", ["POST"], body=SaveEventConfigBody, response=EventConfigDto,
+                      operation_id="saveEventConfig", errors=(404,))
     @require_auth
-    def create_event_config(self):
-        """Create or update an event configuration.
-        
-        Request body should contain:
-        - event_type: Event type (required)
-        - enabled: Whether event is enabled (required)
-        - frequency_minutes: Optional frequency in minutes
-        - session_key: Optional session key for session-specific config
-        
-        :returns EventConfig: Created or updated configuration
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        attributes = deserialize_attributes()
-        event_type = attributes.get('event_type')
-        enabled = attributes.get('enabled')
-        frequency_minutes = attributes.get('frequency_minutes')
-        session_key = attributes.get('session_key')
-        
-        if not event_type:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="event_type is required"
-            )
-        
-        if enabled is None:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="enabled is required"
-            )
-        
-        session_id = None
-        if session_key:
-            session = self.session_repository.by_key(session_key)
-            if not session:
-                raise ApiError(
-                    ApiErrorCode.resource_not_found,
-                    status=404,
-                    title="Session not found",
-                    detail="The specified session does not exist"
-                )
-            session_id = session.id
-        
+    def create_event_config(self, body: SaveEventConfigBody) -> EventConfigDto:
+        """Create or change the config of an event type, the session's own or the global one."""
+        session_id = self._session(body.session_key).id if body.session_key is not None else None
         config = self.event_service.create_or_update_config(
-            event_type, enabled, frequency_minutes, session_id
+            body.event_type, body.enabled, body.frequency_minutes, session_id
         )
         db.session.commit()
-        
-        return serialize_single(config, "event_config")
-    
-    @BaseApi.endpoint("/configs/<int:config_id>", ["PATCH"])
+        return EventConfigDto.model_validate(config)
+
+    @BaseApi.endpoint("/configs/<int:config_id>", ["PATCH"], body=UpdateEventConfigBody, response=EventConfigDto,
+                      operation_id="updateEventConfig", errors=(404,))
     @require_auth
-    def update_event_config(self, config_id: int):
-        """Update an event configuration.
-        
-        Request body should contain:
-        - enabled: Optional whether event is enabled
-        - frequency_minutes: Optional frequency in minutes
-        
-        :param config_id: Configuration ID
-        :returns EventConfig: Updated configuration
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Configuration not found
-        """
-        from back.src.repository.event_config_repository import EventConfigRepository
-        
-        config_repository = EventConfigRepository()
-        config = config_repository.by_id(config_id)
-        
+    def update_event_config(self, config_id: int, body: UpdateEventConfigBody) -> EventConfigDto:
+        """Change an event config by id."""
+        config = self.config_repository.by_id(config_id)
         if not config:
             raise ApiError(
                 ApiErrorCode.resource_not_found,
@@ -197,21 +85,7 @@ class EventApi(BaseApi):
                 title="Configuration not found",
                 detail="The specified configuration does not exist"
             )
-        
-        attributes = deserialize_attributes()
-        
-        if 'enabled' in attributes:
-            config.enabled = attributes['enabled']
-        if 'frequency_minutes' in attributes:
-            config.frequency_minutes = attributes['frequency_minutes']
-        
-        db.session.flush()
+        for field in body.model_fields_set:
+            setattr(config, field, getattr(body, field))
         db.session.commit()
-        
-        return serialize_single(config, "event_config")
-
-
-
-
-
-
+        return EventConfigDto.model_validate(config)

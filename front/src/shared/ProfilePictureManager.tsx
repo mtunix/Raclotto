@@ -12,8 +12,12 @@ import {
 } from "antd";
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { Api } from "../lib/api";
-import { ProfilePictureEntry } from "../model/profilePicture";
+import {
+  getProfilePictureHistory,
+  useGetProfilePictureHistory,
+} from "../api/generated/endpoints/images/images";
+import { mutateProfilePictureHistory, onErrorRetry } from "../lib/api/swrHooks";
+import { chooseCandidatePicture } from "./profilePictureHistory";
 import { getProfilePictureUrl } from "../lib/utils/profilePictureUrl";
 
 interface ProfilePictureManagerProps {
@@ -48,10 +52,16 @@ export function ProfilePictureManager({
   );
   const [hasStartedEditing, setHasStartedEditing] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [history, setHistory] = useState<ProfilePictureEntry[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [settingCandidate, setSettingCandidate] = useState(false);
-  const [candidatePictureId, setCandidatePictureId] = useState<number | null>(
+  const { data: history = [], isLoading: loadingHistory } =
+    useGetProfilePictureHistory(userId ?? 0, {
+      swr: {
+        enabled: isModalVisible && !directMode,
+        onErrorRetry,
+        revalidateOnFocus: false,
+      },
+    });
+  // The picture being made the candidate, while the request runs.
+  const [pendingCandidateId, setPendingCandidateId] = useState<number | null>(
     null,
   );
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -65,32 +75,6 @@ export function ProfilePictureManager({
       setHasStartedEditing(false);
     }
   }, [isModalVisible, currentPicture, directMode]);
-
-  // Fetch profile picture history when modal opens
-  useEffect(() => {
-    if (isModalVisible && userId && !directMode) {
-      const fetchHistory = async () => {
-        try {
-          setLoadingHistory(true);
-          const { history: historyData } =
-            await Api.getProfilePictureHistory(userId);
-          setHistory(historyData);
-
-          // Set the candidate picture ID for UI purposes
-          const candidatePicture = historyData.find((pic) => pic.is_candidate);
-          if (candidatePicture) {
-            setCandidatePictureId(candidatePicture.id);
-          }
-        } catch (error) {
-          console.error("Failed to fetch profile picture history:", error);
-          setHistory([]);
-        } finally {
-          setLoadingHistory(false);
-        }
-      };
-      fetchHistory();
-    }
-  }, [isModalVisible, userId, directMode]);
 
   // Handle video element when camera becomes active
   React.useEffect(() => {
@@ -277,21 +261,12 @@ export function ProfilePictureManager({
           // Wait a bit for the backend to process the picture
           await new Promise((resolve) => setTimeout(resolve, 500));
 
-          const { history: updatedHistory } =
-            await Api.getProfilePictureHistory(userId);
-          setHistory(updatedHistory);
-
-          // Find the most recently added picture and set it as candidate
-          if (updatedHistory.length > 0) {
-            const newestPicture = updatedHistory[0]; // Assuming most recent is first
-            if (!newestPicture.is_candidate) {
-              await Api.setCandidatePicture(newestPicture.id);
-
-              // Refetch history again to show the updated candidate status
-              const { history: finalHistory } =
-                await Api.getProfilePictureHistory(userId);
-              setHistory(finalHistory);
-            }
+          // The history is newest first.
+          const [newestPicture] = await getProfilePictureHistory(userId);
+          if (newestPicture && !newestPicture.is_candidate) {
+            await chooseCandidatePicture(userId, newestPicture.id);
+          } else {
+            await mutateProfilePictureHistory(userId);
           }
         } catch (error) {
           console.error(
@@ -314,15 +289,9 @@ export function ProfilePictureManager({
   const handleSetCandidate = async (pictureId: number) => {
     if (!isOwnProfile || !userId) return;
 
-    setSettingCandidate(true);
+    setPendingCandidateId(pictureId);
     try {
-      await Api.setCandidatePicture(pictureId);
-
-      // Refetch history from server to ensure is_candidate flag is correctly set
-      const { history: updatedHistory } =
-        await Api.getProfilePictureHistory(userId);
-      setHistory(updatedHistory);
-      setCandidatePictureId(pictureId);
+      await chooseCandidatePicture(userId, pictureId);
       message.success(
         t("image.candidatePictureSet") || "Set as generation candidate",
       );
@@ -333,7 +302,7 @@ export function ProfilePictureManager({
           "Failed to set as generation candidate",
       );
     } finally {
-      setSettingCandidate(false);
+      setPendingCandidateId(null);
     }
   };
 
@@ -724,9 +693,9 @@ export function ProfilePictureManager({
                                 },
                               )}
                             </div>
-                            {entry.level_name && (
+                            {entry.level && (
                               <div>
-                                Level: {t(entry.level_name)} (ID:{" "}
+                                Level: {t(entry.level.name)} (ID:{" "}
                                 {entry.level_id})
                               </div>
                             )}
@@ -748,11 +717,10 @@ export function ProfilePictureManager({
                             <Button
                               size="small"
                               onClick={() => handleSetCandidate(entry.id)}
-                              disabled={entry.is_candidate || settingCandidate}
-                              loading={
-                                settingCandidate &&
-                                candidatePictureId === entry.id
+                              disabled={
+                                entry.is_candidate || pendingCandidateId !== null
                               }
+                              loading={pendingCandidateId === entry.id}
                             >
                               {entry.is_candidate
                                 ? t("image.candidateSelected") || "Selected"
@@ -870,9 +838,9 @@ export function ProfilePictureManager({
                                   },
                                 )}
                               </div>
-                              {entry.level_name && (
+                              {entry.level && (
                                 <div>
-                                  Level: {entry.level_name} (ID:{" "}
+                                  Level: {entry.level.name} (ID:{" "}
                                   {entry.level_id})
                                 </div>
                               )}

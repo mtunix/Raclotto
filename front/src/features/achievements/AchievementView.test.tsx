@@ -1,64 +1,64 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import { SWRConfig } from 'swr';
+import type { AchievementStatusDto } from '../../api/generated/model';
+import { achievementStatuses } from '../../lib/api/__fixtures__/backendResponses';
+import { FakeTransport } from '../../lib/api/fakeTransport';
+import { setTransport, Transport } from '../../lib/api/transport';
 import { AchievementView } from './AchievementView';
-import { mockApi, createMockAchievement, resetAllMocks } from '../../testUtils';
 
-describe('AchievementView', () => {
-    beforeEach(() => {
-        resetAllMocks();
-        mockApi.get.mockResolvedValue([]);
-    });
+let fake: FakeTransport;
+let previous: Transport;
 
-    it('renders loading spinner initially', () => {
-        mockApi.get.mockImplementation(() => new Promise(() => {}));
-        render(<AchievementView />);
-        expect(screen.getByRole('status')).toBeInTheDocument();
-    });
+beforeEach(() => {
+    fake = new FakeTransport();
+    previous = setTransport(fake);
+});
 
-    it('displays achievements after API call', async () => {
-        const achievements = [
-            createMockAchievement({ id: 1, title: 'First Achievement', description: 'First Description' }),
-            createMockAchievement({ id: 2, title: 'Second Achievement', description: 'Second Description' }),
-        ];
-        mockApi.get.mockResolvedValue(achievements);
+afterEach(() => {
+    setTransport(previous);
+});
 
-        render(<AchievementView />);
+function renderView(statuses: AchievementStatusDto[]) {
+    fake.on('GET', '/achievements', statuses);
+    // A cache of its own per render, so each test fetches.
+    return render(
+        <SWRConfig value={{ provider: () => new Map() }}>
+            <AchievementView />
+        </SWRConfig>,
+    );
+}
 
-        await waitFor(() => {
-            expect(screen.queryByRole('status')).not.toBeInTheDocument();
-        });
+const [unlocked, inProgress] = achievementStatuses;
 
-        expect(screen.getByText('First Achievement')).toBeInTheDocument();
-        expect(screen.getByText('Second Achievement')).toBeInTheDocument();
-    });
+it('shows every achievement the backend lists', async () => {
+    renderView(achievementStatuses);
 
-    it('shows achievement descriptions', async () => {
-        const achievements = [createMockAchievement({ id: 1, title: 'Test Achievement', description: 'Test Description' })];
-        mockApi.get.mockResolvedValue(achievements);
+    await waitFor(() => expect(screen.getByText(unlocked.title)).toBeInTheDocument());
+    for (const achievement of achievementStatuses.filter((a) => !a.hidden)) {
+        expect(screen.getByText(achievement.title)).toBeInTheDocument();
+    }
+    expect(fake.requests).toEqual([{ method: 'GET', path: '/achievements', query: undefined, body: undefined }]);
+});
 
-        render(<AchievementView />);
+it('marks unlocked achievements and shows the progress of the others', async () => {
+    renderView([unlocked, inProgress, { ...inProgress, id: 99, title: 'Untracked', progress: null }]);
 
-        await waitFor(() => {
-            expect(screen.getByText('Test Description')).toBeInTheDocument();
-        });
-    });
+    await waitFor(() => expect(screen.getByText(unlocked.title)).toBeInTheDocument());
+    expect(screen.getAllByText('achievement.unlocked')).toHaveLength(1);
+    expect(inProgress.progress).toBe(0.5);
+    expect(screen.getAllByText(/% achievement\.complete/).map((n) => n.textContent)).toEqual(['50% achievement.complete']);
+});
 
-    it('handles empty achievements list', async () => {
-        render(<AchievementView />);
+it('hides the title and description of hidden achievements', async () => {
+    renderView([{ ...inProgress, hidden: true }]);
 
-        await waitFor(() => {
-            expect(screen.queryByRole('status')).not.toBeInTheDocument();
-        });
+    await waitFor(() => expect(screen.getAllByText('???')).toHaveLength(2));
+    expect(screen.queryByText(inProgress.title)).not.toBeInTheDocument();
+});
 
-        expect(screen.queryByText(/achievement/i)).not.toBeInTheDocument();
-    });
+it('says so when there are none', async () => {
+    renderView([]);
 
-    it('calls API.get with correct endpoint', async () => {
-        mockApi.get.mockResolvedValue([createMockAchievement()]);
-        render(<AchievementView />);
-
-        await waitFor(() => {
-            expect(mockApi.get).toHaveBeenCalledWith('achievements');
-        });
-    });
+    await waitFor(() => expect(screen.getByText('achievement.noAchievements')).toBeInTheDocument());
 });

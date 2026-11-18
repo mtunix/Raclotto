@@ -137,10 +137,8 @@ class TestAchievements(AppTest):
 
     def test_achievements_route_lists_status_and_progress(self):
         self.roll_pan(self.ana)
-        response = self.client.get("/api/achievements", headers=self.auth(self.ana))
+        response = self.call("GET", "/achievements", self.ana)
 
         self.assertEqual(response.status_code, 200, response.json)
-        first_blood = next(
-            a for a in response.json["data"] if a["attributes"]["title"] == "First Blood!"
-        )
-        self.assertTrue(first_blood["attributes"]["unlocked"])
+        first_blood = next(a for a in response.json if a["title"] == "First Blood!")
+        self.assertTrue(first_blood["unlocked"])

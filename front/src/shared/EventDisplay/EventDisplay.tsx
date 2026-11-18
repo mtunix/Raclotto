@@ -1,11 +1,11 @@
 import React from "react";
 import { Alert, Space, Button } from "antd";
 import { CloseOutlined, BellOutlined } from "@ant-design/icons";
-import { Event } from "../../model/event";
+import type { EventDto } from "../../api/generated/model";
 import "./EventDisplay.css";
 
 type EventDisplayProps = {
-    events: Event[];
+    events: EventDto[];
     onDismiss: (eventId: number) => void;
 };
 

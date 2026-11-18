@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { HistoryView } from './HistoryView';
-import { mockApi, createMockPan, createMockIngredient, resetAllMocks } from '../../../testUtils';
-import { IngredientType } from '../../../model/ingredient';
+import { mockApi, createMockPan, createMockIngredient, mockAuthor, resetAllMocks } from '../../../testUtils';
+import { IngredientType } from '../../../api/generated/model';
 
 describe('HistoryView', () => {
     const sessionKey = 'test-session';
@@ -23,8 +23,8 @@ describe('HistoryView', () => {
 
     it('displays pan history after API call', async () => {
         const pans = [
-            createMockPan({ id: 1, name: 'Pan 1', user: 'User 1' }),
-            createMockPan({ id: 2, name: 'Pan 2', user: 'User 2' }),
+            createMockPan({ id: 1, name: 'Pan 1', author: { ...mockAuthor, name: 'User 1' } }),
+            createMockPan({ id: 2, name: 'Pan 2', author: { ...mockAuthor, name: 'User 2' } }),
         ];
         mockApi.get.mockResolvedValue(pans);
 
@@ -42,7 +42,6 @@ describe('HistoryView', () => {
         const pan = createMockPan({
             id: 1,
             name: 'Test Pan',
-            user: 'Test User',
             ingredients: [
                 createMockIngredient({ id: 1, name: 'Fill Ingredient', type: IngredientType.FILL }),
                 createMockIngredient({ id: 2, name: 'Sauce Ingredient', type: IngredientType.SAUCE }),
@@ -64,7 +63,6 @@ describe('HistoryView', () => {
         const pan = createMockPan({
             id: 1,
             name: 'Test Pan',
-            user: 'Test User',
             timestamp: '2024-01-01T12:00:00Z',
         });
         mockApi.get.mockResolvedValue([pan]);

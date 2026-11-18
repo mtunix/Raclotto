@@ -1,5 +1,8 @@
-import useSWR, { mutate as swrMutate } from "swr";
+import { mutate as swrMutate } from "swr";
+import { getListAchievementsKey } from "../../api/generated/endpoints/achievements/achievements";
 import { getGetMeKey } from "../../api/generated/endpoints/auth/auth";
+import { getListEventConfigsKey, getListEventsKey } from "../../api/generated/endpoints/events/events";
+import { getGetProfilePictureHistoryKey } from "../../api/generated/endpoints/images/images";
 import {
     getGetAvailableCountsKey,
     getListIngredientsKey,
@@ -8,11 +11,14 @@ import { getListPansKey } from "../../api/generated/endpoints/pans/pans";
 import { getListPreparationTypesKey } from "../../api/generated/endpoints/preparation-type/preparation-type";
 import { getGetSessionByKeyKey } from "../../api/generated/endpoints/sessions/sessions";
 import { getGetUserProfileKey } from "../../api/generated/endpoints/users/users";
-import { Api } from "./index";
-import { ApiError } from "./types";
+
+/** What SWR's retry sees of a failed request; only the status matters. */
+interface FailedRequest {
+    status?: number;
+}
 
 export const onErrorRetry = (
-    error: ApiError,
+    error: FailedRequest,
     key: string,
     config: unknown,
     revalidate: (options: { retryCount: number }) => void,
@@ -27,70 +33,6 @@ export const onErrorRetry = (
         200 * retryCount,
     );
 };
-
-// Cache key generators
-const getStatsKey = (sessionKey?: string, isGlobal?: boolean) => ["stats", sessionKey || null, isGlobal || false];
-const getLeaderboardKey = () => ["leaderboard"];
-const getAchievementsKey = () => ["achievements"];
-const getEventConfigsKey = (sessionKey?: string) => sessionKey ? ["eventConfigs", sessionKey] : ["eventConfigs"];
-const getEventsKey = (sessionKey?: string) => sessionKey ? ["events", sessionKey] : null;
-
-// Fetcher functions
-const statsFetcher = ([, sessionKey, isGlobal]: [string, string | null, boolean]) =>
-    Api.getStats(isGlobal ? undefined : (sessionKey || undefined));
-const leaderboardFetcher = () => Api.getLeaderboard();
-const achievementsFetcher = () => Api.listAchievements();
-const eventConfigsFetcher = ([, sessionKey]: [string, string?]) => Api.getEventConfigs(sessionKey);
-const eventsFetcher = ([, sessionKey]: [string, string]) => Api.getEvents(sessionKey);
-
-// SWR Hooks
-export function useStats(sessionKey?: string, isGlobal: boolean = false) {
-    const key = getStatsKey(sessionKey, isGlobal);
-    return useSWR(key, statsFetcher, {
-        onErrorRetry: onErrorRetry,
-        refreshInterval: 5000, // Poll every 5 seconds
-        revalidateOnFocus: true,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useLeaderboard() {
-    const key = getLeaderboardKey();
-    return useSWR(key, leaderboardFetcher, {
-        onErrorRetry: onErrorRetry,
-        refreshInterval: 5000, // Poll every 5 seconds
-        revalidateOnFocus: true,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useAchievements() {
-    const key = getAchievementsKey();
-    return useSWR(key, achievementsFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useEventConfigs(sessionKey?: string) {
-    const key = getEventConfigsKey(sessionKey);
-    return useSWR(key, eventConfigsFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useEvents(sessionKey?: string) {
-    const key = getEventsKey(sessionKey);
-    return useSWR(key, eventsFetcher, {
-        onErrorRetry: onErrorRetry,
-        refreshInterval: 10000, // Poll every 10 seconds (replaces manual polling)
-        revalidateOnFocus: true,
-        revalidateOnReconnect: true
-    });
-}
 
 // Mutation helpers for cache invalidation
 /** A session's ingredient list and available counts, which every catalog change alters. */
@@ -113,31 +55,17 @@ export function mutateSession(sessionKey: string) {
     return swrMutate(getGetSessionByKeyKey({ session_key: sessionKey }));
 }
 
-export function mutateStats(sessionKey?: string, isGlobal: boolean = false) {
-    const key = getStatsKey(sessionKey, isGlobal);
-    return swrMutate(key);
-}
-
-export function mutateLeaderboard() {
-    const key = getLeaderboardKey();
-    return swrMutate(key);
-}
-
 export function mutateAchievements() {
-    const key = getAchievementsKey();
-    return swrMutate(key);
+    return swrMutate(getListAchievementsKey());
 }
 
-export function mutateEventConfigs(sessionKey?: string) {
-    const key = getEventConfigsKey(sessionKey);
-    return swrMutate(key);
+/** The event configs as the settings of this session list them. */
+export function mutateEventConfigs(sessionKey: string) {
+    return swrMutate(getListEventConfigsKey({ session_key: sessionKey }));
 }
 
-export function mutateEvents(sessionKey?: string) {
-    const key = getEventsKey(sessionKey);
-    if (key) {
-        return swrMutate(key);
-    }
+export function mutateEvents(sessionKey: string) {
+    return swrMutate(getListEventsKey({ session_key: sessionKey }));
 }
 
 /** Every cached page of `listPans`, whatever its filter. */
@@ -150,6 +78,10 @@ export function mutateUserProfile(userId?: number) {
     if (userId) {
         return swrMutate(getGetUserProfileKey(userId));
     }
+}
+
+export function mutateProfilePictureHistory(userId: number) {
+    return swrMutate(getGetProfilePictureHistoryKey(userId));
 }
 
 export function mutateAvailableCounts(sessionKey: string) {

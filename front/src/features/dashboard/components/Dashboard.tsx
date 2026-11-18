@@ -24,23 +24,20 @@ import {
 import { useAuthStore } from "../../../AuthSlice";
 import { useAppStore } from "../../../AppSlice";
 import { useTranslation } from "react-i18next";
-import { Pan } from "../../../model/pan";
-import { Ingredient, IngredientType } from "../../../model/ingredient";
-import { LeaderboardEntry } from "../../../lib/api/types";
+import { useGetStats } from "../../../api/generated/endpoints/stats/stats";
+import { IngredientType } from "../../../api/generated/model";
+import type {
+  IngredientRatingDto,
+  IngredientUsageDto,
+  LeaderboardEntryDto,
+  PanDto,
+} from "../../../api/generated/model";
+import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
-import { useStats } from "../../../lib/api/swrHooks";
 import "./Dashboard.css";
 
 const { Title, Text } = Typography;
-
-interface IngredientWithRating extends Ingredient {
-  avg_rating: number;
-}
-
-interface IngredientWithCount extends Ingredient {
-  pan_count: number;
-}
 
 interface RatingViewerProps {
   rating: number;
@@ -58,16 +55,17 @@ function RatingViewer(props: RatingViewerProps) {
 }
 
 interface IngredientListGroupItemRatingProps {
-  ingredient: IngredientWithRating;
+  entry: IngredientRatingDto;
 }
 
 function IngredientListGroupItemRating(
   props: IngredientListGroupItemRatingProps,
 ) {
+  const { ingredient } = props.entry;
   const backgroundColor =
-    props.ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
+    ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
   const icon =
-    props.ingredient.type === IngredientType.FILL
+    ingredient.type === IngredientType.FILL
       ? VectorGraphics.INGREDIENT
       : VectorGraphics.SAUCE;
 
@@ -79,25 +77,26 @@ function IngredientListGroupItemRating(
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
           <span style={{ marginRight: "8px" }}>{icon}</span>
-          {props.ingredient.name}
+          {ingredient.name}
         </span>
-        <RatingViewer rating={props.ingredient.avg_rating} />
+        <RatingViewer rating={props.entry.avg_rating} />
       </div>
     </List.Item>
   );
 }
 
 interface IngredientListGroupItemCountProps {
-  ingredient: IngredientWithCount;
+  entry: IngredientUsageDto;
 }
 
 function IngredientListGroupItemCount(
   props: IngredientListGroupItemCountProps,
 ) {
+  const { ingredient } = props.entry;
   const backgroundColor =
-    props.ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
+    ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
   const icon =
-    props.ingredient.type === IngredientType.FILL
+    ingredient.type === IngredientType.FILL
       ? VectorGraphics.INGREDIENT
       : VectorGraphics.SAUCE;
 
@@ -109,10 +108,10 @@ function IngredientListGroupItemCount(
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
           <span style={{ marginRight: "8px" }}>{icon}</span>
-          {props.ingredient.name}
+          {ingredient.name}
         </span>
         <span className="dashboard-ingredient-count">
-          {props.ingredient.pan_count}
+          {props.entry.pan_count}
         </span>
       </div>
     </List.Item>
@@ -120,7 +119,7 @@ function IngredientListGroupItemCount(
 }
 
 interface PanListItemProps {
-  pan: Pan;
+  pan: PanDto;
 }
 
 function PanListItem(props: PanListItemProps) {
@@ -133,7 +132,7 @@ function PanListItem(props: PanListItemProps) {
           <div style={{ flex: 1 }}>
             <div className="dashboard-pan-title">{props.pan.name}</div>
             <div className="dashboard-pan-subtitle">
-              {t("history.consumedBy")} {props.pan.user}
+              {t("history.consumedBy")} {props.pan.author?.name}
             </div>
           </div>
           <div className="dashboard-pan-rating">
@@ -172,7 +171,7 @@ function PanListItem(props: PanListItemProps) {
 }
 
 interface LeaderboardListItemProps {
-  entry: LeaderboardEntry;
+  entry: LeaderboardEntryDto;
   currentUserId?: number;
 }
 
@@ -301,8 +300,17 @@ export function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Use SWR hooks for data fetching with automatic revalidation
-  const { data: statsData } = useStats(session?.key, isGlobal);
+  const { data: statsData } = useGetStats(
+    isGlobal || !session?.key ? undefined : { session_key: session.key },
+    {
+      swr: {
+        onErrorRetry,
+        refreshInterval: 5000,
+        revalidateOnFocus: true,
+        revalidateOnReconnect: true,
+      },
+    },
+  );
 
   // Extract data from stats response
   const pans = statsData?.pans || [];
@@ -368,7 +376,7 @@ export function Dashboard() {
             </Title>
             <List
               dataSource={pans}
-              renderItem={(pan: Pan) => (
+              renderItem={(pan: PanDto) => (
                 <PanListItem key={`pan-${pan.id}`} pan={pan} />
               )}
             />
@@ -404,10 +412,10 @@ export function Dashboard() {
             </Title>
             <List
               dataSource={limitedIngredientsRating}
-              renderItem={(ingredient) => (
+              renderItem={(entry) => (
                 <IngredientListGroupItemRating
-                  key={`ingredient-${ingredient.id}`}
-                  ingredient={ingredient}
+                  key={`ingredient-${entry.ingredient.id}`}
+                  entry={entry}
                 />
               )}
             />
@@ -443,10 +451,10 @@ export function Dashboard() {
             </Title>
             <List
               dataSource={limitedIngredientsUsage}
-              renderItem={(ingredient) => (
+              renderItem={(entry) => (
                 <IngredientListGroupItemCount
-                  key={`ingredient-${ingredient.id}`}
-                  ingredient={ingredient}
+                  key={`ingredient-${entry.ingredient.id}`}
+                  entry={entry}
                 />
               )}
             />

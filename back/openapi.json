@@ -39,6 +39,62 @@
         "title": "AchievementDto",
         "type": "object"
       },
+      "AchievementStatusDto": {
+        "description": "An achievement and how far the signed-in user is with it.",
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "hidden": {
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_global": {
+            "title": "Is Global",
+            "type": "boolean"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Progress"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "unlocked": {
+            "title": "Unlocked",
+            "type": "boolean"
+          },
+          "value": {
+            "title": "Value",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "value",
+          "hidden",
+          "is_global",
+          "unlocked",
+          "progress"
+        ],
+        "title": "AchievementStatusDto",
+        "type": "object"
+      },
       "ApiErrorDto": {
         "properties": {
           "code": {
@@ -350,6 +406,54 @@
         "title": "ErrorResponseDto",
         "type": "object"
       },
+      "EventConfigDto": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "event_type": {
+            "const": "pan_swap",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "frequency_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frequency Minutes"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "session_id",
+          "enabled",
+          "frequency_minutes"
+        ],
+        "title": "EventConfigDto",
+        "type": "object"
+      },
       "EventDto": {
         "properties": {
           "created_at": {
@@ -387,6 +491,82 @@
           "created_at"
         ],
         "title": "EventDto",
+        "type": "object"
+      },
+      "GenerateImageBody": {
+        "additionalProperties": false,
+        "properties": {
+          "prompt": {
+            "minLength": 1,
+            "title": "Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "title": "GenerateImageBody",
+        "type": "object"
+      },
+      "GenerateProfilePictureBody": {
+        "additionalProperties": false,
+        "properties": {
+          "level_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Level Id"
+          }
+        },
+        "title": "GenerateProfilePictureBody",
+        "type": "object"
+      },
+      "GeneratedPictureDto": {
+        "description": "A generated picture, saved as the user's newest profile picture.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "image_base64": {
+            "title": "Image Base64",
+            "type": "string"
+          },
+          "level_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level Id"
+          },
+          "mime_type": {
+            "title": "Mime Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "image_base64",
+          "mime_type",
+          "level_id",
+          "created_at"
+        ],
+        "title": "GeneratedPictureDto",
         "type": "object"
       },
       "ImportIngredientsBody": {
@@ -800,6 +980,63 @@
           "SAUCE"
         ]
       },
+      "IngredientUsageDto": {
+        "properties": {
+          "ingredient": {
+            "$ref": "#/components/schemas/IngredientDto"
+          },
+          "pan_count": {
+            "title": "Pan Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ingredient",
+          "pan_count"
+        ],
+        "title": "IngredientUsageDto",
+        "type": "object"
+      },
+      "InsultBody": {
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "InsultBody",
+        "type": "object"
+      },
+      "InsultDto": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "InsultDto",
+        "type": "object"
+      },
       "InviteDto": {
         "description": "An invite as its creator sees it; the token is what the registration link carries.",
         "properties": {
@@ -879,6 +1116,39 @@
           "version"
         ],
         "title": "JsonApiDto",
+        "type": "object"
+      },
+      "LeaderboardEntryDto": {
+        "properties": {
+          "achievement_count": {
+            "title": "Achievement Count",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "total_points": {
+            "title": "Total Points",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rank",
+          "user_id",
+          "name",
+          "total_points",
+          "achievement_count"
+        ],
+        "title": "LeaderboardEntryDto",
         "type": "object"
       },
       "LevelDto": {
@@ -1327,6 +1597,66 @@
         "title": "PrepTypeDto",
         "type": "object"
       },
+      "ProfilePictureDto": {
+        "description": "An entry of a user's picture history; the newest is the picture they show.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_candidate": {
+            "title": "Is Candidate",
+            "type": "boolean"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LevelDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "level_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level Id"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "profile_picture",
+          "level_id",
+          "level",
+          "created_at",
+          "is_candidate"
+        ],
+        "title": "ProfilePictureDto",
+        "type": "object"
+      },
       "RatingDto": {
         "properties": {
           "id": {
@@ -1580,6 +1910,52 @@
         "title": "RollPanBody",
         "type": "object"
       },
+      "SaveEventConfigBody": {
+        "additionalProperties": false,
+        "description": "Set whether an event type is enabled, for one session or globally.",
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "event_type": {
+            "const": "pan_swap",
+            "title": "Event Type",
+            "type": "string"
+          },
+          "frequency_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Frequency Minutes"
+          },
+          "session_key": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Session Key"
+          }
+        },
+        "required": [
+          "event_type",
+          "enabled"
+        ],
+        "title": "SaveEventConfigBody",
+        "type": "object"
+      },
       "SessionDto": {
         "properties": {
           "active": {
@@ -1664,6 +2040,47 @@
         "title": "SessionPanCountDto",
         "type": "object"
       },
+      "StatsDto": {
+        "description": "The dashboard: of one session, or of all sessions; the leaderboard is always global.",
+        "properties": {
+          "ingredients_most_used": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientUsageDto"
+            },
+            "title": "Ingredients Most Used",
+            "type": "array"
+          },
+          "ingredients_top_rated": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientRatingDto"
+            },
+            "title": "Ingredients Top Rated",
+            "type": "array"
+          },
+          "leaderboard": {
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardEntryDto"
+            },
+            "title": "Leaderboard",
+            "type": "array"
+          },
+          "pans": {
+            "items": {
+              "$ref": "#/components/schemas/PanDto"
+            },
+            "title": "Pans",
+            "type": "array"
+          }
+        },
+        "required": [
+          "pans",
+          "ingredients_top_rated",
+          "ingredients_most_used",
+          "leaderboard"
+        ],
+        "title": "StatsDto",
+        "type": "object"
+      },
       "TokenDto": {
         "properties": {
           "token": {
@@ -1675,6 +2092,30 @@
           "token"
         ],
         "title": "TokenDto",
+        "type": "object"
+      },
+      "UpdateEventConfigBody": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "default": null,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "frequency_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Frequency Minutes"
+          }
+        },
+        "title": "UpdateEventConfigBody",
         "type": "object"
       },
       "UpdateIngredientBody": {
@@ -2201,6 +2642,140 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/achievements": {
+      "get": {
+        "operationId": "listAchievements",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AchievementStatusDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List every achievement with the signed-in user's unlocked flag and progress.",
+        "tags": [
+          "achievements"
+        ]
+      }
+    },
+    "/achievements/leaderboard": {
+      "get": {
+        "operationId": "getLeaderboard",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LeaderboardEntryDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rank every user by the points of their achievements.",
+        "tags": [
+          "achievements"
+        ]
+      }
+    },
+    "/achievements/{achievement_id}": {
+      "get": {
+        "operationId": "getAchievement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "achievement_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an achievement by id.",
+        "tags": [
+          "achievements"
+        ]
+      }
+    },
     "/auth/invite/{token}": {
       "get": {
         "operationId": "lookupInvite",
@@ -2467,6 +3042,585 @@
         "summary": "Register a new user with an invite token and sign them in.",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "listEvents",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List a session's events the signed-in user has not dismissed, newest first.",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/configs": {
+      "get": {
+        "operationId": "listEventConfigs",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventConfigDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the global event configs and the session's own; without a known session, every config.",
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "operationId": "saveEventConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveEventConfigBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventConfigDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create or change the config of an event type, the session's own or the global one.",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/configs/{config_id}": {
+      "patch": {
+        "operationId": "updateEventConfig",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventConfigBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventConfigDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change an event config by id.",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{event_id}/dismiss": {
+      "post": {
+        "operationId": "dismissEvent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Hide an event from the signed-in user; other users still see it.",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/images/generate-banana": {
+      "post": {
+        "operationId": "generateImage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateImageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedPictureDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Generate an image from a prompt and save it as the signed-in user's profile picture.",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/images/generate-profile-picture": {
+      "post": {
+        "operationId": "generateProfilePicture",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateProfilePictureBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedPictureDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Generate the signed-in user's next profile picture from their candidate picture and a level.",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/images/profile-picture-history/{user_id}": {
+      "get": {
+        "operationId": "getProfilePictureHistory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProfilePictureDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List any user's profile pictures, newest first.",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/images/set-candidate-picture/{picture_id}": {
+      "post": {
+        "operationId": "setCandidatePicture",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "picture_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Make one of the signed-in user's pictures the one the next generation starts from.",
+        "tags": [
+          "images"
         ]
       }
     },
@@ -3165,6 +4319,276 @@
         "summary": "Change an ingredient's name, type, category or properties.",
         "tags": [
           "ingredients"
+        ]
+      }
+    },
+    "/insults": {
+      "get": {
+        "operationId": "listInsults",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InsultDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List all insults.",
+        "tags": [
+          "insults"
+        ]
+      },
+      "post": {
+        "operationId": "createInsult",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsultBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsultDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add an insult.",
+        "tags": [
+          "insults"
+        ]
+      }
+    },
+    "/insults/{insult_id}": {
+      "delete": {
+        "operationId": "deleteInsult",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "insult_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete an insult.",
+        "tags": [
+          "insults"
+        ]
+      },
+      "get": {
+        "operationId": "getInsult",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "insult_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsultDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an insult by id.",
+        "tags": [
+          "insults"
+        ]
+      },
+      "patch": {
+        "operationId": "updateInsult",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "insult_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsultBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsultDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change an insult's title.",
+        "tags": [
+          "insults"
         ]
       }
     },
@@ -4967,6 +6391,72 @@
         "summary": "Rename a session.",
         "tags": [
           "sessions"
+        ]
+      }
+    },
+    "/stats": {
+      "get": {
+        "operationId": "getStats",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Newest pans, best rated and most used ingredients and the leaderboard, of one session or all.",
+        "tags": [
+          "stats"
         ]
       }
     },

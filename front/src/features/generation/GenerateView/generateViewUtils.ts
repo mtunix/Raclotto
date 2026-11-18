@@ -1,4 +1,4 @@
-import { IngredientType } from "../../../model/ingredient";
+import { IngredientType } from "../../../api/generated/model";
 
 // Constants
 export const SAUCE_ICONS = [

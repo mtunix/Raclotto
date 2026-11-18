@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
-import { Api } from "../../../lib/api";
-import { useEventConfigs, mutateEventConfigs } from "../../../lib/api/swrHooks";
-import type { SessionDto } from "../../../api/generated/model";
+import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
+import { mutateEventConfigs, onErrorRetry } from "../../../lib/api/swrHooks";
+import type { EventConfigDto, SessionDto } from "../../../api/generated/model";
 import "../SettingsView.css";
 
 const { Title, Text } = Typography;
@@ -12,6 +12,11 @@ interface EventSettingsSectionProps {
     sessionKey: string;
     session: SessionDto | null;
 }
+
+type EventType = EventConfigDto["event_type"];
+
+// Every event type the backend evaluates.
+const KNOWN_EVENT_TYPES: EventType[] = ["pan_swap"];
 
 interface EventConfigState {
     enabled: boolean;
@@ -23,8 +28,9 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
     const [localConfigs, setLocalConfigs] = useState<Record<string, EventConfigState>>({});
     const initialConfigsRef = useRef<Record<string, EventConfigState>>({});
 
-    // Use SWR hook for data fetching
-    const { data: configs = [], isLoading: loading, error } = useEventConfigs(sessionKey);
+    const { data: configs = [], isLoading: loading, error } = useListEventConfigs({ session_key: sessionKey }, {
+        swr: { enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
+    });
     
     // Show error message if loading fails
     React.useEffect(() => {
@@ -51,8 +57,7 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
             });
             
             // Also initialize known event types that might not have configs yet
-            const knownEventTypes = ["pan_swap"];
-            knownEventTypes.forEach(eventType => {
+            KNOWN_EVENT_TYPES.forEach(eventType => {
                 if (!initial[eventType]) {
                     const state: EventConfigState = {
                         enabled: true,
@@ -113,9 +118,9 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
         setSaving(true);
         
         try {
-            const updates = Object.keys(localConfigs).map(eventType => {
+            const updates = KNOWN_EVENT_TYPES.filter(eventType => localConfigs[eventType]).map(eventType => {
                 const config = localConfigs[eventType];
-                return Api.updateEventConfig({
+                return saveEventConfig({
                     event_type: eventType,
                     enabled: config.enabled,
                     frequency_minutes: config.frequency_minutes,
@@ -138,16 +143,13 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
         }
     };
 
-    // Get all known event types (can be extended)
-    const knownEventTypes = ["pan_swap"];
-
     // Create config entries for all known event types
-    const allConfigs = knownEventTypes.map(eventType => {
+    const allConfigs = KNOWN_EVENT_TYPES.map(eventType => {
         const config = configs.find(c => c.event_type === eventType);
         return {
             event_type: eventType,
             config: config || null,
-            isGlobal: !config || config.session_id === null || config.session_id === undefined
+            isGlobal: !config || config.session_id === null
         };
     });
 

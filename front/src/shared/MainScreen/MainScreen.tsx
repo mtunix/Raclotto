@@ -1,10 +1,10 @@
 import React, {useCallback, useEffect} from "react";
 import {Row, Col, Card} from "antd";
-import {Api} from "../../lib/api";
-import {useEvents, mutateEvents, onErrorRetry} from "../../lib/api/swrHooks";
+import {onErrorRetry} from "../../lib/api/swrHooks";
 import {useListIngredients} from "../../api/generated/endpoints/ingredients/ingredients";
 import {Toolbar} from "../Toolbar/Toolbar";
 import {EventDisplay} from "../EventDisplay/EventDisplay";
+import {dismissSessionEvent, useSessionEvents} from "../EventDisplay/sessionEvents";
 import {useAppStore} from "../../AppSlice";
 import {useSearchParams, useNavigate, useParams, Outlet, useLocation} from "react-router-dom";
 import {useTranslation} from "react-i18next";
@@ -30,7 +30,7 @@ export function MainScreen(props: MainScreenProps) {
     const { data: ingredients = [] } = useListIngredients({session_key: sessionKey}, {
         swr: {enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true},
     });
-    const { data: events = [] } = useEvents(sessionKey);
+    const { data: events = [] } = useSessionEvents(sessionKey);
 
     useEffect(() => {
         // Only redirect if we have both session and sessionId and they don't match
@@ -49,10 +49,7 @@ export function MainScreen(props: MainScreenProps) {
     }, [session, sessionId, navigate]);
 
     const handleDismissEvent = useCallback((eventId: number) => {
-        Api.dismissEvent(eventId).then(() => {
-            // Invalidate events cache to refresh
-            mutateEvents(sessionKey);
-        }).catch((error) => {
+        dismissSessionEvent(sessionKey, eventId).catch((error) => {
             console.error("Failed to dismiss event:", error);
         });
     }, [sessionKey]);

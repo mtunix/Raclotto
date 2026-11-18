@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import type { SessionDto } from "./api/generated/model";
-import { Achievement } from "./model/achievement";
+import type { AchievementDto, SessionDto } from "./api/generated/model";
 
 interface Level {
     id: number;
@@ -22,7 +21,7 @@ interface XpNotificationState {
     level: Level | null;
     nextLevel: NextLevel | null;
     levelUp: boolean;
-    achievements: Achievement[];
+    achievements: AchievementDto[];
 }
 
 interface AppState {
@@ -34,7 +33,7 @@ interface AppState {
     removeWidthCap: boolean;
     setRemoveWidthCap: (remove: boolean) => void;
     xpNotification: XpNotificationState;
-    showXpNotification: (xpGained: number, oldXP: number, newXP: number, level: Level, nextLevel: NextLevel | null, levelUp: boolean, achievements?: Achievement[]) => void;
+    showXpNotification: (xpGained: number, oldXP: number, newXP: number, level: Level, nextLevel: NextLevel | null, levelUp: boolean, achievements?: AchievementDto[]) => void;
     hideXpNotification: () => void;
 }
 

@@ -1,7 +1,11 @@
-import { Ingredient, IngredientType } from './model/ingredient';
-import { Pan } from './model/pan';
-import { Achievement } from './model/achievement';
-import type { IngredientForUserDto, SessionDto } from './api/generated/model';
+import { IngredientType } from './api/generated/model';
+import type {
+    IngredientDto,
+    IngredientForUserDto,
+    PanDto,
+    SessionDto,
+    UserSummaryDto,
+} from './api/generated/model';
 
 // Mock API: loosely typed so stale component tests keep compiling when the
 // Api facade's method names change.
@@ -60,7 +64,7 @@ export const mockLocalStorage = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
 
-export const createMockIngredient = (overrides?: Partial<Ingredient>): Ingredient => ({
+export const createMockIngredient = (overrides?: Partial<IngredientDto>): IngredientDto => ({
     id: 1,
     name: 'Test Ingredient',
     type: IngredientType.FILL,
@@ -68,42 +72,50 @@ export const createMockIngredient = (overrides?: Partial<Ingredient>): Ingredien
     meat: false,
     vegetarian: true,
     vegan: false,
+    fish: false,
     gluten: false,
     histamine: false,
     fructose: false,
     lactose: false,
-    ...overrides,
-});
-
-export const createMockIngredientForUser = (overrides?: Partial<IngredientForUserDto>): IngredientForUserDto => ({
-    fish: false,
     spicy: 0,
     wildcard: false,
     sweet: false,
     session_id: 1,
-    applicable: true,
-    ...createMockIngredient(),
     ...overrides,
 });
 
-export const createMockPan = (overrides?: Partial<Pan>): Pan => ({
+export const createMockIngredientForUser = (overrides?: Partial<IngredientForUserDto>): IngredientForUserDto => ({
+    ...createMockIngredient(),
+    applicable: true,
+    ...overrides,
+});
+
+export const mockAuthor: UserSummaryDto = {
+    id: 1,
+    name: 'Test User',
+    color: '#1890ff',
+    profile_picture: null,
+    border_style: 'solid',
+    border_texture: null,
+    glow_effect: false,
+};
+
+export const createMockPan = (overrides?: Partial<PanDto>): PanDto => ({
     id: 1,
     name: 'Test Pan',
-    user: 'Test User',
+    user_id: mockAuthor.id,
+    session_id: 1,
     timestamp: '2024-01-01T00:00:00Z',
     snacked: false,
-    ingredients: [createMockIngredient()],
-    ratings: [],
+    preparation_type_id: null,
+    preparation_type: null,
+    cheese_level: null,
+    rolled_preparation_type: false,
+    rolled_cheese: false,
     rating: 0,
-    ...overrides,
-});
-
-export const createMockAchievement = (overrides?: Partial<Achievement>): Achievement => ({
-    id: 1,
-    title: 'Test Achievement',
-    description: 'Test Description',
-    value: 10,
-    hidden: false,
+    ratings: [],
+    ingredients: [createMockIngredient()],
+    author: mockAuthor,
     ...overrides,
 });
 
@@ -116,9 +128,9 @@ export const resetAllMocks = () => {
     jest.clearAllMocks();
     mockLocalStorage.clear();
     mockApi.get.mockResolvedValue([]);
-    mockApi.add.mockResolvedValue({} as Ingredient);
+    mockApi.add.mockResolvedValue({});
     mockApi.delete.mockResolvedValue({} as any);
-    mockApi.refill.mockResolvedValue({} as Ingredient);
+    mockApi.refill.mockResolvedValue({});
     mockApi.generate.mockResolvedValue({ generated: {} } as any);
     mockApi.rate.mockResolvedValue({} as any);
     mockApi.close.mockResolvedValue({} as any);

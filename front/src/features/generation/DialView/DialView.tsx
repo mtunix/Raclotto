@@ -1,11 +1,11 @@
 import React, {useState, useEffect} from "react";
 import {InputNumber, Button, Input} from "antd";
 import {Util} from "../../../lib/util";
-import {Ingredient} from "../../../model/ingredient";
+import type {IngredientDto} from "../../../api/generated/model";
 
 type DialViewProps = {
     num: number;
-    ingredients: Ingredient[];
+    ingredients: IngredientDto[];
     onChange: (value: number) => void;
     max?: number;
 };

@@ -1,4 +1,4 @@
-"""Test-only typed endpoints exercising what no production endpoint declares yet."""
+"""Test-only endpoints exercising what no production endpoint declares yet, and the last legacy one."""
 
 from back.src.api.base_api import BaseApi
 from back.src.auth.middleware import require_auth
@@ -42,3 +42,8 @@ class ProbeApi(BaseApi):
     @BaseApi.endpoint("/<int:probe_id>", ["DELETE"], status=204)
     def delete_probe(self, probe_id: int) -> None:
         return None
+
+    @BaseApi.endpoint("/legacy", ["GET", "POST"])
+    def legacy(self):
+        """Untyped: answers in the JSON:API envelope, as every endpoint did before the DTOs."""
+        return {"echo": True}

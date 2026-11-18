@@ -1,0 +1,71 @@
+import React from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { SWRConfig } from "swr";
+import { useAppStore } from "../../../AppSlice";
+import { useAuthStore } from "../../../AuthSlice";
+import { session, stats } from "../../../lib/api/__fixtures__/backendResponses";
+import { FakeTransport } from "../../../lib/api/fakeTransport";
+import { setTransport, Transport } from "../../../lib/api/transport";
+import { Dashboard } from "./Dashboard";
+
+// The jest CSS transform is broken; the styles don't matter here.
+jest.mock("./Dashboard.css", () => ({}));
+jest.mock("../../../shared/IngredientDisplay/IngredientDisplay.css", () => ({}));
+
+let fake: FakeTransport;
+let previous: Transport;
+
+beforeEach(() => {
+  fake = new FakeTransport().on("GET", "/stats", stats);
+  previous = setTransport(fake);
+  useAppStore.setState({ session });
+  useAuthStore.setState({ user: null });
+});
+
+afterEach(() => {
+  setTransport(previous);
+});
+
+function renderDashboard() {
+  return render(
+    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+      <Dashboard />
+    </SWRConfig>,
+  );
+}
+
+const statsQueries = () => fake.requests.filter((r) => r.path === "/stats").map((r) => r.query);
+
+it("starts with the stats of every session", async () => {
+  renderDashboard();
+
+  await waitFor(() => expect(screen.getByText("Cleo")).toBeInTheDocument());
+  expect(statsQueries()[0]).toBeUndefined();
+});
+
+it("shows the newest pans with their authors, the ingredients and the leaderboard", async () => {
+  const [newest, older] = stats.pans;
+  renderDashboard();
+
+  await waitFor(() => expect(screen.getByText(newest.name)).toBeInTheDocument());
+  expect(screen.getByText(older.name)).toBeInTheDocument();
+  expect(screen.getByText(`history.consumedBy ${newest.author?.name}`)).toBeInTheDocument();
+  expect(screen.getByText(`history.consumedBy ${older.author?.name}`)).toBeInTheDocument();
+  for (const entry of stats.leaderboard) {
+    expect(screen.getByText(entry.name)).toBeInTheDocument();
+    expect(screen.getByText(String(entry.total_points))).toBeInTheDocument();
+  }
+  const [mostUsed] = stats.ingredients_most_used;
+  expect(mostUsed.pan_count).toBe(2);
+  expect(screen.getAllByText(String(mostUsed.pan_count)).length).toBeGreaterThan(0);
+});
+
+it("switching to the session asks for the session's stats", async () => {
+  renderDashboard();
+  await waitFor(() => expect(screen.getByText("Cleo")).toBeInTheDocument());
+
+  fireEvent.click(screen.getByText("Global"));
+
+  await waitFor(() => expect(statsQueries()).toContainEqual({ session_key: session.key }));
+  expect(screen.getByText("Session")).toBeInTheDocument();
+});

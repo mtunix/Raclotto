@@ -9,6 +9,7 @@ generated client disagree. Rerun after changing a DTO and regenerating the clien
 import json
 from pathlib import Path
 
+from back.src.api.image_api import set_image_generator
 from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
@@ -16,6 +17,15 @@ from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.test.support import AppTest
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "front/src/lib/api/__fixtures__/backendResponses.ts"
+
+
+class _FixedImage:
+    """Stands in for Gemini: the fixtures never reach the network."""
+
+    available = True
+
+    def generate(self, contents: list) -> str:
+        return "iVBORw0KGgo="
 
 
 class _Recorder(AppTest):
@@ -78,7 +88,29 @@ class _Recorder(AppTest):
             body={"ingredients": kept + [{"name": "Chili", "type": 2, "vegan": True, "spicy": 3}]}, query=query,
         ))
 
+        achievements = self.ok(self.call("GET", "/achievements", ana))
+        leaderboard = self.ok(self.call("GET", "/achievements/leaderboard", ana))
+        events = self.ok(self.call("GET", "/events", ben, query=query))
+        event_config = self.ok(self.call(
+            "POST", "/events/configs", ana,
+            body={"event_type": "pan_swap", "enabled": False, "frequency_minutes": 30, "session_key": session.key},
+        ))
+        event_configs = self.ok(self.call("GET", "/events/configs", ana, query=query))
+        dashboard = self.ok(self.call("GET", "/stats", ana, query=query))
+        previous = set_image_generator(_FixedImage())
+        try:
+            generated = self.ok(self.call("POST", "/images/generate-profile-picture", ana, body={}))
+        finally:
+            set_image_generator(previous)
+        picture_history = self.ok(self.call("GET", f"/images/profile-picture-history/{ana.id}", ben))
+
         assert roll["reward"]["leveled_up"] and roll["events"] and roll["achievements"], roll
+        assert {a["unlocked"] for a in achievements} == {True, False}, achievements
+        assert any(a["progress"] is not None for a in achievements), achievements
+        assert leaderboard[0]["name"] == "Ada" and leaderboard[0]["total_points"] > 0, leaderboard
+        assert events and events[0]["id"] == roll["events"][0]["id"], events
+        assert dashboard["pans"][0]["author"] and dashboard["ingredients_top_rated"], dashboard
+        assert [p["id"] for p in picture_history][0] == generated["id"] and len(picture_history) == 2, picture_history
         assert page["has_more"] and page["items"][0]["ratings"], page
         assert me["level"] == roll["reward"]["level"] and me["next_level"], me
         assert profile["achievements"] and "email" not in profile, profile
@@ -105,6 +137,14 @@ class _Recorder(AppTest):
             "ingredientExport": ("IngredientExportDto", export),
             "ingredientImport": ("IngredientImportDto", imported),
             "ingredientReimport": ("IngredientReimportDto", reimported),
+            "achievementStatuses": ("AchievementStatusDto[]", achievements),
+            "leaderboard": ("LeaderboardEntryDto[]", leaderboard),
+            "events": ("EventDto[]", events),
+            "eventConfig": ("EventConfigDto", event_config),
+            "eventConfigs": ("EventConfigDto[]", event_configs),
+            "stats": ("StatsDto", dashboard),
+            "generatedPicture": ("GeneratedPictureDto", generated),
+            "pictureHistory": ("ProfilePictureDto[]", picture_history),
         }
 
 
