@@ -408,18 +408,9 @@ class AuthApi(BaseApi):
         if "glow_effect" in attributes:
             user.glow_effect = bool(attributes["glow_effect"])
 
-        # Enforce hierarchical logic for diet preferences (meat -> vegetarian -> vegan)
-        # If meat is true, vegetarian and vegan must be true
-        if user.meat:
-            user.vegetarian = True
-            user.vegan = True
-        # If vegetarian is true, vegan must be true
-        elif user.vegetarian:
-            user.vegan = True
-        # Ensure at least one of meat, vegetarian, or vegan is true
-        if not user.meat and not user.vegetarian and not user.vegan:
-            user.vegetarian = True
-            user.vegan = True
+        from back.src.interactor.diet import Diet
+
+        Diet.of(user).apply_to(user)
 
         db.session.commit()
 

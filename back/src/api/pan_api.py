@@ -14,12 +14,9 @@ from back.src.api.serializer import (
 )
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
-from back.src.entity.ingredient import (
-    GenerationParameters,
-    GenerationPreferences,
-    IngredientType,
-)
+from back.src.entity.ingredient import IngredientType
 from back.src.entity.pan import Pan
+from back.src.interactor.diet import Diet
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.session_repository import SessionRepository
@@ -64,16 +61,7 @@ class PanApi(BaseApi):
                 detail="session_key query parameter is required",
             )
 
-        # Create GenerationPreferences from user's food preferences
-        preferences = GenerationPreferences(
-            meat=user.meat,
-            vegetarian=user.vegetarian,
-            vegan=user.vegan,
-            histamine=user.histamine,
-            fructose=user.fructose,
-            lactose=user.lactose,
-            gluten=user.gluten,
-        )
+        preferences = Diet.of(user)
 
         # Get session
         session = self.session_repository.by_key(session_key)
@@ -283,16 +271,7 @@ class PanApi(BaseApi):
                 detail="total_columns is required and must be at least 1",
             )
 
-        # Create GenerationPreferences from user's food preferences
-        preferences = GenerationPreferences(
-            meat=user.meat,
-            vegetarian=user.vegetarian,
-            vegan=user.vegan,
-            histamine=user.histamine,
-            fructose=user.fructose,
-            lactose=user.lactose,
-            gluten=user.gluten,
-        )
+        preferences = Diet.of(user)
 
         # Get session
         session = self.session_repository.by_key(session_key)

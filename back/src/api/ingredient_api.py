@@ -11,6 +11,7 @@ from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.user import User
+from back.src.interactor.diet import Diet
 from back.src.repository.achievement_repository import AchievementRepository
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.session_repository import SessionRepository
@@ -48,50 +49,11 @@ class IngredientApi(BaseApi):
             ingredients = self.repository.all()
 
         # Serialize with applicable flag
+        diet = Diet.of(user)
         data = []
         for ingredient in ingredients:
             entity_data = serialize_entity(ingredient, "ingredient")
-            # Check if ingredient matches user preferences
-            is_applicable = True
-
-            # If user doesn't eat meat, exclude meat ingredients
-            if not user.meat and ingredient.meat:
-                is_applicable = False
-
-            # If user doesn't eat vegetarian, exclude vegetarian ingredients
-            if not user.vegetarian and ingredient.vegetarian:
-                is_applicable = False
-
-            # If user doesn't eat vegan, exclude vegan ingredients
-            if not user.vegan and ingredient.vegan:
-                is_applicable = False
-
-            # If user doesn't eat fish, exclude fish ingredients
-            if not user.fish and ingredient.fish:
-                is_applicable = False
-
-            # If user doesn't eat histamine, exclude histamine ingredients
-            if not user.histamine and ingredient.histamine:
-                is_applicable = False
-
-            # If user doesn't eat fructose, exclude fructose ingredients
-            if not user.fructose and ingredient.fructose:
-                is_applicable = False
-
-            # If user doesn't eat lactose, exclude lactose ingredients
-            if not user.lactose and ingredient.lactose:
-                is_applicable = False
-
-            # If user doesn't eat gluten, exclude gluten ingredients
-            if not user.gluten and ingredient.gluten:
-                is_applicable = False
-
-            # Add applicable flag to attributes
-            if entity_data and "attributes" in entity_data:
-                entity_data["attributes"]["applicable"] = is_applicable
-            elif entity_data:
-                entity_data["applicable"] = is_applicable
-
+            entity_data["attributes"]["applicable"] = diet.allows(ingredient)
             data.append(entity_data)
 
         return {"jsonapi": {"version": "1.0"}, "data": data}
@@ -398,47 +360,10 @@ class IngredientApi(BaseApi):
             [i for i in ingredients if i.available and i.type == IngredientType.SAUCE]
         )
 
-        # Filter ingredients based on user preferences
-        # Only include ingredients that match user's dietary restrictions
-        available_ingredients = []
-        for ingredient in ingredients:
-            if not ingredient.available:
-                continue
-
-            # Check if ingredient matches user preferences
-            # If user doesn't eat meat, exclude meat ingredients
-            if not user.meat and ingredient.meat:
-                continue
-
-            # If user doesn't eat vegetarian, exclude vegetarian ingredients
-            if not user.vegetarian and ingredient.vegetarian:
-                continue
-
-            # If user doesn't eat vegan, exclude vegan ingredients
-            if not user.vegan and ingredient.vegan:
-                continue
-
-            # If user doesn't eat fish, exclude fish ingredients
-            if not user.fish and ingredient.fish:
-                continue
-
-            # If user doesn't eat histamine, exclude histamine ingredients
-            if not user.histamine and ingredient.histamine:
-                continue
-
-            # If user doesn't eat fructose, exclude fructose ingredients
-            if not user.fructose and ingredient.fructose:
-                continue
-
-            # If user doesn't eat lactose, exclude lactose ingredients
-            if not user.lactose and ingredient.lactose:
-                continue
-
-            # If user doesn't eat gluten, exclude gluten ingredients
-            if not user.gluten and ingredient.gluten:
-                continue
-
-            available_ingredients.append(ingredient)
+        diet = Diet.of(user)
+        available_ingredients = [
+            i for i in ingredients if i.available and diet.allows(i)
+        ]
 
         fill_count = len(
             [i for i in available_ingredients if i.type == IngredientType.FILL]

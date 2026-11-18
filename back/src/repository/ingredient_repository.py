@@ -1,11 +1,10 @@
 from typing import List, Optional
-from random import sample
-import random
 from sqlalchemy import or_, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 from back.src.repository.base_repository import BaseRepository
-from back.src.entity.ingredient import Ingredient, IngredientType, GenerationParameters, GenerationPreferences
+from back.src.entity.ingredient import Ingredient, IngredientType
+from back.src.interactor.diet import Diet
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.driver.database import db
 
@@ -49,51 +48,31 @@ class IngredientRepository(BaseRepository[Ingredient]):
     def filter_by_preferences(
         self,
         session_key: str,
-        preferences: GenerationPreferences,
+        diet: Diet,
         ingredient_type: IngredientType
     ) -> List[Ingredient]:
         """
-        Filter ingredients by user preferences.
-        
+        Available, named ingredients of one type in a session that the diet allows.
+
         :param session_key: Session key
-        :param preferences: User food preferences
+        :param diet: The user's diet (see ``Diet``)
         :param ingredient_type: Type of ingredient (FILL or SAUCE)
-        :return: Filtered list of ingredients
+        :return: Eligible ingredients, ordered by id
         """
         try:
             session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
         except NoResultFound:
             return []
-        
-        query = db.session.query(Ingredient).filter(
+
+        return db.session.query(Ingredient).filter(
             Ingredient.session_id == session.id,
             Ingredient.type == ingredient_type,
             Ingredient.available == True,
             Ingredient.name != None,
-            Ingredient.name != ""
-        )
-        
-        # Apply preference filters
-        if not preferences.meat:
-            if preferences.vegetarian:
-                query = query.filter(or_(Ingredient.vegetarian, Ingredient.vegan))
-            elif preferences.vegan:
-                query = query.filter(Ingredient.vegan)
-        
-        if not preferences.fructose:
-            query = query.filter(not_(Ingredient.fructose))
-        
-        if not preferences.histamine:
-            query = query.filter(not_(Ingredient.histamine))
-        
-        if not preferences.gluten:
-            query = query.filter(not_(Ingredient.gluten))
-        
-        if not preferences.lactose:
-            query = query.filter(not_(Ingredient.lactose))
-        
-        return query.all()
-    
+            Ingredient.name != "",
+            diet.ingredient_filter(),
+        ).order_by(Ingredient.id).all()
+
     def mark_unavailable(self, id: int) -> Optional[Ingredient]:
         """
         Mark an ingredient as unavailable.
@@ -146,21 +125,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
             query = query.filter(Ingredient.type == of_type)
         
         return query.all()
-    
-    def select_random(self, gen_dict: GenerationParameters) -> List[Ingredient]:
-        """
-        Select random ingredients based on generation parameters.
-        This is a data access method that performs random sampling.
-        
-        :param gen_dict: Generation parameters
-        :return: List of randomly selected ingredients
-        """
-        random.seed()
-        fills = self.filter_by_preferences(gen_dict.session_key, gen_dict.preferences, IngredientType.FILL)
-        sauces = self.filter_by_preferences(gen_dict.session_key, gen_dict.preferences, IngredientType.SAUCE)
-        num_fill = gen_dict.num_fill if len(fills) >= gen_dict.num_fill else len(fills)
-        num_sauce = gen_dict.num_sauce if len(sauces) >= gen_dict.num_sauce else len(sauces)
-        return sample(fills, num_fill) + sample(sauces, num_sauce)
     
     def by_session_ids(self, session_ids: List[int], ingredient_type: Optional[IngredientType] = None) -> List[Ingredient]:
         """
