@@ -7,22 +7,6 @@ import type {
     UserSummaryDto,
 } from './api/generated/model';
 
-// Mock API: loosely typed so stale component tests keep compiling when the
-// Api facade's method names change.
-type MockedApi = Record<string, jest.Mock>;
-
-// Create a mock API object with jest mock functions
-export const mockApi: MockedApi = {
-    get: jest.fn(),
-    add: jest.fn(),
-    delete: jest.fn(),
-    refill: jest.fn(),
-    generate: jest.fn(),
-    rate: jest.fn(),
-    close: jest.fn(),
-    createSession: jest.fn(),
-} as MockedApi;
-
 export const mockSession: SessionDto = {
     id: 1,
     key: 'test-session-key',
@@ -33,7 +17,7 @@ export const mockSession: SessionDto = {
 };
 
 export const mockUseAppStore = jest.fn();
-jest.mock('../../AppSlice', () => ({
+jest.mock('./AppSlice', () => ({
     useAppStore: (selector: any) => mockUseAppStore(selector),
 }));
 
@@ -127,11 +111,4 @@ export const createMockSession = (overrides?: Partial<SessionDto>): SessionDto =
 export const resetAllMocks = () => {
     jest.clearAllMocks();
     mockLocalStorage.clear();
-    mockApi.get.mockResolvedValue([]);
-    mockApi.add.mockResolvedValue({});
-    mockApi.delete.mockResolvedValue({} as any);
-    mockApi.refill.mockResolvedValue({});
-    mockApi.generate.mockResolvedValue({ generated: {} } as any);
-    mockApi.rate.mockResolvedValue({} as any);
-    mockApi.close.mockResolvedValue({} as any);
 };

@@ -1,8 +1,9 @@
+// Needs FakeTransport to be revived: its API mocks went with the Api facade.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SettingsView } from './SettingsView';
-import { mockApi, resetAllMocks, createMockIngredient, mockLocalStorage } from '../../testUtils';
+import { resetAllMocks, createMockIngredient, mockLocalStorage } from '../../testUtils';
 
 describe('SettingsView', () => {
     beforeEach(() => {

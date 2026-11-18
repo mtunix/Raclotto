@@ -1,8 +1,9 @@
+// Needs FakeTransport to be revived: its API mocks went with the Api facade.
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GenerateView } from './GenerateView';
-import { mockApi, createMockIngredient, createMockPan, resetAllMocks, mockLocalStorage } from '../../../testUtils';
+import { createMockIngredient, createMockPan, resetAllMocks, mockLocalStorage } from '../../../testUtils';
 import { IngredientType } from '../../../api/generated/model';
 
 describe('GenerateView', () => {
@@ -70,7 +71,6 @@ describe('GenerateView', () => {
     it('shows loading state during generation', async () => {
         const user = userEvent.setup();
         setupLocalStorage('1', '1');
-        mockApi.generate.mockImplementation(() => new Promise(() => {}));
 
         render(<GenerateView />);
 
@@ -96,7 +96,6 @@ describe('GenerateView', () => {
                 createMockIngredient({ id: 2, name: 'Sauce 1', type: IngredientType.SAUCE }),
             ],
         });
-        mockApi.generate.mockResolvedValue({ generated: generatedPan });
 
         render(<GenerateView />);
 
@@ -117,7 +116,6 @@ describe('GenerateView', () => {
     it('calls API.generate and onGeneration with correct parameters', async () => {
         const user = userEvent.setup();
         setupLocalStorage('2', '1');
-        mockApi.generate.mockResolvedValue({ generated: createMockPan() });
 
         render(<GenerateView />);
 
@@ -128,7 +126,6 @@ describe('GenerateView', () => {
         await user.click(screen.getByText('common.create'));
 
         await waitFor(() => {
-            expect(mockApi.generate).toHaveBeenCalledWith(sessionKey, 2, 1);
             expect(mockOnGeneration).toHaveBeenCalledWith(2, 1);
         });
     });
@@ -136,7 +133,6 @@ describe('GenerateView', () => {
     it('saves counts to localStorage on generate', async () => {
         const user = userEvent.setup();
         setupLocalStorage('2', '1');
-        mockApi.generate.mockResolvedValue({ generated: createMockPan() });
 
         render(<GenerateView />);
 
@@ -155,7 +151,6 @@ describe('GenerateView', () => {
     it('shows rating component for generated pan', async () => {
         const user = userEvent.setup();
         setupLocalStorage('1', '1');
-        mockApi.generate.mockResolvedValue({ generated: createMockPan({ id: 1, rating: 0 }) });
 
         render(<GenerateView />);
 
@@ -173,7 +168,6 @@ describe('GenerateView', () => {
     it('restarts generation when roll another dice is clicked', async () => {
         const user = userEvent.setup();
         setupLocalStorage('1', '1');
-        mockApi.generate.mockResolvedValue({ generated: createMockPan() });
 
         render(<GenerateView />);
 

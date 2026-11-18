@@ -1,8 +1,9 @@
+// Needs FakeTransport to be revived: its API mocks went with the Api facade.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Toolbar } from './Toolbar';
-import { mockApi, mockUseAppStore, createMockIngredientForUser, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
+import { mockUseAppStore, createMockIngredientForUser, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
 import { IngredientType } from '../../api/generated/model';
 
 describe('Toolbar', () => {
@@ -24,7 +25,6 @@ describe('Toolbar', () => {
 
     beforeEach(() => {
         resetAllMocks();
-        mockApi.get.mockResolvedValue([]);
     });
 
     it('renders all toolbar buttons', () => {
@@ -74,7 +74,6 @@ describe('Toolbar', () => {
 
     it('opens server settings view when server settings button is clicked', async () => {
         const user = userEvent.setup();
-        mockApi.get.mockResolvedValue({ session: { name: 'Test Session' } });
         renderToolbar();
         await user.click(screen.getByText(/common\.serverSettings/));
         expect(screen.getByText('toolbar.serverSettingsTitle')).toBeInTheDocument();

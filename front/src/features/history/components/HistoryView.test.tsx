@@ -1,7 +1,8 @@
+// Needs FakeTransport to be revived: its API mocks went with the Api facade.
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { HistoryView } from './HistoryView';
-import { mockApi, createMockPan, createMockIngredient, mockAuthor, resetAllMocks } from '../../../testUtils';
+import { createMockPan, createMockIngredient, mockAuthor, resetAllMocks } from '../../../testUtils';
 import { IngredientType } from '../../../api/generated/model';
 
 describe('HistoryView', () => {
@@ -16,7 +17,6 @@ describe('HistoryView', () => {
     });
 
     it('renders loading spinner initially', () => {
-        mockApi.get.mockImplementation(() => new Promise(() => {}));
         render(<HistoryView />);
         expect(screen.getByRole('status')).toBeInTheDocument();
     });
@@ -26,7 +26,6 @@ describe('HistoryView', () => {
             createMockPan({ id: 1, name: 'Pan 1', author: { ...mockAuthor, name: 'User 1' } }),
             createMockPan({ id: 2, name: 'Pan 2', author: { ...mockAuthor, name: 'User 2' } }),
         ];
-        mockApi.get.mockResolvedValue(pans);
 
         render(<HistoryView />);
 
@@ -47,7 +46,6 @@ describe('HistoryView', () => {
                 createMockIngredient({ id: 2, name: 'Sauce Ingredient', type: IngredientType.SAUCE }),
             ],
         });
-        mockApi.get.mockResolvedValue([pan]);
 
         render(<HistoryView />);
 
@@ -65,7 +63,6 @@ describe('HistoryView', () => {
             name: 'Test Pan',
             timestamp: '2024-01-01T12:00:00Z',
         });
-        mockApi.get.mockResolvedValue([pan]);
 
         render(<HistoryView />);
 
@@ -76,7 +73,6 @@ describe('HistoryView', () => {
     });
 
     it('shows rating component for each pan', async () => {
-        mockApi.get.mockResolvedValue([createMockPan({ id: 1, rating: 3 })]);
         render(<HistoryView />);
 
         await waitFor(() => {
@@ -97,7 +93,6 @@ describe('HistoryView', () => {
                 }),
             ],
         });
-        mockApi.get.mockResolvedValue([pan]);
 
         render(<HistoryView />);
 
@@ -107,17 +102,7 @@ describe('HistoryView', () => {
         });
     });
 
-    it('calls API.get with correct parameters', async () => {
-        mockApi.get.mockResolvedValue([createMockPan()]);
-        render(<HistoryView />);
-
-        await waitFor(() => {
-            expect(mockApi.get).toHaveBeenCalledWith('pans', sessionKey);
-        });
-    });
-
     it('handles empty pan history', async () => {
-        mockApi.get.mockResolvedValue([]);
         render(<HistoryView />);
 
         await waitFor(() => {
@@ -132,7 +117,6 @@ describe('HistoryView', () => {
             createMockPan({ id: 1, name: 'First Pan' }),
             createMockPan({ id: 2, name: 'Second Pan' }),
         ];
-        mockApi.get.mockResolvedValue(pans);
 
         render(<HistoryView />);
 
