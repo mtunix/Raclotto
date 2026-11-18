@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react';
 import ErrorPage, { RaclottoError, ApiNoResponseError } from './ErrorPage';
 
 let mockRouteError: any = null;
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useRouteError: () => mockRouteError,
 }));
 

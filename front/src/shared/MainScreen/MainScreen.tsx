@@ -6,7 +6,7 @@ import {Toolbar} from "../Toolbar/Toolbar";
 import {EventDisplay} from "../EventDisplay/EventDisplay";
 import {dismissSessionEvent, useSessionEvents} from "../EventDisplay/sessionEvents";
 import {useAppStore} from "../../AppSlice";
-import {useSearchParams, useNavigate, useParams, Outlet, useLocation} from "react-router-dom";
+import {useSearchParams, useNavigate, useParams, Outlet, useLocation} from "react-router";
 import {useTranslation} from "react-i18next";
 import "./MainScreen.css";
 

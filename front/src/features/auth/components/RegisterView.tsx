@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Form, Input, Button, Card, Alert, Space, Avatar } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import {
   lookupInvite,
   register,

@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { StartScreen, JoinSession, SessionSelector } from './StartScreen';
 import { mockUseAppStore, createMockIngredient, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
 import type { SessionDto } from '../../api/generated/model';
@@ -15,10 +15,6 @@ jest.mock('../../api/generated/endpoints/sessions/sessions', () => ({
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useNavigate: () => jest.fn(),
-}));
-
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
     useRouteError: () => null,
 }));
 

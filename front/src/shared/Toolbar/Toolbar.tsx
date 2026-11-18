@@ -10,7 +10,7 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { useAuthStore } from "../../AuthSlice";
 import { useAppStore } from "../../AppSlice";
 import { useGetUserProfile } from "../../api/generated/endpoints/users/users";
@@ -46,7 +46,7 @@ export function Toolbar(props: ToolbarProps) {
   const currentUser = useAuthStore((state) => state.user);
   // The profile, not the signed-in user, is refetched when the picture changes.
   const { data: userProfile } = useGetUserProfile(currentUser?.id ?? 0, {
-    swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
+    swr: { enabled: !!currentUser?.id, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
   });
 
   const profilePicture =

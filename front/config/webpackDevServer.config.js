@@ -13,6 +13,21 @@ const sockHost = process.env.WDS_SOCKET_HOST;
 const sockPath = process.env.WDS_SOCKET_PATH; // default: '/ws'
 const sockPort = process.env.WDS_SOCKET_PORT;
 
+// getHttpsConfig() answers true, false or the {cert, key} read from SSL_CRT_FILE/SSL_KEY_FILE.
+function getServerConfig() {
+  const https = getHttpsConfig();
+  if (!https) {
+    return 'http';
+  }
+  return { type: 'https', options: https === true ? {} : https };
+}
+
+// react-dev-utils' prepareProxy() still speaks http-proxy-middleware v2; v4 takes `pathFilter`
+// and `on` handlers and logs through webpack-dev-server's logger instead of `logLevel`.
+function toProxyMiddlewareOptions({ context, onProxyReq, onError, logLevel, ...options }) {
+  return { ...options, pathFilter: context, on: { proxyReq: onProxyReq, error: onError } };
+}
+
 module.exports = function (proxy, allowedHost) {
   const disableFirewall =
     !proxy || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === 'true';
@@ -91,7 +106,7 @@ module.exports = function (proxy, allowedHost) {
       publicPath: paths.publicUrlOrPath.slice(0, -1),
     },
 
-    https: getHttpsConfig(),
+    server: getServerConfig(),
     host,
     historyApiFallback: {
       // Paths with dots should still use the history fallback.
@@ -99,29 +114,29 @@ module.exports = function (proxy, allowedHost) {
       disableDotRule: true,
       index: paths.publicUrlOrPath,
     },
-    // `proxy` is run between `before` and `after` `webpack-dev-server` hooks
-    proxy,
-    onBeforeSetupMiddleware(devServer) {
+    proxy: proxy && proxy.map(toProxyMiddlewareOptions),
+    setupMiddlewares(middlewares, devServer) {
       // Keep `evalSourceMapMiddleware`
       // middlewares before `redirectServedPath` otherwise will not have any effect
       // This lets us fetch source contents from webpack for the error overlay
-      devServer.app.use(evalSourceMapMiddleware(devServer));
+      middlewares.unshift(evalSourceMapMiddleware(devServer));
 
       if (fs.existsSync(paths.proxySetup)) {
         // This registers user provided middleware for proxy reasons
         require(paths.proxySetup)(devServer.app);
       }
-    },
-    onAfterSetupMiddleware(devServer) {
+
       // Redirect to `PUBLIC_URL` or `homepage` from `package.json` if url not match
-      devServer.app.use(redirectServedPath(paths.publicUrlOrPath));
+      middlewares.push(redirectServedPath(paths.publicUrlOrPath));
 
       // This service worker file is effectively a 'no-op' that will reset any
       // previous service worker registered for the same host:port combination.
       // We do this in development to avoid hitting the production cache if
       // it used the same host and port.
       // https://github.com/facebook/create-react-app/issues/2272#issuecomment-302832432
-      devServer.app.use(noopServiceWorkerMiddleware(paths.publicUrlOrPath));
+      middlewares.push(noopServiceWorkerMiddleware(paths.publicUrlOrPath));
+
+      return middlewares;
     },
   };
 };

@@ -192,7 +192,7 @@ checkBrowsers(paths.appPath, isInteractive)
         if (httpRedirectServer) {
           httpRedirectServer.close();
         }
-        devServer.close();
+        devServer.stop();
         process.exit();
       });
     });
@@ -203,7 +203,7 @@ checkBrowsers(paths.appPath, isInteractive)
         if (httpRedirectServer) {
           httpRedirectServer.close();
         }
-        devServer.close();
+        devServer.stop();
         process.exit();
       });
     }

@@ -1,4 +1,4 @@
-import {useRouteError} from "react-router-dom";
+import {useRouteError} from "react-router";
 import {t} from "i18next";
 import {Row, Col, Typography} from "antd";
 

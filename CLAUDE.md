@@ -6,7 +6,7 @@ XP, levels and achievements. Two apps in one repo:
 | Path     | Stack                                                        |
 |----------|--------------------------------------------------------------|
 | `back/`  | Python 3.14 (`.python-version`), Flask 3.1, SQLAlchemy 2, SQLite |
-| `front/` | React 19, TypeScript, Zustand + SWR, antd, ejected CRA (webpack + jest) |
+| `front/` | React 19, TypeScript 6, Zustand + SWR, antd, ejected CRA (webpack 5, Babel 8 via `config/babelPreset.js`, jest 30) |
 
 There are no dev docs. The code map below and the module docstrings are the reference; read
 the module you are changing before inferring patterns from its neighbours.
@@ -109,8 +109,10 @@ venv/bin/python -m back.test.export_wire_fixtures   # rewrite lib/api/__fixtures
 cd front && BUILD_PATH=/tmp/raclotto-build npm run build   # front/build/ is tracked; build elsewhere
 ```
 
-`npm run lint` runs, but its unquoted globs only reach `src/*/`; `npx eslint 'src/**/*.{ts,tsx}'`
-covers everything (4 `import/first` errors in `GenerateView.tsx`, many warnings).
+`npm run lint` (ESLint 10, flat config in `eslint.config.mjs`) covers `src/**/*.{ts,tsx}` and fails
+on 4 pre-existing `import/first` errors in `GenerateView.tsx`; CI doesn't run it yet. TypeScript
+stays on 6: TS 7's native compiler has no JS API yet, which `@typescript-eslint`,
+fork-ts-checker and `config/modules.js` need.
 
 Known-broken frontend suites: `App.test.js`, `ErrorPage`, `GenerateView`, `HistoryView`,
 `SettingsView`, `MainScreen`, `StartScreen`, `Toolbar` fail to load (react-router needs

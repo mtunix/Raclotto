@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Card, Alert, Space } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { login } from "../../../api/generated/endpoints/auth/auth";
 import { UnauthorizedError } from "../../../lib/api/transport";
 import { useAuthStore } from "../../../AuthSlice";

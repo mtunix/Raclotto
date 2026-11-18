@@ -9,7 +9,7 @@ import {useAppStore} from "../../../AppSlice";
 import {useAuthStore} from "../../../AuthSlice";
 import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDisplay";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
-import {useNavigate, useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router";
 import {getTextureBorderImage} from "../../../lib/borderTextures";
 import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
 import { PanResultModal } from "../../generation/PanResultModal";

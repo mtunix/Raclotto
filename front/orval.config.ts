@@ -10,9 +10,6 @@ export default defineConfig({
       httpClient: "axios",
       mode: "tags-split",
       clean: true,
-      // orval bundles the mutator with esbuild at the tsconfig target, and tsconfig.json's es5
-      // can't express the classes the transport imports; the other options mirror tsconfig.json.
-      tsconfig: { compilerOptions: { target: "es2020", esModuleInterop: true } },
       override: {
         mutator: { path: "src/lib/api/orvalMutator.ts", name: "orvalMutator" },
       },

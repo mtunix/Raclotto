@@ -10,7 +10,7 @@ import type {SessionDto} from "../../api/generated/model";
 import {onErrorRetry} from "../../lib/api/swrHooks";
 import React, {useEffect, useState} from "react";
 import {useAppStore} from "../../AppSlice";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {useTranslation} from "react-i18next";
 import {useAuthStore} from "../../AuthSlice";
 

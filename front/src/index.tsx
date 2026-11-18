@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import './i18n';
 import reportWebVitals from './reportWebVitals';
-import {RouterProvider} from "react-router";
+import {RouterProvider} from "react-router/dom";
 import {RaclottoRouter} from "./Router";
 
 const startApp = () => {

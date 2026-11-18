@@ -55,7 +55,7 @@ export function ProfilePictureManager({
   const { data: history = [], isLoading: loadingHistory } =
     useGetProfilePictureHistory(userId ?? 0, {
       swr: {
-        enabled: isModalVisible && !directMode,
+        enabled: isModalVisible && !directMode && !!userId,
         onErrorRetry,
         revalidateOnFocus: false,
       },

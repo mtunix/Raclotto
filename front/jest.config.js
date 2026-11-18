@@ -44,9 +44,9 @@ module.exports = {
     '/dist/'
   ],
 
-  // Transform ignore patterns (important for antd and other ESM packages)
+  // Transform ignore patterns (important for antd, react-router and other ESM packages)
   transformIgnorePatterns: [
-    'node_modules/(?!(antd|@ant-design|rc-.*|@rc-component|@babel/runtime)/)'
+    'node_modules/(?!(antd|@ant-design|rc-.*|@rc-component|@babel/runtime|react-router|@remix-run|cookie-es)/)'
   ],
 
   // Module file extensions

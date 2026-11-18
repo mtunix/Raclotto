@@ -1,4 +1,4 @@
-import {createBrowserRouter} from "react-router-dom";
+import {createBrowserRouter} from "react-router";
 import ErrorPage from "./shared/ErrorPage/ErrorPage";
 import App from "./App";
 import {SessionSelector} from "./shared/StartScreen/StartScreen";

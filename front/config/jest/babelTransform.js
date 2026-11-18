@@ -15,15 +15,27 @@ const hasJsxRuntime = (() => {
   }
 })();
 
+// ESM-only dependencies (react-router) read `import.meta`, which the CommonJS output can't express.
+const importMetaToEmptyObject = ({ types: t }) => ({
+  visitor: {
+    MetaProperty(path) {
+      if (path.node.meta.name === 'import' && path.node.property.name === 'meta') {
+        path.replaceWith(t.objectExpression([]));
+      }
+    },
+  },
+});
+
 module.exports = babelJest.createTransformer({
   presets: [
     [
-      require.resolve('babel-preset-react-app'),
+      require.resolve('../babelPreset'),
       {
         runtime: hasJsxRuntime ? 'automatic' : 'classic',
       },
     ],
   ],
+  plugins: [importMetaToEmptyObject],
   babelrc: false,
   configFile: false,
 });

@@ -21,8 +21,8 @@ jest.mock('./AppSlice', () => ({
     useAppStore: (selector: any) => mockUseAppStore(selector),
 }));
 
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useSearchParams: () => [new URLSearchParams(), jest.fn()],
     useNavigate: () => jest.fn(),
     useParams: () => ({ sessionId: '123' }),

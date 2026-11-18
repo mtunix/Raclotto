@@ -24,7 +24,7 @@ import {
   Modal,
 } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { useAuthStore } from "../../AuthSlice";
 import { useTranslation } from "react-i18next";
 import { mutateMe, onErrorRetry } from "../../lib/api/swrHooks";
@@ -65,6 +65,7 @@ export function ProfileView() {
   const [isRegeneratingPicture, setIsRegeneratingPicture] = useState(false);
 
   const swr = {
+    enabled: !!targetUserIdNumber,
     onErrorRetry,
     revalidateOnFocus: false,
     revalidateOnReconnect: true,

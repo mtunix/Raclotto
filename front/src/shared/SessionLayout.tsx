@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Card, Button } from 'antd';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { SpinnerContainer } from './Spinner/Spinner';
 import { useRouteSession } from './useRouteSession';
