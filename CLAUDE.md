@@ -24,6 +24,12 @@ the module you are changing before inferring patterns from its neighbours.
 | Entities | `entity/` | SQLAlchemy models. |
 | App wiring | `driver/app.py`, `driver/api_custom.py`, `api/base_api.py` | Flask app, seeding, route registry, error handlers. |
 | Spec | `api/openapi.py` | Builds `back/openapi.json` from the endpoint declarations. |
+| Migrations | `driver/migrations.py`, `back/migrations/` | Alembic; the app migrates its database at startup (below). |
+
+Schema changes ship with an Alembic revision (`venv/bin/alembic revision -m "..."`; render it with
+`--autogenerate` against a database at head via `RACLOTTO_DATABASE_URL`). At startup `migrate()`
+creates and stamps a new database, upgrades an existing one, and refuses to start if a model
+column is still missing. Revisions don't import app code: freeze any data they need.
 
 Every endpoint is typed: `BaseApi.endpoint(route, methods, query=, body=, response=, status=, errors=, operation_id=)`.
 
@@ -90,7 +96,8 @@ Run from the repo root unless noted. The venv is `venv/`; it has drifted from
 ```bash
 venv/bin/python -m unittest discover -s back/test -t .     # whole backend suite
 venv/bin/python -m unittest back.test.integration.test_pan_roll   # one module
-venv/bin/python -m back.src.main                           # run the server (port 8081)
+venv/bin/python -m back.src.main                           # run the server (port 8081); migrates instance/raclotto.db
+venv/bin/alembic current                                   # revision of instance/raclotto.db (RACLOTTO_DATABASE_URL overrides)
 
 cd front && CI=true npx jest <path>      # one test file — the edit loop
 cd front && CI=true npx jest             # whole frontend suite

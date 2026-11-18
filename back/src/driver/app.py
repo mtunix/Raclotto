@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules, serialize_error
 from back.src.driver.api_custom import apis_custom
+from back.src.driver.migrations import migrate
 from back.src.utils import str_code_from_enum
 
 
@@ -26,7 +27,7 @@ class App(Flask):
         self.db.init_app(self)
 
         with self.app_context() as app_context:
-            self.db.create_all()
+            migrate(self.db)
             self.init_admin_user()
             self.init_achievements()
             self.init_levels()
