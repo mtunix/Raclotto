@@ -1,6 +1,8 @@
 """Base classes for the request and response DTOs, and the error body every endpoint shares."""
 
-from pydantic import BaseModel, ConfigDict
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ResponseDto(BaseModel):
@@ -14,6 +16,14 @@ class RequestDto(BaseModel):
     """Shape of a request body or query string; unknown fields are rejected."""
 
     model_config = ConfigDict(extra="forbid")
+
+
+def omittable(**constraints: Any) -> Any:
+    """Default of a PATCH field that may be left out but never set to null: `Field(default=None, ...)`.
+
+    Typed Any so the field keeps its non-null type; read the field only when it is in `model_fields_set`.
+    """
+    return Field(default=None, **constraints)
 
 
 class ApiErrorSourceDto(ResponseDto):

@@ -11,10 +11,10 @@ from back.src.driver.database import db
 class AchievementRepository(BaseRepository[Achievement]):
     """Repository for Achievement entities (public read-only)."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Achievement)
     
-    def by_title(self, title: str) -> Optional[Achievement]:
+    def by_title(self, title: Optional[str]) -> Optional[Achievement]:
         """
         Find achievement by title.
         

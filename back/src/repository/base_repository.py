@@ -1,8 +1,8 @@
-from typing import TypeVar, Generic, Optional, List, Type
+from typing import Any, Dict, TypeVar, Generic, Optional, List, Type
 from sqlalchemy.exc import NoResultFound
-from back.src.driver.database import db, BaseModel
+from back.src.driver.database import db, Base
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar('T', bound=Base)
 
 
 class BaseRepository(Generic[T]):
@@ -36,7 +36,7 @@ class BaseRepository(Generic[T]):
         """
         return db.session.query(self.entity_type).all()
     
-    def create(self, data: dict) -> T:
+    def create(self, data: Dict[str, Any]) -> T:
         """
         Create a new entity.
         

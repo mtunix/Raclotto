@@ -1,21 +1,26 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
+
+if TYPE_CHECKING:
+    from back.src.entity.level import Level
+    from back.src.entity.user import User
 
 
-class ProfilePictureHistory(BaseModel):
+class ProfilePictureHistory(Base):
     __tablename__ = "profile_picture_history"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    profile_picture = Column(String, nullable=True)
-    level_id = Column(Integer, ForeignKey("level.id"), nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
-    is_candidate = Column(Boolean, nullable=False, default=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    profile_picture: Mapped[str | None]
+    level_id: Mapped[int | None] = mapped_column(ForeignKey("level.id"))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+    is_candidate: Mapped[bool] = mapped_column(default=False)
 
-    user = relationship("User", lazy="selectin", foreign_keys=[user_id])
+    user: Mapped["User"] = relationship("User", lazy="selectin", foreign_keys=[user_id])
 
-    level = relationship("Level", lazy="selectin", foreign_keys=[level_id])
+    level: Mapped["Level | None"] = relationship("Level", lazy="selectin", foreign_keys=[level_id])

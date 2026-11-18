@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Tuple, Type
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple, Type
 
 from flask import Flask
 from pydantic import BaseModel
@@ -37,6 +37,9 @@ _PATH_ARG_SCHEMAS = {
 }
 _SCHEMA_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
+# models_json_schema's result, keyed by (DTO class, mode); pydantic types the class with a private dataclass type.
+_Refs = Dict[Tuple[Type[Any], JsonSchemaMode], JsonSchemaValue]
+
 
 class _SchemaGenerator(GenerateJsonSchema):
     def enum_schema(self, schema: core_schema.EnumSchema) -> JsonSchemaValue:
@@ -52,7 +55,7 @@ class _Operation:
     method: str
     tag: str
     operation_id: str
-    func: Callable
+    func: Callable[..., Any]
     typed: TypedEndpoint
     path_args: List[Tuple[str, str]]
 
@@ -144,11 +147,12 @@ def _check_unique_operation_ids(operations: List[_Operation]) -> None:
 def _schema_inputs(operations: List[_Operation]) -> List[Tuple[Type[BaseModel], JsonSchemaMode]]:
     inputs: List[Tuple[Type[BaseModel], JsonSchemaMode]] = [(ErrorResponseDto, "serialization")]
     for op in operations:
-        for model, mode in (
+        candidates: Tuple[Tuple[Optional[Type[BaseModel]], JsonSchemaMode], ...] = (
             (op.typed.query, "validation"),
             (op.typed.body, "validation"),
             (op.typed.response_model, "serialization"),
-        ):
+        )
+        for model, mode in candidates:
             if model is not None and (model, mode) not in inputs:
                 inputs.append((model, mode))
     return inputs
@@ -165,7 +169,7 @@ def _check_schema_names(schemas: Dict[str, Any]) -> None:
             raise ValueError(f"schema name {name!r} is ambiguous; give the DTO classes unique names")
 
 
-def _operation(op: _Operation, refs: Dict, schemas: Dict[str, Any]) -> Dict[str, Any]:
+def _operation(op: _Operation, refs: _Refs, schemas: Dict[str, Any]) -> Dict[str, Any]:
     typed = op.typed
     operation: Dict[str, Any] = {
         "operationId": op.operation_id,
@@ -199,12 +203,13 @@ def _operation(op: _Operation, refs: Dict, schemas: Dict[str, Any]) -> Dict[str,
     return operation
 
 
-def _responses(op: _Operation, refs: Dict) -> Dict[str, Any]:
+def _responses(op: _Operation, refs: _Refs) -> Dict[str, Any]:
     typed = op.typed
     success: Dict[str, Any] = {"description": HTTPStatus(typed.status).phrase}
-    if typed.response is not None:
-        schema = refs[(typed.response_model, "serialization")]
-        if typed.response is not typed.response_model:
+    model = typed.response_model
+    if model is not None:
+        schema = refs[(model, "serialization")]
+        if typed.response is not model:
             schema = {"type": "array", "items": schema}
         success["content"] = {"application/json": {"schema": schema}}
 
@@ -238,7 +243,7 @@ def _ref_name(ref: Dict[str, str]) -> str:
     return ref["$ref"].rsplit("/", 1)[1]
 
 
-def _refs(node: Any) -> set:
+def _refs(node: Any) -> Set[str]:
     if isinstance(node, dict):
         found = {node["$ref"]} if isinstance(node.get("$ref"), str) else set()
         return found.union(*(_refs(value) for value in node.values()))

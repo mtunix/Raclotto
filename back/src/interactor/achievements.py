@@ -18,6 +18,7 @@ from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
+    Audience,
     CatalogChanged,
     EvaluationContext,
     Fact,
@@ -89,7 +90,7 @@ class Achievements:
         contexts: Dict[int, EvaluationContext] = {}
 
         for achievement in self._achievements.all():
-            evaluator = self._evaluators.get(achievement.title)
+            evaluator = self._evaluator(achievement)
             if evaluator is None or not isinstance(fact, evaluator.reacts_to):
                 continue
 
@@ -127,16 +128,23 @@ class Achievements:
             stored = self._progress.by_user_and_achievement(user.id, achievement.id)
             progress = stored.progress_value if stored else None
             if progress is None and context is not None:
-                evaluator = self._evaluators.get(achievement.title)
+                evaluator = self._evaluator(achievement)
                 if evaluator is not None:
                     progress = evaluator.calculate_progress(user, achievement, context)
             statuses.append(AchievementStatus(achievement, achievement.id in held, progress))
         return statuses
 
-    def _audience(self, audience: str, fact: Fact) -> List[User]:
+    def _evaluator(self, achievement: Achievement) -> Optional[AchievementEvaluator]:
+        if achievement.title is None:
+            return None
+        return self._evaluators.get(achievement.title)
+
+    def _audience(self, audience: Audience, fact: Fact) -> List[User]:
         if audience == "actor":
             return [fact.actor] if fact.actor is not None else []
         if audience == "pan_owner":
+            if not isinstance(fact, (PanRolled, PanRated)):
+                raise ValueError(f"{type(fact).__name__} is about no pan, so it has no pan owner")
             owner = self._users.by_id(fact.pan.user_id)
             return [owner] if owner else []
         if audience == "session_members":

@@ -9,7 +9,7 @@ from back.src.driver.database import db
 class PanRepository(BaseRepository[Pan]):
     """Repository for Pan entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Pan)
     
     def by_session(self, session_key: str, limit: Optional[int] = None, offset: int = 0) -> List[Pan]:

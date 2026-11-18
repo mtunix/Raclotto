@@ -7,7 +7,7 @@ from back.src.driver.database import db
 class UserAchievementProgressRepository(BaseRepository[UserAchievementProgress]):
     """Repository for UserAchievementProgress entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(UserAchievementProgress)
     
     def by_user_and_achievement(self, user_id: int, achievement_id: int) -> Optional[UserAchievementProgress]:

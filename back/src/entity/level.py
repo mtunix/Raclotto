@@ -1,13 +1,13 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
 
 
-class Level(BaseModel):
+class Level(Base):
     __tablename__ = "level"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-    label_en = Column(String, nullable=False)
-    label_de = Column(String, nullable=False)
-    required_experience = Column(Integer, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    label_en: Mapped[str]
+    label_de: Mapped[str]
+    required_experience: Mapped[int]

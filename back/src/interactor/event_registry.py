@@ -5,10 +5,10 @@ from back.src.interactor.event_evaluator import EventEvaluator
 class EventRegistry:
     """Registry for mapping event types to their evaluators."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._evaluators: Dict[str, EventEvaluator] = {}
     
-    def register_evaluator(self, event_type: str, evaluator: EventEvaluator):
+    def register_evaluator(self, event_type: str, evaluator: EventEvaluator) -> None:
         """
         Register an evaluator for an event type.
         
@@ -35,7 +35,7 @@ def get_registry() -> EventRegistry:
     return _registry
 
 
-def initialize_registry():
+def initialize_registry() -> None:
     """
     Initialize the registry with evaluators for events.
     This should be called during application startup.

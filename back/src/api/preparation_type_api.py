@@ -13,7 +13,7 @@ from back.src.repository.session_repository import SessionRepository
 class PreparationTypeApi(BaseApi):
     url_prefix = "/preparation_type"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.repository = PreparationTypeRepository()
         self.session_repository = SessionRepository()

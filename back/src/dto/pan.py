@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import Field, model_validator
 
 from back.src.dto.achievement import AchievementDto
-from back.src.dto.base import RequestDto, ResponseDto
+from back.src.dto.base import RequestDto, ResponseDto, omittable
 from back.src.dto.event import EventDto
 from back.src.dto.ingredient import IngredientDto
 from back.src.dto.level import LevelDto
@@ -147,8 +147,8 @@ class ListPansQuery(RequestDto):
 
 class UpdatePanBody(RequestDto):
     # Omitted fields are left unchanged; null is not a value either field takes.
-    name: str = Field(default=None, min_length=1)
-    snacked: bool = Field(default=None)
+    name: str = omittable(min_length=1)
+    snacked: bool = omittable()
 
     @model_validator(mode="after")
     def _changes_something(self) -> "UpdatePanBody":

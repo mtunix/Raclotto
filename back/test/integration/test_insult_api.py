@@ -26,7 +26,7 @@ class InsultApiTest(AppTest):
 
         self.assertEqual(response.status_code, 200)
         created = InsultDto.model_validate(response.json)
-        self.assertEqual(db.session.get(Insult, created.id).title, "Langweiler")
+        self.assertEqual(db.session.get_one(Insult, created.id).title, "Langweiler")
 
     def test_create_and_update_need_a_title(self):
         for method, path in (("POST", "/insults"), ("PATCH", f"/insults/{self.insult.id}")):

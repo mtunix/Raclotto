@@ -1,4 +1,5 @@
 import unittest
+from typing import Any, Dict, Set, Tuple
 
 from flask import Flask
 
@@ -62,6 +63,8 @@ class ThingApi(BaseApi):
 
 
 class ErrorStatusRulesTest(unittest.TestCase):
+    spec: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         app = Flask(__name__)
@@ -92,8 +95,9 @@ class ErrorStatusRulesTest(unittest.TestCase):
         self.assertEqual(self.statuses("/things/secure", "get"), ["200", "401"])
 
     def test_only_error_statuses_may_be_declared_once_each(self):
-        args = {"query": None, "body": None, "response": ThingDto, "status": 200, "operation_id": None}
-        for errors in ((200,), (302,), (99,), (600,), (404, 404), ("404",), (404.0,)):
+        args: Dict[str, Any] = {"query": None, "body": None, "response": ThingDto, "status": 200, "operation_id": None}
+        invalid: Tuple[Tuple[Any, ...], ...] = ((200,), (302,), (99,), (600,), (404, 404), ("404",), (404.0,))
+        for errors in invalid:
             with self.subTest(errors=errors):
                 with self.assertRaises(ValueError):
                     TypedEndpoint.declare(["GET"], **args, errors=errors)
@@ -103,6 +107,8 @@ class ErrorStatusRulesTest(unittest.TestCase):
 
 class DeclaredErrorsMatchHandlersTest(AppTest):
     """Each listed endpoint answers every error status its spec declares, and no other."""
+
+    declared: Dict[str, Set[int]]
 
     @classmethod
     def setUpClass(cls):

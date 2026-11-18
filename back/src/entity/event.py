@@ -1,24 +1,23 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING, Any
 
-from back.src.driver.database import BaseModel
+from sqlalchemy import JSON, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from back.src.driver.database import Base
+
+if TYPE_CHECKING:
+    from back.src.entity.raclotto_session import RaclottoSession
 
 
-class Event(BaseModel):
+class Event(Base):
     __tablename__ = "event"
 
-    id = Column(Integer, primary_key=True)
-    session_id = Column(Integer, ForeignKey("session.id"), nullable=False)
-    event_type = Column(String, nullable=False)
-    message = Column(String, nullable=False)
-    data = Column(JSON, nullable=True)  # Additional event data (pan IDs, user names, etc.)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("session.id"))
+    event_type: Mapped[str]
+    message: Mapped[str]
+    data: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # Additional event data (pan IDs, user names, etc.)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    session = relationship("RaclottoSession", lazy="selectin")
-
-
-
-
-
-
+    session: Mapped["RaclottoSession"] = relationship("RaclottoSession", lazy="selectin")

@@ -63,7 +63,7 @@ def development_config(environ: Mapping[str, str]) -> Type[ConfigProduction]:
     return _from_environment(ConfigDevelopment, environ)
 
 
-def _from_environment(base: Type[ConfigProduction], environ: Mapping[str, str], **overrides) -> Type[ConfigProduction]:
+def _from_environment(base: Type[ConfigProduction], environ: Mapping[str, str], **overrides: object) -> Type[ConfigProduction]:
     settings = {
         "SQLALCHEMY_DATABASE_URI": environ.get("RACLOTTO_DATABASE_URL") or base.SQLALCHEMY_DATABASE_URI,
         "ADMIN_PASSWORD": environ.get("RACLOTTO_ADMIN_PASSWORD") or None,

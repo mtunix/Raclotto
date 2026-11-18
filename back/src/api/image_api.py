@@ -1,7 +1,7 @@
 import base64
 import logging
 import os
-from typing import Optional, Protocol, cast
+from typing import Any, Optional, Protocol
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.auth.middleware import get_current_user, require_auth
@@ -13,6 +13,7 @@ from back.src.dto.profile_picture import (
     ProfilePictureDto,
 )
 from back.src.entity.profile_picture_history import ProfilePictureHistory
+from back.src.entity.user import User
 from back.src.repository.profile_picture_history_repository import (
     ProfilePictureHistoryRepository,
 )
@@ -29,7 +30,8 @@ class ImageGenerator(Protocol):
         """Whether the generator is configured; the endpoints answer 500 when it is not."""
         ...
 
-    def generate(self, contents: list) -> Optional[str]:
+    # `contents` holds google-genai content parts; the SDK is an optional import.
+    def generate(self, contents: list[Any]) -> Optional[str]:
         """The first image generated for `contents` (the prompt, then reference pictures), base64-encoded."""
         ...
 
@@ -53,7 +55,8 @@ class GeminiImageGenerator:
     def available(self) -> bool:
         return self.client is not None
 
-    def generate(self, contents: list) -> Optional[str]:
+    def generate(self, contents: list[Any]) -> Optional[str]:
+        assert self.client is not None  # callers check `available` first
         response = self.client.models.generate_content(
             model="gemini-2.5-flash-image",
             contents=contents,
@@ -115,7 +118,7 @@ def _generated(entry: ProfilePictureHistory, image_base64: str) -> GeneratedPict
 class ImageApi(BaseApi):
     url_prefix = "/images"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # Built here so a missing key is logged at startup.
         image_generator()
@@ -164,9 +167,9 @@ class ImageApi(BaseApi):
             )
 
             # Build contents list for Gemini API call
-            contents: list = [prompt]
+            contents: list[Any] = [prompt]
             if latest_picture is not None:
-                picture_url = cast(Optional[str], latest_picture.profile_picture)
+                picture_url = latest_picture.profile_picture
                 if picture_url:
                     try:
                         # Add the existing picture to the request so Gemini can use it as reference
@@ -197,7 +200,7 @@ class ImageApi(BaseApi):
 
             # Use level_id from parameter or user's current level
             picture_level_id: Optional[int] = (
-                level_id if level_id is not None else cast(Optional[int], user.level_id)
+                level_id if level_id is not None else user.level_id
             )
 
             # Save the generated image to the user's profile picture history
@@ -222,7 +225,7 @@ class ImageApi(BaseApi):
             logger.error(f"Profile picture generation error: {e}", exc_info=True)
             return False
 
-    def _generate_prompt_for_user(self, user, level_id: Optional[int] = None) -> str:
+    def _generate_prompt_for_user(self, user: User, level_id: Optional[int] = None) -> str:
         """Generate an appropriate prompt for profile picture generation based on user's level.
 
         :param user: User entity
@@ -235,7 +238,7 @@ class ImageApi(BaseApi):
 
         # Use provided level_id or user's current level
         actual_level_id: Optional[int] = (
-            level_id if level_id is not None else cast(Optional[int], user.level_id)
+            level_id if level_id is not None else user.level_id
         )
         level = level_repo.by_id(actual_level_id) if actual_level_id else None
         if not level:

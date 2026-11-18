@@ -1,22 +1,23 @@
 import secrets
 from datetime import datetime, timedelta
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
 
 
-class InviteToken(BaseModel):
+class InviteToken(Base):
     __tablename__ = "invite_token"
 
-    id = Column(Integer, primary_key=True)
-    token = Column(String, nullable=False, unique=True, index=True)
-    email = Column(String, nullable=False)
-    created_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
-    expires_at = Column(DateTime, nullable=False)
-    is_used = Column(Boolean, nullable=False, default=False)
-    used_at = Column(DateTime, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    token: Mapped[str] = mapped_column(unique=True, index=True)
+    email: Mapped[str]
+    created_by_user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+    expires_at: Mapped[datetime]
+    is_used: Mapped[bool] = mapped_column(default=False)
+    used_at: Mapped[datetime | None]
 
     @staticmethod
     def generate_token() -> str:
@@ -36,7 +37,7 @@ class InviteToken(BaseModel):
             return False
         return True
 
-    def mark_as_used(self):
+    def mark_as_used(self) -> None:
         """Mark the token as used."""
         self.is_used = True
         self.used_at = datetime.now()

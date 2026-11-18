@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Dict, Optional
 from datetime import datetime
 
 from back.src.entity.event import Event
@@ -14,7 +14,7 @@ class EventEvaluator(ABC):
     def evaluate(
         self,
         session: RaclottoSession,
-        context: dict
+        context: Dict[str, Any]
     ) -> Optional[Event]:
         """
         Evaluate whether an event should be triggered.

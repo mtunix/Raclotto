@@ -5,8 +5,10 @@ from back.src.entity.user import User
 from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
+    Audience,
     EvaluationContext,
     EvaluationResult,
+    Fact,
     PanRolled,
 )
 
@@ -25,7 +27,7 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
     reacts_to = (PanRolled,)
     revocable = True
 
-    def audience(self, fact) -> str:
+    def audience(self, fact: Fact) -> Audience:
         return "session_members"
 
     def _count_pans_per_user(self, session_pans: List[Pan]) -> Dict[int, int]:
@@ -35,7 +37,7 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
         :param session_pans: List of all pans in the session
         :return: Dictionary mapping user_id to pan count
         """
-        user_pan_counts = Counter()
+        user_pan_counts: Counter[int] = Counter()
         for pan in session_pans:
             user_pan_counts[pan.user_id] += 1
         return dict(user_pan_counts)

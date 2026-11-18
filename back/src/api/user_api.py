@@ -23,7 +23,7 @@ from back.src.repository.user_repository import UserRepository
 class UserApi(BaseApi):
     url_prefix = "/users"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.user_repository = UserRepository()
         self.pan_repository = PanRepository()
@@ -97,10 +97,10 @@ class UserApi(BaseApi):
                 .first()
             )
             if ingredient_ratings:
-                ingredient = db.session.query(Ingredient).filter_by(id=ingredient_ratings[0]).first()
-                if ingredient:
+                best = db.session.query(Ingredient).filter_by(id=ingredient_ratings[0]).first()
+                if best:
                     best_rated_ingredient = IngredientRatingDto(
-                        ingredient=IngredientDto.model_validate(ingredient),
+                        ingredient=IngredientDto.model_validate(best),
                         avg_rating=float(ingredient_ratings[1]) if ingredient_ratings[1] else 0.0,
                     )
 
@@ -133,7 +133,8 @@ class UserApi(BaseApi):
             average_rating_received=round(average_rating_received, 2),
             favorite_ingredient=favorite_ingredient,
             best_rated_ingredient=best_rated_ingredient,
-            total_achievement_points=sum(achievement.value for achievement in user.achievements),
+            # Seeded achievements always have a value; the column allows null.
+            total_achievement_points=sum(achievement.value or 0 for achievement in user.achievements),
             average_ingredients_per_pan=round(average_ingredients_per_pan, 2),
             most_pans_session=most_pans_session,
             sessions_participated=len(session_pan_counts),

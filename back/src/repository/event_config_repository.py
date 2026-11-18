@@ -8,7 +8,7 @@ from back.src.driver.database import db
 class EventConfigRepository(BaseRepository[EventConfig]):
     """Repository for EventConfig entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(EventConfig)
     
     def get_config(self, event_type: str, session_id: Optional[int] = None) -> Optional[EventConfig]:

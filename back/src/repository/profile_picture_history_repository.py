@@ -9,7 +9,7 @@ from back.src.repository.base_repository import BaseRepository
 class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
     """Repository for ProfilePictureHistory entities."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(ProfilePictureHistory)
 
     def by_user_id(self, user_id: int) -> List[ProfilePictureHistory]:
@@ -41,7 +41,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
         )
 
     def add_profile_picture(
-        self, user_id: int, profile_picture_url: str, level_id: Optional[int] = None
+        self, user_id: int, profile_picture_url: Optional[str], level_id: Optional[int] = None
     ) -> ProfilePictureHistory:
         """
         Add a new profile picture to the user's history.

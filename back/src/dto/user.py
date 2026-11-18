@@ -1,9 +1,9 @@
-from typing import Any, Dict, Literal, get_args
+from typing import Any, Dict, Literal, TypeIs, get_args
 
 from pydantic import Field, model_validator
 
 from back.src.dto.achievement import AchievementDto
-from back.src.dto.base import RequestDto, ResponseDto
+from back.src.dto.base import RequestDto, ResponseDto, omittable
 from back.src.dto.level import LevelDto
 from back.src.entity.level import Level
 from back.src.entity.user import User
@@ -21,6 +21,10 @@ LANGUAGES: tuple[str, ...] = get_args(Language)
 DEFAULT_COLOR = "#1890ff"
 DEFAULT_BORDER_STYLE: BorderStyle = "solid"
 DEFAULT_LANGUAGE: Language = "de"
+
+
+def _is_language(value: str) -> TypeIs[Language]:
+    return value in LANGUAGES
 
 
 class _UserCard(ResponseDto):
@@ -122,30 +126,30 @@ class MeDto(_UserCard):
             fructose=user.fructose,
             lactose=user.lactose,
             gluten=user.gluten,
-            language=user.language if user.language in LANGUAGES else DEFAULT_LANGUAGE,
+            language=user.language if _is_language(user.language) else DEFAULT_LANGUAGE,
         )
 
 
 class UpdateMeBody(RequestDto):
     """Omitted fields are left unchanged; null is only a value where the type says so."""
 
-    name: str = Field(default=None, min_length=1)
-    meat: bool = Field(default=None)
-    vegetarian: bool = Field(default=None)
-    vegan: bool = Field(default=None)
-    fish: bool = Field(default=None)
-    histamine: bool = Field(default=None)
-    fructose: bool = Field(default=None)
-    lactose: bool = Field(default=None)
-    gluten: bool = Field(default=None)
+    name: str = omittable(min_length=1)
+    meat: bool = omittable()
+    vegetarian: bool = omittable()
+    vegan: bool = omittable()
+    fish: bool = omittable()
+    histamine: bool = omittable()
+    fructose: bool = omittable()
+    lactose: bool = omittable()
+    gluten: bool = omittable()
     # Null shows the default color.
     color: str | None = None
-    language: Language = Field(default=None)
+    language: Language = omittable()
     # Null removes the picture.
     profile_picture: str | None = None
-    border_style: BorderStyle = Field(default=None)
+    border_style: BorderStyle = omittable()
     border_texture: BorderTexture | None = None
-    glow_effect: bool = Field(default=None)
+    glow_effect: bool = omittable()
 
     @model_validator(mode="after")
     def _changes_something(self) -> "UpdateMeBody":

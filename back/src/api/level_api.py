@@ -7,7 +7,7 @@ from back.src.repository.level_repository import LevelRepository
 class LevelApi(BaseApi):
     url_prefix = "/levels"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.repository = LevelRepository()
 

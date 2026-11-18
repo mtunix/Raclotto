@@ -11,7 +11,7 @@ from back.src.repository.rating_repository import RatingRepository
 class RatingApi(BaseApi):
     url_prefix = "/ratings"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.repository = RatingRepository()
 
@@ -53,7 +53,7 @@ class RatingApi(BaseApi):
 
         rating = self.repository.by_user_and_pan(user.id, pan.id)
         is_new = rating is None
-        if is_new:
+        if rating is None:
             rating = Rating(rating=body.rating, user_id=user.id, pan_id=pan.id, session_id=pan.session_id)
             db.session.add(rating)
         else:

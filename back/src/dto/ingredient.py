@@ -1,7 +1,9 @@
+from typing import Self
+
 from pydantic import Field, model_validator
 from pydantic_core import PydanticCustomError
 
-from back.src.dto.base import RequestDto, ResponseDto
+from back.src.dto.base import RequestDto, ResponseDto, omittable
 from back.src.entity.ingredient import Ingredient, IngredientType
 from back.src.interactor.diet import CATEGORIES, Diet
 from back.src.interactor.ingredient_category import category_problem
@@ -93,7 +95,7 @@ class _EditableIngredient(RequestDto):
     sweet: bool = False
 
     @model_validator(mode="after")
-    def _one_category(self):
+    def _one_category(self) -> Self:
         _check_category(self.meat, self.vegetarian, self.vegan, self.fish)
         return self
 
@@ -118,23 +120,23 @@ class ImportIngredientsBody(RequestDto):
 class UpdateIngredientBody(RequestDto):
     """Omitted fields are left unchanged; null is not a value any field takes."""
 
-    name: str = Field(default=None, min_length=1)
-    type: IngredientType = Field(default=None)
+    name: str = omittable(min_length=1)
+    type: IngredientType = omittable()
     # The category changes as a whole: give all four flags or none.
-    meat: bool = Field(default=None)
-    vegetarian: bool = Field(default=None)
-    vegan: bool = Field(default=None)
-    fish: bool = Field(default=None)
-    gluten: bool = Field(default=None)
-    histamine: bool = Field(default=None)
-    fructose: bool = Field(default=None)
-    lactose: bool = Field(default=None)
-    spicy: int = Field(default=None, ge=0, le=3)
-    wildcard: bool = Field(default=None)
-    sweet: bool = Field(default=None)
+    meat: bool = omittable()
+    vegetarian: bool = omittable()
+    vegan: bool = omittable()
+    fish: bool = omittable()
+    gluten: bool = omittable()
+    histamine: bool = omittable()
+    fructose: bool = omittable()
+    lactose: bool = omittable()
+    spicy: int = omittable(ge=0, le=3)
+    wildcard: bool = omittable()
+    sweet: bool = omittable()
 
     @model_validator(mode="after")
-    def _changes_something(self):
+    def _changes_something(self) -> "UpdateIngredientBody":
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         categories = self.model_fields_set & set(CATEGORIES)

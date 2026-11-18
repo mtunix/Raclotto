@@ -9,7 +9,7 @@ from back.src.driver.database import db
 class SessionRepository(BaseRepository[RaclottoSession]):
     """Repository for RaclottoSession entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(RaclottoSession)
     
     def by_key(self, key: str) -> Optional[RaclottoSession]:

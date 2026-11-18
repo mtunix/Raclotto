@@ -20,7 +20,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
     (Eat all ingredients (FILL, not sauces) of the current session)
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.ingredient_repository = IngredientRepository()
         self.session_repository = SessionRepository()
         self.pan_repository = PanRepository()

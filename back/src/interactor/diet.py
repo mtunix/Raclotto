@@ -16,7 +16,7 @@ encode the same rule.
 
 from dataclasses import dataclass, fields, replace
 
-from sqlalchemy import and_, not_, true
+from sqlalchemy import ColumnElement, and_, not_, true
 
 CATEGORIES = ("meat", "vegetarian", "vegan", "fish")
 SUBSTANCES = ("histamine", "fructose", "lactose", "gluten")
@@ -34,7 +34,7 @@ class Diet:
     gluten: bool = True
 
     @classmethod
-    def of(cls, user) -> "Diet":
+    def of(cls, user: object) -> "Diet":
         """The normalized diet stored on a user (or any object with the same flags)."""
         return cls(**{f.name: bool(getattr(user, f.name)) for f in fields(cls)}).normalized()
 
@@ -48,19 +48,19 @@ class Diet:
             return replace(self, vegetarian=True, vegan=True)
         return self
 
-    def apply_to(self, user) -> None:
+    def apply_to(self, user: object) -> None:
         """Write this diet (normalized) onto a user."""
         for f in fields(self):
             setattr(user, f.name, getattr(self.normalized(), f.name))
 
-    def allows(self, ingredient) -> bool:
+    def allows(self, ingredient: object) -> bool:
         diet = self.normalized()
         for flag in CATEGORIES + SUBSTANCES:
             if getattr(ingredient, flag) and not getattr(diet, flag):
                 return False
         return True
 
-    def ingredient_filter(self):
+    def ingredient_filter(self) -> ColumnElement[bool]:
         """SQLAlchemy clause over ``Ingredient`` equivalent to ``allows``."""
         from back.src.entity.ingredient import Ingredient
 

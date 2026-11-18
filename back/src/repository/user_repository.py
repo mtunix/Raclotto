@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, Optional, Set
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.user import User
 from back.src.driver.database import db
@@ -7,7 +7,7 @@ from back.src.driver.database import db
 class UserRepository(BaseRepository[User]):
     """Repository for User entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(User)
     
     def by_email(self, email: str) -> Optional[User]:
@@ -47,7 +47,7 @@ class UserRepository(BaseRepository[User]):
             return user
         return self.by_name(identifier)
     
-    def get_users_in_session(self, session_id: int) -> set:
+    def get_users_in_session(self, session_id: int) -> Set[int]:
         """
         Get set of user IDs in a session.
         

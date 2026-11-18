@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from back.src.entity.event import Event
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.event_config import EventConfig
@@ -11,7 +11,7 @@ from back.src.driver.database import db
 class EventService:
     """Service for managing events."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.event_repository = EventRepository()
         self.config_repository = EventConfigRepository()
         self.registry = get_registry()
@@ -40,7 +40,7 @@ class EventService:
         # Default to enabled if no config exists
         return True
     
-    def evaluate_events_for_session(self, session: RaclottoSession, context: dict) -> List[Event]:
+    def evaluate_events_for_session(self, session: RaclottoSession, context: Dict[str, Any]) -> List[Event]:
         """
         Evaluate all enabled events for a session.
         

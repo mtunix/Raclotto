@@ -29,6 +29,7 @@ class TestUserProfile(AppTest):
         for private in ("email", "password", "meat", "vegetarian", "vegan", "language", "level_id"):
             self.assertNotIn(private, response.json)
         profile = UserProfileDto.model_validate(response.json)
+        assert profile.level is not None and profile.next_level is not None
         self.assertEqual((profile.id, profile.name, profile.color), (self.ana.id, "ana", "#00ff00"))
         self.assertEqual((profile.experience_points, profile.level.id, profile.next_level.id),
                          (120, levels[1].id, levels[2].id))
@@ -93,6 +94,7 @@ class TestUserStats(AppTest):
         self.rate(other, 3)
         self.rate(other, 1, rater=self.ana)
         achievement = db.session.query(Achievement).order_by(Achievement.id).first()
+        assert achievement is not None
         self.ana.achievements = [achievement]
         db.session.commit()
 
@@ -101,6 +103,9 @@ class TestUserStats(AppTest):
         self.assertEqual(stats.total_pans, 4)
         self.assertEqual(stats.total_ratings_given, 1)
         self.assertEqual(stats.average_rating_received, round((5 + 2 + 3 + 1) / 4, 2))
+        assert stats.favorite_ingredient is not None and stats.best_rated_ingredient is not None
+        assert stats.most_pans_session is not None and stats.most_ingredients_pan is not None
+        assert stats.most_ingredients_pan.author is not None
         self.assertEqual(stats.favorite_ingredient.id, self.potato.id)
         self.assertEqual(stats.favorite_ingredient.name, "Potato")
         self.assertEqual((stats.best_rated_ingredient.ingredient.id, stats.best_rated_ingredient.avg_rating),

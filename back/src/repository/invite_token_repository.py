@@ -7,7 +7,7 @@ from back.src.driver.database import db
 class InviteTokenRepository(BaseRepository[InviteToken]):
     """Repository for InviteToken entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(InviteToken)
     
     def by_token(self, token: str) -> Optional[InviteToken]:

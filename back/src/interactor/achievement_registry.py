@@ -7,12 +7,12 @@ from back.src.interactor.achievement_evaluator import AchievementEvaluator
 class AchievementRegistry:
     """Registry for mapping achievements to their evaluators."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._evaluators: Dict[str, AchievementEvaluator] = {}
 
     def register_evaluator(
         self, achievement_title: str, evaluator: AchievementEvaluator
-    ):
+    ) -> None:
         """
         Register an evaluator for an achievement.
 
@@ -45,7 +45,7 @@ def get_registry() -> AchievementRegistry:
     return _registry
 
 
-def initialize_registry():
+def initialize_registry() -> None:
     """
     Initialize the registry with evaluators for achievements.
     This should be called after achievements are loaded from the database.
@@ -141,5 +141,5 @@ def initialize_registry():
     # Register placeholder evaluator for each achievement that doesn't have one
     placeholder = PlaceholderEvaluator()
     for achievement in achievements:
-        if not _registry.has_evaluator(achievement):
+        if achievement.title is not None and not _registry.has_evaluator(achievement):
             _registry.register_evaluator(achievement.title, placeholder)

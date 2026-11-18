@@ -9,7 +9,7 @@ from back.src.repository.insult_repository import InsultRepository
 class InsultApi(BaseApi):
     url_prefix = "/insults"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.repository = InsultRepository()
 

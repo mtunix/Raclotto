@@ -1,17 +1,21 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship, declared_attr
+from typing import TYPE_CHECKING
+
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, declared_attr, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from back.src.entity.raclotto_session import RaclottoSession
 
 
-class SessionMixin(object):
+class SessionMixin:
     @declared_attr
-    def session_id(self):
-        return Column(Integer, ForeignKey('session.id'), nullable=False)
+    def session_id(cls) -> Mapped[int]:
+        return mapped_column(ForeignKey("session.id"))
 
     @declared_attr
-    def session(self):
+    def session(cls) -> Mapped["RaclottoSession"]:
         return relationship("RaclottoSession", uselist=False, lazy="selectin")
 
 
 class DomainMixin(SessionMixin):
-    name = Column(String)
-
+    name: Mapped[str | None] = mapped_column()

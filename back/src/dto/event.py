@@ -3,7 +3,7 @@ from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
-from back.src.dto.base import RequestDto, ResponseDto
+from back.src.dto.base import RequestDto, ResponseDto, omittable
 
 # The types the backend evaluates; only these can be configured. Responses carry any stored
 # type, since the old API saved configs for any.
@@ -44,7 +44,7 @@ class SaveEventConfigBody(RequestDto):
 
 class UpdateEventConfigBody(RequestDto):
     # Omitted fields are left unchanged; null is a value only for the frequency.
-    enabled: bool = Field(default=None)
+    enabled: bool = omittable()
     frequency_minutes: int | None = None
 
     @model_validator(mode="after")

@@ -6,13 +6,13 @@ from alembic import context
 from sqlalchemy import create_engine
 
 import back.src.entity  # noqa: F401  registers every model on the metadata
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("connection") is None:
     fileConfig(config.config_file_name)
 
-target_metadata = BaseModel.metadata
+target_metadata = Base.metadata
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 

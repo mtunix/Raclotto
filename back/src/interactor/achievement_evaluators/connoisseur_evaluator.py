@@ -10,6 +10,7 @@ from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
     EvaluationResult,
+    Fact,
     IngredientAdded,
 )
 
@@ -27,11 +28,12 @@ class ConnoisseurEvaluator(AchievementEvaluator):
 
     def judge(
         self,
-        fact: IngredientAdded,
+        fact: Fact,
         subject: User,
         achievement: Achievement,
         context: EvaluationContext,
     ) -> EvaluationResult:
+        assert isinstance(fact, IngredientAdded)  # the only fact in reacts_to
         is_new = self._is_name_new(fact.ingredient)
         return EvaluationResult(unlocked=is_new, progress=1.0 if is_new else 0.0)
 

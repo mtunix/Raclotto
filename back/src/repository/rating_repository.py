@@ -9,7 +9,7 @@ from back.src.driver.database import db
 class RatingRepository(BaseRepository[Rating]):
     """Repository for Rating entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Rating)
     
     def by_session(self, session_key: str) -> List[Rating]:

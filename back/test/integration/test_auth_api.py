@@ -26,7 +26,7 @@ class AuthTest(AppTest):
 
     def stored(self, user_id: int) -> User:
         db.session.expire_all()
-        return db.session.get(User, user_id)
+        return db.session.get_one(User, user_id)
 
     def me_with(self, token: str):
         return self.client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
@@ -79,6 +79,7 @@ class TestMe(AuthTest):
         self.assertEqual((me.id, me.email, me.profile_picture, me.language), (self.ana.id, "ana@example.com", "/pics/ana.png", "de"))
         self.assertEqual((me.meat, me.vegetarian, me.vegan, me.fish), (False, True, True, False))
         self.assertEqual(me.experience_points, 120)
+        assert me.level is not None and me.next_level is not None
         self.assertEqual((me.level.id, me.next_level.id), (self.levels[1].id, self.levels[2].id))
 
     def test_me_requires_a_token(self):
@@ -89,6 +90,7 @@ class TestMe(AuthTest):
 
         me = MeDto.model_validate(self.call("GET", "/auth/me", top).json)
 
+        assert me.level is not None
         self.assertEqual((me.level.id, me.next_level), (self.levels[-1].id, None))
 
     def test_a_user_without_level_is_shown_the_level_their_xp_reaches_without_writing_it(self):
@@ -124,6 +126,7 @@ class TestUpdateMe(AuthTest):
         self.assertEqual(response.status_code, 200, response.json)
         me = MeDto.model_validate(response.json)
         self.assertEqual((me.name, me.color, me.language, me.glow_effect), ("ana b", "#123456", "en", True))
+        assert me.level is not None
         self.assertEqual(me.level.id, self.levels[1].id)
         stored = self.stored(self.ana.id)
         self.assertEqual((stored.name, stored.color, stored.language, stored.glow_effect), ("ana b", "#123456", "en", True))
@@ -226,8 +229,9 @@ class TestRegister(AuthTest):
         ben = self.stored(result.user.id)
         self.assertEqual((ben.name, ben.email, ben.experience_points, ben.level_id), ("ben", "Ben@Example.com", 0, self.levels[0].id))
         self.assertEqual((result.user.name, result.user.profile_picture), ("ben", "/pics/ben.png"))
+        assert result.user.level is not None and result.user.next_level is not None
         self.assertEqual((result.user.level.id, result.user.next_level.id), (self.levels[0].id, self.levels[1].id))
-        self.assertTrue(db.session.get(InviteToken, invite.id).is_used)
+        self.assertTrue(db.session.get_one(InviteToken, invite.id).is_used)
         self.assertEqual(self.me_with(result.token).json["id"], ben.id)
         self.assertEqual(self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw"}).status_code, 200)
 
@@ -245,7 +249,7 @@ class TestRegister(AuthTest):
 
         self.assertEqual(self.error_title(self.register(invite, email="eve@example.com")), "Email mismatch")
         db.session.expire_all()
-        self.assertFalse(db.session.get(InviteToken, invite.id).is_used)
+        self.assertFalse(db.session.get_one(InviteToken, invite.id).is_used)
         self.assertEqual(db.session.query(User).filter_by(name="ben").count(), 0)
 
     def test_name_and_email_must_be_free(self):
@@ -255,7 +259,7 @@ class TestRegister(AuthTest):
         self.assertEqual(self.error_title(self.register(taken_email)), "User already exists")
         self.assertEqual(self.error_title(self.register(free_email, name="ana")), "User already exists")
         db.session.expire_all()
-        self.assertFalse(db.session.get(InviteToken, free_email.id).is_used)
+        self.assertFalse(db.session.get_one(InviteToken, free_email.id).is_used)
 
     def test_register_body_is_validated(self):
         invite = self.make_invite(self.ana, "ben@example.com")

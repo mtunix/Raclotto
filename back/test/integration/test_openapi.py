@@ -1,6 +1,7 @@
 import enum
 import re
 import unittest
+from typing import Any, Dict
 
 from flask import Flask
 
@@ -37,6 +38,8 @@ class CommittedSpecTest(unittest.TestCase):
 
 
 class LevelsSpecTest(unittest.TestCase):
+    spec: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         cls.spec = build_openapi(get_app())
@@ -103,6 +106,9 @@ class LevelsSpecTest(unittest.TestCase):
 
 
 class PansAndRatingsSpecTest(unittest.TestCase):
+    spec: Dict[str, Any]
+    schemas: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         cls.spec = build_openapi(get_app())
@@ -165,6 +171,9 @@ class PansAndRatingsSpecTest(unittest.TestCase):
 
 
 class UsersAndAuthSpecTest(unittest.TestCase):
+    spec: Dict[str, Any]
+    schemas: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         cls.spec = build_openapi(get_app())
@@ -216,6 +225,9 @@ class UsersAndAuthSpecTest(unittest.TestCase):
 
 
 class SessionsAndIngredientsSpecTest(unittest.TestCase):
+    spec: Dict[str, Any]
+    schemas: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         cls.spec = build_openapi(get_app())
@@ -290,6 +302,9 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
 
 
 class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
+    spec: Dict[str, Any]
+    schemas: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         cls.spec = build_openapi(get_app())
@@ -374,6 +389,8 @@ class EveryEndpointTypedTest(unittest.TestCase):
 
 
 class ProbeSpecTest(unittest.TestCase):
+    spec: Dict[str, Any]
+
     @classmethod
     def setUpClass(cls):
         cls.spec = build_openapi(_bare_app(ProbeApi))
@@ -462,7 +479,7 @@ class SpecConsistencyTest(unittest.TestCase):
     def test_dto_names_must_be_unique(self):
         def make_dto(id_type: type):
             class SameNameDto(ResponseDto):
-                id: id_type
+                id: id_type  # type: ignore[valid-type]  # the field type is the parameter on purpose
 
             return SameNameDto
 

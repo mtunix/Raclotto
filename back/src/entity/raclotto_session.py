@@ -1,17 +1,18 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
 
 
-class RaclottoSession(BaseModel):
+class RaclottoSession(Base):
     __tablename__ = "session"
 
-    id = Column(Integer, primary_key=True)
-    key = Column(String, nullable=False, unique=True, default=uuid.uuid4)
-    name = Column(String, nullable=False)
-    timestamp = Column(DateTime, nullable=False, default=datetime.now)
-    active = Column(Boolean, nullable=False, default=True)
-    created_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    key: Mapped[str] = mapped_column(unique=True, default=uuid.uuid4)
+    name: Mapped[str]
+    timestamp: Mapped[datetime] = mapped_column(default=datetime.now)
+    active: Mapped[bool] = mapped_column(default=True)
+    created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"))

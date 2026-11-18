@@ -1,6 +1,7 @@
 import logging
+from io import TextIOWrapper
 from pathlib import Path
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, Tuple, Type
 
 from flask import Config, Flask, Response, jsonify, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
@@ -14,10 +15,10 @@ from back.src.utils import str_code_from_enum
 class _LazyFileHandler(logging.FileHandler):
     """Creates the file, and its folder, only when the first record is written."""
 
-    def __init__(self, filename: Path):
+    def __init__(self, filename: Path) -> None:
         super().__init__(filename, delay=True)
 
-    def _open(self):
+    def _open(self) -> TextIOWrapper:
         Path(self.baseFilename).parent.mkdir(parents=True, exist_ok=True)
         return super()._open()
 
@@ -29,7 +30,7 @@ class App(Flask):
         db: SQLAlchemy,
         config: Type[Config],
         apis: Optional[List[Type[BaseApi]]] = None,
-    ):
+    ) -> None:
         super().__init__(name, static_folder="static", static_url_path="")
         self.apis = apis_custom if apis is None else apis
         self.db = db
@@ -65,13 +66,14 @@ class App(Flask):
         self.register_error_handler(ApiError, self.invalid_api_usage)
         self.register_error_handler(404, self.page_not_found)
 
-    def serve(self, path):
+    def serve(self, path: str) -> Response:
+        assert self.static_folder is not None  # set in __init__
         if path != "" and Path(f"{self.static_folder}/{path}").exists():
             return send_from_directory(self.static_folder, path)
         else:
             return send_from_directory(self.static_folder, "index.html")
 
-    def log_on_error(self, response: Response):
+    def log_on_error(self, response: Response) -> Response:
         if 400 <= response.status_code < 500:
             if response.json:
                 self.logger.info(response.json)
@@ -81,11 +83,11 @@ class App(Flask):
             self.logger.error(response.json)
         return response
 
-    def init_mikado_api(self):
+    def init_mikado_api(self) -> None:
         api_rules = init_api_rules(self.apis, self.db.session)
         self.register_blueprint(api_rules)
 
-    def init_admin_user(self):
+    def init_admin_user(self) -> None:
         """Create the admin user from ADMIN_PASSWORD if there is none; an existing admin is left alone."""
         from back.src.auth.password import hash_password
         from back.src.entity.user import User
@@ -120,7 +122,7 @@ class App(Flask):
         self.db.session.commit()
         logging.info("Admin user created successfully")
 
-    def init_preparation_types(self):
+    def init_preparation_types(self) -> None:
         """Initialize default preparation types if they don't exist."""
         from back.src.entity.preparation_type import PreparationType
         from back.src.repository.preparation_type_repository import (
@@ -143,7 +145,7 @@ class App(Flask):
                 f"Default preparation type '{default_name}' created successfully"
             )
 
-    def init_achievements(self):
+    def init_achievements(self) -> None:
         """Initialize achievements from default_data if they don't exist."""
         from back.src.entity.achievement import Achievement
         from back.src.model.default_data import ACHIEVEMENTS
@@ -192,7 +194,7 @@ class App(Flask):
                     self.db.session.commit()
                     logging.info(f"Updated achievement: {achievement_data.title}")
 
-    def init_levels(self):
+    def init_levels(self) -> None:
         """Initialize levels from default_data if they don't exist."""
         from back.src.entity.level import Level
         from back.src.model.default_data import LEVELS
@@ -238,7 +240,7 @@ class App(Flask):
                     self.db.session.commit()
                     logging.info(f"Updated level: {level_data.name}")
 
-    def init_logging(self):
+    def init_logging(self) -> None:
         log_file = self.config.get("LOG_FILE")
         if log_file:
             log_format_str = "%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s"
@@ -252,7 +254,7 @@ class App(Flask):
         self.after_request(self.log_on_error)
 
     @staticmethod
-    def page_not_found(_):
+    def page_not_found(_: object) -> Tuple[Response, int]:
         code = ApiErrorCode.endpoint_not_found
         error = ApiError(
             code,
@@ -262,5 +264,5 @@ class App(Flask):
         )
         return jsonify(serialize_error(error)), 404
 
-    def invalid_api_usage(self, e):
+    def invalid_api_usage(self, e: ApiError) -> Tuple[Response, int]:
         return jsonify(serialize_error(e)), e.status

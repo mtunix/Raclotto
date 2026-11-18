@@ -4,8 +4,10 @@ from back.src.entity.user import User
 from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
+    Audience,
     EvaluationContext,
     EvaluationResult,
+    Fact,
     PanRated,
 )
 
@@ -25,7 +27,7 @@ class SurvivalOfTheFittestEvaluator(AchievementEvaluator):
     
     reacts_to = (PanRated,)
 
-    def audience(self, fact) -> str:
+    def audience(self, fact: Fact) -> Audience:
         return "pan_owner"
 
     def _get_unique_rating_users(self, pan: Pan) -> Set[int]:

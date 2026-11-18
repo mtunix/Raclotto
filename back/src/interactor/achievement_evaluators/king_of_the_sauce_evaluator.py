@@ -5,9 +5,11 @@ from back.src.entity.ingredient import IngredientType
 from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
+    Audience,
     CatalogChanged,
     EvaluationContext,
     EvaluationResult,
+    Fact,
     IngredientAdded,
     PanRolled,
 )
@@ -27,16 +29,16 @@ class KingOfTheSauceEvaluator(AchievementEvaluator):
     reacts_to = (PanRolled, IngredientAdded, CatalogChanged)
     revocable = True
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ingredient_repository = IngredientRepository()
         self.pan_repository = PanRepository()
 
-    def audience(self, fact) -> str:
+    def audience(self, fact: Fact) -> Audience:
         return "actor" if isinstance(fact, PanRolled) else "session_members"
 
     def judge(
         self,
-        fact,
+        fact: Fact,
         subject: User,
         achievement: Achievement,
         context: EvaluationContext,

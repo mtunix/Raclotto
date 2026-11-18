@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.preparation_type import PreparationType
 from back.src.driver.database import db
@@ -7,10 +7,10 @@ from back.src.driver.database import db
 class PreparationTypeRepository(BaseRepository[PreparationType]):
     """Repository for PreparationType entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(PreparationType)
     
-    def by_session(self, session_id: int):
+    def by_session(self, session_id: int) -> List[PreparationType]:
         """
         Get preparation types for a session (including defaults where session_id is null).
         
@@ -21,7 +21,7 @@ class PreparationTypeRepository(BaseRepository[PreparationType]):
             (PreparationType.session_id == session_id) | (PreparationType.session_id == None)
         ).all()
     
-    def defaults(self):
+    def defaults(self) -> List[PreparationType]:
         """
         Get default/system-wide preparation types (where session_id is null).
         
@@ -31,7 +31,7 @@ class PreparationTypeRepository(BaseRepository[PreparationType]):
             PreparationType.session_id == None
         ).all()
     
-    def default_types(self):
+    def default_types(self) -> List[PreparationType]:
         """
         Alias for defaults() method for backward compatibility.
         

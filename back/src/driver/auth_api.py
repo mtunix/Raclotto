@@ -21,7 +21,7 @@ from back.src.repository.user_repository import UserRepository
 
 
 def _token(user: User) -> str:
-    return generate_token(user.id, current_app.config.get("JWT_SECRET_KEY"))
+    return generate_token(user.id, current_app.config["JWT_SECRET_KEY"])
 
 
 def _me(user: User) -> MeDto:
@@ -31,7 +31,7 @@ def _me(user: User) -> MeDto:
 class AuthApi(BaseApi):
     url_prefix = "/auth"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.user_repository = UserRepository()
         self.invite_token_repository = InviteTokenRepository()
@@ -160,7 +160,7 @@ class AuthApi(BaseApi):
 class InviteApi(BaseApi):
     url_prefix = "/invites"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.invite_token_repository = InviteTokenRepository()
 

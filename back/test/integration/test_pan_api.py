@@ -31,7 +31,7 @@ class TestPanApi(AppTest):
     def alone(user_id: int) -> User:
         """The user, loaded into an emptied session so a request loads everything else itself."""
         db.session.expunge_all()
-        return db.session.get(User, user_id)
+        return db.session.get_one(User, user_id)
 
     @contextmanager
     def count_selects(self) -> Iterator[List[str]]:
@@ -84,6 +84,7 @@ class TestPanApi(AppTest):
 
         [pan] = self.page(session_key="s1").items
 
+        assert pan.author is not None
         self.assertEqual(pan.author.model_dump(), {
             "id": self.ana.id,
             "name": "ana",
@@ -104,6 +105,7 @@ class TestPanApi(AppTest):
 
         [pan] = self.page(session_key="s2").items
 
+        assert pan.author is not None
         self.assertEqual(
             (pan.author.color, pan.author.border_style, pan.author.border_texture, pan.author.glow_effect),
             ("#1890ff", "solid", None, False),
@@ -136,7 +138,7 @@ class TestPanApi(AppTest):
             page = self.page(ana, session_key="s1")
 
         self.assertEqual(len(page.items), 6)
-        self.assertEqual({p.author.name for p in page.items}, {"ana", "ben", "carl"})
+        self.assertEqual({p.author.name if p.author else None for p in page.items}, {"ana", "ben", "carl"})
         self.assertEqual(len(six_pans), len(one_pan), "\n".join(six_pans))
 
     def test_list_query_is_validated(self):
@@ -168,6 +170,7 @@ class TestPanApi(AppTest):
         self.assertEqual(dto.rating, 3.5)
         self.assertEqual(sorted(r.rating for r in dto.ratings), [3, 4])
         self.assertEqual([i.name for i in dto.ingredients], ["Potato"])
+        assert dto.author is not None
         self.assertEqual(dto.author.name, "ana")
         self.assertEqual(response.json["timestamp"], pan.timestamp.isoformat())
 
@@ -191,7 +194,7 @@ class TestPanApi(AppTest):
         self.assertEqual((renamed.json["name"], renamed.json["snacked"]), ("Lunch", True))
         self.assertEqual(renamed.json["author"]["name"], "ana")
         db.session.expire_all()
-        stored = db.session.get(Pan, pan.id)
+        stored = db.session.get_one(Pan, pan.id)
         self.assertEqual((stored.name, stored.snacked), ("Lunch", True))
 
     def test_patch_rejects_fields_it_does_not_own(self):
@@ -211,7 +214,7 @@ class TestPanApi(AppTest):
                 self.assertEqual([e["source"]["pointer"] for e in response.json["errors"]], [pointer])
 
         db.session.expire_all()
-        stored = db.session.get(Pan, pan.id)
+        stored = db.session.get_one(Pan, pan.id)
         self.assertEqual((stored.user_id, stored.session_id, stored.snacked, stored.name),
                          (self.ana.id, self.s1.id, False, "pan"))
 

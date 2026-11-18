@@ -1,22 +1,21 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
 
-from back.src.driver.database import BaseModel
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from back.src.driver.database import Base
+
+if TYPE_CHECKING:
+    from back.src.entity.raclotto_session import RaclottoSession
 
 
-class EventConfig(BaseModel):
+class EventConfig(Base):
     __tablename__ = "event_config"
 
-    id = Column(Integer, primary_key=True)
-    event_type = Column(String, nullable=False)
-    session_id = Column(Integer, ForeignKey("session.id"), nullable=True)  # NULL for global defaults
-    enabled = Column(Boolean, nullable=False, default=True)
-    frequency_minutes = Column(Integer, nullable=True)  # Optional frequency configuration
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_type: Mapped[str]
+    session_id: Mapped[int | None] = mapped_column(ForeignKey("session.id"))  # NULL for global defaults
+    enabled: Mapped[bool] = mapped_column(default=True)
+    frequency_minutes: Mapped[int | None]  # Optional frequency configuration
 
-    session = relationship("RaclottoSession", lazy="selectin")
-
-
-
-
-
-
+    session: Mapped["RaclottoSession | None"] = relationship("RaclottoSession", lazy="selectin")

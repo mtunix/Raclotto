@@ -43,7 +43,9 @@ class StatsApiTest(AppTest):
         self.assertEqual([p.id for p in stats.pans], [self.new.id, self.old.id])
         db.session.refresh(self.new)
         self.assertEqual(stats.pans[0], PanDto.of(self.new, self.ben))
-        self.assertEqual((stats.pans[1].author.name, stats.pans[1].author.color), ("ana", "#ff8800"))
+        author = stats.pans[1].author
+        assert author is not None
+        self.assertEqual((author.name, author.color), ("ana", "#ff8800"))
         self.assertEqual(
             [(r.ingredient.name, r.avg_rating) for r in stats.ingredients_top_rated],
             [("Aioli", 5.0), ("Potato", 3.5), ("Leek", 2.0)],

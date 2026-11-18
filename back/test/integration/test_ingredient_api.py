@@ -49,7 +49,7 @@ class IngredientApiTest(AppTest):
 
     def stored(self, ingredient_id: int) -> Ingredient:
         db.session.expire_all()
-        return db.session.get(Ingredient, ingredient_id)
+        return db.session.get_one(Ingredient, ingredient_id)
 
     def in_session(self, session) -> list:
         db.session.expire_all()

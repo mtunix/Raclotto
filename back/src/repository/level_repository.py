@@ -7,7 +7,7 @@ from back.src.driver.database import db
 class LevelRepository(BaseRepository[Level]):
     """Repository for Level entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Level)
     
     def by_experience(self, experience_points: int) -> Optional[Level]:

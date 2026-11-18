@@ -18,7 +18,7 @@ _LIMIT = 10
 class StatsApi(BaseApi):
     url_prefix = "/stats"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.pan_repository = PanRepository()
         self.ingredient_repository = IngredientRepository()

@@ -1,4 +1,6 @@
 from functools import wraps
+from typing import Callable, ParamSpec, TypeVar
+
 from flask import request, g
 from back.src.auth.jwt import decode_token
 from back.src.api.base_api import AUTH_GUARD, ApiError, ApiErrorCode
@@ -6,10 +8,14 @@ from back.src.entity.user import User
 from back.src.repository.user_repository import UserRepository
 from back.src.driver.database import db
 
+P = ParamSpec("P")
+R = TypeVar("R")
 
-def get_current_user():
-    """Get the current authenticated user from the request context."""
-    return getattr(g, 'current_user', None)
+
+def get_current_user() -> User:
+    """Get the current authenticated user from the request context; only behind `@require_auth`."""
+    user: User = g.current_user
+    return user
 
 
 def authenticate() -> User:
@@ -81,10 +87,10 @@ def authenticate() -> User:
     return user
 
 
-def require_auth(func):
+def require_auth(func: Callable[P, R]) -> Callable[P, R]:
     """Decorator to require authentication for an endpoint."""
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         authenticate()
         return func(*args, **kwargs)
 

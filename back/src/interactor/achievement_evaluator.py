@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Tuple, Type
+from typing import List, Literal, Optional, Tuple
 
 from back.src.entity.achievement import Achievement
 from back.src.entity.ingredient import Ingredient
@@ -98,7 +98,7 @@ class AchievementEvaluator(ABC):
     named by the fact; evaluators for other facts override ``judge``.
     """
 
-    reacts_to: Tuple[Type, ...] = (PanRolled,)
+    reacts_to: Tuple[type[Fact], ...] = (PanRolled,)
     revocable: bool = False
 
     def audience(self, fact: Fact) -> Audience:
@@ -111,6 +111,10 @@ class AchievementEvaluator(ABC):
         achievement: Achievement,
         context: EvaluationContext,
     ) -> EvaluationResult:
+        if not isinstance(fact, (PanRolled, PanRated)):
+            raise NotImplementedError(
+                f"{type(self).__name__} reacts to {type(fact).__name__}, so it must implement judge()"
+            )
         return self.evaluate(fact.pan, subject, context)
 
     def evaluate(

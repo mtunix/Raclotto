@@ -23,9 +23,12 @@ jobs:
         with:
           python-version-file: .python-version
           cache: pip
-          cache-dependency-path: requirements.txt
-      - run: python -m venv venv && venv/bin/pip install -r requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: python -m venv venv && venv/bin/pip install -r requirements-dev.txt
       - run: venv/bin/python -m unittest discover -s back/test -t .
+      - run: venv/bin/mypy
 
   frontend:
     name: Frontend types, tests and build

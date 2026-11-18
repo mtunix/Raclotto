@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict
+from typing import Any, Optional, Dict
 from flask import current_app
 
 
@@ -15,7 +15,7 @@ def generate_token(user_id: int, secret_key: str, expiration_days: int = 7) -> s
     return jwt.encode(payload, secret_key, algorithm='HS256')
 
 
-def decode_token(token: str, secret_key: str) -> Optional[Dict]:
+def decode_token(token: str, secret_key: str) -> Optional[Dict[str, Any]]:
     """Decode a JWT token and return the payload."""
     try:
         payload = jwt.decode(token, secret_key, algorithms=['HS256'])

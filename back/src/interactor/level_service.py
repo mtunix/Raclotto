@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import Optional
 
 from back.src.driver.database import db
 from back.src.entity.level import Level
@@ -23,7 +23,7 @@ class LevelProgress:
 class LevelService:
     """Service for managing user levels and experience points."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.level_repository = LevelRepository()
         self.user_repository = UserRepository()
 
@@ -57,12 +57,10 @@ class LevelService:
         :param user: User instance
         :return: New level if changed, None otherwise
         """
-        # Cast experience_points to int in case it's a SQLAlchemy Column
-        xp = cast(int, user.experience_points)
-        new_level = self.calculate_level_from_xp(xp)
+        new_level = self.calculate_level_from_xp(user.experience_points)
 
         if new_level:
-            old_level_id = cast(Optional[int], user.level_id)
+            old_level_id = user.level_id
             user.level_id = new_level.id
 
             # Check if user leveled up
@@ -142,9 +140,8 @@ class LevelService:
         # Calculate final XP (rounded to integer)
         total_xp = int(base_total * multiplier)
 
-        # Award XP (cast to int to handle SQLAlchemy Column type)
-        current_xp = int(user.experience_points)  # type: ignore
-        user.experience_points = current_xp + total_xp  # type: ignore
+        current_xp = int(user.experience_points)
+        user.experience_points = current_xp + total_xp
 
         # Update user's level
         self.update_user_level(user)

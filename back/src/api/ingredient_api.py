@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
@@ -26,20 +28,20 @@ from back.src.repository.session_repository import SessionRepository
 _NOT_IMPORTED = {"id", "session_id"}
 
 
-def _dtos(ingredients) -> list[IngredientDto]:
+def _dtos(ingredients: Iterable[Ingredient]) -> list[IngredientDto]:
     return [IngredientDto.model_validate(ingredient) for ingredient in ingredients]
 
 
 class IngredientApi(BaseApi):
     url_prefix = "/ingredients"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.repository = IngredientRepository()
         self.session_repository = SessionRepository()
 
     @staticmethod
-    def _catalog_changed(session) -> None:
+    def _catalog_changed(session: RaclottoSession) -> None:
         """Let achievements react to a change in the session's catalog, then commit."""
         Achievements().record(CatalogChanged(session=session, actor=get_current_user()))
         db.session.commit()
@@ -152,7 +154,7 @@ class IngredientApi(BaseApi):
         diet = Diet.of(get_current_user())
         allowed = [i for i in available if diet.allows(i)]
 
-        def count(ingredients, kind: IngredientType) -> int:
+        def count(ingredients: list[Ingredient], kind: IngredientType) -> int:
             return sum(1 for i in ingredients if i.type == kind)
 
         return AvailableCountsDto(

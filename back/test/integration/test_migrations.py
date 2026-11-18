@@ -15,7 +15,9 @@ from back.src.driver.migrations import SCRIPT_LOCATION, SchemaDriftError, migrat
 def _head() -> str:
     config = AlembicConfig()
     config.set_main_option("script_location", str(SCRIPT_LOCATION))
-    return ScriptDirectory.from_config(config).get_current_head()
+    head = ScriptDirectory.from_config(config).get_current_head()
+    assert head is not None
+    return head
 
 
 class MigrateTest(unittest.TestCase):

@@ -12,7 +12,7 @@ from back.src.repository.session_repository import SessionRepository
 class EventApi(BaseApi):
     url_prefix = "/events"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.event_service = EventService()
         self.session_repository = SessionRepository()

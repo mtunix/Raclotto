@@ -5,8 +5,10 @@ from back.src.entity.pan import Pan
 from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
+    Audience,
     EvaluationContext,
     EvaluationResult,
+    Fact,
     SessionClosed,
 )
 
@@ -21,12 +23,12 @@ class LastPanStandingEvaluator(AchievementEvaluator):
 
     reacts_to = (SessionClosed,)
 
-    def audience(self, fact) -> str:
+    def audience(self, fact: Fact) -> Audience:
         return "last_pan_owner"
 
     def judge(
         self,
-        fact: SessionClosed,
+        fact: Fact,
         subject: User,
         achievement: Achievement,
         context: EvaluationContext,

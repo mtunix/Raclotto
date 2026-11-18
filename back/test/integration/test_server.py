@@ -46,7 +46,7 @@ class ServerTest(unittest.TestCase):
     def build(self, create: Callable[[Dict[str, str]], App] = main.create_app, **environ: str) -> App:
         app = create({**self.environ, **environ})
         # App() leaves its startup context pushed; later tests must not run inside it.
-        app_ctx._get_current_object().pop()
+        app_ctx.pop()
         self.addCleanup(self.dispose, app)
         return app
 
@@ -102,10 +102,12 @@ class TestJwtSecret(ServerTest):
         app = self.build(RACLOTTO_ADMIN_PASSWORD="first-boot")
 
         token = self.login(app, "first-boot").json["token"]
+        admin = self.admin(app)
+        assert admin is not None
 
-        self.assertEqual((decode_token(token, SECRET) or {}).get("user_id"), self.admin(app).id)
+        self.assertEqual((decode_token(token, SECRET) or {}).get("user_id"), admin.id)
         self.assertEqual(self.me(app, token).status_code, 200)
-        forged = generate_token(self.admin(app).id, DEV_JWT_SECRET)
+        forged = generate_token(admin.id, DEV_JWT_SECRET)
         self.assertEqual(self.me(app, forged).status_code, 401)
 
 
@@ -206,7 +208,9 @@ class TestAdminBootstrap(ServerTest):
         app = self.build(RACLOTTO_ADMIN_PASSWORD="first-boot")
 
         self.assertEqual(self.login(app, "first-boot").status_code, 200)
-        self.assertEqual(self.admin(app).email, "admin@raclotto.local")
+        admin = self.admin(app)
+        assert admin is not None
+        self.assertEqual(admin.email, "admin@raclotto.local")
 
     def test_without_a_password_no_admin_is_created(self):
         with self.assertLogs(level="WARNING") as logs:

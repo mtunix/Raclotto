@@ -1,11 +1,10 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
 
 
-class Insult(BaseModel):
+class Insult(Base):
     __tablename__ = "insult"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str | None]

@@ -7,6 +7,7 @@ from back.src.dto.user import UserSummaryDto
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.pan import Pan
 from back.src.entity.user import user_sessions
+from back.src.interactor.achievements import Achievements
 from back.src.interactor.pan_roll import (
     PanRoll,
     RollError,
@@ -68,6 +69,7 @@ class TestPanRoll(AppTest):
         self.assertGreater(outcome.reward.xp_gained, 0)
         self.assertEqual(outcome.reward.xp_before, 0)
         self.assertEqual(outcome.reward.xp_after, self.user.experience_points)
+        assert outcome.reward.level is not None
         self.assertEqual(outcome.reward.level.id, self.user.level_id)
         self.assertFalse(outcome.reward.leveled_up)
 
@@ -76,9 +78,11 @@ class TestPanRoll(AppTest):
         outcome = self.roll.roll(user, "s1", RollOptions(num_fill=2, num_sauce=1))
 
         self.assertTrue(outcome.reward.leveled_up)
-        self.assertEqual(outcome.reward.previous_level.required_experience, 0)
-        self.assertEqual(outcome.reward.level.required_experience, 100)
-        self.assertEqual(outcome.reward.next_level.required_experience, 250)
+        reward = outcome.reward
+        assert reward.previous_level is not None and reward.level is not None and reward.next_level is not None
+        self.assertEqual(reward.previous_level.required_experience, 0)
+        self.assertEqual(reward.level.required_experience, 100)
+        self.assertEqual(reward.next_level.required_experience, 250)
 
     def test_a_user_without_a_stored_level_starts_from_the_level_their_xp_reaches(self):
         crossing = self.make_user("ben", experience_points=95, meat=True)
@@ -91,6 +95,8 @@ class TestPanRoll(AppTest):
         stayed = self.roll.roll(staying, "s1", RollOptions(num_fill=1, num_sauce=0))
 
         self.assertTrue(crossed.reward.leveled_up)
+        assert crossed.reward.previous_level is not None and crossed.reward.level is not None
+        assert stayed.reward.previous_level is not None and stayed.reward.level is not None
         self.assertEqual(crossed.reward.previous_level.required_experience, 0)
         self.assertEqual(crossed.reward.level.required_experience, 100)
         self.assertFalse(stayed.reward.leveled_up)
@@ -136,7 +142,7 @@ class TestPanRoll(AppTest):
         self.assertEqual(raised.exception.kind, RollError.SESSION_NOT_FOUND)
 
     def test_failure_after_the_pan_is_built_leaves_nothing_behind(self):
-        class Exploding:
+        class Exploding(Achievements):
             def record(self, fact):
                 raise RuntimeError("boom")
 
@@ -203,6 +209,7 @@ class TestRollRoutes(AppTest):
         ).pan
 
         self.assertTrue(pan.rolled_preparation_type)
+        assert pan.preparation_type is not None
         self.assertEqual(pan.preparation_type.id, pan.preparation_type_id)
         self.assertTrue(pan.rolled_cheese)
         self.assertIn(pan.cheese_level, range(10))
@@ -223,6 +230,7 @@ class TestRollRoutes(AppTest):
 
         [event] = outcome.events
         self.assertEqual(event.event_type, "pan_swap")
+        assert event.data is not None
         self.assertEqual(event.data["pan2_user_name"], "ana")
         self.assertEqual(event.data["pan1_id"], outcome.pan.id)
 

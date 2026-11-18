@@ -24,7 +24,7 @@ class PandlerEvaluator(AchievementEvaluator):
     REQUIRED_SESSIONS_COUNT = 2
     TIME_WINDOW_HOURS = 24
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.pan_repository = PanRepository()
     
     def _get_user_pans_by_session(self, user: User) -> List[Tuple[int, datetime]]:

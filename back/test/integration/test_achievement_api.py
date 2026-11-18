@@ -12,7 +12,9 @@ class TestAchievementApi(AppTest):
         super().setUp()
         self.user = self.make_user("testuser")
         self.session = self.make_session("test-session-key", creator=self.user)
-        self.local_guide = AchievementRepository().by_title("Local Guide")
+        local_guide = AchievementRepository().by_title("Local Guide")
+        assert local_guide is not None
+        self.local_guide = local_guide
 
     def rate_distinct_pans(self, count: int):
         owner = self.make_user("owner")
@@ -30,7 +32,12 @@ class TestAchievementApi(AppTest):
     def local_guide_status(self) -> AchievementStatusDto:
         return next(a for a in self.statuses() if a.title == "Local Guide")
 
-    def unlock(self, user, *titles: str):
+    def local_guide_progress(self) -> float:
+        progress = self.local_guide_status().progress
+        assert progress is not None
+        return progress
+
+    def unlock(self, user, *titles: str | None):
         repository = AchievementRepository()
         user.achievements.extend(repository.by_title(title) for title in titles)
         db.session.commit()
@@ -63,7 +70,7 @@ class TestAchievementApi(AppTest):
 
     def test_progress_after_three_ratings(self):
         self.rate_distinct_pans(3)
-        self.assertAlmostEqual(self.local_guide_status().progress, 0.3, places=2)
+        self.assertAlmostEqual(self.local_guide_progress(), 0.3, places=2)
 
     def test_rerating_the_same_pan_counts_once(self):
         owner = self.make_user("owner")
@@ -71,12 +78,13 @@ class TestAchievementApi(AppTest):
         for stars in (3, 4, 5):
             response = self.call("POST", "/ratings", self.user, body={"rating": stars, "pan_id": pan.id})
             self.assertEqual(response.status_code, 200, response.json)
-        self.assertAlmostEqual(self.local_guide_status().progress, 0.1, places=2)
+        self.assertAlmostEqual(self.local_guide_progress(), 0.1, places=2)
 
     def test_unlocked_after_ten_ratings(self):
         self.rate_distinct_pans(10)
         status = self.local_guide_status()
         self.assertTrue(status.unlocked)
+        assert status.progress is not None
         self.assertAlmostEqual(status.progress, 1.0, places=2)
 
     def test_unlocked_is_per_user(self):
@@ -96,7 +104,8 @@ class TestAchievementApi(AppTest):
         self.assertEqual(self.call("GET", "/achievements/9999", self.user).status_code, 404)
 
     def test_leaderboard_ranks_by_points_then_name(self):
-        a, b = [x for x in AchievementRepository().all() if x.value > 0][:2]
+        a, b = [x for x in AchievementRepository().all() if (x.value or 0) > 0][:2]
+        assert a.value is not None and b.value is not None
         zoe, bea, adam = self.make_user("zoe"), self.make_user("bea"), self.make_user("adam")
         self.unlock(zoe, a.title, b.title)
         self.unlock(bea, a.title)

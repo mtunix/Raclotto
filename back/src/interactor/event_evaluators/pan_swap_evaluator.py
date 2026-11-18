@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 from datetime import datetime, timedelta
 from back.src.entity.event import Event
 from back.src.entity.raclotto_session import RaclottoSession
@@ -17,7 +17,7 @@ class PanSwapEvaluator(EventEvaluator):
     Can only occur once per hour.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.pan_repository = PanRepository()
         self.user_repository = UserRepository()
         self.event_repository = EventRepository()
@@ -30,7 +30,7 @@ class PanSwapEvaluator(EventEvaluator):
     def evaluate(
         self,
         session: RaclottoSession,
-        context: dict
+        context: Dict[str, Any]
     ) -> Optional[Event]:
         """
         Check if a pan swap event should be triggered.

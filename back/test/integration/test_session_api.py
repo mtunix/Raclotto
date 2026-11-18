@@ -19,7 +19,7 @@ class SessionApiTest(AppTest):
 
     def stored(self, session_id: int) -> RaclottoSession:
         db.session.expire_all()
-        return db.session.get(RaclottoSession, session_id)
+        return db.session.get_one(RaclottoSession, session_id)
 
     def closed(self, key: str) -> RaclottoSession:
         session = self.make_session(key, creator=self.ana)
@@ -109,7 +109,8 @@ class TestChangeSession(SessionApiTest):
         response = self.call("DELETE", f"/sessions/{session.id}", self.ana)
 
         self.assertEqual((response.status_code, response.get_data()), (204, b""))
-        self.assertIsNone(self.stored(session.id))
+        db.session.expire_all()
+        self.assertIsNone(db.session.get(RaclottoSession, session.id))
         self.assertEqual(self.call("DELETE", f"/sessions/{session.id}", self.ana).status_code, 404)
 
     def test_close_judges_the_achievements_waiting_for_the_end(self):

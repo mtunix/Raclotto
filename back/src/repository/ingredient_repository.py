@@ -1,5 +1,5 @@
-from typing import List, Optional
-from sqlalchemy import or_, not_
+from typing import Any, Dict, List, Optional
+from sqlalchemy import Row, or_, not_
 from sqlalchemy.exc import NoResultFound
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.ingredient import Ingredient, IngredientType
@@ -11,7 +11,7 @@ from back.src.driver.database import db
 class IngredientRepository(BaseRepository[Ingredient]):
     """Repository for Ingredient entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Ingredient)
     
     def by_session(self, session_key: str) -> List[Ingredient]:
@@ -120,7 +120,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         
         return query.all()
     
-    def get_top_rated(self, session_id: Optional[int] = None, limit: int = 10) -> List[tuple]:
+    def get_top_rated(self, session_id: Optional[int] = None, limit: int = 10) -> List[Row[Ingredient, float]]:
         """
         Get top-rated ingredients by average rating.
         
@@ -146,11 +146,12 @@ class IngredientRepository(BaseRepository[Ingredient]):
         if session_id:
             query = query.filter(Ingredient.session_id == session_id)
         
-        return query.group_by(Ingredient.id).order_by(
+        rows: List[Row[Ingredient, float]] = query.group_by(Ingredient.id).order_by(
             func.avg(Rating.rating).desc()
         ).limit(limit).all()
+        return rows
     
-    def get_most_used(self, session_id: Optional[int] = None, limit: int = 10) -> List[tuple]:
+    def get_most_used(self, session_id: Optional[int] = None, limit: int = 10) -> List[Row[Ingredient, int]]:
         """
         Get most-used ingredients by pan count.
         
@@ -177,7 +178,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
             func.count(Pan.id).desc()
         ).limit(limit).all()
     
-    def bulk_create(self, ingredients_data: List[dict], session_id: int) -> List[Ingredient]:
+    def bulk_create(self, ingredients_data: List[Dict[str, Any]], session_id: int) -> List[Ingredient]:
         """
         Create multiple ingredients in bulk.
         
@@ -208,7 +209,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         db.session.flush()
         return created_ingredients
     
-    def bulk_update(self, ingredients_data: List[dict]) -> List[Ingredient]:
+    def bulk_update(self, ingredients_data: List[Dict[str, Any]]) -> List[Ingredient]:
         """
         Update multiple ingredients in bulk.
         

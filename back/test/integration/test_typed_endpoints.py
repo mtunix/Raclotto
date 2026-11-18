@@ -1,4 +1,5 @@
 import unittest
+from typing import Any, Dict
 
 from pydantic import BaseModel, TypeAdapter
 
@@ -156,9 +157,10 @@ class TypedEndpointDeclarationTest(unittest.TestCase):
             (["GET"], {"response": list[dict]}),
         ):
             with self.subTest(methods=methods, **{k: repr(v) for k, v in kwargs.items()}):
-                args = {"query": None, "body": None, "response": None, "status": 200, "operation_id": None}
+                args: Dict[str, Any] = {"query": None, "body": None, "response": None, "status": 200,
+                                        "operation_id": None, **kwargs}
                 with self.assertRaises((ValueError, TypeError)):
-                    TypedEndpoint.declare(methods, **{**args, **kwargs})
+                    TypedEndpoint.declare(methods, **args)
 
     def test_rejects_an_endpoint_without_a_response(self):
         with self.assertRaises(ValueError):

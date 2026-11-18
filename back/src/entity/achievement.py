@@ -1,20 +1,19 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import Mapped, mapped_column
 
-from back.src.driver.database import BaseModel
+from back.src.driver.database import Base
 
 
-class Achievement(BaseModel):
+class Achievement(Base):
     __tablename__ = "achievement"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    description = Column(String)
-    value = Column(Integer)
-    hidden = Column(Boolean)
-    is_global = Column(Boolean, nullable=False, default=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str | None]
+    description: Mapped[str | None]
+    value: Mapped[int | None]
+    hidden: Mapped[bool | None]
+    is_global: Mapped[bool] = mapped_column(default=True)
     """
     Flag to indicate if achievement is global or session-specific.
     - True: Achievement is global (evaluated across all sessions)
     - False: Achievement is session-specific (evaluated within a single session)
     """
-

@@ -91,11 +91,13 @@ Pan roll module, Achievement facts, Read-only achievement list, App test harness
 ## Commands
 
 Run from the repo root unless noted. The venv is `venv/`; it has drifted from
-`requirements.txt` before — rebuild it (`pip install -r requirements.txt`) if imports fail.
+`requirements.txt` before — rebuild it (`pip install -r requirements-dev.txt`: the runtime
+requirements plus mypy and stubs) if imports fail. Dev-only tools go in `requirements-dev.txt`.
 
 ```bash
 venv/bin/python -m unittest discover -s back/test -t .     # whole backend suite
 venv/bin/python -m unittest back.test.integration.test_pan_roll   # one module
+venv/bin/mypy                                              # type check: back/src strict, back/test bodies (pyproject.toml)
 venv/bin/python -m back.src.dev                            # dev server for `npm start`: Flask debug + reload, 127.0.0.1:8081
 venv/bin/python -m back.src.main                           # production server (waitress); needs RACLOTTO_JWT_SECRET
 venv/bin/alembic current                                   # revision of instance/raclotto.db (RACLOTTO_DATABASE_URL overrides)
@@ -141,7 +143,7 @@ otherwise; run them from the repo root.
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `master` and on pull requests: the backend suite,
-`tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
+`venv/bin/mypy`, `tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
 fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
 `front/.nvmrc`; actions are pinned to commit SHAs.
 
@@ -149,7 +151,7 @@ fail it), and `npm run gen:api:check`. Python and Node versions come from `.pyth
 
 | Changed only | Loop with |
 |---|---|
-| `back/` | the touched test module, then the whole backend suite |
+| `back/` | the touched test module, then the whole backend suite, then `venv/bin/mypy` |
 | `front/src/` | `npx jest <path>`, then `npx tsc --noEmit`, then the whole frontend suite |
 | both sides | the two rows above; also check the wire contract (below) |
 
@@ -201,6 +203,11 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
 ## Conventions
 
 - **Types:** annotate Python signatures; strict TypeScript, no `any` (use `unknown` + guards).
+  `venv/bin/mypy` stays clean under `strict`; a needed ignore names its error code and why
+  (`# type: ignore[code]  # reason`).
+- **Models** subclass `Base` (`driver/database.py`) and declare columns as
+  `name: Mapped[T] = mapped_column(...)`: `Mapped[T | None]` makes the column nullable, so the
+  annotation is the schema; relationships are `Mapped[list[X]]` / `Mapped[X | None]`.
 - **Domain behaviour goes in `interactor/`,** not in route handlers. A route that grows
   business logic is a module waiting to be extracted.
 - **Ingredient categories** (meat/vegetarian/vegan/fish) are mutually exclusive on an

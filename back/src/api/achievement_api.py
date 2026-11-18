@@ -8,7 +8,7 @@ from back.src.repository.achievement_repository import AchievementRepository
 class AchievementApi(BaseApi):
     url_prefix = "/achievements"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.repository = AchievementRepository()
 

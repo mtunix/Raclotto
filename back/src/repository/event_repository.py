@@ -11,7 +11,7 @@ from back.src.driver.database import db
 class EventRepository(BaseRepository[Event]):
     """Repository for Event entities."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Event)
     
     def get_pending_events(self, session_id: int, user_id: int) -> List[Event]:
