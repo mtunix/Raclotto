@@ -6,9 +6,10 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
 import waitress
+from waitress.adjustments import Adjustments
 from flask.globals import app_ctx
 
 from back.src import dev, main
@@ -229,7 +230,7 @@ class TestAdminBootstrap(ServerTest):
 
 
 class TestServe(ServerTest):
-    def serve(self, module, **environ: str) -> List[tuple]:
+    def serve(self, module, **environ: str) -> List[Dict[str, Any]]:
         app = self.build(module.create_app, **environ)
         calls = []
         module.serve(app, serve_with=lambda *args, **kwargs: calls.append((args, kwargs)))
@@ -243,6 +244,13 @@ class TestServe(ServerTest):
         served = self.serve(main, RACLOTTO_HOST="0.0.0.0", RACLOTTO_PORT="9000")
 
         self.assertEqual(served, [{"host": "0.0.0.0", "port": 9000}])
+
+    def test_production_believes_forwarded_headers_only_from_the_configured_proxy(self):
+        [served] = self.serve(main, RACLOTTO_TRUSTED_PROXY="*")
+
+        self.assertEqual(served["trusted_proxy"], "*")
+        self.assertEqual(served["trusted_proxy_headers"], {"x-forwarded-for", "x-forwarded-host", "x-forwarded-proto"})
+        Adjustments(**served)  # waitress rejects proxy settings it can't apply
 
     def test_production_logs_waitress_at_info_so_serving_on_is_shown(self):
         waitress_logger = logging.getLogger("waitress")

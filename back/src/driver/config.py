@@ -18,6 +18,8 @@ class RaclottoConfig(Config):
     ADMIN_PASSWORD: Optional[str] = None
     HOST = "127.0.0.1"
     PORT = 8081
+    # The reverse proxy whose X-Forwarded-* headers waitress believes; None: believe none.
+    TRUSTED_PROXY: Optional[str] = None
     # None: no log file.
     LOG_FILE: Optional[str] = None
 
@@ -70,6 +72,7 @@ def _from_environment(base: Type[ConfigProduction], environ: Mapping[str, str], 
         "HOST": environ.get("RACLOTTO_HOST") or base.HOST,
         "PORT": _port(environ.get("RACLOTTO_PORT")) or base.PORT,
         "LOG_FILE": environ.get("RACLOTTO_LOG_FILE") or base.LOG_FILE,
+        "TRUSTED_PROXY": environ.get("RACLOTTO_TRUSTED_PROXY") or None,
         **overrides,
     }
     return type(base.__name__, (base,), settings)
