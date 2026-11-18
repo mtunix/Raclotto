@@ -16,9 +16,12 @@ export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 export type QueryValue = string | number | boolean | null | undefined;
 
+/** A query parameter; an array repeats the key (`tags=a&tags=b`). */
+export type QueryParam = QueryValue | readonly QueryValue[];
+
 export interface RequestOptions {
   /** Query parameters; `undefined`/`null` values are dropped. */
-  query?: Record<string, QueryValue>;
+  query?: Record<string, QueryParam>;
   /** Request body, serialized as JSON. */
   body?: unknown;
 }
@@ -51,13 +54,25 @@ function headers(): Record<string, string> {
   return result;
 }
 
+type Present = string | number | boolean;
+
+function isPresent(value: QueryValue): value is Present {
+  return value !== undefined && value !== null;
+}
+
+function isArray(value: QueryParam): value is readonly QueryValue[] {
+  return Array.isArray(value);
+}
+
 function dropEmpty(
-  query: Record<string, QueryValue> | undefined,
-): Record<string, string | number | boolean> | undefined {
+  query: Record<string, QueryParam> | undefined,
+): Record<string, Present | Present[]> | undefined {
   if (!query) return undefined;
-  const result: Record<string, string | number | boolean> = {};
+  const result: Record<string, Present | Present[]> = {};
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null) {
+    if (isArray(value)) {
+      result[key] = value.filter(isPresent);
+    } else if (isPresent(value)) {
       result[key] = value;
     }
   }
@@ -72,6 +87,8 @@ export const axiosTransport: Transport = {
         method,
         url: `${API_BASE}${path}`,
         params: dropEmpty(options.query),
+        // Repeat keys for arrays (`tags=a&tags=b`), which is what Flask's `getlist` reads.
+        paramsSerializer: { indexes: null },
         data: options.body,
         headers: headers(),
       });
