@@ -1,11 +1,9 @@
 from typing import List, Optional
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload
-from wonderwords import RandomWord
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.ingredient import Ingredient, GenerationParameters
 from back.src.driver.database import db
 
 
@@ -118,45 +116,3 @@ class PanRepository(BaseRepository[Pan]):
             query = query.limit(limit)
         
         return query.all()
-    
-    def generate(
-        self,
-        ingredients: List[Ingredient],
-        session_id: int,
-        user_id: int,
-        name: Optional[str] = None,
-        preparation_type_id: Optional[int] = None,
-        cheese_level: Optional[int] = None,
-        rolled_preparation_type: bool = False,
-        rolled_cheese: bool = False
-    ) -> Pan:
-        """
-        Create a pan with generated or provided name.
-        
-        :param ingredients: List of ingredient instances
-        :param session_id: Session ID
-        :param user_id: User ID
-        :param name: Optional pan name (if not provided, generates one)
-        :param preparation_type_id: Optional preparation type ID
-        :param cheese_level: Optional cheese level
-        :param rolled_preparation_type: Whether preparation type was rolled
-        :param rolled_cheese: Whether cheese was rolled
-        :return: Created pan
-        """
-        if not name:
-            r = RandomWord()
-            name = f"{r.word(include_parts_of_speech=['adjectives']).capitalize()} Raclotto Pan"
-        
-        pan = Pan(
-            name=name,
-            ingredients=ingredients,
-            user_id=user_id,
-            session_id=session_id,
-            preparation_type_id=preparation_type_id,
-            cheese_level=cheese_level,
-            rolled_preparation_type=rolled_preparation_type,
-            rolled_cheese=rolled_cheese
-        )
-        db.session.add(pan)
-        db.session.commit()
-        return pan

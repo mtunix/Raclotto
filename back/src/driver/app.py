@@ -42,14 +42,6 @@ class App(Flask):
         )
         self.add_url_rule(rule="/<path:path>", view_func=self.serve, methods=["GET"])
 
-        if self.config["DOCUMENTATION"]:
-            api_doc(
-                self,
-                config_path="raclotto_spec.json",
-                url_prefix="/api/docs",
-                title="Raclotto API",
-            )
-
         self.init_logging()
 
         self.register_error_handler(ApiError, self.invalid_api_usage)
