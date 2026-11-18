@@ -29,15 +29,3 @@ class InviteTokenRepository(BaseRepository[InviteToken]):
         return db.session.query(InviteToken).filter_by(created_by_user_id=user_id).order_by(
             InviteToken.created_at.desc()
         ).all()
-    
-    def active_tokens(self) -> List[InviteToken]:
-        """
-        Get all active (unused and not expired) tokens.
-        
-        :return: List of active invite tokens
-        """
-        from datetime import datetime
-        return db.session.query(InviteToken).filter(
-            InviteToken.is_used == False,
-            InviteToken.expires_at > datetime.now()
-        ).all()

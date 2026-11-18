@@ -11,6 +11,17 @@ from back.src.driver.migrations import migrate
 from back.src.utils import str_code_from_enum
 
 
+class _LazyFileHandler(logging.FileHandler):
+    """Creates the file, and its folder, only when the first record is written."""
+
+    def __init__(self, filename: Path):
+        super().__init__(filename, delay=True)
+
+    def _open(self):
+        Path(self.baseFilename).parent.mkdir(parents=True, exist_ok=True)
+        return super()._open()
+
+
 class App(Flask):
     def __init__(
         self,
@@ -59,11 +70,6 @@ class App(Flask):
             return send_from_directory(self.static_folder, path)
         else:
             return send_from_directory(self.static_folder, "index.html")
-
-    def print_all_endpoints(self):
-        """Can be useful for debugging and maybe for documentation"""
-        for rule in self.url_map.iter_rules():
-            logging.info([rule.rule, rule.methods])
 
     def log_on_error(self, response: Response):
         if 400 <= response.status_code < 500:
@@ -185,16 +191,6 @@ class App(Flask):
                     existing.is_global = is_global
                     self.db.session.commit()
                     logging.info(f"Updated achievement: {achievement_data.title}")
-                if (
-                    existing.description != achievement_data.description
-                    or existing.value != achievement_data.value
-                    or existing.hidden != achievement_data.hidden
-                ):
-                    existing.description = achievement_data.description
-                    existing.value = achievement_data.value
-                    existing.hidden = achievement_data.hidden
-                    self.db.session.commit()
-                    logging.info(f"Updated achievement: {achievement_data.title}")
 
     def init_levels(self):
         """Initialize levels from default_data if they don't exist."""
@@ -243,12 +239,14 @@ class App(Flask):
                     logging.info(f"Updated level: {level_data.name}")
 
     def init_logging(self):
-        log_format_str = "%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s"
-        file_handler = logging.FileHandler("../raclotto-api.log")
-        file_handler.setFormatter(
-            logging.Formatter(log_format_str, "%d.%m.%y %H:%M:%S")
-        )
-        self.logger.addHandler(file_handler)
+        log_file = self.config.get("LOG_FILE")
+        if log_file:
+            log_format_str = "%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s"
+            file_handler = _LazyFileHandler(Path(self.instance_path) / log_file)
+            file_handler.setFormatter(
+                logging.Formatter(log_format_str, "%d.%m.%y %H:%M:%S")
+            )
+            self.logger.addHandler(file_handler)
 
         self.logger.setLevel(logging.DEBUG)
         self.after_request(self.log_on_error)

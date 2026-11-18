@@ -15,43 +15,34 @@ class ConfigurationError(RuntimeError):
 
 
 class RaclottoConfig(Config):
-    STATIC_FOLDER = "static"
-    TEMPLATES_FOLDER = "templates"
-    DOCUMENTATION = True
     ADMIN_PASSWORD: Optional[str] = None
     HOST = "127.0.0.1"
     PORT = 8081
+    # None: no log file.
+    LOG_FILE: Optional[str] = None
 
 
 class ConfigInMemory(RaclottoConfig):
-    FLASK_ENV = "raclotto-dev-in-memory"
     DEBUG = True
     TESTING = True
-    DOCUMENTATION = True
-    VALIDATE_TOKEN = False
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     JWT_SECRET_KEY = DEV_JWT_SECRET
-    JWT_EXPIRATION_DAYS = 7
     INVITE_TOKEN_EXPIRATION_DAYS = 7
 
 
 class ConfigProduction(RaclottoConfig):
-    FLASK_ENV = "raclotto-live"
     DEBUG = False
     TESTING = False
-    VALIDATE_TOKEN = True
-    DOCUMENTATION = False
     # Relative to the app's instance folder: instance/raclotto.db, as the Alembic CLI defaults to.
     SQLALCHEMY_DATABASE_URI = "sqlite:///raclotto.db"
     JWT_SECRET_KEY: Optional[str] = None
-    JWT_EXPIRATION_DAYS = 7
     INVITE_TOKEN_EXPIRATION_DAYS = 7
+    # Relative to the app's instance folder, like the database.
+    LOG_FILE: Optional[str] = "raclotto-api.log"
 
 
 class ConfigDevelopment(ConfigProduction):
-    FLASK_ENV = "raclotto-dev"
     DEBUG = True
-    DOCUMENTATION = True
     JWT_SECRET_KEY = DEV_JWT_SECRET
 
 
@@ -78,6 +69,7 @@ def _from_environment(base: Type[ConfigProduction], environ: Mapping[str, str], 
         "ADMIN_PASSWORD": environ.get("RACLOTTO_ADMIN_PASSWORD") or None,
         "HOST": environ.get("RACLOTTO_HOST") or base.HOST,
         "PORT": _port(environ.get("RACLOTTO_PORT")) or base.PORT,
+        "LOG_FILE": environ.get("RACLOTTO_LOG_FILE") or base.LOG_FILE,
         **overrides,
     }
     return type(base.__name__, (base,), settings)

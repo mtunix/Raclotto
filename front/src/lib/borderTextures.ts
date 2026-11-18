@@ -35,11 +35,3 @@ export function getTextureBorderImage(textureName: string | null | undefined): s
     // The '30' value controls how the image is sliced for the border
     return `url(${path}) 30`;
 }
-
-/**
- * Get all available texture names.
- */
-export function getAvailableTextures(): TextureName[] {
-    return ['cheese', 'bread', 'sauce-01', 'sauce-02', 'herbs-01', 'herbs-02'];
-}
-

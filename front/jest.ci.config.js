@@ -9,7 +9,6 @@ const QUARANTINED = [
   "/src/shared/StartScreen/StartScreen\\.test\\.tsx$",
   "/src/shared/Toolbar/Toolbar\\.test\\.tsx$",
   "/src/features/generation/GenerateView/GenerateView\\.test\\.tsx$",
-  "/src/features/generation/DialView/DialView\\.test\\.tsx$",
   "/src/features/history/components/HistoryView\\.test\\.tsx$",
   "/src/features/settings/SettingsView\\.test\\.tsx$",
 ];

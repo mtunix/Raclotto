@@ -6,13 +6,6 @@ from sqlalchemy.orm import relationship
 from back.src.driver.database import BaseModel
 
 
-# Lazy import to avoid circular imports
-def get_profile_picture_history():
-    from back.src.entity.profile_picture_history import ProfilePictureHistory
-
-    return ProfilePictureHistory
-
-
 user_sessions = Table(
     "user_sessions",
     BaseModel.metadata,

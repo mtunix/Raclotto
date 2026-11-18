@@ -86,27 +86,6 @@ class SessionRepository(BaseRepository[RaclottoSession]):
         db.session.flush()
         return session
     
-    def validate(self, key: str) -> bool:
-        """
-        Check if a session exists with the given key.
-        
-        :param key: Session key
-        :return: True if session exists, False otherwise
-        """
-        return self.by_key(key) is not None
-    
-    def active_by_key(self, key: str) -> Optional[RaclottoSession]:
-        """
-        Get active session by key.
-        
-        :param key: Session key
-        :return: Active session or None if not found or not active
-        """
-        session = self.by_key(key)
-        if session and session.active:
-            return session
-        return None
-    
     def by_creator(self, user_id: int) -> List[RaclottoSession]:
         """
         Get all sessions created by a user.

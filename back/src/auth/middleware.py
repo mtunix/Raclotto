@@ -12,49 +12,6 @@ def get_current_user():
     return getattr(g, 'current_user', None)
 
 
-def get_optional_user():
-    """
-    Optionally get the current user from the token if present.
-    Does not raise an error if no token is provided (unlike require_auth).
-    Returns None if no token or invalid token.
-    """
-    # First check if user is already in context (from require_auth)
-    user = getattr(g, 'current_user', None)
-    if user:
-        return user
-    
-    # Try to get user from token if present
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        return None
-    
-    # Extract token from "Bearer <token>" format
-    try:
-        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
-    except (IndexError, AttributeError):
-        return None
-    
-    # Get secret key from app config
-    from flask import current_app
-    secret_key = current_app.config.get('JWT_SECRET_KEY')
-    if not secret_key:
-        return None
-    
-    # Decode and verify token
-    payload = decode_token(token, secret_key)
-    if not payload:
-        return None
-    
-    # Get user from database
-    user_id = payload.get('user_id')
-    if not user_id:
-        return None
-    
-    user_repository = UserRepository()
-    user = user_repository.by_id(user_id)
-    return user
-
-
 def authenticate() -> User:
     """Resolve the request's bearer token to a user and store it on `g`; raises ApiError (401)."""
     # Get token from Authorization header

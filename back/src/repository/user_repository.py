@@ -47,19 +47,6 @@ class UserRepository(BaseRepository[User]):
             return user
         return self.by_name(identifier)
     
-    def get_unlocked_achievements(self, user_id: int) -> set:
-        """
-        Get set of achievement IDs unlocked by a user.
-        
-        :param user_id: User ID
-        :return: Set of achievement IDs
-        """
-        from back.src.entity.user import user_achievements
-        return {
-            row[0] for row in db.session.query(user_achievements.c.achievement_id)
-            .filter(user_achievements.c.user_id == user_id)
-        }
-    
     def get_users_in_session(self, session_id: int) -> set:
         """
         Get set of user IDs in a session.
@@ -71,17 +58,4 @@ class UserRepository(BaseRepository[User]):
         return {
             row[0] for row in db.session.query(user_sessions.c.user_id)
             .filter(user_sessions.c.session_id == session_id)
-        }
-    
-    def get_users_with_achievement(self, achievement_id: int) -> set:
-        """
-        Get set of user IDs who have an achievement.
-        
-        :param achievement_id: Achievement ID
-        :return: Set of user IDs
-        """
-        from back.src.entity.user import user_achievements
-        return {
-            row[0] for row in db.session.query(user_achievements.c.user_id)
-            .filter(user_achievements.c.achievement_id == achievement_id)
         }

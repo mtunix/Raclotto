@@ -78,33 +78,6 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
             db.session.expire(user, ["profile_picture_history"])
         return history_entry
 
-    def get_by_level(
-        self, user_id: int, level_id: int
-    ) -> Optional[ProfilePictureHistory]:
-        """
-        Get the profile picture a user had at a specific level.
-
-        :param user_id: User ID
-        :param level_id: Level ID
-        :return: ProfilePictureHistory instance or None if not found
-        """
-        return (
-            db.session.query(ProfilePictureHistory)
-            .filter_by(user_id=user_id, level_id=level_id)
-            .first()
-        )
-
-    def count_by_user_id(self, user_id: int) -> int:
-        """
-        Get the number of profile pictures in a user's history.
-
-        :param user_id: User ID
-        :return: Count of profile pictures
-        """
-        return (
-            db.session.query(ProfilePictureHistory).filter_by(user_id=user_id).count()
-        )
-
     def get_candidate_by_user_id(self, user_id: int) -> Optional[ProfilePictureHistory]:
         """
         Get the candidate profile picture (marked for generation context) for a user.

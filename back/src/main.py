@@ -1,5 +1,6 @@
 """Production server: the app configured from the environment (and `.env`), served by waitress."""
 
+import logging
 import os
 from typing import Callable, Mapping
 
@@ -16,6 +17,8 @@ def create_app(environ: Mapping[str, str]) -> App:
 
 
 def serve(app: App, serve_with: Callable[..., None] = waitress.serve) -> None:
+    # waitress logs "Serving on ..." at INFO; the root logger it sets up shows WARNING and up.
+    logging.getLogger("waitress").setLevel(logging.INFO)
     serve_with(app, host=app.config["HOST"], port=app.config["PORT"])
 
 

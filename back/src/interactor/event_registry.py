@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict
 from back.src.interactor.event_evaluator import EventEvaluator
 
 
@@ -16,24 +16,6 @@ class EventRegistry:
         :param evaluator: The evaluator instance
         """
         self._evaluators[event_type] = evaluator
-    
-    def get_evaluator(self, event_type: str) -> Optional[EventEvaluator]:
-        """
-        Get the evaluator for an event type.
-        
-        :param event_type: The event type
-        :return: The evaluator instance or None if not registered
-        """
-        return self._evaluators.get(event_type)
-    
-    def has_evaluator(self, event_type: str) -> bool:
-        """
-        Check if an event type has a registered evaluator.
-        
-        :param event_type: The event type
-        :return: True if evaluator is registered, False otherwise
-        """
-        return event_type in self._evaluators
     
     def get_all_evaluators(self) -> Dict[str, EventEvaluator]:
         """

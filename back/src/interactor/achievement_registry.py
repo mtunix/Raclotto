@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict
 
 from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator
@@ -20,15 +20,6 @@ class AchievementRegistry:
         :param evaluator: The evaluator instance
         """
         self._evaluators[achievement_title] = evaluator
-
-    def get_evaluator(self, achievement: Achievement) -> Optional[AchievementEvaluator]:
-        """
-        Get the evaluator for an achievement.
-
-        :param achievement: The achievement entity
-        :return: The evaluator instance or None if not registered
-        """
-        return self._evaluators.get(achievement.title)
 
     @property
     def evaluators(self) -> Dict[str, AchievementEvaluator]:

@@ -14,27 +14,6 @@ class EventRepository(BaseRepository[Event]):
     def __init__(self):
         super().__init__(Event)
     
-    def by_session(self, session_id: int) -> List[Event]:
-        """
-        Get all events for a session.
-        
-        :param session_id: Session ID
-        :return: List of events
-        """
-        return db.session.query(Event).filter_by(session_id=session_id).order_by(Event.created_at.desc()).all()
-    
-    def by_session_key(self, session_key: str) -> List[Event]:
-        """
-        Get all events for a session by session key.
-        
-        :param session_key: Session key
-        :return: List of events
-        """
-        session = db.session.query(RaclottoSession).filter_by(key=session_key).first()
-        if not session:
-            return []
-        return self.by_session(session.id)
-    
     def get_pending_events(self, session_id: int, user_id: int) -> List[Event]:
         """
         Get events that haven't been dismissed by the user.

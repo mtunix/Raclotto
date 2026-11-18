@@ -1,5 +1,6 @@
 import inspect
 import io
+import logging
 import secrets
 import tempfile
 import unittest
@@ -16,6 +17,7 @@ from back.src.driver.app import App
 from back.src.driver.config import (
     DEV_JWT_SECRET,
     KNOWN_JWT_SECRETS,
+    ConfigInMemory,
     ConfigurationError,
     RaclottoConfig,
     production_config,
@@ -34,7 +36,12 @@ class ServerTest(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.database = Path(directory.name) / "raclotto.db"
-        self.environ = {"RACLOTTO_JWT_SECRET": SECRET, "RACLOTTO_DATABASE_URL": f"sqlite:///{self.database}"}
+        self.log_file = Path(directory.name) / "raclotto-api.log"
+        self.environ = {
+            "RACLOTTO_JWT_SECRET": SECRET,
+            "RACLOTTO_DATABASE_URL": f"sqlite:///{self.database}",
+            "RACLOTTO_LOG_FILE": str(self.log_file),
+        }
 
     def build(self, create: Callable[[Dict[str, str]], App] = main.create_app, **environ: str) -> App:
         app = create({**self.environ, **environ})
@@ -61,6 +68,10 @@ class ServerTest(unittest.TestCase):
             json={"name_or_email": "admin", "password": password},
             headers={"Accept": "application/json"},
         )
+
+    @staticmethod
+    def log_files(app: App) -> List[Path]:
+        return [Path(h.baseFilename) for h in app.logger.handlers if isinstance(h, logging.FileHandler)]
 
     def me(self, app: App, token: str):
         return app.test_client().get(
@@ -127,13 +138,16 @@ class TestProductionConfig(ServerTest):
         self.assertEqual(config.SQLALCHEMY_DATABASE_URI, "sqlite:///raclotto.db")
 
     def test_empty_optional_variables_fall_back_to_the_defaults(self):
-        empty = dict.fromkeys(("RACLOTTO_DATABASE_URL", "RACLOTTO_ADMIN_PASSWORD", "RACLOTTO_HOST", "RACLOTTO_PORT"), "")
+        empty = dict.fromkeys(
+            ("RACLOTTO_DATABASE_URL", "RACLOTTO_ADMIN_PASSWORD", "RACLOTTO_HOST", "RACLOTTO_PORT", "RACLOTTO_LOG_FILE"),
+            "",
+        )
 
         config = production_config({"RACLOTTO_JWT_SECRET": SECRET, **empty})
 
         self.assertEqual(
-            (config.SQLALCHEMY_DATABASE_URI, config.ADMIN_PASSWORD, config.HOST, config.PORT),
-            ("sqlite:///raclotto.db", None, "127.0.0.1", 8081),
+            (config.SQLALCHEMY_DATABASE_URI, config.ADMIN_PASSWORD, config.HOST, config.PORT, config.LOG_FILE),
+            ("sqlite:///raclotto.db", None, "127.0.0.1", 8081, "raclotto-api.log"),
         )
 
     def test_an_invalid_port_is_refused(self):
@@ -142,6 +156,49 @@ class TestProductionConfig(ServerTest):
                 with self.assertRaises(ConfigurationError) as raised:
                     production_config({"RACLOTTO_JWT_SECRET": SECRET, "RACLOTTO_PORT": port})
                 self.assertIn("RACLOTTO_PORT", str(raised.exception))
+
+
+class TestLogFile(ServerTest):
+    def test_production_logs_to_the_instance_folder_by_default(self):
+        app = self.build(RACLOTTO_LOG_FILE="")
+
+        self.assertEqual(self.log_files(app), [Path(app.instance_path) / "raclotto-api.log"])
+
+    def test_the_dev_server_logs_to_the_instance_folder_by_default(self):
+        app = self.build(dev.create_app, RACLOTTO_LOG_FILE="")
+
+        self.assertEqual(self.log_files(app), [Path(app.instance_path) / "raclotto-api.log"])
+
+    def test_a_relative_log_file_is_under_the_instance_folder(self):
+        app = self.build(RACLOTTO_LOG_FILE="logs/api.log")
+
+        self.assertEqual(self.log_files(app), [Path(app.instance_path) / "logs/api.log"])
+
+    def test_failed_requests_are_logged_to_the_file_from_the_environment(self):
+        app = self.build()
+
+        app.test_client().get("/api/no-such-endpoint", headers={"Accept": "application/json"})
+
+        self.assertIn("endpoint_not_found", self.log_file.read_text())
+
+    def test_the_log_file_is_created_with_its_folder_on_the_first_record(self):
+        log_file = self.log_file.parent / "logs" / "api.log"
+        app = self.build(RACLOTTO_LOG_FILE=str(log_file))
+        self.assertFalse(log_file.parent.exists())
+
+        app.test_client().get("/api/no-such-endpoint", headers={"Accept": "application/json"})
+
+        self.assertTrue(log_file.exists())
+
+    def test_test_and_in_memory_configs_write_no_log_file(self):
+        class Bare(RaclottoConfig):
+            SQLALCHEMY_DATABASE_URI = f"sqlite:///{self.database}"
+
+        for config in (ConfigInMemory, Bare):
+            with self.subTest(config=config.__name__):
+                app = self.build(lambda _: App(f"raclotto-test-{config.__name__}", db, config))
+
+                self.assertEqual(self.log_files(app), [])
 
 
 class TestAdminBootstrap(ServerTest):
@@ -182,6 +239,15 @@ class TestServe(ServerTest):
         served = self.serve(main, RACLOTTO_HOST="0.0.0.0", RACLOTTO_PORT="9000")
 
         self.assertEqual(served, [{"host": "0.0.0.0", "port": 9000}])
+
+    def test_production_logs_waitress_at_info_so_serving_on_is_shown(self):
+        waitress_logger = logging.getLogger("waitress")
+        self.addCleanup(waitress_logger.setLevel, waitress_logger.level)
+        waitress_logger.setLevel(logging.NOTSET)
+
+        self.serve(main)
+
+        self.assertEqual(waitress_logger.getEffectiveLevel(), logging.INFO)
 
     def test_production_serves_with_waitress(self):
         self.assertIs(inspect.signature(main.serve).parameters["serve_with"].default, waitress.serve)

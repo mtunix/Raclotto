@@ -2,9 +2,7 @@ import { IngredientType } from './api/generated/model';
 import type {
     IngredientDto,
     IngredientForUserDto,
-    PanDto,
     SessionDto,
-    UserSummaryDto,
 } from './api/generated/model';
 
 export const mockSession: SessionDto = {
@@ -71,35 +69,6 @@ export const createMockIngredient = (overrides?: Partial<IngredientDto>): Ingred
 export const createMockIngredientForUser = (overrides?: Partial<IngredientForUserDto>): IngredientForUserDto => ({
     ...createMockIngredient(),
     applicable: true,
-    ...overrides,
-});
-
-export const mockAuthor: UserSummaryDto = {
-    id: 1,
-    name: 'Test User',
-    color: '#1890ff',
-    profile_picture: null,
-    border_style: 'solid',
-    border_texture: null,
-    glow_effect: false,
-};
-
-export const createMockPan = (overrides?: Partial<PanDto>): PanDto => ({
-    id: 1,
-    name: 'Test Pan',
-    user_id: mockAuthor.id,
-    session_id: 1,
-    timestamp: '2024-01-01T00:00:00Z',
-    snacked: false,
-    preparation_type_id: null,
-    preparation_type: null,
-    cheese_level: null,
-    rolled_preparation_type: false,
-    rolled_cheese: false,
-    rating: 0,
-    ratings: [],
-    ingredients: [createMockIngredient()],
-    author: mockAuthor,
     ...overrides,
 });
 

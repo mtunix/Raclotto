@@ -107,7 +107,7 @@ cd front && npm start                    # dev server
 cd front && npm run gen:api              # back/openapi.json + api/generated/ from the DTOs
 cd front && npm run gen:api:check        # regenerate and fail on drift
 venv/bin/python -m back.test.export_wire_fixtures   # rewrite lib/api/__fixtures__/backendResponses.ts
-cd front && BUILD_PATH=/tmp/raclotto-build npm run build   # front/build/ is tracked; build elsewhere
+cd front && npm run build                # production bundle in front/build/ (ignored by git)
 ```
 
 `npm run lint` (ESLint 10, flat config in `eslint.config.mjs`) covers `src/**/*.{ts,tsx}` with
@@ -118,8 +118,8 @@ fork-ts-checker and `config/modules.js` need.
 
 Known-broken frontend suites: `App.test.js`, `ErrorPage`, `GenerateView`, `HistoryView`,
 `SettingsView`, `MainScreen`, `StartScreen`, `Toolbar` fail to load (react-router needs
-`TextEncoder`, the CSS transform predates Jest 28, stale `../AppSlice` mock paths); `DialView`
-loads but 3 assertions are stale. The view suites need `FakeTransport` to be revived.
+`TextEncoder`, the CSS transform predates Jest 28, stale `../AppSlice` mock paths). The view
+suites need `FakeTransport` to be revived.
 `front/jest.ci.config.js` quarantines exactly these; take a suite off its list when it runs again.
 
 ## Configuration
@@ -135,6 +135,7 @@ otherwise; run them from the repo root.
 | `RACLOTTO_DATABASE_URL` | `sqlite:///raclotto.db` | `alembic` reads it too, but not from `.env`; give SQLite an absolute path so both open the same file. |
 | `RACLOTTO_ADMIN_PASSWORD` | — | Creates user `admin` only when none exists; never changes an existing one. |
 | `RACLOTTO_HOST`, `RACLOTTO_PORT` | `127.0.0.1`, `8081` | Production listen address. The dev server always binds 127.0.0.1. |
+| `RACLOTTO_LOG_FILE` | `raclotto-api.log` | App log; a relative path is under the instance folder (`instance/raclotto-api.log`). Test and in-memory configs write no log file. |
 | `GOOGLE_GENAI_API_KEY` | — | Image generation; unavailable without it. |
 
 ## CI

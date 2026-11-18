@@ -23,7 +23,6 @@ from back.src.repository.level_repository import LevelRepository
 
 
 class ConfigTest(ConfigInMemory):
-    DOCUMENTATION = False
     DEBUG = False
 
 

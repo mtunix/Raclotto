@@ -1,7 +1,6 @@
 from typing import List, Optional
 from sqlalchemy import or_, not_
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import joinedload
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.ingredient import Ingredient, IngredientType
 from back.src.interactor.diet import Diet
@@ -103,29 +102,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         db.session.flush()
         return ingredient
     
-    def all_with_type(self, session_key: Optional[str] = None, of_type: Optional[IngredientType] = None) -> List[Ingredient]:
-        """
-        Get ingredients with session relation loaded.
-        Optionally filter by session_key and/or type.
-        
-        :param session_key: Optional session key to filter by
-        :param of_type: Optional ingredient type to filter by
-        :return: List of ingredients with session relation loaded
-        """
-        query = db.session.query(Ingredient).options(joinedload(Ingredient.session))
-        
-        if session_key:
-            try:
-                session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
-                query = query.filter(Ingredient.session_id == session.id)
-            except NoResultFound:
-                return []
-        
-        if of_type:
-            query = query.filter(Ingredient.type == of_type)
-        
-        return query.all()
-    
     def by_session_ids(self, session_ids: List[int], ingredient_type: Optional[IngredientType] = None) -> List[Ingredient]:
         """
         Get ingredients from multiple sessions.
@@ -143,14 +119,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
             query = query.filter(Ingredient.type == ingredient_type)
         
         return query.all()
-    
-    def all_with_session(self) -> List[Ingredient]:
-        """
-        Get all ingredients with session relation loaded.
-        
-        :return: List of ingredients with session relation loaded
-        """
-        return db.session.query(Ingredient).options(joinedload(Ingredient.session)).all()
     
     def get_top_rated(self, session_id: Optional[int] = None, limit: int = 10) -> List[tuple]:
         """

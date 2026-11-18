@@ -15,17 +15,6 @@ def generate_token(user_id: int, secret_key: str, expiration_days: int = 7) -> s
     return jwt.encode(payload, secret_key, algorithm='HS256')
 
 
-def verify_token(token: str, secret_key: str) -> bool:
-    """Verify if a JWT token is valid."""
-    try:
-        jwt.decode(token, secret_key, algorithms=['HS256'])
-        return True
-    except jwt.ExpiredSignatureError:
-        return False
-    except jwt.InvalidTokenError:
-        return False
-
-
 def decode_token(token: str, secret_key: str) -> Optional[Dict]:
     """Decode a JWT token and return the payload."""
     try:
