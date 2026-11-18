@@ -1,258 +1,120 @@
-from flask import request
-from back.src.api.base_api import BaseApi, ApiError, ApiErrorCode
-from back.src.auth.middleware import require_auth, get_current_user
-from back.src.repository.session_repository import SessionRepository
-from back.src.api.serializer import serialize_single, serialize_collection
-from back.src.api.deserializer import deserialize_attributes
+from datetime import datetime
+
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
+from back.src.dto.session import (
+    CreateSessionBody,
+    ListSessionsQuery,
+    SessionDto,
+    SessionKeyBody,
+    SessionKeyQuery,
+    UpdateSessionBody,
+)
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.entity.user import user_sessions
+from back.src.interactor.achievements import Achievements, SessionClosed
+from back.src.repository.session_repository import SessionRepository
+
+
+def _not_found() -> ApiError:
+    return ApiError(
+        ApiErrorCode.resource_not_found,
+        status=404,
+        title="Session not found",
+        detail="The specified session does not exist",
+    )
 
 
 class SessionApi(BaseApi):
+    """Any signed-in user may list, change, close, reactivate and delete any session."""
+
     url_prefix = "/sessions"
-    
+
     def __init__(self):
         super().__init__()
         self.repository = SessionRepository()
-    
-    @BaseApi.endpoint("", ["POST"])
-    @require_auth
-    def create_session(self):
-        """Create a new session.
-        
-        Request body should contain:
-        - name: Session name
-        
-        :returns RaclottoSession: Created session
-        :status_code 201: Session created successfully
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        attributes = deserialize_attributes()
-        name = attributes.get('name')
-        
-        if not name:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="name is required"
-            )
-        
-        session = self.repository.create_with_key(name, user.id)
-        
-        # Track when user joins the session (they created it, so they're automatically in it)
-        # This is used for achievements like "Pandler"
-        from back.src.entity.user import user_sessions
-        from datetime import datetime
-        
-        # Add user to session with timestamp
-        db.session.execute(
-            user_sessions.insert().values(
-                user_id=user.id,
-                session_id=session.id,
-                joined_at=datetime.now()
-            )
-        )
-        
-        db.session.commit()
-        
-        return serialize_single(session, "session")
-    
-    @BaseApi.endpoint("", ["GET"])
-    @require_auth
-    def list_sessions(self):
-        """List all sessions (active and inactive).
-        
-        Query parameters:
-        - include_inactive: If true, includes inactive sessions (default: false)
-        
-        :returns List[RaclottoSession]: List of sessions
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        include_inactive = request.args.get('include_inactive', 'false').lower() == 'true'
-        if include_inactive:
-            sessions = self.repository.all_sessions()
-        else:
-            sessions = self.repository.active_sessions()
-        return serialize_collection(sessions, "session")
-    
-    @BaseApi.endpoint("/<int:session_id>", ["GET"])
-    @require_auth
-    def get_session(self, session_id: int):
-        """Get a session by ID.
-        
-        :param session_id: Session ID
-        :returns RaclottoSession: Session
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Session not found
-        """
-        session = self.repository.by_id(session_id)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist"
-            )
-        
-        return serialize_single(session, "session")
-    
-    @BaseApi.endpoint("/by-key", ["GET"])
-    @require_auth
-    def get_session_by_key(self):
-        """Get a session by key.
-        
-        Query parameters:
-        - session_key: Session key
-        
-        :returns RaclottoSession: Session
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Session not found
-        """
-        session_key = request.args.get('session_key')
-        
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key query parameter is required"
-            )
-        
-        session = self.repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist"
-            )
-        
-        return serialize_single(session, "session")
-    
-    @BaseApi.endpoint("/<int:session_id>", ["PATCH"])
-    @require_auth
-    def update_session(self, session_id: int):
-        """Update a session.
-        
-        :param session_id: Session ID
-        :returns RaclottoSession: Updated session
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Session not found
-        """
-        session = self.repository.by_id(session_id)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist"
-            )
-        
-        attributes = deserialize_attributes()
-        updated = self.repository.update(session_id, attributes)
-        db.session.commit()
-        
-        return serialize_single(updated, "session")
-    
-    @BaseApi.endpoint("/<int:session_id>", ["DELETE"])
-    @require_auth
-    def delete_session(self, session_id: int):
-        """Delete a session.
-        
-        :param session_id: Session ID
-        :status_code 204: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Session not found
-        """
-        if not self.repository.exists(session_id):
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist"
-            )
-        
-        self.repository.delete(session_id)
-        db.session.commit()
-        
-        return None, 204
-    
-    @BaseApi.endpoint("/close", ["POST"])
-    @require_auth
-    def close_session(self):
-        """Close a session.
-        
-        Request body should contain:
-        - key: Session key
-        
-        :returns RaclottoSession: Closed session
-        :status_code 200: Session closed
-        :status_code 401: Not authenticated
-        :status_code 404: Session not found
-        """
-        attributes = deserialize_attributes()
-        session_key = attributes.get('key')
-        
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="key is required"
-            )
-        
-        session = self.repository.close_session(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist"
-            )
-        
-        from back.src.interactor.achievements import Achievements, SessionClosed
 
+    def _session(self, session_id: int) -> RaclottoSession:
+        session = self.repository.by_id(session_id)
+        if not session:
+            raise _not_found()
+        return session
+
+    @BaseApi.endpoint("", ["POST"], body=CreateSessionBody, response=SessionDto, operation_id="createSession")
+    @require_auth
+    def create_session(self, body: CreateSessionBody) -> SessionDto:
+        """Create a session; its creator joins it."""
+        user = get_current_user()
+        session = self.repository.create_with_key(body.name, user.id)
+        # The join time counts for achievements such as "Pandler".
+        db.session.execute(
+            user_sessions.insert().values(user_id=user.id, session_id=session.id, joined_at=datetime.now())
+        )
+        db.session.commit()
+        return SessionDto.model_validate(session)
+
+    @BaseApi.endpoint("", ["GET"], query=ListSessionsQuery, response=list[SessionDto],
+                      operation_id="listSessions")
+    @require_auth
+    def list_sessions(self, query: ListSessionsQuery) -> list[SessionDto]:
+        """List the active sessions, or every session."""
+        sessions = self.repository.all_sessions() if query.include_inactive else self.repository.active_sessions()
+        return [SessionDto.model_validate(session) for session in sessions]
+
+    @BaseApi.endpoint("/<int:session_id>", ["GET"], response=SessionDto, operation_id="getSession",
+                      errors=(404,))
+    @require_auth
+    def get_session(self, session_id: int) -> SessionDto:
+        """Get a session by id."""
+        return SessionDto.model_validate(self._session(session_id))
+
+    @BaseApi.endpoint("/by-key", ["GET"], query=SessionKeyQuery, response=SessionDto,
+                      operation_id="getSessionByKey", errors=(404,))
+    @require_auth
+    def get_session_by_key(self, query: SessionKeyQuery) -> SessionDto:
+        """Get a session by its key."""
+        session = self.repository.by_key(query.session_key)
+        if not session:
+            raise _not_found()
+        return SessionDto.model_validate(session)
+
+    @BaseApi.endpoint("/<int:session_id>", ["PATCH"], body=UpdateSessionBody, response=SessionDto,
+                      operation_id="updateSession", errors=(404,))
+    @require_auth
+    def update_session(self, session_id: int, body: UpdateSessionBody) -> SessionDto:
+        """Rename a session."""
+        session = self._session(session_id)
+        session.name = body.name
+        db.session.commit()
+        return SessionDto.model_validate(session)
+
+    @BaseApi.endpoint("/<int:session_id>", ["DELETE"], status=204, operation_id="deleteSession", errors=(404,))
+    @require_auth
+    def delete_session(self, session_id: int) -> None:
+        """Delete a session."""
+        db.session.delete(self._session(session_id))
+        db.session.commit()
+
+    @BaseApi.endpoint("/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession",
+                      errors=(404,))
+    @require_auth
+    def close_session(self, body: SessionKeyBody) -> SessionDto:
+        """Close a session; achievements that wait for the end are judged."""
+        session = self.repository.close_session(body.key)
+        if not session:
+            raise _not_found()
         Achievements().record(SessionClosed(session=session, actor=get_current_user()))
         db.session.commit()
-        return serialize_single(session, "session")
-    
-    @BaseApi.endpoint("/reactivate", ["POST"])
+        return SessionDto.model_validate(session)
+
+    @BaseApi.endpoint("/reactivate", ["POST"], body=SessionKeyBody, response=SessionDto,
+                      operation_id="reactivateSession", errors=(404,))
     @require_auth
-    def reactivate_session(self):
-        """Reactivate a session.
-        
-        Request body should contain:
-        - key: Session key
-        
-        :returns RaclottoSession: Reactivated session
-        :status_code 200: Session reactivated
-        :status_code 401: Not authenticated
-        :status_code 404: Session not found
-        """
-        attributes = deserialize_attributes()
-        session_key = attributes.get('key')
-        
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="key is required"
-            )
-        
-        session = self.repository.reactivate_session(session_key)
+    def reactivate_session(self, body: SessionKeyBody) -> SessionDto:
+        """Reopen a closed session."""
+        session = self.repository.reactivate_session(body.key)
         if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist"
-            )
-        
+            raise _not_found()
         db.session.commit()
-        return serialize_single(session, "session")
+        return SessionDto.model_validate(session)

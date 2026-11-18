@@ -1,11 +1,23 @@
 import React, {useState, useCallback} from "react";
 import {Segmented, Card, Row, Col, message, List, Button, Input, Space, Empty, Spin, Typography} from "antd";
 import {useTranslation} from "react-i18next";
-import {useIngredients, usePrepTypes, mutateIngredients, mutatePrepTypes} from "../../../lib/api/swrHooks";
+import axios from "axios";
+import {mutatePrepTypes, onErrorRetry} from "../../../lib/api/swrHooks";
 import {useAppStore} from "../../../AppSlice";
-import {Api} from "../../../lib/api";
-import {Ingredient, IngredientType} from "../../../model/ingredient";
-import {PrepType} from "../../../model/prepType";
+import {useListIngredients} from "../../../api/generated/endpoints/ingredients/ingredients";
+import {
+    createPreparationType,
+    deletePreparationType,
+    useListPreparationTypes,
+} from "../../../api/generated/endpoints/preparation-type/preparation-type";
+import {IngredientType} from "../../../api/generated/model";
+import type {
+    ErrorResponseDto,
+    IngredientForUserDto,
+    PrepTypeDto,
+    UpdateIngredientBody,
+} from "../../../api/generated/model";
+import {ingredientCatalog} from "../ingredientCatalog";
 import {IngredientListView} from "./IngredientListView";
 import {AddIngredientModal} from "./AddIngredientModal";
 import {EditIngredientModal} from "./EditIngredientModal";
@@ -20,15 +32,18 @@ export function KitchenManagement() {
     const sessionKey = session?.key || "";
     const [activeSegment, setActiveSegment] = useState<'ingredients' | 'sauces' | 'prepTypes'>('ingredients');
     const [ingredientType, setIngredientType] = useState<IngredientType>(IngredientType.FILL);
-    const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
+    const [editingIngredient, setEditingIngredient] = useState<IngredientForUserDto | null>(null);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [isAddIngredientModalVisible, setIsAddIngredientModalVisible] = useState(false);
     const [addIngredientModalType, setAddIngredientModalType] = useState<IngredientType>(IngredientType.FILL);
     const [isAddingPrepType, setIsAddingPrepType] = useState(false);
     const [newPrepTypeName, setNewPrepTypeName] = useState("");
     
-    const { data: ingredients = [], isLoading: loadingIngredients, error: ingredientsError } = useIngredients(sessionKey);
-    const { data: prepTypes = [], isLoading: loadingPrepTypes } = usePrepTypes(sessionKey);
+    const swr = {enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true};
+    const { data: ingredients = [], isLoading: loadingIngredients, error: ingredientsError } =
+        useListIngredients({session_key: sessionKey}, {swr});
+    const { data: prepTypes = [], isLoading: loadingPrepTypes } =
+        useListPreparationTypes({session_key: sessionKey}, {swr});
     
     React.useEffect(() => {
         if (ingredientsError && sessionKey) {
@@ -36,34 +51,29 @@ export function KitchenManagement() {
         }
     }, [ingredientsError, sessionKey, t]);
 
-    const onDelete = useCallback((ingredient: Ingredient) => {
+    const onDelete = useCallback((ingredient: IngredientForUserDto) => {
         if (sessionKey) {
-            Api.deleteIngredient(sessionKey, ingredient.id).then(() => {
-                mutateIngredients(sessionKey);
-            }).catch((error) => {
+            ingredientCatalog.remove(sessionKey, ingredient.id).catch((error) => {
                 console.error("Failed to delete ingredient:", error);
             });
         }
     }, [sessionKey]);
 
-    const onRefill = useCallback((ingredient: Ingredient) => {
+    const onRefill = useCallback((ingredient: IngredientForUserDto) => {
         if (sessionKey) {
-            Api.refill(ingredient.id).then(() => {
-                mutateIngredients(sessionKey);
-            }).catch((error) => {
+            ingredientCatalog.refill(sessionKey, ingredient.id).catch((error) => {
                 console.error("Failed to refill ingredient:", error);
             });
         }
     }, [sessionKey]);
 
-    const onEdit = useCallback((ingredient: Ingredient) => {
+    const onEdit = useCallback((ingredient: IngredientForUserDto) => {
         setEditingIngredient(ingredient);
         setIsEditModalVisible(true);
     }, []);
 
-    const handleEditSave = useCallback(async (ingredientId: number, data: Partial<Ingredient>) => {
-        await Api.updateIngredient(ingredientId, data);
-        mutateIngredients(sessionKey);
+    const handleEditSave = useCallback(async (ingredientId: number, data: UpdateIngredientBody) => {
+        await ingredientCatalog.update(sessionKey, ingredientId, data);
     }, [sessionKey]);
 
     const handleEditCancel = useCallback(() => {
@@ -71,16 +81,12 @@ export function KitchenManagement() {
         setEditingIngredient(null);
     }, []);
 
-    const handleAddIngredientSuccess = useCallback(() => {
-        mutateIngredients(sessionKey);
-    }, [sessionKey]);
-
     const handleAddIngredientClick = useCallback((type: IngredientType) => {
         setAddIngredientModalType(type);
         setIsAddIngredientModalVisible(true);
     }, [activeSegment]);
 
-    const onPrepTypeDelete = useCallback((type: PrepType) => {
+    const onPrepTypeDelete = useCallback((type: PrepTypeDto) => {
         if (!sessionKey) return;
         
         // Don't allow deleting default preparation types
@@ -89,13 +95,14 @@ export function KitchenManagement() {
             return;
         }
         
-        Api.deletePrepType(type.id).then(() => {
+        deletePreparationType(type.id).then(() => {
             message.success(t("ingredient.preparationTypeDeleted") || "Preparation type deleted");
             mutatePrepTypes(sessionKey);
-        }).catch((error: any) => {
+        }).catch((error: unknown) => {
             console.error("Failed to delete prep type:", error);
-            const errorMessage = error?.response?.data?.errors?.[0]?.detail || 
-                                error?.message || 
+            const detail = axios.isAxiosError<ErrorResponseDto>(error) ? error.response?.data?.errors?.[0]?.detail : null;
+            const errorMessage = detail ||
+                                (error instanceof Error ? error.message : null) ||
                                 t("ingredient.deleteFailed") || "Failed to delete preparation type";
             message.error(errorMessage);
         });
@@ -113,7 +120,7 @@ export function KitchenManagement() {
 
     const onPrepTypeAdd = useCallback(() => {
         if (!sessionKey || !newPrepTypeName.trim()) return;
-        Api.addPrepType(sessionKey, newPrepTypeName.trim()).then(() => {
+        createPreparationType({name: newPrepTypeName.trim()}, {session_key: sessionKey}).then(() => {
             setIsAddingPrepType(false);
             setNewPrepTypeName("");
             mutatePrepTypes(sessionKey);
@@ -139,7 +146,7 @@ export function KitchenManagement() {
                     <>
                         <List
                             dataSource={prepTypes}
-                            renderItem={(prepType: PrepType) => (
+                            renderItem={(prepType: PrepTypeDto) => (
                                 <List.Item
                                     style={{
                                         backgroundColor: prepType.session_id === null || prepType.session_id === undefined 
@@ -351,7 +358,6 @@ export function KitchenManagement() {
             <AddIngredientModal
                 visible={isAddIngredientModalVisible}
                 onCancel={() => setIsAddIngredientModalVisible(false)}
-                onSuccess={handleAddIngredientSuccess}
                 initialType={addIngredientModalType}
                 context={activeSegment === 'sauces' ? 'sauces' : 'ingredients'}
             />

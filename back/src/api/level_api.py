@@ -17,7 +17,7 @@ class LevelApi(BaseApi):
         """List all levels ordered by required experience."""
         return [LevelDto.model_validate(level) for level in self.repository.all_ordered()]
 
-    @BaseApi.endpoint("/<int:level_id>", ["GET"], response=LevelDto)
+    @BaseApi.endpoint("/<int:level_id>", ["GET"], response=LevelDto, errors=(404,))
     @require_auth
     def get_level(self, level_id: int) -> LevelDto:
         """Get a level by id."""

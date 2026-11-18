@@ -58,7 +58,7 @@ class PanApi(BaseApi):
         return PanDto.of(pan, self.users.by_id(pan.user_id))
 
     @BaseApi.endpoint("/generate", ["POST"], query=RollQuery, body=RollPanBody,
-                      response=RollOutcomeDto, operation_id="rollPan")
+                      response=RollOutcomeDto, operation_id="rollPan", errors=(404,))
     @require_auth
     def generate(self, query: RollQuery, body: RollPanBody) -> RollOutcomeDto:
         """Roll a pan with a fixed number of fills and sauces."""
@@ -74,7 +74,7 @@ class PanApi(BaseApi):
         )
 
     @BaseApi.endpoint("/generate/bandit", ["POST"], query=RollQuery, body=RollBanditPanBody,
-                      response=RollOutcomeDto, operation_id="rollBanditPan")
+                      response=RollOutcomeDto, operation_id="rollBanditPan", errors=(404,))
     @require_auth
     def generate_bandit(self, query: RollQuery, body: RollBanditPanBody) -> RollOutcomeDto:
         """Roll a pan with a random fill/sauce split (bandit mode)."""
@@ -88,7 +88,7 @@ class PanApi(BaseApi):
         )
 
     @BaseApi.endpoint("", ["POST"], query=RollQuery, body=CreatePanBody,
-                      response=RollOutcomeDto, operation_id="createPan")
+                      response=RollOutcomeDto, operation_id="createPan", errors=(404,))
     @require_auth
     def create_pan(self, query: RollQuery, body: CreatePanBody) -> RollOutcomeDto:
         """Create a pan from hand-picked ingredients."""
@@ -110,13 +110,14 @@ class PanApi(BaseApi):
             has_more=query.limit is not None and query.offset + len(pans) < total,
         )
 
-    @BaseApi.endpoint("/<int:pan_id>", ["GET"], response=PanDto, operation_id="getPan")
+    @BaseApi.endpoint("/<int:pan_id>", ["GET"], response=PanDto, operation_id="getPan", errors=(404,))
     @require_auth
     def get_pan(self, pan_id: int) -> PanDto:
         """Get a pan by id."""
         return self._dto(self._pan(pan_id))
 
-    @BaseApi.endpoint("/<int:pan_id>", ["PATCH"], body=UpdatePanBody, response=PanDto, operation_id="updatePan")
+    @BaseApi.endpoint("/<int:pan_id>", ["PATCH"], body=UpdatePanBody, response=PanDto, operation_id="updatePan",
+                      errors=(404,))
     @require_auth
     def update_pan(self, pan_id: int, body: UpdatePanBody) -> PanDto:
         """Rename a pan or mark it eaten."""
@@ -126,7 +127,7 @@ class PanApi(BaseApi):
         db.session.commit()
         return self._dto(pan)
 
-    @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan")
+    @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(404, 409))
     @require_auth
     def delete_pan(self, pan_id: int) -> None:
         """Delete a pan."""

@@ -212,17 +212,22 @@ def _responses(op: _Operation, refs: Dict) -> Dict[str, Any]:
 
     error = refs[(ErrorResponseDto, "serialization")]
     responses = {str(typed.status): success}
-    for status, applies in (
-        (HTTPStatus.BAD_REQUEST, typed.query is not None or typed.body is not None),
-        (HTTPStatus.UNAUTHORIZED, op.requires_auth),
-        (HTTPStatus.NOT_FOUND, bool(op.path_args)),
-    ):
-        if applies:
-            responses[str(status.value)] = {
-                "description": status.phrase,
-                "content": {"application/json": {"schema": error}},
-            }
+    for status in error_statuses(op.typed, op.requires_auth):
+        responses[str(status)] = {
+            "description": HTTPStatus(status).phrase,
+            "content": {"application/json": {"schema": error}},
+        }
     return responses
+
+
+def error_statuses(typed: TypedEndpoint, requires_auth: bool) -> List[int]:
+    """The declared error statuses plus 400 for request DTOs and 401 for the auth guard."""
+    statuses = set(typed.errors)
+    if typed.query is not None or typed.body is not None:
+        statuses.add(HTTPStatus.BAD_REQUEST.value)
+    if requires_auth:
+        statuses.add(HTTPStatus.UNAUTHORIZED.value)
+    return sorted(statuses)
 
 
 def _path_arg_schema(converter: str, op: _Operation) -> Dict[str, Any]:

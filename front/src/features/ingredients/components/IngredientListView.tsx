@@ -1,15 +1,16 @@
 import React, {useCallback} from "react";
 import {Collapse, List, Space, Empty, Badge, Spin} from "antd";
-import {Ingredient, IngredientType} from "../../../model/ingredient";
+import {IngredientType} from "../../../api/generated/model";
+import type {IngredientForUserDto} from "../../../api/generated/model";
 import {useTranslation} from "react-i18next";
 import {IngredientListGroupItem} from "./IngredientListGroupItem";
 
 interface IngredientListViewProps {
-    ingredients: Ingredient[];
+    ingredients: IngredientForUserDto[];
     loading: boolean;
-    onDelete: (ingredient: Ingredient) => void;
-    onRefill: (ingredient: Ingredient) => void;
-    onEdit: (ingredient: Ingredient) => void;
+    onDelete: (ingredient: IngredientForUserDto) => void;
+    onRefill: (ingredient: IngredientForUserDto) => void;
+    onEdit: (ingredient: IngredientForUserDto) => void;
     type: IngredientType;
 }
 
@@ -22,10 +23,10 @@ export function IngredientListView(props: IngredientListViewProps) {
         
         // Separate by available status and applicability
         const availableApplicable = filteredIngredients.filter(ingredient => 
-            ingredient.available && (ingredient.applicable !== false)
+            ingredient.available && ingredient.applicable
         );
         const availableNonApplicable = filteredIngredients.filter(ingredient => 
-            ingredient.available && ingredient.applicable === false
+            ingredient.available && !ingredient.applicable
         );
         const unavailableIngredients = filteredIngredients.filter(ingredient => !ingredient.available);
 
@@ -46,7 +47,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                 children: (
                     <List
                         dataSource={availableNonApplicable}
-                        renderItem={(ingredient: Ingredient) => (
+                        renderItem={(ingredient: IngredientForUserDto) => (
                             <IngredientListGroupItem
                                 ingredient={ingredient}
                                 onDelete={() => onDelete(ingredient)}
@@ -74,7 +75,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                 children: (
                     <List
                         dataSource={unavailableIngredients}
-                        renderItem={(ingredient: Ingredient) => (
+                        renderItem={(ingredient: IngredientForUserDto) => (
                             <IngredientListGroupItem
                                 ingredient={ingredient}
                                 onRefill={() => onRefill(ingredient)}
@@ -107,7 +108,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                         {availableApplicable.length > 0 && (
                             <List
                                 dataSource={availableApplicable}
-                                renderItem={(ingredient: Ingredient) => (
+                                renderItem={(ingredient: IngredientForUserDto) => (
                                     <IngredientListGroupItem
                                         ingredient={ingredient}
                                         onDelete={() => onDelete(ingredient)}

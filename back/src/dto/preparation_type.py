@@ -1,4 +1,6 @@
-from back.src.dto.base import ResponseDto
+from pydantic import Field
+
+from back.src.dto.base import RequestDto, ResponseDto
 
 
 class PrepTypeDto(ResponseDto):
@@ -6,3 +8,7 @@ class PrepTypeDto(ResponseDto):
     name: str
     # Null for the default types every session offers.
     session_id: int | None
+
+
+class CreatePrepTypeBody(RequestDto):
+    name: str = Field(min_length=1)

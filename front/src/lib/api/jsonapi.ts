@@ -6,8 +6,8 @@
  *   where `Resource = { type, id, attributes }`. `id` is a string for
  *   serializer-built resources and may be a number for hand-built ones.
  *   `id` is never repeated inside `attributes`.
- * - "Plain" endpoints (stats, leaderboard, available-counts, ingredient
- *   export/import) put an ordinary JSON value in `data` — no resource wrapper.
+ * - "Plain" endpoints (stats, leaderboard) put an ordinary JSON value in
+ *   `data` — no resource wrapper.
  * - Nested objects inside attributes (a pan's ingredients/ratings/
  *   preparation_type) are plain dicts carrying
  *   their own `id`, not resources.

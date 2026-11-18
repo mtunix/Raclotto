@@ -138,8 +138,8 @@ class TypedEndpointTest(AppTest):
         self.assert_errors(response, 406)
 
         response = self.client.post(
-            "/api/sessions",
-            json={"data": {"attributes": {"name": "Friday"}}},
+            "/api/insults",
+            json={"data": {"attributes": {"text": "Soggy"}}},
             headers={**self.bearer(self.user), "Accept": "application/vnd.api+json"},
         )
         self.assert_errors(response, 415)

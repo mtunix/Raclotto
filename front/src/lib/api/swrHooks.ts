@@ -1,6 +1,12 @@
 import useSWR, { mutate as swrMutate } from "swr";
 import { getGetMeKey } from "../../api/generated/endpoints/auth/auth";
+import {
+    getGetAvailableCountsKey,
+    getListIngredientsKey,
+} from "../../api/generated/endpoints/ingredients/ingredients";
 import { getListPansKey } from "../../api/generated/endpoints/pans/pans";
+import { getListPreparationTypesKey } from "../../api/generated/endpoints/preparation-type/preparation-type";
+import { getGetSessionByKeyKey } from "../../api/generated/endpoints/sessions/sessions";
 import { getGetUserProfileKey } from "../../api/generated/endpoints/users/users";
 import { Api } from "./index";
 import { ApiError } from "./types";
@@ -23,56 +29,21 @@ export const onErrorRetry = (
 };
 
 // Cache key generators
-const getIngredientsKey = (sessionKey?: string) => sessionKey ? ["ingredients", sessionKey] : null;
-const getPrepTypesKey = (sessionKey?: string) => sessionKey ? ["prepTypes", sessionKey] : null;
-const getSessionKey = (sessionKey?: string) => sessionKey ? ["session", sessionKey] : null;
 const getStatsKey = (sessionKey?: string, isGlobal?: boolean) => ["stats", sessionKey || null, isGlobal || false];
 const getLeaderboardKey = () => ["leaderboard"];
 const getAchievementsKey = () => ["achievements"];
 const getEventConfigsKey = (sessionKey?: string) => sessionKey ? ["eventConfigs", sessionKey] : ["eventConfigs"];
 const getEventsKey = (sessionKey?: string) => sessionKey ? ["events", sessionKey] : null;
-export const getAvailableCountsKey = (sessionKey?: string) => sessionKey ? ["availableCounts", sessionKey] : null;
 
 // Fetcher functions
-const ingredientsFetcher = ([, sessionKey]: [string, string]) => Api.listIngredients(sessionKey);
-const prepTypesFetcher = ([, sessionKey]: [string, string]) => Api.listPrepTypes(sessionKey);
-const sessionFetcher = ([, sessionKey]: [string, string]) => Api.getSessionByKey(sessionKey);
 const statsFetcher = ([, sessionKey, isGlobal]: [string, string | null, boolean]) =>
     Api.getStats(isGlobal ? undefined : (sessionKey || undefined));
 const leaderboardFetcher = () => Api.getLeaderboard();
 const achievementsFetcher = () => Api.listAchievements();
 const eventConfigsFetcher = ([, sessionKey]: [string, string?]) => Api.getEventConfigs(sessionKey);
 const eventsFetcher = ([, sessionKey]: [string, string]) => Api.getEvents(sessionKey);
-const availableCountsFetcher = ([, sessionKey]: [string, string]) => Api.getAvailableIngredientCounts(sessionKey);
 
 // SWR Hooks
-export function useIngredients(sessionKey?: string) {
-    const key = getIngredientsKey(sessionKey);
-    return useSWR(key, ingredientsFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function usePrepTypes(sessionKey?: string) {
-    const key = getPrepTypesKey(sessionKey);
-    return useSWR(key, prepTypesFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
-export function useSession(sessionKey?: string) {
-    const key = getSessionKey(sessionKey);
-    return useSWR(key, sessionFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
 export function useStats(sessionKey?: string, isGlobal: boolean = false) {
     const key = getStatsKey(sessionKey, isGlobal);
     return useSWR(key, statsFetcher, {
@@ -121,39 +92,25 @@ export function useEvents(sessionKey?: string) {
     });
 }
 
-export function useAvailableIngredientCounts(sessionKey?: string) {
-    const key = getAvailableCountsKey(sessionKey);
-    return useSWR(key, availableCountsFetcher, {
-        onErrorRetry: onErrorRetry,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: true
-    });
-}
-
 // Mutation helpers for cache invalidation
-export function mutateIngredients(sessionKey?: string) {
-    const key = getIngredientsKey(sessionKey);
-    if (key) {
-        return swrMutate(key);
-    }
+/** A session's ingredient list and available counts, which every catalog change alters. */
+export function mutateIngredientCatalog(sessionKey: string) {
+    return Promise.all([
+        swrMutate(getListIngredientsKey({ session_key: sessionKey })),
+        mutateAvailableCounts(sessionKey),
+    ]);
 }
 
-export function mutatePrepTypes(sessionKey?: string) {
-    const key = getPrepTypesKey(sessionKey);
-    if (key) {
-        return swrMutate(key);
-    }
+export function mutatePrepTypes(sessionKey: string) {
+    return swrMutate(getListPreparationTypesKey({ session_key: sessionKey }));
 }
 
 export function mutateMe() {
     return swrMutate(getGetMeKey());
 }
 
-export function mutateSession(sessionKey?: string) {
-    const key = getSessionKey(sessionKey);
-    if (key) {
-        return swrMutate(key);
-    }
+export function mutateSession(sessionKey: string) {
+    return swrMutate(getGetSessionByKeyKey({ session_key: sessionKey }));
 }
 
 export function mutateStats(sessionKey?: string, isGlobal: boolean = false) {
@@ -195,11 +152,6 @@ export function mutateUserProfile(userId?: number) {
     }
 }
 
-export function mutateAvailableCounts(sessionKey?: string) {
-    const key = getAvailableCountsKey(sessionKey);
-    if (key) {
-        return swrMutate(key);
-    }
+export function mutateAvailableCounts(sessionKey: string) {
+    return swrMutate(getGetAvailableCountsKey({ session_key: sessionKey }));
 }
-
-

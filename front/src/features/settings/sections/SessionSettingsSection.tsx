@@ -6,13 +6,14 @@ import {
   CopyOutlined,
   BgColorsOutlined,
 } from "@ant-design/icons";
+import type { SessionDto } from "../../../api/generated/model";
 import "../SettingsView.css";
 
 interface SessionSettingsSectionProps {
   t: (key: string) => string;
   sessionWaiting: boolean;
   sessionName: string;
-  session: any;
+  session: SessionDto | null;
   sessionSaving: boolean;
   exporting: boolean;
   sessionKey: string;

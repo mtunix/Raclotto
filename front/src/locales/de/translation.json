@@ -195,9 +195,8 @@
     "validationError": {
       "nameRequired": "Name ist erforderlich",
       "typeRequired": "Typ muss FILL (1) oder SAUCE (2) sein",
-      "dietaryRequired": "Mindestens eines von Fleisch, vegetarisch oder vegan muss wahr sein",
-      "meatConflict": "Fleisch kann nicht mit vegetarisch oder vegan wahr sein",
-      "vegetarianVeganConflict": "Vegetarisch und vegan können nicht beide wahr sein"
+      "dietaryRequired": "Eines von Fleisch, vegetarisch, vegan oder Fisch muss wahr sein",
+      "categoryConflict": "Nur eines von Fleisch, vegetarisch, vegan oder Fisch kann wahr sein"
     },
     "eventSettings": "Ereignis-Einstellungen",
     "eventSettingsDescription": "Konfigurieren Sie die Ereignishäufigkeit und aktivieren/deaktivieren Sie Ereignisse für diese Session.",

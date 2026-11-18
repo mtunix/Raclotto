@@ -127,6 +127,110 @@
         "title": "AuthResultDto",
         "type": "object"
       },
+      "AvailableCountsDto": {
+        "properties": {
+          "fill_count": {
+            "title": "Fill Count",
+            "type": "integer"
+          },
+          "sauce_count": {
+            "title": "Sauce Count",
+            "type": "integer"
+          },
+          "total_fill_count": {
+            "title": "Total Fill Count",
+            "type": "integer"
+          },
+          "total_sauce_count": {
+            "title": "Total Sauce Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "fill_count",
+          "sauce_count",
+          "total_fill_count",
+          "total_sauce_count"
+        ],
+        "title": "AvailableCountsDto",
+        "type": "object"
+      },
+      "CreateIngredientBody": {
+        "additionalProperties": false,
+        "properties": {
+          "fish": {
+            "default": false,
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "default": false,
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "gluten": {
+            "default": false,
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "default": false,
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "lactose": {
+            "default": false,
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "meat": {
+            "default": false,
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "spicy": {
+            "default": 0,
+            "maximum": 3,
+            "minimum": 0,
+            "title": "Spicy",
+            "type": "integer"
+          },
+          "sweet": {
+            "default": false,
+            "title": "Sweet",
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IngredientType"
+          },
+          "vegan": {
+            "default": false,
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "default": false,
+            "title": "Vegetarian",
+            "type": "boolean"
+          },
+          "wildcard": {
+            "default": false,
+            "title": "Wildcard",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ],
+        "title": "CreateIngredientBody",
+        "type": "object"
+      },
       "CreateInviteBody": {
         "additionalProperties": false,
         "properties": {
@@ -173,6 +277,21 @@
         "title": "CreatePanBody",
         "type": "object"
       },
+      "CreatePrepTypeBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CreatePrepTypeBody",
+        "type": "object"
+      },
       "CreateRatingBody": {
         "additionalProperties": false,
         "description": "Rate a pan as the signed-in user; rating the same pan again changes the rating.",
@@ -194,6 +313,21 @@
           "rating"
         ],
         "title": "CreateRatingBody",
+        "type": "object"
+      },
+      "CreateSessionBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CreateSessionBody",
         "type": "object"
       },
       "ErrorResponseDto": {
@@ -253,6 +387,129 @@
           "created_at"
         ],
         "title": "EventDto",
+        "type": "object"
+      },
+      "ImportIngredientsBody": {
+        "additionalProperties": false,
+        "properties": {
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/ImportedIngredient"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ingredients"
+        ],
+        "title": "ImportIngredientsBody",
+        "type": "object"
+      },
+      "ImportedIngredient": {
+        "additionalProperties": false,
+        "description": "An ingredient as an export file lists it. Import ignores `id` and `session_id`; reimport\nupdates the ingredient with that `id` and rejects a `session_id` of another session.",
+        "properties": {
+          "available": {
+            "default": true,
+            "title": "Available",
+            "type": "boolean"
+          },
+          "fish": {
+            "default": false,
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "default": false,
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "gluten": {
+            "default": false,
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "default": false,
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "lactose": {
+            "default": false,
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "meat": {
+            "default": false,
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Session Id"
+          },
+          "spicy": {
+            "default": 0,
+            "maximum": 3,
+            "minimum": 0,
+            "title": "Spicy",
+            "type": "integer"
+          },
+          "sweet": {
+            "default": false,
+            "title": "Sweet",
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IngredientType"
+          },
+          "vegan": {
+            "default": false,
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "default": false,
+            "title": "Vegetarian",
+            "type": "boolean"
+          },
+          "wildcard": {
+            "default": false,
+            "title": "Wildcard",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ],
+        "title": "ImportedIngredient",
         "type": "object"
       },
       "IngredientDto": {
@@ -342,6 +599,147 @@
         "title": "IngredientDto",
         "type": "object"
       },
+      "IngredientExportDto": {
+        "description": "A session's ingredients in the file format users download and import again.",
+        "properties": {
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientDto"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "session_key": {
+            "title": "Session Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_key",
+          "session_id",
+          "ingredients"
+        ],
+        "title": "IngredientExportDto",
+        "type": "object"
+      },
+      "IngredientForUserDto": {
+        "description": "An ingredient and whether the signed-in user's diet allows it.",
+        "properties": {
+          "applicable": {
+            "title": "Applicable",
+            "type": "boolean"
+          },
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "fish": {
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "gluten": {
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lactose": {
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "meat": {
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "spicy": {
+            "title": "Spicy",
+            "type": "integer"
+          },
+          "sweet": {
+            "title": "Sweet",
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IngredientType"
+          },
+          "vegan": {
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "title": "Vegetarian",
+            "type": "boolean"
+          },
+          "wildcard": {
+            "title": "Wildcard",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "available",
+          "meat",
+          "vegetarian",
+          "vegan",
+          "fish",
+          "gluten",
+          "histamine",
+          "fructose",
+          "lactose",
+          "spicy",
+          "wildcard",
+          "sweet",
+          "session_id",
+          "applicable"
+        ],
+        "title": "IngredientForUserDto",
+        "type": "object"
+      },
+      "IngredientImportDto": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "integer"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientDto"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          }
+        },
+        "required": [
+          "created",
+          "ingredients"
+        ],
+        "title": "IngredientImportDto",
+        "type": "object"
+      },
       "IngredientRatingDto": {
         "properties": {
           "avg_rating": {
@@ -357,6 +755,37 @@
           "avg_rating"
         ],
         "title": "IngredientRatingDto",
+        "type": "object"
+      },
+      "IngredientReimportDto": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "integer"
+          },
+          "deleted": {
+            "title": "Deleted",
+            "type": "integer"
+          },
+          "ingredients": {
+            "items": {
+              "$ref": "#/components/schemas/IngredientDto"
+            },
+            "title": "Ingredients",
+            "type": "array"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created",
+          "updated",
+          "deleted",
+          "ingredients"
+        ],
+        "title": "IngredientReimportDto",
         "type": "object"
       },
       "IngredientType": {
@@ -931,6 +1360,20 @@
         "title": "RatingDto",
         "type": "object"
       },
+      "RefillIngredientBody": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "RefillIngredientBody",
+        "type": "object"
+      },
       "RegisterBody": {
         "additionalProperties": false,
         "description": "Sign up with an unused invite; the email must be the one the invite was made for.",
@@ -1137,6 +1580,67 @@
         "title": "RollPanBody",
         "type": "object"
       },
+      "SessionDto": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "created_by_user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By User Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "name",
+          "timestamp",
+          "active",
+          "created_by_user_id"
+        ],
+        "title": "SessionDto",
+        "type": "object"
+      },
+      "SessionKeyBody": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "minLength": 1,
+            "title": "Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "title": "SessionKeyBody",
+        "type": "object"
+      },
       "SessionPanCountDto": {
         "properties": {
           "pan_count": {
@@ -1171,6 +1675,81 @@
           "token"
         ],
         "title": "TokenDto",
+        "type": "object"
+      },
+      "UpdateIngredientBody": {
+        "additionalProperties": false,
+        "description": "Omitted fields are left unchanged; null is not a value any field takes.",
+        "properties": {
+          "fish": {
+            "default": null,
+            "title": "Fish",
+            "type": "boolean"
+          },
+          "fructose": {
+            "default": null,
+            "title": "Fructose",
+            "type": "boolean"
+          },
+          "gluten": {
+            "default": null,
+            "title": "Gluten",
+            "type": "boolean"
+          },
+          "histamine": {
+            "default": null,
+            "title": "Histamine",
+            "type": "boolean"
+          },
+          "lactose": {
+            "default": null,
+            "title": "Lactose",
+            "type": "boolean"
+          },
+          "meat": {
+            "default": null,
+            "title": "Meat",
+            "type": "boolean"
+          },
+          "name": {
+            "default": null,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "spicy": {
+            "default": null,
+            "maximum": 3,
+            "minimum": 0,
+            "title": "Spicy",
+            "type": "integer"
+          },
+          "sweet": {
+            "default": null,
+            "title": "Sweet",
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/IngredientType",
+            "default": null
+          },
+          "vegan": {
+            "default": null,
+            "title": "Vegan",
+            "type": "boolean"
+          },
+          "vegetarian": {
+            "default": null,
+            "title": "Vegetarian",
+            "type": "boolean"
+          },
+          "wildcard": {
+            "default": null,
+            "title": "Wildcard",
+            "type": "boolean"
+          }
+        },
+        "title": "UpdateIngredientBody",
         "type": "object"
       },
       "UpdateMeBody": {
@@ -1329,6 +1908,21 @@
           "rating"
         ],
         "title": "UpdateRatingBody",
+        "type": "object"
+      },
+      "UpdateSessionBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "UpdateSessionBody",
         "type": "object"
       },
       "UserProfileDto": {
@@ -1631,7 +2225,7 @@
             },
             "description": "OK"
           },
-          "404": {
+          "400": {
             "content": {
               "application/json": {
                 "schema": {
@@ -1639,7 +2233,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Bad Request"
           }
         },
         "summary": "Look up an unused invite for the registration page.",
@@ -1681,6 +2275,16 @@
               }
             },
             "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
           }
         },
         "summary": "Sign in with name or email and password.",
@@ -1766,6 +2370,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "security": [
@@ -1853,6 +2467,704 @@
         "summary": "Register a new user with an invite token and sign them in.",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/ingredients": {
+      "get": {
+        "operationId": "listIngredients",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IngredientForUserDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List ingredients, optionally of one session, each marked whether the user's diet allows it.",
+        "tags": [
+          "ingredients"
+        ]
+      },
+      "post": {
+        "operationId": "createIngredient",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIngredientBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add an ingredient to a session.",
+        "tags": [
+          "ingredients"
+        ]
+      }
+    },
+    "/ingredients/available-counts": {
+      "get": {
+        "operationId": "getAvailableCounts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableCountsDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Count a session's available fills and sauces, all of them and those the user's diet allows.",
+        "tags": [
+          "ingredients"
+        ]
+      }
+    },
+    "/ingredients/export": {
+      "get": {
+        "operationId": "exportIngredients",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientExportDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Export a session's ingredients, ids included, for a later import or reimport.",
+        "tags": [
+          "ingredients"
+        ]
+      }
+    },
+    "/ingredients/import": {
+      "post": {
+        "operationId": "importIngredients",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportIngredientsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientImportDto"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add every listed ingredient to a session as a new one.",
+        "tags": [
+          "ingredients"
+        ]
+      }
+    },
+    "/ingredients/refill": {
+      "post": {
+        "operationId": "refillIngredient",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefillIngredientBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mark an ingredient available again.",
+        "tags": [
+          "ingredients"
+        ]
+      }
+    },
+    "/ingredients/reimport": {
+      "post": {
+        "operationId": "reimportIngredients",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportIngredientsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientReimportDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Make a session's catalog the list: update listed ids, create the rest, mark the unlisted unavailable.",
+        "tags": [
+          "ingredients"
+        ]
+      }
+    },
+    "/ingredients/{ingredient_id}": {
+      "delete": {
+        "operationId": "deleteIngredient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredient_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mark an ingredient unavailable; it stays in the session and its pans.",
+        "tags": [
+          "ingredients"
+        ]
+      },
+      "get": {
+        "operationId": "getIngredient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredient_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an ingredient by id.",
+        "tags": [
+          "ingredients"
+        ]
+      },
+      "patch": {
+        "operationId": "updateIngredient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ingredient_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIngredientBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change an ingredient's name, type, category or properties.",
+        "tags": [
+          "ingredients"
         ]
       }
     },
@@ -1965,6 +3277,16 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -2258,6 +3580,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
           }
         },
         "security": [
@@ -2326,6 +3658,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
           }
         },
         "security": [
@@ -2394,6 +3736,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
           }
         },
         "security": [
@@ -2443,6 +3795,16 @@
               }
             },
             "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "security": [
@@ -2584,6 +3946,228 @@
         ]
       }
     },
+    "/preparation_type": {
+      "get": {
+        "operationId": "listPreparationTypes",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PrepTypeDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the default preparation types and a session's own, or every preparation type.",
+        "tags": [
+          "preparation_type"
+        ]
+      },
+      "post": {
+        "operationId": "createPreparationType",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Session Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePrepTypeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrepTypeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add a preparation type to a session; without a session it becomes a default type.",
+        "tags": [
+          "preparation_type"
+        ]
+      }
+    },
+    "/preparation_type/{prep_type_id}": {
+      "delete": {
+        "operationId": "deletePreparationType",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prep_type_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a session's preparation type; the default types stay.",
+        "tags": [
+          "preparation_type"
+        ]
+      }
+    },
     "/ratings": {
       "get": {
         "operationId": "listRatings",
@@ -2694,6 +4278,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
           }
         },
         "security": [
@@ -2881,6 +4475,498 @@
         "summary": "Change a rating's stars.",
         "tags": [
           "ratings"
+        ]
+      }
+    },
+    "/sessions": {
+      "get": {
+        "operationId": "listSessions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List the active sessions, or every session.",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "post": {
+        "operationId": "createSession",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a session; its creator joins it.",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/by-key": {
+      "get": {
+        "operationId": "getSessionByKey",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a session by its key.",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/close": {
+      "post": {
+        "operationId": "closeSession",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionKeyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Close a session; achievements that wait for the end are judged.",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/reactivate": {
+      "post": {
+        "operationId": "reactivateSession",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionKeyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reopen a closed session.",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{session_id}": {
+      "delete": {
+        "operationId": "deleteSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a session.",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "get": {
+        "operationId": "getSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a session by id.",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "patch": {
+        "operationId": "updateSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rename a session.",
+        "tags": [
+          "sessions"
         ]
       }
     },

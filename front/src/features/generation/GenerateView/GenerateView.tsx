@@ -26,11 +26,9 @@ import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";
 import { createRating } from "../../../api/generated/endpoints/ratings/ratings";
 import type { PanDto } from "../../../api/generated/model";
-import {
-  useIngredients,
-  usePrepTypes,
-  useAvailableIngredientCounts,
-} from "../../../lib/api/swrHooks";
+import { useListIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
+import { useListPreparationTypes } from "../../../api/generated/endpoints/preparation-type/preparation-type";
+import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientType } from "../../../model/ingredient";
 import { Util } from "../../../lib/util";
 import { useTranslation } from "react-i18next";
@@ -85,8 +83,9 @@ export function GenerateView() {
   const sessionKey = session?.key || "";
 
   // Use SWR hooks for data fetching
-  const { data: ingredients = [] } = useIngredients(sessionKey);
-  const { data: prepTypes = [] } = usePrepTypes(sessionKey);
+  const swr = { enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true };
+  const { data: ingredients = [] } = useListIngredients({ session_key: sessionKey }, { swr });
+  const { data: prepTypes = [] } = useListPreparationTypes({ session_key: sessionKey }, { swr });
 
   // Calculate total counts from ingredients (all ingredients regardless of availability)
   const totalFillCount = getTotalIngredientTypeCount(

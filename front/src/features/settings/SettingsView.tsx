@@ -24,24 +24,28 @@ import {
   Divider,
 } from "antd";
 import { CopyOutlined } from "@ant-design/icons";
-import { Ingredient, IngredientType } from "../../model/ingredient";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Api } from "../../lib/api";
 import {
-  useSession,
   mutateMe,
   mutateSession,
   mutatePanLists,
   onErrorRetry,
 } from "../../lib/api/swrHooks";
 import { updateMe, useGetMe } from "../../api/generated/endpoints/auth/auth";
+import { exportIngredients } from "../../api/generated/endpoints/ingredients/ingredients";
+import {
+  closeSession,
+  updateSession,
+  useGetSessionByKey,
+} from "../../api/generated/endpoints/sessions/sessions";
 import {
   createInvite,
   revokeInvite,
   useListInvites,
 } from "../../api/generated/endpoints/invites/invites";
-import type { MeDto } from "../../api/generated/model";
+import { IngredientType } from "../../api/generated/model";
+import type { ImportedIngredient, MeDto } from "../../api/generated/model";
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
 import { UserSettingsSection as UserSettingsSectionComponent } from "./sections/UserSettingsSection";
@@ -51,16 +55,30 @@ import { InvitesSection as InvitesSectionComponent } from "./sections/InvitesSec
 import { changeLanguage } from "../../i18n";
 import { normalizeDiet } from "../../model/diet";
 import { useDietPreferences } from "../../shared/useDietPreferences";
+import { ingredientCatalog } from "../ingredients/ingredientCatalog";
+import {
+  categoryProblem,
+  isIngredientType,
+  stageExportFile,
+  StagedIngredient,
+  toImported,
+} from "./ingredientImport";
 import "./SettingsView.css";
 
 const { Text } = Typography;
 
 type SettingsViewProps = {};
 
+type StagedFieldChange = <K extends keyof StagedIngredient>(
+  index: number,
+  field: K,
+  value: StagedIngredient[K],
+) => void;
+
 interface EditableIngredientItemProps {
-  ingredient: Ingredient;
+  ingredient: StagedIngredient;
   index: number;
-  onChange: (index: number, field: keyof Ingredient, value: any) => void;
+  onChange: StagedFieldChange;
   errors: Record<string, string> | undefined;
 }
 
@@ -281,8 +299,10 @@ export function SettingsView(props: SettingsViewProps) {
     isLoading: userLoading,
     error: userError,
   } = useGetMe({ swr });
-  const { data: sessionData, isLoading: sessionWaiting } =
-    useSession(sessionKey);
+  const { data: sessionData, isLoading: sessionWaiting } = useGetSessionByKey(
+    { session_key: sessionKey },
+    { swr: { ...swr, enabled: !!sessionKey } },
+  );
   const {
     data: invites = [],
     isLoading: loadingInvites,
@@ -343,9 +363,9 @@ export function SettingsView(props: SettingsViewProps) {
   // Import modal state
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importMode, setImportMode] = useState<"import" | "reimport">("import");
-  const [stagingIngredients, setStagingIngredients] = useState<Ingredient[]>(
-    [],
-  );
+  const [stagingIngredients, setStagingIngredients] = useState<
+    StagedIngredient[]
+  >([]);
   const [importValidationErrors, setImportValidationErrors] = useState<
     Record<number, Record<string, string>>
   >({});
@@ -520,7 +540,7 @@ export function SettingsView(props: SettingsViewProps) {
   function onSaveSessionName() {
     if (!session || !sessionName.trim()) return;
     setSessionSaving(true);
-    Api.updateSession(session.id, sessionName.trim())
+    updateSession(session.id, { name: sessionName.trim() })
       .then((updatedSession) => {
         setSession(updatedSession);
         // Invalidate cache to trigger refetch
@@ -541,7 +561,7 @@ export function SettingsView(props: SettingsViewProps) {
 
   function handleConfirmCloseSession() {
     if (!sessionKey) return;
-    Api.close(sessionKey)
+    closeSession({ key: sessionKey })
       .then(() => {
         clearSession();
         setCloseSessionModalVisible(false);
@@ -560,7 +580,7 @@ export function SettingsView(props: SettingsViewProps) {
       return;
     }
     setExporting(true);
-    Api.exportIngredients(sessionKey)
+    exportIngredients({ session_key: sessionKey })
       .then((data) => {
         const jsonString = JSON.stringify(data, null, 2);
         setExportJson(jsonString);
@@ -607,8 +627,7 @@ export function SettingsView(props: SettingsViewProps) {
 
   // Validation functions
   function validateIngredient(
-    ingredient: Ingredient,
-    index: number,
+    ingredient: StagedIngredient,
   ): Record<string, string> {
     const errors: Record<string, string> = {};
 
@@ -617,36 +636,21 @@ export function SettingsView(props: SettingsViewProps) {
         t("settings.validationError.nameRequired") || "Name is required";
     }
 
-    if (
-      !ingredient.type ||
-      (ingredient.type !== IngredientType.FILL &&
-        ingredient.type !== IngredientType.SAUCE)
-    ) {
+    if (!isIngredientType(ingredient.type)) {
       errors.type =
         t("settings.validationError.typeRequired") ||
         "Type must be FILL (1) or SAUCE (2)";
     }
 
-    const meat = ingredient.meat || false;
-    const vegetarian = ingredient.vegetarian || false;
-    const vegan = ingredient.vegan || false;
-
-    if (!meat && !vegetarian && !vegan) {
+    const problem = categoryProblem(ingredient);
+    if (problem === "none") {
       errors.dietary =
         t("settings.validationError.dietaryRequired") ||
-        "At least one of meat, vegetarian, or vegan must be true";
-    }
-
-    if (meat && (vegetarian || vegan)) {
+        "One of meat, vegetarian, vegan or fish must be true";
+    } else if (problem === "several") {
       errors.dietary =
-        t("settings.validationError.meatConflict") ||
-        "Meat cannot be true with vegetarian or vegan";
-    }
-
-    if (vegetarian && vegan) {
-      errors.dietary =
-        t("settings.validationError.vegetarianVeganConflict") ||
-        "Vegetarian and vegan cannot both be true";
+        t("settings.validationError.categoryConflict") ||
+        "Only one of meat, vegetarian, vegan or fish can be true";
     }
 
     return errors;
@@ -657,7 +661,7 @@ export function SettingsView(props: SettingsViewProps) {
     let hasErrors = false;
 
     stagingIngredients.forEach((ingredient, index) => {
-      const errors = validateIngredient(ingredient, index);
+      const errors = validateIngredient(ingredient);
       if (Object.keys(errors).length > 0) {
         newErrors[index] = errors;
         hasErrors = true;
@@ -668,17 +672,13 @@ export function SettingsView(props: SettingsViewProps) {
     return !hasErrors;
   }
 
-  function handleIngredientChange(
-    index: number,
-    field: keyof Ingredient,
-    value: any,
-  ) {
+  const handleIngredientChange: StagedFieldChange = (index, field, value) => {
     const updated = [...stagingIngredients];
     updated[index] = { ...updated[index], [field]: value };
     setStagingIngredients(updated);
 
     // Real-time validation
-    const errors = validateIngredient(updated[index], index);
+    const errors = validateIngredient(updated[index]);
     setImportValidationErrors((prev) => {
       const newErrors = { ...prev };
       if (Object.keys(errors).length > 0) {
@@ -688,48 +688,17 @@ export function SettingsView(props: SettingsViewProps) {
       }
       return newErrors;
     });
-  }
-
-  function normalizeIngredient(ing: any): Ingredient {
-    return {
-      id: ing.id || 0,
-      name: ing.name || "",
-      type:
-        typeof ing.type === "number"
-          ? ing.type
-          : ing.type === "FILL" || ing.type === 1
-            ? IngredientType.FILL
-            : IngredientType.SAUCE,
-      available: ing.available !== undefined ? ing.available : true,
-      meat: ing.meat || false,
-      vegetarian: ing.vegetarian || false,
-      vegan: ing.vegan || false,
-      gluten: ing.gluten || false,
-      histamine: ing.histamine || false,
-      fructose: ing.fructose || false,
-      lactose: ing.lactose || false,
-    };
-  }
+  };
 
   function handleJsonInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const text = e.target.value;
     setImportJsonInput(text);
-    try {
-      const data = JSON.parse(text);
-      if (!data.ingredients || !Array.isArray(data.ingredients)) {
-        // Don't show error while typing, just clear staging
-        if (text.trim() !== "") {
-          setStagingIngredients([]);
-        }
-        return;
-      }
-      const normalized = data.ingredients.map(normalizeIngredient);
-      setStagingIngredients(normalized);
-    } catch (error) {
-      // Invalid JSON, but don't show error while typing
-      if (text.trim() !== "") {
-        setStagingIngredients([]);
-      }
+    // Invalid JSON while typing clears the staging without an error
+    const staged = stageExportFile(text);
+    if (staged) {
+      setStagingIngredients(staged);
+    } else if (text.trim() !== "") {
+      setStagingIngredients([]);
     }
   }
 
@@ -755,45 +724,42 @@ export function SettingsView(props: SettingsViewProps) {
       return;
     }
 
-    // Prepare ingredients for submission
-    // For import mode, remove IDs (backend will create new ones)
-    // For reimport mode, keep IDs if they exist
-    const ingredientsToSubmit = stagingIngredients.map((ing) => {
-      const { applicable, ...ingredient } = ing;
-      if (importMode === "import") {
-        // Remove ID for import mode
-        const { id, ...ingredientWithoutId } = ingredient;
-        return ingredientWithoutId;
-      }
-      return ingredient;
-    });
-
-    const submitFn =
-      importMode === "import"
-        ? () => Api.importIngredients(sessionKey, ingredientsToSubmit)
-        : () => Api.reimportIngredients(sessionKey, ingredientsToSubmit);
+    const ingredients: ImportedIngredient[] = [];
+    for (const staged of stagingIngredients) {
+      const ingredient = toImported(staged, importMode === "reimport");
+      // Validation above rejected every type that does not exist.
+      if (ingredient === null) return;
+      ingredients.push(ingredient);
+    }
 
     const loadingState =
       importMode === "import" ? setImporting : setReimporting;
     loadingState(true);
 
-    submitFn()
-      .then((result: any) => {
-        if (importMode === "import") {
-          message.success(
-            t("settings.importSuccess", { count: result.created }) ||
-              `Successfully imported ${result.created} ingredients`,
-          );
-        } else {
-          message.success(
-            t("settings.reimportSuccess", {
-              created: result.created,
-              updated: result.updated || 0,
-              deleted: result.deleted || 0,
-            }) ||
-              `Reimported: ${result.created} created, ${result.updated || 0} updated, ${result.deleted || 0} deleted`,
-          );
-        }
+    const submitted: Promise<string> =
+      importMode === "import"
+        ? ingredientCatalog
+            .import(sessionKey, ingredients)
+            .then(
+              (result) =>
+                t("settings.importSuccess", { count: result.created }) ||
+                `Successfully imported ${result.created} ingredients`,
+            )
+        : ingredientCatalog
+            .reimport(sessionKey, ingredients)
+            .then(
+              (result) =>
+                t("settings.reimportSuccess", {
+                  created: result.created,
+                  updated: result.updated,
+                  deleted: result.deleted,
+                }) ||
+                `Reimported: ${result.created} created, ${result.updated} updated, ${result.deleted} deleted`,
+            );
+
+    submitted
+      .then((success) => {
+        message.success(success);
         triggerSettingsRefresh();
         handleCloseImportModal();
         loadingState(false);

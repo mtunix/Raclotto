@@ -195,9 +195,8 @@
     "validationError": {
       "nameRequired": "Name is required",
       "typeRequired": "Type must be FILL (1) or SAUCE (2)",
-      "dietaryRequired": "At least one of meat, vegetarian, or vegan must be true",
-      "meatConflict": "Meat cannot be true with vegetarian or vegan",
-      "vegetarianVeganConflict": "Vegetarian and vegan cannot both be true"
+      "dietaryRequired": "One of meat, vegetarian, vegan or fish must be true",
+      "categoryConflict": "Only one of meat, vegetarian, vegan or fish can be true"
     },
     "eventSettings": "Event Settings",
     "eventSettingsDescription": "Configure event frequency and enable/disable events for this session.",

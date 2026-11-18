@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
 import { Api } from "../../../lib/api";
 import { useEventConfigs, mutateEventConfigs } from "../../../lib/api/swrHooks";
+import type { SessionDto } from "../../../api/generated/model";
 import "../SettingsView.css";
 
 const { Title, Text } = Typography;
@@ -9,7 +10,7 @@ const { Title, Text } = Typography;
 interface EventSettingsSectionProps {
     t: (key: string) => string;
     sessionKey: string;
-    session: any;
+    session: SessionDto | null;
 }
 
 interface EventConfigState {

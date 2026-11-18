@@ -9,12 +9,12 @@ import {
   SettingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-import { Ingredient } from "../../model/ingredient";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../AuthSlice";
 import { useAppStore } from "../../AppSlice";
 import { useGetUserProfile } from "../../api/generated/endpoints/users/users";
+import type { IngredientForUserDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import "./Toolbar.css";
@@ -25,7 +25,7 @@ import raclotto from "../../raclotto-vibe.png";
 const { Text } = Typography;
 
 type ToolbarProps = {
-  ingredients: Ingredient[];
+  ingredients: IngredientForUserDto[];
   session: string;
   sessionId: string;
   sessionClosed: () => void;

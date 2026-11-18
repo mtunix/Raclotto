@@ -17,7 +17,6 @@ import {
   ProfilePictureEntry,
   ProfilePictureHistory,
 } from "../../model/profilePicture";
-import { RaclottoSession } from "../../model/raclottoSession";
 import { Rating } from "../../model/rating";
 import { toId } from "./jsonapi";
 
@@ -35,8 +34,9 @@ const optNum = (v: unknown): number | null =>
   typeof v === "number" ? v : null;
 const list = (v: unknown): Raw[] => (Array.isArray(v) ? (v as Raw[]) : []);
 
+/** An ingredient as GET /stats still sends it inside its pans. */
 export function toIngredient(r: Raw): Ingredient {
-  const ingredient: Ingredient = {
+  return {
     id: toId(r.id),
     name: str(r.name),
     type: num(r.type, IngredientType.FILL) as IngredientType,
@@ -53,11 +53,6 @@ export function toIngredient(r: Raw): Ingredient {
     wildcard: bool(r.wildcard),
     sweet: bool(r.sweet),
   };
-  // Only the session ingredient list computes `applicable` for the current user
-  if (typeof r.applicable === "boolean") {
-    ingredient.applicable = r.applicable;
-  }
-  return ingredient;
 }
 
 export function toPrepType(r: Raw): PrepType {
@@ -104,16 +99,6 @@ export function toPan(r: Raw): Pan {
     pan.preparation_type = toPrepType(r.preparation_type as Raw);
   }
   return pan;
-}
-
-export function toSession(r: Raw): RaclottoSession {
-  return RaclottoSession.fromParsed({
-    id: toId(r.id),
-    key: str(r.key),
-    name: str(r.name),
-    timestamp: str(r.timestamp),
-    active: bool(r.active, true),
-  });
 }
 
 export function toAchievement(r: Raw): Achievement {

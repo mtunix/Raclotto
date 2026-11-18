@@ -22,10 +22,4 @@ jest.mock('./lib/api', () => ({
     },
 }));
 
-// Mock apiSession
-jest.mock('./lib/api/apiSession', () => ({
-    useSessions: jest.fn(() => ({ data: [], isLoading: false, error: null })),
-    ENDPOINT_SESSION: '/api/session',
-}));
-
 // Mocks are in __mocks__ directory (antd.js, react-i18next.js, axios.js)

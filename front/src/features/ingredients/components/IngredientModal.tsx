@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Radio, Space, Button, message, Checkbox, Slider, Card, Row, Col } from 'antd';
-import { Ingredient, IngredientType } from "../../../model/ingredient";
 import { useTranslation } from "react-i18next";
-import { Api } from "../../../lib/api";
+import { IngredientType } from "../../../api/generated/model";
+import type { CreateIngredientBody, IngredientForUserDto, UpdateIngredientBody } from "../../../api/generated/model";
 import { useAppStore } from "../../../AppSlice";
-import { mutateIngredients } from "../../../lib/api/swrHooks";
+import { ingredientCatalog } from "../ingredientCatalog";
 import { ExclusiveTagChipGroup } from "../../../shared/ExclusiveTagChipGroup";
 import { MultiTagChipGroup } from "../../../shared/MultiTagChipGroup";
 
@@ -17,8 +17,8 @@ interface IngredientModalProps {
     mode: 'add' | 'edit';
     
     // Edit mode props
-    ingredient?: Ingredient | null;
-    onSave?: (ingredientId: number, data: Partial<Ingredient>) => Promise<void>;
+    ingredient?: IngredientForUserDto | null;
+    onSave?: (ingredientId: number, data: UpdateIngredientBody) => Promise<void>;
     
     // Add mode props
     onSuccess?: () => void;
@@ -28,11 +28,19 @@ interface IngredientModalProps {
     context?: 'ingredients' | 'sauces';
 }
 
+interface IngredientFormValues {
+    name: string;
+    type: IngredientType;
+    spicy: number;
+    wildcard?: boolean;
+    sweet?: boolean;
+}
+
 export function IngredientModal(props: IngredientModalProps) {
     const { t } = useTranslation();
     const session = useAppStore((state) => state.session);
     const sessionKey = session?.key || "";
-    const [form] = Form.useForm();
+    const [form] = Form.useForm<IngredientFormValues>();
     const [loading, setLoading] = useState(false);
 
     // State for TagChipGroup components
@@ -133,7 +141,7 @@ export function IngredientModal(props: IngredientModalProps) {
                 });
                 
                 // Set default type based on context or initialType
-                let defaultType = IngredientType.FILL;
+                let defaultType: IngredientType = IngredientType.FILL;
                 if (props.initialType) {
                     defaultType = props.initialType;
                 } else if (props.context === 'sauces') {
@@ -186,7 +194,7 @@ export function IngredientModal(props: IngredientModalProps) {
             const formValues = form.getFieldsValue();
             
             // Combine all data
-            const ingredientData = {
+            const ingredientData: CreateIngredientBody = {
                 name: values.name, // Ensure name is included
                 type: values.type, // Ensure type is included
                 spicy: spicyLevel, // Use local state for spicy level
@@ -212,8 +220,7 @@ export function IngredientModal(props: IngredientModalProps) {
                 // Add mode: create new ingredient
                 if (!sessionKey) return;
                 
-                await Api.addIngredient(sessionKey, ingredientData);
-                mutateIngredients(sessionKey);
+                await ingredientCatalog.create(sessionKey, ingredientData);
                 message.success(t("ingredient.added") || "Ingredient added successfully");
                 
                 if (props.onSuccess) {
@@ -225,8 +232,8 @@ export function IngredientModal(props: IngredientModalProps) {
             setSelectedCategory("vegetarian");
             setAllergenValues({});
             props.onCancel();
-        } catch (error: any) {
-            if (error.errorFields) {
+        } catch (error: unknown) {
+            if (typeof error === "object" && error !== null && "errorFields" in error) {
                 // Form validation errors
                 return;
             }

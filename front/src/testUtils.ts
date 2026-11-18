@@ -1,7 +1,7 @@
 import { Ingredient, IngredientType } from './model/ingredient';
 import { Pan } from './model/pan';
 import { Achievement } from './model/achievement';
-import { RaclottoSession } from './model/raclottoSession';
+import type { IngredientForUserDto, SessionDto } from './api/generated/model';
 
 // Mock API: loosely typed so stale component tests keep compiling when the
 // Api facade's method names change.
@@ -19,17 +19,13 @@ export const mockApi: MockedApi = {
     createSession: jest.fn(),
 } as MockedApi;
 
-jest.mock('../../lib/api/apiSession', () => ({
-    useSessions: jest.fn(() => ({ data: [], isLoading: false, error: null })),
-    ENDPOINT_SESSION: '/api/session',
-}));
-
-export const mockSession: RaclottoSession = {
+export const mockSession: SessionDto = {
     id: 1,
     key: 'test-session-key',
     name: 'Test Session',
-    timestamp: new Date('2024-01-01'),
+    timestamp: '2024-01-01T00:00:00',
     active: true,
+    created_by_user_id: null,
 };
 
 export const mockUseAppStore = jest.fn();
@@ -79,6 +75,17 @@ export const createMockIngredient = (overrides?: Partial<Ingredient>): Ingredien
     ...overrides,
 });
 
+export const createMockIngredientForUser = (overrides?: Partial<IngredientForUserDto>): IngredientForUserDto => ({
+    fish: false,
+    spicy: 0,
+    wildcard: false,
+    sweet: false,
+    session_id: 1,
+    applicable: true,
+    ...createMockIngredient(),
+    ...overrides,
+});
+
 export const createMockPan = (overrides?: Partial<Pan>): Pan => ({
     id: 1,
     name: 'Test Pan',
@@ -100,7 +107,7 @@ export const createMockAchievement = (overrides?: Partial<Achievement>): Achieve
     ...overrides,
 });
 
-export const createMockSession = (overrides?: Partial<RaclottoSession>): RaclottoSession => ({
+export const createMockSession = (overrides?: Partial<SessionDto>): SessionDto => ({
     ...mockSession,
     ...overrides,
 });

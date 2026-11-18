@@ -1,14 +1,15 @@
 import React from "react";
 import {List, Button, Space} from "antd";
 import {EditOutlined} from "@ant-design/icons";
-import {Ingredient, IngredientType} from "../../../model/ingredient";
+import {IngredientType} from "../../../api/generated/model";
+import type {IngredientForUserDto} from "../../../api/generated/model";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDisplay";
 import {ConfirmDeleteButton} from "../../../shared/ConfirmDeleteButton";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
 
 interface IngredientListGroupItemProps {
-    ingredient: Ingredient;
+    ingredient: IngredientForUserDto;
     available: boolean;
     onDelete?: () => void;
     onRefill?: () => void;
@@ -17,7 +18,7 @@ interface IngredientListGroupItemProps {
 
 export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
     const { t } = useTranslation();
-    const isApplicable = props.ingredient.applicable !== false;
+    const isApplicable = props.ingredient.applicable;
     const backgroundColor = props.available 
         ? (props.ingredient.type === IngredientType.FILL ? '#e6f7ff' : '#f0f0f0')
         : '#fff1f0';

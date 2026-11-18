@@ -2,7 +2,9 @@ import React from "react";
 import { Row, Col, Card, Checkbox, Button } from "antd";
 import { IngredientCountControl } from "./IngredientCountControl";
 import { useIngredientStore } from "./GenerateView/ingredientStore";
-import { useAvailableIngredientCounts } from "./hooks/useAvailableIngredientCounts";
+import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
+import { useAppStore } from "../../AppSlice";
+import { countOr } from "./countOr";
 import styles from "./GenerateView/GenerateView.module.css";
 
 interface LegacyViewProps {
@@ -46,17 +48,15 @@ export const LegacyView: React.FC<LegacyViewProps> = ({
   rollCheese,
   setRollCheese,
 }) => {
-  // Get available counts from the API
-  const {
-    getAvailableFillCount,
-    getAvailableSauceCount,
-    getTotalFillCount,
-    getTotalSauceCount,
-  } = useAvailableIngredientCounts();
-  const availableFillCount = getAvailableFillCount(totalFillCount);
-  const availableSauceCount = getAvailableSauceCount(totalSauceCount);
-  const totalFillCountFromApi = getTotalFillCount(totalFillCount);
-  const totalSauceCountFromApi = getTotalSauceCount(totalSauceCount);
+  const sessionKey = useAppStore((state) => state.session?.key) ?? "";
+  const { data: counts } = useGetAvailableCounts(
+    { session_key: sessionKey },
+    { swr: { enabled: !!sessionKey } },
+  );
+  const availableFillCount = countOr(counts?.fill_count, totalFillCount);
+  const availableSauceCount = countOr(counts?.sauce_count, totalSauceCount);
+  const totalFillCountFromApi = countOr(counts?.total_fill_count, totalFillCount);
+  const totalSauceCountFromApi = countOr(counts?.total_sauce_count, totalSauceCount);
   return (
     <div className={styles.flexColumn} style={{ padding: "8px 0" }}>
       <Row gutter={[24, 24]} className={styles.marginBottom16}>

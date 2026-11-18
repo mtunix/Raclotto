@@ -36,7 +36,8 @@ class RatingApi(BaseApi):
             ratings = self.repository.all()
         return [RatingDto.model_validate(rating) for rating in ratings]
 
-    @BaseApi.endpoint("", ["POST"], body=CreateRatingBody, response=RatingDto, operation_id="createRating")
+    @BaseApi.endpoint("", ["POST"], body=CreateRatingBody, response=RatingDto, operation_id="createRating",
+                      errors=(404,))
     @require_auth
     def create_rating(self, body: CreateRatingBody) -> RatingDto:
         """Rate a pan as the signed-in user, or change the rating they gave it."""
@@ -67,14 +68,14 @@ class RatingApi(BaseApi):
 
         return RatingDto.model_validate(rating)
 
-    @BaseApi.endpoint("/<int:rating_id>", ["GET"], response=RatingDto, operation_id="getRating")
+    @BaseApi.endpoint("/<int:rating_id>", ["GET"], response=RatingDto, operation_id="getRating", errors=(404,))
     @require_auth
     def get_rating(self, rating_id: int) -> RatingDto:
         """Get a rating by id."""
         return RatingDto.model_validate(self._rating(rating_id))
 
     @BaseApi.endpoint("/<int:rating_id>", ["PATCH"], body=UpdateRatingBody, response=RatingDto,
-                      operation_id="updateRating")
+                      operation_id="updateRating", errors=(404,))
     @require_auth
     def update_rating(self, rating_id: int, body: UpdateRatingBody) -> RatingDto:
         """Change a rating's stars."""
@@ -83,7 +84,7 @@ class RatingApi(BaseApi):
         db.session.commit()
         return RatingDto.model_validate(rating)
 
-    @BaseApi.endpoint("/<int:rating_id>", ["DELETE"], status=204, operation_id="deleteRating")
+    @BaseApi.endpoint("/<int:rating_id>", ["DELETE"], status=204, operation_id="deleteRating", errors=(404,))
     @require_auth
     def delete_rating(self, rating_id: int) -> None:
         """Delete a rating."""

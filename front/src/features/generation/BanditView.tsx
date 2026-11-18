@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from "react";
 import {Button, Row, Col, Form, InputNumber, Input, Checkbox, Card, Typography, Space, Alert, message, Modal, Rate} from "antd";
-import {Ingredient, IngredientType} from "../../model/ingredient";
-import {PrepType} from "../../model/prepType";
+import {IngredientType} from "../../api/generated/model";
+import type {IngredientDto, IngredientForUserDto, PrepTypeDto} from "../../api/generated/model";
 import styles from "./GenerateView/GenerateView.module.css";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../shared/IngredientDisplay/IngredientDisplay";
@@ -9,7 +9,8 @@ import {rollBanditPan} from "../../api/generated/endpoints/pans/pans";
 import type {PanDto} from "../../api/generated/model";
 import {applyRollOutcome} from "./applyRollOutcome";
 import {LevelUpPictureModal} from "./LevelUpPictureModal";
-import {useAvailableIngredientCounts} from "./hooks/useAvailableIngredientCounts";
+import {useGetAvailableCounts} from "../../api/generated/endpoints/ingredients/ingredients";
+import {countOr} from "./countOr";
 
 const {Text, Title} = Typography;
 
@@ -32,8 +33,8 @@ const INGREDIENT_ICONS = [
 ];
 
 interface BanditViewProps {
-    ingredients: Ingredient[];
-    prepTypes: PrepType[];
+    ingredients: IngredientForUserDto[];
+    prepTypes: PrepTypeDto[];
     sessionKey: string;
     rollPreparationType: boolean;
     onRollPreparationTypeChange: (checked: boolean) => void;
@@ -47,7 +48,8 @@ interface ColumnState {
     isSpinning: boolean;
     currentIndex: number;
     targetIndex: number;
-    items: Ingredient[];
+    // The available ingredients plus, once rolled, the pan's.
+    items: IngredientDto[];
     currentEmoji: string;
     targetEmoji: string;
 }
@@ -66,7 +68,7 @@ export function BanditView(props: BanditViewProps) {
         onRating
     } = props;
 
-    const { getAvailableFillCount, getAvailableSauceCount } = useAvailableIngredientCounts();
+    const { data: counts } = useGetAvailableCounts({session_key: sessionKey}, {swr: {enabled: !!sessionKey}});
 
     const [numColumns, setNumColumns] = useState(3);
     const [isSpinning, setIsSpinning] = useState(false);
@@ -98,8 +100,8 @@ export function BanditView(props: BanditViewProps) {
     
     const totalFillCount = availableFills.length;
     const totalSauceCount = availableSauces.length;
-    const availableFillCount = getAvailableFillCount(totalFillCount);
-    const availableSauceCount = getAvailableSauceCount(totalSauceCount);
+    const availableFillCount = countOr(counts?.fill_count, totalFillCount);
+    const availableSauceCount = countOr(counts?.sauce_count, totalSauceCount);
     const hasRestrictions = availableFillCount < totalFillCount || availableSauceCount < totalSauceCount;
 
     // Combine all available ingredients

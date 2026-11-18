@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { StartScreen, JoinSession, SessionSelector } from './StartScreen';
 import { mockApi, mockUseAppStore, createMockIngredient, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
-import { RaclottoSession } from '../../model/raclottoSession';
+import type { SessionDto } from '../../api/generated/model';
 
-const mockUseSessions: jest.Mock<{ data?: RaclottoSession[]; isLoading: boolean; error: Error | null }> = jest.fn(() => ({ data: [], isLoading: false, error: null }));
-jest.mock('../lib/api/apiSession', () => ({
-    useSessions: () => mockUseSessions(),
+const mockUseSessions: jest.Mock<{ data?: SessionDto[]; isLoading: boolean; error: Error | null }> = jest.fn(() => ({ data: [], isLoading: false, error: null }));
+jest.mock('../../api/generated/endpoints/sessions/sessions', () => ({
+    useListSessions: () => mockUseSessions(),
 }));
 
 jest.mock('react-router', () => ({

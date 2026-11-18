@@ -1,21 +1,33 @@
-from flask import request
-
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
-from back.src.api.deserializer import deserialize_attributes
-from back.src.api.serializer import (
-    serialize_collection,
-    serialize_entity,
-    serialize_single,
-)
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
-from back.src.entity.ingredient import IngredientType
-from back.src.entity.user import User
+from back.src.dto.ingredient import (
+    AvailableCountsDto,
+    CreateIngredientBody,
+    DeleteIngredientQuery,
+    ImportIngredientsBody,
+    IngredientDto,
+    IngredientExportDto,
+    IngredientForUserDto,
+    IngredientImportDto,
+    IngredientReimportDto,
+    RefillIngredientBody,
+    UpdateIngredientBody,
+)
+from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
+from back.src.entity.ingredient import Ingredient, IngredientType
+from back.src.entity.raclotto_session import RaclottoSession
 from back.src.interactor.achievements import Achievements, CatalogChanged, IngredientAdded
 from back.src.interactor.diet import Diet
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.session_repository import SessionRepository
-from back.src.repository.user_repository import UserRepository
+
+# Where an exported ingredient came from; an import does not set these on the ingredient.
+_NOT_IMPORTED = {"id", "session_id"}
+
+
+def _dtos(ingredients) -> list[IngredientDto]:
+    return [IngredientDto.model_validate(ingredient) for ingredient in ingredients]
 
 
 class IngredientApi(BaseApi):
@@ -25,7 +37,6 @@ class IngredientApi(BaseApi):
         super().__init__()
         self.repository = IngredientRepository()
         self.session_repository = SessionRepository()
-        self.user_repository = UserRepository()
 
     @staticmethod
     def _catalog_changed(session) -> None:
@@ -33,63 +44,7 @@ class IngredientApi(BaseApi):
         Achievements().record(CatalogChanged(session=session, actor=get_current_user()))
         db.session.commit()
 
-    @BaseApi.endpoint("", ["GET"])
-    @require_auth
-    def list_ingredients(self):
-        """List ingredients, optionally filtered by session.
-
-        Query parameters:
-        - session_key: Optional session key to filter by
-
-        :returns List[Ingredient]: List of ingredients with 'applicable' flag
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        session_key = request.args.get("session_key")
-
-        if session_key:
-            ingredients = self.repository.by_session(session_key)
-        else:
-            ingredients = self.repository.all()
-
-        # Serialize with applicable flag
-        diet = Diet.of(user)
-        data = []
-        for ingredient in ingredients:
-            entity_data = serialize_entity(ingredient, "ingredient")
-            entity_data["attributes"]["applicable"] = diet.allows(ingredient)
-            data.append(entity_data)
-
-        return {"jsonapi": {"version": "1.0"}, "data": data}
-
-    @BaseApi.endpoint("", ["POST"])
-    @require_auth
-    def create_ingredient(self):
-        """Create a new ingredient.
-
-        Request body should contain:
-        - name: Ingredient name
-        - type: Ingredient type (1=FILL, 2=SAUCE)
-        - session_key: Session key
-        - Other ingredient attributes (meat, vegetarian, vegan, etc.)
-
-        :returns Ingredient: Created ingredient
-        :status_code 201: Ingredient created successfully
-        :status_code 401: Not authenticated
-        """
-        user = get_current_user()
-        attributes = deserialize_attributes()
-        session_key = attributes.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key is required",
-            )
-
+    def _session(self, session_key: str) -> RaclottoSession:
         session = self.session_repository.by_key(session_key)
         if not session:
             raise ApiError(
@@ -98,691 +53,181 @@ class IngredientApi(BaseApi):
                 title="Session not found",
                 detail="The specified session does not exist",
             )
+        return session
 
-        # Convert type to IngredientType enum
-        ingredient_type = attributes.get("type")
-        if ingredient_type is not None:
-            attributes["type"] = IngredientType(int(ingredient_type))
+    def _ingredient(self, ingredient_id: int) -> Ingredient:
+        ingredient = self.repository.by_id(ingredient_id)
+        if not ingredient:
+            raise ApiError(
+                ApiErrorCode.resource_not_found,
+                status=404,
+                title="Ingredient not found",
+                detail="The specified ingredient does not exist",
+            )
+        return ingredient
 
-        # Remove session_key from attributes and set session relationship
-        attributes.pop("session_key", None)
-        attributes["session"] = session  # Use relationship, not session_id
+    @BaseApi.endpoint("", ["GET"], query=SessionFilterQuery, response=list[IngredientForUserDto],
+                      operation_id="listIngredients")
+    @require_auth
+    def list_ingredients(self, query: SessionFilterQuery) -> list[IngredientForUserDto]:
+        """List ingredients, optionally of one session, each marked whether the user's diet allows it."""
+        if query.session_key is not None:
+            ingredients = self.repository.by_session(query.session_key)
+        else:
+            ingredients = self.repository.all()
+        diet = Diet.of(get_current_user())
+        return [IngredientForUserDto.of(ingredient, diet) for ingredient in ingredients]
 
-        ingredient = self.repository.create(attributes)
+    @BaseApi.endpoint("", ["POST"], query=SessionKeyQuery, body=CreateIngredientBody, response=IngredientDto,
+                      operation_id="createIngredient", errors=(404,))
+    @require_auth
+    def create_ingredient(self, query: SessionKeyQuery, body: CreateIngredientBody) -> IngredientDto:
+        """Add an ingredient to a session."""
+        user = get_current_user()
+        session = self._session(query.session_key)
+        ingredient = self.repository.create({**body.model_dump(), "session": session})
         db.session.commit()
 
         Achievements().record(IngredientAdded(ingredient=ingredient, user=user, session=session))
         db.session.commit()
+        return IngredientDto.model_validate(ingredient)
 
-        return serialize_single(ingredient, "ingredient")
-
-    @BaseApi.endpoint("/<int:ingredient_id>", ["GET"])
+    @BaseApi.endpoint("/<int:ingredient_id>", ["GET"], response=IngredientDto, operation_id="getIngredient",
+                      errors=(404,))
     @require_auth
-    def get_ingredient(self, ingredient_id: int):
-        """Get an ingredient by ID.
+    def get_ingredient(self, ingredient_id: int) -> IngredientDto:
+        """Get an ingredient by id."""
+        return IngredientDto.model_validate(self._ingredient(ingredient_id))
 
-        :param ingredient_id: Ingredient ID
-        :returns Ingredient: Ingredient
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Ingredient not found
-        """
-        ingredient = self.repository.by_id(ingredient_id)
-        if not ingredient:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Ingredient not found",
-                detail="The specified ingredient does not exist",
-            )
-
-        return serialize_single(ingredient, "ingredient")
-
-    @BaseApi.endpoint("/<int:ingredient_id>", ["PATCH"])
+    @BaseApi.endpoint("/<int:ingredient_id>", ["PATCH"], body=UpdateIngredientBody, response=IngredientDto,
+                      operation_id="updateIngredient", errors=(404,))
     @require_auth
-    def update_ingredient(self, ingredient_id: int):
-        """Update an ingredient.
-
-        :param ingredient_id: Ingredient ID
-        :returns Ingredient: Updated ingredient
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Ingredient not found
-        """
-        ingredient = self.repository.by_id(ingredient_id)
-        if not ingredient:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Ingredient not found",
-                detail="The specified ingredient does not exist",
-            )
-
-        attributes = deserialize_attributes()
-        # Convert type to IngredientType enum if provided
-        if "type" in attributes:
-            attributes["type"] = IngredientType(int(attributes["type"]))
-
-        updated = self.repository.update(ingredient_id, attributes)
+    def update_ingredient(self, ingredient_id: int, body: UpdateIngredientBody) -> IngredientDto:
+        """Change an ingredient's name, type, category or properties."""
+        ingredient = self._ingredient(ingredient_id)
+        for field in body.model_fields_set:
+            setattr(ingredient, field, getattr(body, field))
         db.session.commit()
-        self._catalog_changed(updated.session)
+        self._catalog_changed(ingredient.session)
+        return IngredientDto.model_validate(ingredient)
 
-        return serialize_single(updated, "ingredient")
-
-    @BaseApi.endpoint("/<int:ingredient_id>", ["DELETE"])
+    @BaseApi.endpoint("/<int:ingredient_id>", ["DELETE"], query=DeleteIngredientQuery, status=204,
+                      operation_id="deleteIngredient", errors=(404,))
     @require_auth
-    def delete_ingredient(self, ingredient_id: int):
-        """Delete an ingredient (marks as unavailable).
-
-        Query parameters:
-        - session_key: Session key (for validation)
-
-        :param ingredient_id: Ingredient ID
-        :returns Ingredient: Updated ingredient (unavailable)
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Ingredient not found
-        """
-        session_key = request.args.get("session_key")
-        ingredient = self.repository.by_id(ingredient_id)
-
-        if not ingredient:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Ingredient not found",
-                detail="The specified ingredient does not exist",
-            )
-
-        # Validate session_key matches ingredient's session
-        if session_key and ingredient.session.key != session_key:
+    def delete_ingredient(self, ingredient_id: int, query: DeleteIngredientQuery) -> None:
+        """Mark an ingredient unavailable; it stays in the session and its pans."""
+        ingredient = self._ingredient(ingredient_id)
+        if query.session_key is not None and ingredient.session.key != query.session_key:
             raise ApiError(
                 ApiErrorCode.incorrect_parameters,
                 status=400,
                 title="Invalid session",
                 detail="Session key does not match ingredient's session",
+                source={"pointer": "/query/session_key"},
             )
-
-        # Mark as unavailable instead of deleting
-        updated = self.repository.mark_unavailable(ingredient_id)
+        self.repository.mark_unavailable(ingredient_id)
         db.session.commit()
-        self._catalog_changed(updated.session)
+        self._catalog_changed(ingredient.session)
 
-        return serialize_single(updated, "ingredient")
-
-    @BaseApi.endpoint("/refill", ["POST"])
+    @BaseApi.endpoint("/refill", ["POST"], body=RefillIngredientBody, response=IngredientDto,
+                      operation_id="refillIngredient", errors=(404,))
     @require_auth
-    def refill_ingredient(self):
-        """Refill an ingredient (mark as available).
-
-        Request body should contain:
-        - id: Ingredient ID
-
-        :returns Ingredient: Updated ingredient (available)
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 404: Ingredient not found
-        """
-        attributes = deserialize_attributes()
-        ingredient_id = attributes.get("id")
-
-        if not ingredient_id:
-            # Try to get from request JSON directly
-            data = request.json
-            if data and "data" in data and "id" in data["data"]:
-                ingredient_id = int(data["data"]["id"])
-            else:
-                raise ApiError(
-                    ApiErrorCode.missing_required_body_field,
-                    status=400,
-                    title="Missing required field",
-                    detail="id is required",
-                )
-
-        ingredient = self.repository.by_id(ingredient_id)
-        if not ingredient:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Ingredient not found",
-                detail="The specified ingredient does not exist",
-            )
-
-        updated = self.repository.mark_available(ingredient_id)
+    def refill_ingredient(self, body: RefillIngredientBody) -> IngredientDto:
+        """Mark an ingredient available again."""
+        ingredient = self._ingredient(body.id)
+        self.repository.mark_available(ingredient.id)
         db.session.commit()
-        self._catalog_changed(updated.session)
+        self._catalog_changed(ingredient.session)
+        return IngredientDto.model_validate(ingredient)
 
-        return serialize_single(updated, "ingredient")
-
-    @BaseApi.endpoint("/available-counts", ["GET"])
+    @BaseApi.endpoint("/available-counts", ["GET"], query=SessionKeyQuery, response=AvailableCountsDto,
+                      operation_id="getAvailableCounts")
     @require_auth
-    def get_available_counts(self):
-        """Get counts of available ingredients for the current user based on their preferences.
+    def get_available_counts(self, query: SessionKeyQuery) -> AvailableCountsDto:
+        """Count a session's available fills and sauces, all of them and those the user's diet allows."""
+        available = [i for i in self.repository.by_session(query.session_key) if i.available]
+        diet = Diet.of(get_current_user())
+        allowed = [i for i in available if diet.allows(i)]
 
-        Query parameters:
-        - session_key: Session key (required)
+        def count(ingredients, kind: IngredientType) -> int:
+            return sum(1 for i in ingredients if i.type == kind)
 
-        :returns Dict: Dictionary with 'fill_count', 'sauce_count', 'total_fill_count', and 'total_sauce_count'
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 400: Missing session_key
-        """
-        session_key = request.args.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key query parameter is required",
-            )
-
-        user = get_current_user()
-        ingredients = self.repository.by_session(session_key)
-
-        # Get total counts (all available ingredients regardless of dietary restrictions)
-        total_fill_count = len(
-            [i for i in ingredients if i.available and i.type == IngredientType.FILL]
-        )
-        total_sauce_count = len(
-            [i for i in ingredients if i.available and i.type == IngredientType.SAUCE]
+        return AvailableCountsDto(
+            fill_count=count(allowed, IngredientType.FILL),
+            sauce_count=count(allowed, IngredientType.SAUCE),
+            total_fill_count=count(available, IngredientType.FILL),
+            total_sauce_count=count(available, IngredientType.SAUCE),
         )
 
-        diet = Diet.of(user)
-        available_ingredients = [
-            i for i in ingredients if i.available and diet.allows(i)
-        ]
-
-        fill_count = len(
-            [i for i in available_ingredients if i.type == IngredientType.FILL]
-        )
-        sauce_count = len(
-            [i for i in available_ingredients if i.type == IngredientType.SAUCE]
-        )
-
-        return {
-            "fill_count": fill_count,
-            "sauce_count": sauce_count,
-            "total_fill_count": total_fill_count,
-            "total_sauce_count": total_sauce_count,
-        }
-
-    @BaseApi.endpoint("/export", ["GET"])
+    @BaseApi.endpoint("/export", ["GET"], query=SessionKeyQuery, response=IngredientExportDto,
+                      operation_id="exportIngredients", errors=(404,))
     @require_auth
-    def export_ingredients(self):
-        """Export all ingredients for a session with their IDs.
+    def export_ingredients(self, query: SessionKeyQuery) -> IngredientExportDto:
+        """Export a session's ingredients, ids included, for a later import or reimport."""
+        session = self._session(query.session_key)
+        return IngredientExportDto(
+            session_key=session.key,
+            session_id=session.id,
+            ingredients=_dtos(self.repository.by_session(session.key)),
+        )
 
-        Query parameters:
-        - session_key: Session key (required)
-
-        :returns Dict: Export data with session info and ingredients array
-        :status_code 200: Success
-        :status_code 401: Not authenticated
-        :status_code 400: Missing session_key
-        :status_code 404: Session not found
-        """
-        session_key = request.args.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key query parameter is required",
-            )
-
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-
-        # Get all ingredients for the session
-        ingredients = self.repository.by_session(session_key)
-
-        # Serialize to simple format with all fields including IDs
-        ingredients_data = []
-        for ingredient in ingredients:
-            ingredient_dict = {
-                "id": ingredient.id,
-                "name": ingredient.name,
-                "type": ingredient.type.value
-                if hasattr(ingredient.type, "value")
-                else int(ingredient.type),
-                "available": ingredient.available,
-                "meat": ingredient.meat,
-                "vegetarian": ingredient.vegetarian,
-                "vegan": ingredient.vegan,
-                "gluten": ingredient.gluten,
-                "histamine": ingredient.histamine,
-                "fructose": ingredient.fructose,
-                "lactose": ingredient.lactose,
-                "fish": ingredient.fish,
-                "spicy": ingredient.spicy,
-                "wildcard": ingredient.wildcard,
-                "sweet": ingredient.sweet,
-                "session_id": ingredient.session_id,
-            }
-            ingredients_data.append(ingredient_dict)
-
-        return {
-            "session_key": session_key,
-            "session_id": session.id,
-            "ingredients": ingredients_data,
-        }
-
-    @BaseApi.endpoint("/import", ["POST"])
+    @BaseApi.endpoint("/import", ["POST"], query=SessionKeyQuery, body=ImportIngredientsBody,
+                      response=IngredientImportDto, status=201, operation_id="importIngredients", errors=(404,))
     @require_auth
-    def import_ingredients(self):
-        """Import new ingredients into a session.
+    def import_ingredients(self, query: SessionKeyQuery, body: ImportIngredientsBody) -> IngredientImportDto:
+        """Add every listed ingredient to a session as a new one."""
+        session = self._session(query.session_key)
+        created = self.repository.bulk_create(
+            [item.model_dump(exclude=_NOT_IMPORTED) for item in body.ingredients], session.id
+        )
+        db.session.commit()
+        self._catalog_changed(session)
+        return IngredientImportDto(created=len(created), ingredients=_dtos(created))
 
-        Query parameters:
-        - session_key: Session key (required)
+    @BaseApi.endpoint("/reimport", ["POST"], query=SessionKeyQuery, body=ImportIngredientsBody,
+                      response=IngredientReimportDto, operation_id="reimportIngredients", errors=(404,))
+    @require_auth
+    def reimport_ingredients(self, query: SessionKeyQuery, body: ImportIngredientsBody) -> IngredientReimportDto:
+        """Make a session's catalog the list: update listed ids, create the rest, mark the unlisted unavailable."""
+        session = self._session(query.session_key)
+        current_ids = {ingredient.id for ingredient in self.repository.by_session(session.key)}
 
-        Request body should contain:
-        - ingredients: Array of ingredient objects (without IDs)
-
-        :returns Dict: Created ingredients with their new IDs
-        :status_code 201: Ingredients created successfully
-        :status_code 401: Not authenticated
-        :status_code 400: Missing session_key or invalid data
-        :status_code 404: Session not found
-        """
-        session_key = request.args.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key query parameter is required",
-            )
-
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-
-        # Get request data
-        request_data = request.json
-        if not request_data or "ingredients" not in request_data:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="ingredients array is required in request body",
-            )
-
-        ingredients_data = request_data["ingredients"]
-        if not isinstance(ingredients_data, list):
-            raise ApiError(
-                ApiErrorCode.incorrect_parameters,
-                status=400,
-                title="Invalid data",
-                detail="ingredients must be an array",
-            )
-
-        # Validate and prepare ingredients
-        validated_data = []
-        for idx, item in enumerate(ingredients_data):
-            # Remove ID if present (import should not have IDs)
-            item = {k: v for k, v in item.items() if k != "id"}
-
-            # Validate required fields
-            if "name" not in item:
-                raise ApiError(
-                    ApiErrorCode.missing_required_body_field,
-                    status=400,
-                    title="Missing required field",
-                    detail=f"ingredients[{idx}].name is required",
-                )
-
-            if "type" not in item:
-                raise ApiError(
-                    ApiErrorCode.missing_required_body_field,
-                    status=400,
-                    title="Missing required field",
-                    detail=f"ingredients[{idx}].type is required",
-                )
-
-            # Validate type
-            try:
-                item["type"] = IngredientType(int(item["type"]))
-            except (ValueError, TypeError):
+        to_create, to_update, listed_ids = [], [], set()
+        for index, item in enumerate(body.ingredients):
+            if "session_id" in item.model_fields_set and item.session_id != session.id:
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=400,
-                    title="Invalid ingredient type",
-                    detail=f"ingredients[{idx}].type must be 1 (FILL) or 2 (SAUCE)",
+                    title="Mixed sessions",
+                    detail=f"ingredients[{index}] belongs to a different session. "
+                           f"All ingredients must belong to session_id {session.id}",
+                    source={"pointer": f"/body/ingredients/{index}/session_id"},
                 )
-
-            # Set defaults
-            item.setdefault("available", True)
-            item.setdefault("meat", False)
-            item.setdefault("vegetarian", False)
-            item.setdefault("vegan", False)
-            item.setdefault("gluten", False)
-            item.setdefault("histamine", False)
-            item.setdefault("fructose", False)
-            item.setdefault("lactose", False)
-            item.setdefault("fish", False)
-            item.setdefault("spicy", 0)
-            item.setdefault("wildcard", False)
-            item.setdefault("sweet", False)
-
-            # Validate meat/vegetarian/vegan/fish constraints
-            # They are mutually exclusive, and at least one must be true
-            meat = item.get("meat", False)
-            vegetarian = item.get("vegetarian", False)
-            vegan = item.get("vegan", False)
-            fish = item.get("fish", False)
-
-            if not (meat or vegetarian or vegan or fish):
+            fields = item.model_dump(exclude=_NOT_IMPORTED)
+            if item.id is None:
+                to_create.append(fields)
+                continue
+            if item.id not in current_ids:
                 raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] must have at least one of meat, vegetarian, vegan, or fish set to true",
+                    ApiErrorCode.resource_not_found,
+                    status=404,
+                    title="Ingredient not found",
+                    detail=f"ingredients[{index}] with id {item.id} does not exist in this session",
+                    source={"pointer": f"/body/ingredients/{index}/id"},
                 )
+            to_update.append({"id": item.id, **fields})
+            listed_ids.add(item.id)
 
-            if meat and (vegetarian or vegan or fish):
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have meat=true with vegetarian, vegan, or fish=true (they are mutually exclusive)",
-                )
-
-            if vegetarian and (vegan or fish):
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have vegetarian=true with vegan or fish=true (they are mutually exclusive)",
-                )
-
-            if vegan and fish:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have both vegan=true and fish=true (they are mutually exclusive)",
-                )
-
-            validated_data.append(item)
-
-        # Create ingredients
-        created_ingredients = self.repository.bulk_create(validated_data, session.id)
+        created = self.repository.bulk_create(to_create, session.id) if to_create else []
+        updated = self.repository.bulk_update(to_update) if to_update else []
+        unlisted = current_ids - listed_ids
+        deleted = self.repository.mark_unavailable_by_ids(list(unlisted)) if unlisted else 0
         db.session.commit()
         self._catalog_changed(session)
 
-        # Serialize response
-        result_ingredients = []
-        for ingredient in created_ingredients:
-            ingredient_dict = {
-                "id": ingredient.id,
-                "name": ingredient.name,
-                "type": ingredient.type.value
-                if hasattr(ingredient.type, "value")
-                else int(ingredient.type),
-                "available": ingredient.available,
-                "meat": ingredient.meat,
-                "vegetarian": ingredient.vegetarian,
-                "vegan": ingredient.vegan,
-                "gluten": ingredient.gluten,
-                "histamine": ingredient.histamine,
-                "fructose": ingredient.fructose,
-                "lactose": ingredient.lactose,
-                "fish": ingredient.fish,
-                "spicy": ingredient.spicy,
-                "wildcard": ingredient.wildcard,
-                "sweet": ingredient.sweet,
-                "session_id": ingredient.session_id,
-            }
-            result_ingredients.append(ingredient_dict)
-
-        return {
-            "created": len(created_ingredients),
-            "ingredients": result_ingredients,
-        }, 201
-
-    @BaseApi.endpoint("/reimport", ["POST"])
-    @require_auth
-    def reimport_ingredients(self):
-        """Reimport ingredients - update existing, create new, and delete missing.
-
-        Query parameters:
-        - session_key: Session key (required)
-
-        Request body should contain:
-        - ingredients: Array of ingredient objects (with or without IDs)
-
-        Items with IDs will be updated, items without IDs will be created,
-        and items in the session but not in the reimport data will be soft-deleted.
-
-        :returns Dict: Summary of operations and all ingredients
-        :status_code 200: Reimport successful
-        :status_code 401: Not authenticated
-        :status_code 400: Missing session_key, invalid data, or mixed sessions
-        :status_code 404: Session not found
-        """
-        session_key = request.args.get("session_key")
-
-        if not session_key:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="session_key query parameter is required",
-            )
-
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-
-        # Get request data
-        request_data = request.json
-        if not request_data or "ingredients" not in request_data:
-            raise ApiError(
-                ApiErrorCode.missing_required_body_field,
-                status=400,
-                title="Missing required field",
-                detail="ingredients array is required in request body",
-            )
-
-        ingredients_data = request_data["ingredients"]
-        if not isinstance(ingredients_data, list):
-            raise ApiError(
-                ApiErrorCode.incorrect_parameters,
-                status=400,
-                title="Invalid data",
-                detail="ingredients must be an array",
-            )
-
-        # Get current ingredients in session
-        current_ingredients = self.repository.by_session(session_key)
-        current_ids = {ing.id for ing in current_ingredients}
-
-        # Validate all items belong to the same session
-        items_to_create = []
-        items_to_update = []
-        reimport_ids = set()
-
-        for idx, item in enumerate(ingredients_data):
-            # Check session_id if present
-            if "session_id" in item:
-                if item["session_id"] != session.id:
-                    raise ApiError(
-                        ApiErrorCode.incorrect_parameters,
-                        status=400,
-                        title="Mixed sessions",
-                        detail=f"ingredients[{idx}] belongs to a different session. All ingredients must belong to session_id {session.id}",
-                    )
-
-            # Validate required fields
-            if "name" not in item:
-                raise ApiError(
-                    ApiErrorCode.missing_required_body_field,
-                    status=400,
-                    title="Missing required field",
-                    detail=f"ingredients[{idx}].name is required",
-                )
-
-            if "type" not in item:
-                raise ApiError(
-                    ApiErrorCode.missing_required_body_field,
-                    status=400,
-                    title="Missing required field",
-                    detail=f"ingredients[{idx}].type is required",
-                )
-
-            # Validate type
-            try:
-                item["type"] = IngredientType(int(item["type"]))
-            except (ValueError, TypeError):
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient type",
-                    detail=f"ingredients[{idx}].type must be 1 (FILL) or 2 (SAUCE)",
-                )
-
-            # Set defaults
-            item.setdefault("available", True)
-            item.setdefault("meat", False)
-            item.setdefault("vegetarian", False)
-            item.setdefault("vegan", False)
-            item.setdefault("gluten", False)
-            item.setdefault("histamine", False)
-            item.setdefault("fructose", False)
-            item.setdefault("lactose", False)
-            item.setdefault("fish", False)
-            item.setdefault("spicy", 0)
-            item.setdefault("wildcard", False)
-            item.setdefault("sweet", False)
-
-            # Validate meat/vegetarian/vegan/fish constraints
-            # They are mutually exclusive, and at least one must be true
-            meat = item.get("meat", False)
-            vegetarian = item.get("vegetarian", False)
-            vegan = item.get("vegan", False)
-            fish = item.get("fish", False)
-
-            if not (meat or vegetarian or vegan or fish):
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] must have at least one of meat, vegetarian, vegan, or fish set to true",
-                )
-
-            if meat and (vegetarian or vegan or fish):
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have meat=true with vegetarian, vegan, or fish=true (they are mutually exclusive)",
-                )
-
-            if vegetarian and (vegan or fish):
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have vegetarian=true with vegan or fish=true (they are mutually exclusive)",
-                )
-
-            if vegan and fish:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Invalid ingredient constraints",
-                    detail=f"ingredients[{idx}] cannot have both vegan=true and fish=true (they are mutually exclusive)",
-                )
-
-            # Categorize by whether it has an ID
-            if "id" in item and item["id"] is not None:
-                ingredient_id = item["id"]
-                # Verify the ingredient exists in the session
-                if ingredient_id not in current_ids:
-                    raise ApiError(
-                        ApiErrorCode.resource_not_found,
-                        status=404,
-                        title="Ingredient not found",
-                        detail=f"ingredients[{idx}] with id {ingredient_id} does not exist in this session",
-                    )
-                items_to_update.append(item)
-                reimport_ids.add(ingredient_id)
-            else:
-                # Remove ID if present but None
-                item.pop("id", None)
-                items_to_create.append(item)
-
-        # Find items to delete (in current but not in reimport)
-        ids_to_delete = current_ids - reimport_ids
-
-        # Perform operations
-        created_ingredients = []
-        if items_to_create:
-            created_ingredients = self.repository.bulk_create(
-                items_to_create, session.id
-            )
-
-        updated_ingredients = []
-        if items_to_update:
-            updated_ingredients = self.repository.bulk_update(items_to_update)
-
-        deleted_count = 0
-        if ids_to_delete:
-            deleted_count = self.repository.mark_unavailable_by_ids(list(ids_to_delete))
-
-        db.session.commit()
-
-        self._catalog_changed(session)
-
-        # Get all ingredients after reimport for response
-        all_ingredients = self.repository.by_session(session_key)
-
-        # Serialize response
-        result_ingredients = []
-        for ingredient in all_ingredients:
-            ingredient_dict = {
-                "id": ingredient.id,
-                "name": ingredient.name,
-                "type": ingredient.type.value
-                if hasattr(ingredient.type, "value")
-                else int(ingredient.type),
-                "available": ingredient.available,
-                "meat": ingredient.meat,
-                "vegetarian": ingredient.vegetarian,
-                "vegan": ingredient.vegan,
-                "gluten": ingredient.gluten,
-                "histamine": ingredient.histamine,
-                "fructose": ingredient.fructose,
-                "lactose": ingredient.lactose,
-                "fish": ingredient.fish,
-                "spicy": ingredient.spicy,
-                "wildcard": ingredient.wildcard,
-                "sweet": ingredient.sweet,
-                "session_id": ingredient.session_id,
-            }
-            result_ingredients.append(ingredient_dict)
-
-        return {
-            "created": len(created_ingredients),
-            "updated": len(updated_ingredients),
-            "deleted": deleted_count,
-            "ingredients": result_ingredients,
-        }
+        return IngredientReimportDto(
+            created=len(created),
+            updated=len(updated),
+            deleted=deleted,
+            ingredients=_dtos(self.repository.by_session(session.key)),
+        )

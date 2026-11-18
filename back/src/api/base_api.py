@@ -6,7 +6,8 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import wraps
-from typing import Any, List, Dict, Callable, Optional, Union, get_args, get_origin
+from http import HTTPStatus
+from typing import Any, List, Dict, Callable, Optional, Sequence, Tuple, Union, get_args, get_origin
 from flask import Blueprint, Response, current_app, typing as ft, request, jsonify
 from flask.views import View
 from pydantic import BaseModel, TypeAdapter, ValidationError
@@ -74,18 +75,22 @@ TYPED_MARKER = "_typed_endpoint"
 
 @dataclass(frozen=True)
 class TypedEndpoint:
-    """What a typed endpoint declares: request DTOs, the response DTO and its status."""
+    """What a typed endpoint declares: request DTOs, the response DTO, its status and its error statuses."""
 
     query: Optional[type[BaseModel]]
     body: Optional[type[BaseModel]]
     response: Any
     status: int
     operation_id: Optional[str]
+    # The error statuses the handler itself raises; 400 for invalid DTOs and 401 for a missing
+    # token are implied by `query`/`body` and the auth guard.
+    errors: Tuple[int, ...] = ()
     adapter: Optional[TypeAdapter] = field(default=None, compare=False, repr=False)
 
     @classmethod
     def declare(cls, methods: List[str], query: Optional[type[BaseModel]], body: Optional[type[BaseModel]],
-                response: Any, status: int, operation_id: Optional[str]) -> TypedEndpoint:
+                response: Any, status: int, operation_id: Optional[str],
+                errors: Sequence[int] = ()) -> TypedEndpoint:
         if len(methods) != 1:
             raise ValueError(f"a typed endpoint serves exactly one method, got {methods}")
         if (response is None) != (status == 204):
@@ -99,8 +104,13 @@ class TypedEndpoint:
             item = get_args(response)[0] if get_origin(response) is list else response
             if not _is_model(item):
                 raise TypeError(f"response= takes a DTO class or list[DTO], got {response!r}")
+        for error in errors:
+            if not (isinstance(error, int) and error in _ERROR_STATUSES):
+                raise ValueError(f"errors= takes HTTP error statuses (4xx, 5xx), got {error!r}")
+        if len(set(errors)) != len(errors):
+            raise ValueError(f"errors= lists a status twice: {list(errors)}")
         adapter = TypeAdapter(response) if response is not None else None
-        return cls(query, body, response, status, operation_id, adapter)
+        return cls(query, body, response, status, operation_id, tuple(sorted(errors)), adapter)
 
     @property
     def response_model(self) -> Optional[type[BaseModel]]:
@@ -141,6 +151,9 @@ class TypedEndpoint:
         response = jsonify(payload)
         response.status_code = self.status
         return response
+
+
+_ERROR_STATUSES = {status.value for status in HTTPStatus if status.value >= 400}
 
 
 def typed_endpoint(func: Callable) -> Optional[TypedEndpoint]:
@@ -447,15 +460,16 @@ class BaseApi(View):
     @classmethod
     def endpoint(cls, route: str, methods: List[str], *, query: Optional[type[BaseModel]] = None,
                  body: Optional[type[BaseModel]] = None, response: Any = None, status: int = 200,
-                 operation_id: Optional[str] = None):
+                 operation_id: Optional[str] = None, errors: Sequence[int] = ()):
         """Decorator to mark method as endpoint.
         
         Declaring `response=` (or `status=204`) makes it a typed endpoint: the handler gets
         `query=`/`body=` as validated DTOs, returns the response DTO and appears in the OpenAPI spec.
+        `errors=` lists the error statuses the handler and what it calls can answer with.
         """
         typed = None
-        if any(arg is not None for arg in (query, body, response, operation_id)) or status != 200:
-            typed = TypedEndpoint.declare(methods, query, body, response, status, operation_id)
+        if any(arg is not None for arg in (query, body, response, operation_id)) or status != 200 or errors:
+            typed = TypedEndpoint.declare(methods, query, body, response, status, operation_id, errors)
 
         def wrapper(func):
             setattr(func, cls.route_marker, route)

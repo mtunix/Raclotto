@@ -9,34 +9,21 @@
 import { Achievement } from "../../model/achievement";
 import { Event } from "../../model/event";
 import { EventConfig } from "../../model/eventConfig";
-import { Ingredient } from "../../model/ingredient";
-import { PrepType } from "../../model/prepType";
 import {
   GeneratedProfilePicture,
   ProfilePictureHistory,
 } from "../../model/profilePicture";
-import { RaclottoSession } from "../../model/raclottoSession";
 import { collection, plain, Resource, single } from "./jsonapi";
 import {
   toAchievement,
   toEvent,
   toEventConfig,
-  toIngredient,
   toPan,
-  toPrepType,
   toProfilePictureHistory,
   toGeneratedProfilePicture,
-  toSession,
 } from "./mappers";
 import { HttpMethod, RequestOptions, transport } from "./transport";
-import {
-  AvailableIngredientCounts,
-  IngredientExport,
-  IngredientImportResult,
-  IngredientReimportResult,
-  LeaderboardEntry,
-  StatsResponse,
-} from "./types";
+import { LeaderboardEntry, StatsResponse } from "./types";
 
 function request(method: HttpMethod, path: string, options?: RequestOptions) {
   return transport().request(method, path, options);
@@ -47,147 +34,7 @@ function resourceBody(type: string, attributes: object, id?: number) {
   return { data: id === undefined ? { type, attributes } : { type, id, attributes } };
 }
 
-export type NewIngredient = Omit<Ingredient, "id" | "available">;
-
 export const Api = {
-  async listSessions(includeInactive = false): Promise<RaclottoSession[]> {
-    const body = await request("GET", "/sessions", {
-      query: { include_inactive: includeInactive ? "true" : undefined },
-    });
-    return collection(body).map(toSession);
-  },
-
-  async getSessionByKey(sessionKey: string): Promise<RaclottoSession> {
-    const body = await request("GET", "/sessions/by-key", {
-      query: { session_key: sessionKey },
-    });
-    return toSession(single(body));
-  },
-
-  async createSession(name: string): Promise<RaclottoSession> {
-    const body = await request("POST", "/sessions", {
-      body: resourceBody("session", { name }),
-    });
-    return toSession(single(body));
-  },
-
-  async updateSession(sessionId: number, name: string): Promise<RaclottoSession> {
-    const body = await request("PATCH", `/sessions/${sessionId}`, {
-      body: resourceBody("session", { name }),
-    });
-    return toSession(single(body));
-  },
-
-  async close(sessionKey: string): Promise<RaclottoSession> {
-    const body = await request("POST", "/sessions/close", {
-      body: resourceBody("session", { key: sessionKey }),
-    });
-    return toSession(single(body));
-  },
-
-  async reactivateSession(sessionKey: string): Promise<RaclottoSession> {
-    const body = await request("POST", "/sessions/reactivate", {
-      body: resourceBody("session", { key: sessionKey }),
-    });
-    return toSession(single(body));
-  },
-
-
-  async listIngredients(sessionKey: string): Promise<Ingredient[]> {
-    const body = await request("GET", "/ingredients", {
-      query: { session_key: sessionKey },
-    });
-    return collection(body).map(toIngredient);
-  },
-
-  async addIngredient(sessionKey: string, data: NewIngredient): Promise<Ingredient> {
-    const body = await request("POST", "/ingredients", {
-      body: resourceBody("ingredient", { ...data, session_key: sessionKey }),
-    });
-    return toIngredient(single(body));
-  },
-
-  async updateIngredient(
-    ingredientId: number,
-    data: Partial<Ingredient>,
-  ): Promise<Ingredient> {
-    const body = await request("PATCH", `/ingredients/${ingredientId}`, {
-      body: resourceBody("ingredient", data, ingredientId),
-    });
-    return toIngredient(single(body));
-  },
-
-  async deleteIngredient(sessionKey: string, ingredientId: number): Promise<void> {
-    await request("DELETE", `/ingredients/${ingredientId}`, {
-      query: { session_key: sessionKey },
-    });
-  },
-
-  async refill(ingredientId: number): Promise<Ingredient> {
-    const body = await request("POST", "/ingredients/refill", {
-      body: resourceBody("ingredient", {}, ingredientId),
-    });
-    return toIngredient(single(body));
-  },
-
-  async getAvailableIngredientCounts(
-    sessionKey: string,
-  ): Promise<AvailableIngredientCounts> {
-    const body = await request("GET", "/ingredients/available-counts", {
-      query: { session_key: sessionKey },
-    });
-    return plain<AvailableIngredientCounts>(body);
-  },
-
-  async exportIngredients(sessionKey: string): Promise<IngredientExport> {
-    const body = await request("GET", "/ingredients/export", {
-      query: { session_key: sessionKey },
-    });
-    return plain<IngredientExport>(body);
-  },
-
-  async importIngredients(
-    sessionKey: string,
-    ingredients: Partial<Ingredient>[],
-  ): Promise<IngredientImportResult> {
-    const body = await request("POST", "/ingredients/import", {
-      query: { session_key: sessionKey },
-      body: { ingredients },
-    });
-    return plain<IngredientImportResult>(body);
-  },
-
-  async reimportIngredients(
-    sessionKey: string,
-    ingredients: Partial<Ingredient>[],
-  ): Promise<IngredientReimportResult> {
-    const body = await request("POST", "/ingredients/reimport", {
-      query: { session_key: sessionKey },
-      body: { ingredients },
-    });
-    return plain<IngredientReimportResult>(body);
-  },
-
-  async listPrepTypes(sessionKey: string): Promise<PrepType[]> {
-    const body = await request("GET", "/preparation_type", {
-      query: { session_key: sessionKey },
-    });
-    return collection(body).map(toPrepType);
-  },
-
-  async addPrepType(sessionKey: string, name: string): Promise<PrepType> {
-    const body = await request("POST", "/preparation_type", {
-      query: { session_key: sessionKey },
-      body: resourceBody("preparation_type", { name }),
-    });
-    return toPrepType(single(body));
-  },
-
-  async deletePrepType(prepTypeId: number): Promise<void> {
-    await request("DELETE", `/preparation_type/${prepTypeId}`);
-  },
-
-
   async getStats(sessionKey?: string): Promise<StatsResponse> {
     const body = await request("GET", "/stats", {
       query: { session_key: sessionKey },

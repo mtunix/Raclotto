@@ -1,10 +1,14 @@
 import {Button, Form, Input, Select, Card, Row, Col, Tag, message} from "antd";
-import {useSessions} from "../../lib/api/apiSession";
 import {SpinnerContainer} from "../Spinner/Spinner";
 import ErrorPage from "../ErrorPage/ErrorPage";
-import {Api} from "../../lib/api";
+import {
+    createSession,
+    reactivateSession,
+    useListSessions,
+} from "../../api/generated/endpoints/sessions/sessions";
+import type {SessionDto} from "../../api/generated/model";
+import {onErrorRetry} from "../../lib/api/swrHooks";
 import React, {useEffect, useState} from "react";
-import {RaclottoSession} from "../../model/raclottoSession";
 import {useAppStore} from "../../AppSlice";
 import {useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
@@ -14,7 +18,7 @@ export function JoinSession() {
     const { t } = useTranslation();
     const setSession = useAppStore((state) => state.setSession);
     const navigate = useNavigate();
-    let {data, isLoading, error, mutate} = useSessions(true); // Include inactive sessions
+    let {data, isLoading, error, mutate} = useListSessions({include_inactive: true}, {swr: {onErrorRetry}});
     let [selectedIndex, setSelectedIndex] = React.useState(0);
     const [reactivating, setReactivating] = useState(false);
 
@@ -38,7 +42,7 @@ export function JoinSession() {
             if (!selectedSession.active) {
                 setReactivating(true);
                 try {
-                    const reactivatedSession = await Api.reactivateSession(selectedSession.key);
+                    const reactivatedSession = await reactivateSession({key: selectedSession.key});
                     setSession(reactivatedSession);
                     // Refresh the session list
                     mutate();
@@ -68,7 +72,7 @@ export function JoinSession() {
     }, [sortedSessions]);
 
     if (isLoading) return <SpinnerContainer/>;
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage/>;
     if (!sortedSessions || sortedSessions.length === 0) {
         return (
             <Card title={t("session.joinExisting")}>
@@ -87,7 +91,7 @@ export function JoinSession() {
                         style={{ width: '100%' }}
                         size="large"
                     >
-                        {sortedSessions.map((session: RaclottoSession, i: number) => {
+                        {sortedSessions.map((session: SessionDto, i: number) => {
                             const displayName = session.active 
                                 ? session.name 
                                 : `${session.name} ${t("session.inactive") || "(Inactive)"}`;
@@ -147,7 +151,7 @@ export function SessionSelector() {
             return;
         }
         setIsCreating(true);
-        Api.createSession(sessionName.trim()).then((session) => {
+        createSession({name: sessionName.trim()}).then((session) => {
             setSession(session);
             setIsCreating(false);
             navigate(`/${session.id}`);

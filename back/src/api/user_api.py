@@ -40,14 +40,16 @@ class UserApi(BaseApi):
             )
         return user
 
-    @BaseApi.endpoint("/<int:user_id>", ["GET"], response=UserProfileDto, operation_id="getUserProfile")
+    @BaseApi.endpoint("/<int:user_id>", ["GET"], response=UserProfileDto, operation_id="getUserProfile",
+                      errors=(404,))
     @require_auth
     def get_user_profile(self, user_id: int) -> UserProfileDto:
         """Get a user's public profile: card, level and achievements."""
         user = self._user(user_id)
         return UserProfileDto.of(user, LevelService().progress_of(user))
 
-    @BaseApi.endpoint("/<int:user_id>/stats", ["GET"], response=UserStatsDto, operation_id="getUserStats")
+    @BaseApi.endpoint("/<int:user_id>/stats", ["GET"], response=UserStatsDto, operation_id="getUserStats",
+                      errors=(404,))
     @require_auth
     def get_user_stats(self, user_id: int) -> UserStatsDto:
         """Get a user's pan, rating and achievement statistics."""

@@ -86,6 +86,10 @@ class LevelsSpecTest(unittest.TestCase):
             "/auth/register", "/auth/login", "/auth/me", "/auth/invite/{token}", "/auth/refresh",
             "/invites", "/invites/{invite_id}",
             "/users/{user_id}", "/users/{user_id}/stats",
+            "/sessions", "/sessions/{session_id}", "/sessions/by-key", "/sessions/close", "/sessions/reactivate",
+            "/ingredients", "/ingredients/{ingredient_id}", "/ingredients/refill", "/ingredients/available-counts",
+            "/ingredients/export", "/ingredients/import", "/ingredients/reimport",
+            "/preparation_type", "/preparation_type/{prep_type_id}",
         })
 
 
@@ -200,6 +204,80 @@ class UsersAndAuthSpecTest(unittest.TestCase):
 
         self.assertEqual(stats["most_ingredients_pan"]["anyOf"][0], {"$ref": "#/components/schemas/PanDto"})
         self.assertEqual(stats["favorite_ingredient"]["anyOf"][0], {"$ref": "#/components/schemas/IngredientDto"})
+
+
+class SessionsAndIngredientsSpecTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = build_openapi(get_app())
+        cls.schemas = cls.spec["components"]["schemas"]
+
+    def test_operation_ids(self):
+        operations = {
+            (path, method): operation["operationId"]
+            for path, methods in self.spec["paths"].items()
+            if path.startswith(("/sessions", "/ingredients", "/preparation_type"))
+            for method, operation in methods.items()
+        }
+        self.assertEqual(operations, {
+            ("/sessions", "post"): "createSession",
+            ("/sessions", "get"): "listSessions",
+            ("/sessions/{session_id}", "get"): "getSession",
+            ("/sessions/by-key", "get"): "getSessionByKey",
+            ("/sessions/{session_id}", "patch"): "updateSession",
+            ("/sessions/{session_id}", "delete"): "deleteSession",
+            ("/sessions/close", "post"): "closeSession",
+            ("/sessions/reactivate", "post"): "reactivateSession",
+            ("/ingredients", "get"): "listIngredients",
+            ("/ingredients", "post"): "createIngredient",
+            ("/ingredients/{ingredient_id}", "get"): "getIngredient",
+            ("/ingredients/{ingredient_id}", "patch"): "updateIngredient",
+            ("/ingredients/{ingredient_id}", "delete"): "deleteIngredient",
+            ("/ingredients/refill", "post"): "refillIngredient",
+            ("/ingredients/available-counts", "get"): "getAvailableCounts",
+            ("/ingredients/export", "get"): "exportIngredients",
+            ("/ingredients/import", "post"): "importIngredients",
+            ("/ingredients/reimport", "post"): "reimportIngredients",
+            ("/preparation_type", "get"): "listPreparationTypes",
+            ("/preparation_type", "post"): "createPreparationType",
+            ("/preparation_type/{prep_type_id}", "delete"): "deletePreparationType",
+        })
+
+    def test_the_ingredient_list_adds_only_applicable(self):
+        listed = self.schemas["IngredientForUserDto"]
+        plain = self.schemas["IngredientDto"]
+
+        self.assertEqual(set(listed["properties"]) - set(plain["properties"]), {"applicable"})
+        self.assertEqual(set(listed["required"]), set(listed["properties"]))
+
+    def test_create_takes_the_session_in_the_query(self):
+        operation = self.spec["paths"]["/ingredients"]["post"]
+
+        self.assertEqual([(p["name"], p["in"], p["required"]) for p in operation["parameters"]],
+                         [("session_key", "query", True)])
+        self.assertNotIn("session_key", self.schemas["CreateIngredientBody"]["properties"])
+        self.assertEqual(self.schemas["CreateIngredientBody"]["required"], ["name", "type"])
+
+    def test_an_imported_ingredient_is_an_exported_one(self):
+        imported = set(self.schemas["ImportedIngredient"]["properties"])
+
+        self.assertEqual(imported, set(self.schemas["IngredientDto"]["properties"]))
+        self.assertEqual(self.schemas["ImportIngredientsBody"]["properties"]["ingredients"]["items"],
+                         {"$ref": "#/components/schemas/ImportedIngredient"})
+        self.assertEqual(self.schemas["IngredientExportDto"]["properties"]["ingredients"]["items"],
+                         {"$ref": "#/components/schemas/IngredientDto"})
+
+    def test_delete_and_import_statuses(self):
+        paths = self.spec["paths"]
+
+        self.assertEqual(paths["/ingredients/{ingredient_id}"]["delete"]["responses"]["204"], {"description": "No Content"})
+        self.assertIn("201", paths["/ingredients/import"]["post"]["responses"])
+        self.assertIn("204", paths["/sessions/{session_id}"]["delete"]["responses"])
+        self.assertIn("204", paths["/preparation_type/{prep_type_id}"]["delete"]["responses"])
+
+    def test_session_timestamp_is_a_date_time(self):
+        self.assertEqual(self.schemas["SessionDto"]["properties"]["timestamp"],
+                         {"format": "date-time", "title": "Timestamp", "type": "string"})
 
 
 class ProbeSpecTest(unittest.TestCase):

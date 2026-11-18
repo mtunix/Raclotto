@@ -2,13 +2,13 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Toolbar } from './Toolbar';
-import { mockApi, mockUseAppStore, createMockIngredient, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
-import { IngredientType } from '../../model/ingredient';
+import { mockApi, mockUseAppStore, createMockIngredientForUser, createMockSession, resetAllMocks, mockLocalStorage } from '../../testUtils';
+import { IngredientType } from '../../api/generated/model';
 
 describe('Toolbar', () => {
     const mockIngredients = [
-        createMockIngredient({ id: 1, name: 'Ingredient 1', type: IngredientType.FILL }),
-        createMockIngredient({ id: 2, name: 'Ingredient 2', type: IngredientType.SAUCE }),
+        createMockIngredientForUser({ id: 1, name: 'Ingredient 1', type: IngredientType.FILL }),
+        createMockIngredientForUser({ id: 2, name: 'Ingredient 2', type: IngredientType.SAUCE }),
     ];
     const sessionKey = 'test-session';
     const mockSessionClosed = jest.fn();

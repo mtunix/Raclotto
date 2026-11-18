@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { RaclottoSession } from "./model/raclottoSession";
+import type { SessionDto } from "./api/generated/model";
 import { Achievement } from "./model/achievement";
 
 interface Level {
@@ -26,8 +26,8 @@ interface XpNotificationState {
 }
 
 interface AppState {
-    session: RaclottoSession | null;
-    setSession: (session: RaclottoSession) => void;
+    session: SessionDto | null;
+    setSession: (session: SessionDto) => void;
     clearSession: () => void;
     settingsRefreshTrigger: number;
     triggerSettingsRefresh: () => void;
@@ -40,7 +40,7 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
     session: null,
-    setSession: (session: RaclottoSession) => set({ session }),
+    setSession: (session: SessionDto) => set({ session }),
     clearSession: () => set({ session: null }),
     settingsRefreshTrigger: 0,
     triggerSettingsRefresh: () => set((state) => ({ 

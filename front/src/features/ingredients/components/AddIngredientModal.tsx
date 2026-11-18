@@ -1,6 +1,6 @@
 import React from "react";
 import { IngredientModal } from "./IngredientModal";
-import { IngredientType } from "../../../model/ingredient";
+import type { IngredientType } from "../../../api/generated/model";
 
 interface AddIngredientModalProps {
     visible: boolean;

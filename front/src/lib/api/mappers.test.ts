@@ -1,6 +1,6 @@
 import { IngredientType } from "../../model/ingredient";
 import { flatten } from "./jsonapi";
-import { toAchievement, toPan, toSession } from "./mappers";
+import { toAchievement, toPan } from "./mappers";
 import { achievementResource, panAttributes } from "./__fixtures__/wire";
 
 describe("toPan", () => {
@@ -43,27 +43,5 @@ describe("toAchievement", () => {
         });
         expect(listed.unlocked).toBe(true);
         expect(listed.progress).toBe(0.5);
-    });
-});
-
-describe("toSession", () => {
-    it("parses the timestamp and numeric id", () => {
-        const session = toSession(
-            flatten({
-                type: "session",
-                id: "5",
-                attributes: {
-                    key: "abc",
-                    name: "Friday",
-                    timestamp: "2026-11-18T19:00:00",
-                    active: false,
-                    created_by_user_id: 1,
-                },
-            }),
-        );
-        expect(session.id).toBe(5);
-        expect(session.key).toBe("abc");
-        expect(session.active).toBe(false);
-        expect(session.timestamp).toBeInstanceOf(Date);
     });
 });

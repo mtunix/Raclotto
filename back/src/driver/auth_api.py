@@ -95,7 +95,8 @@ class AuthApi(BaseApi):
 
         return AuthResultDto(token=_token(user), user=_me(user))
 
-    @BaseApi.endpoint("/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login")
+    @BaseApi.endpoint("/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login",
+                      errors=(401,))
     def login(self, body: LoginBody) -> AuthResultDto:
         """Sign in with name or email and password."""
         user = self.user_repository.by_email_or_name(body.name_or_email)
@@ -114,7 +115,8 @@ class AuthApi(BaseApi):
         """Get the signed-in user."""
         return _me(get_current_user())
 
-    @BaseApi.endpoint("/invite/<string:token>", ["GET"], response=InviteLookupDto, operation_id="lookupInvite")
+    @BaseApi.endpoint("/invite/<string:token>", ["GET"], response=InviteLookupDto, operation_id="lookupInvite",
+                      errors=(400,))
     def get_invite(self, token: str) -> InviteLookupDto:
         """Look up an unused invite for the registration page."""
         invite_token = self.invite_token_repository.by_token(token)
@@ -127,7 +129,8 @@ class AuthApi(BaseApi):
             )
         return InviteLookupDto.model_validate(invite_token)
 
-    @BaseApi.endpoint("/me", ["PATCH"], body=UpdateMeBody, response=MeDto, operation_id="updateMe")
+    @BaseApi.endpoint("/me", ["PATCH"], body=UpdateMeBody, response=MeDto, operation_id="updateMe",
+                      errors=(409,))
     @require_auth
     def update_me(self, body: UpdateMeBody) -> MeDto:
         """Change the signed-in user's name, diet, language, picture or card decoration."""
@@ -183,7 +186,7 @@ class InviteApi(BaseApi):
         invites = self.invite_token_repository.by_creator(get_current_user().id)
         return [InviteDto.model_validate(invite) for invite in invites]
 
-    @BaseApi.endpoint("/<int:invite_id>", ["DELETE"], status=204, operation_id="revokeInvite")
+    @BaseApi.endpoint("/<int:invite_id>", ["DELETE"], status=204, operation_id="revokeInvite", errors=(400, 404))
     @require_auth
     def revoke_invite(self, invite_id: int) -> None:
         """Revoke an unused invite the signed-in user created."""

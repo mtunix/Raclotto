@@ -1,12 +1,12 @@
 import React from "react";
 import { IngredientModal } from "./IngredientModal";
-import { Ingredient } from "../../../model/ingredient";
+import type { IngredientForUserDto, UpdateIngredientBody } from "../../../api/generated/model";
 
 interface EditIngredientModalProps {
-    ingredient: Ingredient | null;
+    ingredient: IngredientForUserDto | null;
     visible: boolean;
     onCancel: () => void;
-    onSave: (ingredientId: number, data: Partial<Ingredient>) => Promise<void>;
+    onSave: (ingredientId: number, data: UpdateIngredientBody) => Promise<void>;
 }
 
 export function EditIngredientModal(props: EditIngredientModalProps) {

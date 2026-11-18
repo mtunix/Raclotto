@@ -1,7 +1,8 @@
 import React, {useCallback, useEffect} from "react";
 import {Row, Col, Card} from "antd";
 import {Api} from "../../lib/api";
-import {useIngredients, useEvents, mutateEvents} from "../../lib/api/swrHooks";
+import {useEvents, mutateEvents, onErrorRetry} from "../../lib/api/swrHooks";
+import {useListIngredients} from "../../api/generated/endpoints/ingredients/ingredients";
 import {Toolbar} from "../Toolbar/Toolbar";
 import {EventDisplay} from "../EventDisplay/EventDisplay";
 import {useAppStore} from "../../AppSlice";
@@ -26,7 +27,9 @@ export function MainScreen(props: MainScreenProps) {
     const sessionKey = session?.key || "";
     
     // Use SWR hooks for data fetching
-    const { data: ingredients = [] } = useIngredients(sessionKey);
+    const { data: ingredients = [] } = useListIngredients({session_key: sessionKey}, {
+        swr: {enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true},
+    });
     const { data: events = [] } = useEvents(sessionKey);
 
     useEffect(() => {

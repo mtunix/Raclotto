@@ -22,34 +22,6 @@ export interface LeaderboardEntry {
   achievement_count: number;
 }
 
-export interface AvailableIngredientCounts {
-  fill_count: number;
-  sauce_count: number;
-  total_fill_count: number;
-  total_sauce_count: number;
-}
-
-/** An ingredient as exported/imported (flat dict incl. session_id). */
-export type ExportedIngredient = Omit<Ingredient, "applicable"> & {
-  session_id: number;
-};
-
-export interface IngredientExport {
-  session_key: string;
-  session_id: number;
-  ingredients: ExportedIngredient[];
-}
-
-export interface IngredientImportResult {
-  created: number;
-  ingredients: ExportedIngredient[];
-}
-
-export interface IngredientReimportResult extends IngredientImportResult {
-  updated: number;
-  deleted: number;
-}
-
 /**
  * Error response structure
  */
