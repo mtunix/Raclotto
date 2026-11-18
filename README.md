@@ -23,15 +23,17 @@ cp .env.example .env    # set RACLOTTO_DOMAIN and RACLOTTO_JWT_SECRET, and RACLO
 docker compose up -d
 ```
 
-CI builds the image on every green push to `master` and publishes it as
-`ghcr.io/mtunix/raclotto:latest` and `:<commit sha>`. The server only needs `compose.yaml`,
-`deploy/Caddyfile` and `.env` from the checkout. GitHub creates the package as private on the
-first push: make it public in the package settings, or run `docker login ghcr.io` on the server
-with a token that has `read:packages`.
+CI publishes the image of every [release](#releasing) as `ghcr.io/mtunix/raclotto:<version>`
+and `:latest`. The server only needs `compose.yaml`, `deploy/Caddyfile` and `.env` from the
+checkout. GitHub creates the package as private on the first release: make it public in the
+package settings, or run `docker login ghcr.io` on the server with a token that has `read:packages`.
 
 - **Update:** `docker compose pull && docker compose up -d`. The app migrates its database when it starts.
-- **Roll back:** set `RACLOTTO_IMAGE=ghcr.io/mtunix/raclotto:<commit sha>` in `.env`, then `docker compose up -d`.
-- **Build on the server instead:** `docker compose up -d --build`.
+- **Pin or roll back:** set `RACLOTTO_IMAGE=ghcr.io/mtunix/raclotto:2026.01` in `.env`, then
+  `docker compose up -d`. A database migrated by a newer release may not work with an older one;
+  restore the backup taken before the update.
+- **Which version runs:** `curl https://<domain>/api/health`.
+- **Build on the server instead:** `docker compose up -d --build` (reports version `dev`).
 - **Logs:** `docker compose logs -f app`; the app log is also in the volume (`raclotto-api.log`).
 
 All data (the database, generated images included, and the app log) lives in the `data` volume at
@@ -70,9 +72,10 @@ sudo cp deploy/raclotto.service /etc/systemd/system/ && sudo systemctl daemon-re
 deploy/update.sh
 ```
 
-`deploy/update.sh` is also the update: it pulls `master`, installs the requirements, builds the
-frontend into `static/` (`npm run build:static`) and restarts the service, which migrates the
-database. The app listens on `127.0.0.1:8081`. With Caddy as the proxy, the site block is:
+`deploy/update.sh` is also the update: it checks out the latest release (or the one given,
+`deploy/update.sh 2026.01`), installs the requirements, builds the frontend into `static/`
+(`npm run build:static`) and restarts the service, which migrates the database. The app listens
+on `127.0.0.1:8081`. With Caddy as the proxy, the site block is:
 
 ```
 raclotto.example.com {
@@ -84,3 +87,27 @@ raclotto.example.com {
 - **Logs:** `journalctl -u raclotto -f`, and `instance/raclotto-api.log`.
 - **Back up:** `sudo -u raclotto venv/bin/python -m back.src.backup - > ~/raclotto-$(date +%F).db`.
 - **Restore:** `sudo systemctl stop raclotto && sudo install -o raclotto -g raclotto -m 600 raclotto-<date>.db instance/raclotto.db && sudo systemctl start raclotto`.
+
+## Releasing
+
+Development happens on `dev`; `master` holds only releases. A version is
+`<year>.<release>[<patch>]`: `2026.01`, `2026.02`, … with the release number starting at 01 each
+year, and a fix to the latest release gets a letter, `2026.02a`, `2026.02b`, …
+
+```bash
+deploy/release.sh                        # dev, once CI is green on it, as the next release
+git push --atomic origin master dev 2026.03
+```
+
+For a fix to the latest release without what is new on `dev`, branch from `master`, commit the
+fix there, and release it as a patch; the script merges the branch into `dev` as well:
+
+```bash
+git switch -c fix-rating master          # … commit the fix
+deploy/release.sh --patch fix-rating
+git push --atomic origin master dev 2026.03a
+```
+
+`deploy/release.sh --patch` without a branch releases `dev` as a patch. The script merges into
+`master`, tags the version and prints the push; it pushes nothing itself. Pushing the tag makes
+CI test it, publish the image and create the GitHub release.

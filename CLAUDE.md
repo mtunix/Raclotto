@@ -88,7 +88,9 @@ Pan roll module, Achievement facts, Read-only achievement list, App test harness
 **Never add a `Co-Authored-By:` trailer** or any other authorship/tool attribution.
 
 `dev` is where development happens: commit there, or on a feature branch off it that merges
-back into `dev`. `master` gets only releases, merged from `dev`; never commit to it directly.
+back into `dev`. `master` gets only releases, through `deploy/release.sh`; never commit to it
+directly. A release is a tag `<year>.<release>[<patch>]` (`2026.01`, `2026.02`, a fix `2026.02a`;
+the release number restarts at 01 each year), made by the script, never by hand.
 
 ## Commands
 
@@ -104,6 +106,7 @@ venv/bin/python -m back.src.dev                            # dev server for `npm
 venv/bin/python -m back.src.main                           # production server (waitress); needs RACLOTTO_JWT_SECRET
 venv/bin/alembic current                                   # revision of instance/raclotto.db (RACLOTTO_DATABASE_URL overrides)
 venv/bin/python -m back.src.backup DEST                    # consistent copy of the database while it runs; `-` for stdout
+deploy/release.sh                                          # dev → master, tagged as the next release; --patch [BRANCH] for a letter
 
 cd front && CI=true npx jest <path>      # one test file — the edit loop
 cd front && CI=true npx jest             # whole frontend suite
@@ -160,16 +163,21 @@ The README has the operator steps. The pieces:
   (`deploy/raclotto.service`); `deploy/update.sh` pulls, installs, builds the frontend into
   `static/` (`npm run build:static`) and restarts. Keep both routes working when deployment changes.
 - `static/` is build output, ignored by git. Never commit a frontend build.
+- **Versions** (`back/src/version.py`): the numbering, and the running app's version, read from the
+  `VERSION` file the build writes (ignored by git; the Docker build arg, or `git describe` in
+  `deploy/update.sh`) and reported by `/api/health`. Without the file it is `dev`.
 - Base images are pinned by tag and digest, like the actions; bump both together.
 
 ## CI
 
-`.github/workflows/ci.yml` runs on pushes to `master` and `dev` and on pull requests: the backend suite,
+`.github/workflows/ci.yml` runs on pushes to `master` and `dev`, release tags and pull requests: the backend suite,
 `venv/bin/mypy`, `tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
 fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
 `front/.nvmrc`; actions are pinned to commit SHAs. After those pass, the `image` job builds the
-Docker image and smoke-tests it (healthy, serves the index and `/api/health`). On `master` it then
-pushes `ghcr.io/mtunix/raclotto:latest` and `:<sha>`; `dev` and pull requests only build and test it.
+Docker image and smoke-tests it (healthy, serves the index, `/api/health` reports the version).
+For a release tag it checks the tag is a version on `master`, pushes
+`ghcr.io/mtunix/raclotto:<version>` and `:latest`, and creates the GitHub release; everything else
+only builds and tests the image.
 
 ## Verify what you changed, not the whole repo
 

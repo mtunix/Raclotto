@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [master, dev]
+    # Releases: 2026.01, 2026.01a, … (back/src/version.py checks the exact form).
+    tags: ['[0-9][0-9][0-9][0-9].[0-9][0-9]*']
   pull_request:
 
 permissions:
@@ -80,14 +82,37 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      latest: ${{ steps.version.outputs.latest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: >-
+        with:
+          fetch-depth: 0 # master and the tags, to check a release
+      - name: Version
+        id: version
+        run: |
+          if [ "$GITHUB_REF_TYPE" != tag ]; then
+            echo "version=dev" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 -m back.src.version check "$GITHUB_REF_NAME"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/master \
+            || { echo "::error::$GITHUB_REF_NAME is not on master"; exit 1; }
+          latest="$(git tag --list | python3 -m back.src.version latest)"
+          echo "version=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          echo "latest=$([ "$latest" = "$GITHUB_REF_NAME" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: >-
           docker build --tag raclotto:ci
+          --build-arg RACLOTTO_VERSION="$VERSION"
           --label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           --label org.opencontainers.image.revision=${{ github.sha }}
+          --label org.opencontainers.image.version="$VERSION"
           .
       - name: Smoke-test the image
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           docker run --detach --name raclotto --publish 127.0.0.1:8081:8081 \
             --env RACLOTTO_JWT_SECRET="$(openssl rand -base64 48)" raclotto:ci
@@ -98,17 +123,39 @@ jobs:
           done
           docker inspect --format '{{.State.Health.Status}}' raclotto | grep --quiet --line-regexp healthy
           curl --fail --silent --show-error http://127.0.0.1:8081/ | grep --quiet '<div id="root">'
-          curl --fail --silent --show-error --header 'Accept: application/json' http://127.0.0.1:8081/api/health
+          curl --fail --silent --show-error --header 'Accept: application/json' http://127.0.0.1:8081/api/health \
+            | python3 -c 'import json, sys; health = json.load(sys.stdin); assert health["version"] == sys.argv[1], health' "$VERSION"
       - if: failure()
         run: docker logs raclotto
       - name: Push to the GitHub container registry
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.ref_type == 'tag'
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST: ${{ steps.version.outputs.latest }}
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "$TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          for tag in "$GITHUB_SHA" latest; do
+          tags=("$VERSION")
+          # A patch to an older release doesn't move latest.
+          [ "$LATEST" = true ] && tags+=(latest)
+          for tag in "${tags[@]}"; do
             docker tag raclotto:ci "$image:$tag"
             docker push "$image:$tag"
           done
+
+  release:
+    name: GitHub release
+    needs: image
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST: ${{ needs.image.outputs.latest }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag
+          --title "Raclotto $GITHUB_REF_NAME" --generate-notes --latest="$LATEST"
