@@ -6,3 +6,5 @@
 .env
 .env.local
 .env.*.local
+front/build/
+front/coverage/

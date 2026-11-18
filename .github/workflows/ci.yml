@@ -45,10 +45,7 @@ jobs:
       - run: npx tsc --noEmit -p .
       - run: npm run lint
       - run: npx jest --config jest.ci.config.js --ci
-      # front/build/ is tracked, so the check build goes outside the checkout.
       - run: npm run build
-        env:
-          BUILD_PATH: ${{ runner.temp }}/build
 
   contract:
     name: Generated API client is current
