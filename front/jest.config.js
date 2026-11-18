@@ -1,40 +1,34 @@
 module.exports = {
-  // Use ts-jest for TypeScript files
-  preset: 'ts-jest',
-  
+  roots: ['<rootDir>/src'],
+
   // Test environment
   testEnvironment: 'jsdom',
-  
+
   // Setup files
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-  
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
+
   // Module paths (matching your tsconfig)
   moduleNameMapper: {
-    // Handle CSS imports
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    
-    // Handle image imports
-    '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/src/__mocks__/fileMock.js',
-    
-    // Handle path aliases from tsconfig
+    // Handle path aliases from tsconfig (baseUrl ".")
+    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
+    '^src/(.*)$': '<rootDir>/src/$1',
     '^@test-utils$': '<rootDir>/src/testUtils',
     '^@test-utils/(.*)$': '<rootDir>/src/testUtils/$1',
-    
-    // Fix antd locale issues
-    '^@rc-component/picker/locale/(.*)$': '<rootDir>/src/__mocks__/antdLocaleMock.js',
   },
-  
-  // Transform files
+
+  // Transform files (same babel/css/file transforms the CRA tooling uses)
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.(js|jsx|mjs|cjs|ts|tsx)$': '<rootDir>/config/jest/babelTransform.js',
+    '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
+    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>/config/jest/fileTransform.js',
   },
-  
+
   // Test match patterns
   testMatch: [
-    '**/__tests__/**/*.ts?(x)',
-    '**/?(*.)+(spec|test).ts?(x)'
+    '**/__tests__/**/*.{js,jsx,ts,tsx}',
+    '**/?(*.)+(spec|test).{js,jsx,ts,tsx}'
   ],
-  
+
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -42,19 +36,19 @@ module.exports = {
     '!src/**/*.stories.tsx',
     '!src/index.tsx',
   ],
-  
+
   // Ignore patterns
   testPathIgnorePatterns: [
     '/node_modules/',
     '/build/',
     '/dist/'
   ],
-  
+
   // Transform ignore patterns (important for antd and other ESM packages)
   transformIgnorePatterns: [
     'node_modules/(?!(antd|@ant-design|rc-.*|@rc-component|@babel/runtime)/)'
   ],
-  
+
   // Module file extensions
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 };
