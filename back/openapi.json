@@ -578,10 +578,15 @@
             "const": "ok",
             "title": "Status",
             "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
           }
         },
         "required": [
-          "status"
+          "status",
+          "version"
         ],
         "title": "HealthDto",
         "type": "object"
@@ -3371,7 +3376,7 @@
             "description": "OK"
           }
         },
-        "summary": "Liveness for container and load-balancer checks: the app is up and its database answers.",
+        "summary": "Liveness for container and load-balancer checks (the app is up, its database answers), and the running release.",
         "tags": [
           "health"
         ]

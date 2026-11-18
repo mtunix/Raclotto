@@ -26,6 +26,9 @@ COPY --from=frontend /src/front/build static
 RUN python -m compileall -q back \
     && mkdir instance \
     && chown raclotto:raclotto instance
+# The version /api/health reports: CI passes the release tag; any other build is dev.
+ARG RACLOTTO_VERSION=dev
+RUN printf '%s\n' "$RACLOTTO_VERSION" > VERSION
 USER raclotto
 ENV RACLOTTO_HOST=0.0.0.0 \
     RACLOTTO_PORT=8081 \

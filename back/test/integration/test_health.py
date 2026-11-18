@@ -1,5 +1,6 @@
 import unittest
 
+from back.src.version import current
 from back.test.support import AppTest
 
 
@@ -8,7 +9,7 @@ class HealthTest(AppTest):
         response = self.call("GET", "/health")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, {"status": "ok"})
+        self.assertEqual(response.json, {"status": "ok", "version": current()})
 
 
 if __name__ == "__main__":

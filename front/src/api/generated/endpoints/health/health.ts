@@ -22,7 +22,7 @@ import type { ErrorType } from '../../../../lib/api/orvalMutator';
 
 
  /**
- * @summary Liveness for container and load-balancer checks: the app is up and its database answers.
+ * @summary Liveness for container and load-balancer checks (the app is up, its database answers), and the running release.
  */
 export const getHealth = (
 
@@ -40,7 +40,7 @@ export const getGetHealthKey = () => [`/health`] as const;
 export type GetHealthQueryResult = NonNullable<Awaited<ReturnType<typeof getHealth>>>
 
 /**
- * @summary Liveness for container and load-balancer checks: the app is up and its database answers.
+ * @summary Liveness for container and load-balancer checks (the app is up, its database answers), and the running release.
  */
 export const useGetHealth = <TError = ErrorType<unknown>>(
    options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getHealth>>, TError> & { swrKey?: Key, enabled?: boolean },  }
