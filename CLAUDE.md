@@ -17,11 +17,24 @@ the module you are changing before inferring patterns from its neighbours.
 
 | Layer | Path | Role |
 |---|---|---|
-| Routes | `api/*_api.py`, `driver/auth_api.py` | Parse input, call a module, serialize. Keep thin. |
+| Routes | `api/*_api.py`, `driver/auth_api.py` | Take DTOs, call a module, return a DTO. Keep thin. |
+| DTOs | `dto/` | Pydantic request/response shapes; one canonical DTO per resource (`PanDto`, `LevelDto`, …). |
 | Domain modules | `interactor/` | Behaviour behind small interfaces (below). |
 | Repositories | `repository/` | Queries over the global `db.session`. Thin on purpose. |
 | Entities | `entity/` | SQLAlchemy models. |
-| App wiring | `driver/app.py`, `driver/api_custom.py`, `api/base_api.py` | Flask app, seeding, route registry. |
+| App wiring | `driver/app.py`, `driver/api_custom.py`, `api/base_api.py` | Flask app, seeding, route registry, error handlers. |
+| Spec | `api/openapi.py` | Builds `back/openapi.json` from the endpoint declarations. |
+
+Every endpoint is typed: `BaseApi.endpoint(route, methods, query=, body=, response=, status=, errors=, operation_id=)`.
+
+- Declares `response=XDto` / `list[XDto]`, or `status=204`; anything else fails at class definition.
+- The handler gets `query=` / `body=` as validated DTOs (path params as plain kwargs) and returns the
+  response DTO; returning anything else is a 500.
+- `errors=` lists every error status the handler and its callees raise; 400 (invalid DTO) and 401
+  (`@require_auth`) are implied.
+- `operation_id` names the generated client function (`rollPan`); unique across the app.
+- Responses are plain JSON (`application/json` only, 406/415 otherwise). Errors are
+  `{"errors": [ApiErrorDto, …]}` (`ErrorResponseDto`); raise `ApiError` to produce one.
 
 The deep modules in `interactor/` and what they own:
 
@@ -31,7 +44,8 @@ The deep modules in `interactor/` and what they own:
 - **`pan_roll.py` — `PanRoll.roll(user, session_key, RollOptions) -> RollOutcome`**: the whole
   roll — eligible ingredients, fill/sauce split, naming, prep type/cheese, session membership,
   XP/level, events, achievements — in one transaction. Classic, bandit and hand-picked pans
-  all go through it.
+  all go through it; routes call `roll_into(..., present)` so the response DTO is built
+  before the commit.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
   what happened (`PanRolled`, `PanRated`, `IngredientAdded`, `CatalogChanged`,
   `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`. Never special-case
@@ -41,15 +55,14 @@ The deep modules in `interactor/` and what they own:
 
 | Path | Role |
 |---|---|
-| `lib/api/transport.ts` | The seam: `Transport` interface, axios adapter, `setTransport`. |
-| `lib/api/jsonapi.ts`, `mappers.ts` | JSON:API envelope + exactly one mapper per resource. |
-| `lib/api/index.ts` | `Api` facade: thin typed requests returning domain models. |
-| `lib/api/swrHooks.ts`, `apiSession.ts` | SWR hooks over `Api`; no mapping of their own. |
-| `model/` | Domain types (`Pan`, `User`, `RollOutcome`, `diet.ts`, …). |
+| `api/generated/` | orval output from `back/openapi.json`: endpoint functions, SWR hooks, key getters, DTO types. Never edit; `npm run gen:api`. |
+| `lib/api/transport.ts`, `orvalMutator.ts` | The seam: generated code calls the mutator, which calls `transport()`. Auth hooks are registered by `AuthSlice`. |
+| `lib/api/swrHooks.ts` | Cache invalidation (`mutateX`) built on the generated key getters; SWR retry policy. |
+| `model/diet.ts`, `features/generation/applyRollOutcome.ts`, `features/ingredients/ingredientCatalog.ts`, `features/history/usePanPages.ts`, `features/settings/ingredientImport.ts`, `shared/EventDisplay/sessionEvents.ts`, `shared/profilePictureHistory.ts` | Hand-written domain logic over the generated types. |
 | `features/`, `shared/` | Feature views and shared components. `shared/` never imports `features/`. |
 | `AuthSlice.ts`, `AppSlice.ts` | Zustand stores (signed-in user, current session). |
 
-A roll returns a `RollOutcome` (pan + reward + achievements + events); apply it with
+A roll returns a `RollOutcomeDto` (pan + reward + achievements + events); apply it with
 `features/generation/applyRollOutcome.ts`, never by refetching the user and diffing XP.
 
 ## Commits
@@ -62,7 +75,7 @@ areas touched, a few words each. Not sentences, no rationale, no before/after na
 ```
 Deepen pan roll and achievements
 
-Pan roll module, Achievement facts, Read-only achievement list, Roll outcome in meta
+Pan roll module, Achievement facts, Read-only achievement list, App test harness
 ```
 
 **Never add a `Co-Authored-By:` trailer** or any other authorship/tool attribution.
@@ -83,11 +96,19 @@ cd front && CI=true npx jest <path>      # one test file — the edit loop
 cd front && CI=true npx jest             # whole frontend suite
 cd front && npx tsc --noEmit             # type check
 cd front && npm start                    # dev server
+cd front && npm run gen:api              # back/openapi.json + api/generated/ from the DTOs
+cd front && npm run gen:api:check        # regenerate and fail on drift
+venv/bin/python -m back.test.export_wire_fixtures   # rewrite lib/api/__fixtures__/backendResponses.ts
+cd front && BUILD_PATH=/tmp/raclotto-build npm run build   # front/build/ is tracked; build elsewhere
 ```
 
-`npm run lint` is broken (eslint can't find a config). The view tests under `features/` and
-`shared/` fail to load (antd locale import, stale mock paths); `lib/api`, `model` and
-`features/generation/applyRollOutcome` tests are the ones that run.
+`npm run lint` runs, but its unquoted globs only reach `src/*/`; `npx eslint 'src/**/*.{ts,tsx}'`
+covers everything (4 `import/first` errors in `GenerateView.tsx`, many warnings).
+
+Known-broken frontend suites: `App.test.js`, `ErrorPage`, `GenerateView`, `HistoryView`,
+`SettingsView`, `MainScreen`, `StartScreen`, `Toolbar` fail to load (react-router needs
+`TextEncoder`, the CSS transform predates Jest 28, stale `../AppSlice` mock paths); `DialView`
+loads but 3 assertions are stale. The view suites need `FakeTransport` to be revived.
 
 ## Verify what you changed, not the whole repo
 
@@ -100,18 +121,23 @@ cd front && npm start                    # dev server
 - **Narrowest first.** A single test module before its suite.
 - **The sides are independent.** A `back/`-only change can't break the frontend's tests,
   except through the wire format.
-- **Wire contract.** Changing a response shape means changing the matching mapper in
-  `front/src/lib/api/mappers.ts` and its fixture in `lib/api/__fixtures__/wire.ts`.
+- **Wire contract.** Change the DTO → `npm run gen:api` → fix the call sites `tsc` points at →
+  rerun `export_wire_fixtures`. The generated files and `back/openapi.json` change only through
+  regeneration; call sites use the generated types as they are, no casts.
 
 ## Testing
 
 - **Backend:** `unittest`. Pure logic gets a plain `TestCase` (`test/unit/`). Anything
   touching the DB or routes subclasses `AppTest` from `back/test/support.py` (`test/integration/`):
   real app, in-memory SQLite, fresh schema and default data per test, builders
-  (`make_user`, `make_session`, `make_ingredient`, `make_pan`), `auth()` and `post()` helpers.
-- **Frontend:** jest. Test `lib/api` through `FakeTransport` (`setTransport(fake)`), not by
-  mocking axios. `setupTests.js` mocks `./lib/api` globally; real-module tests opt out with
-  `jest.unmock("./index")`.
+  (`make_user`, `make_session`, `make_ingredient`, `make_pan`, `make_invite`),
+  `self.call(method, path, user, body=, query=)` for plain-JSON requests, `recorded_writes()` to
+  assert what reached the database.
+- **Contract tests** (`test/integration/test_openapi.py`): the committed spec matches the code
+  (drift), and every routed endpoint appears in the spec.
+- **Frontend:** jest. Call the generated functions against `FakeTransport` (`setTransport(fake)`,
+  `fake.on(...)`, `fake.last(...)`) with fixtures from `lib/api/__fixtures__/backendResponses.ts`,
+  not by mocking axios or modules.
 - **Test through the module's interface.** Swap collaborators through constructor arguments
   (`PanRoll(rng=..., achievements=...)`, `Achievements(evaluators=...)`), not `patch`.
 - **Regression tests must be seen red before green.** Revert the fix, confirm the new test
@@ -144,5 +170,6 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
   business logic is a module waiting to be extracted.
 - **Ingredient categories** (meat/vegetarian/vegan/fish) are mutually exclusive on an
   ingredient; on a user they are a hierarchy. `Diet` is the only translation between the two.
-- **Responses** are JSON:API-ish: `{jsonapi, data: {type, id, attributes}, meta}`. Roll
-  endpoints carry `meta.reward`, `meta.newly_unlocked_achievements`, `meta.events`.
+- **Responses** are the DTO as plain JSON, snake_case fields, int ids, ISO datetimes. Lists are
+  `list[XDto]`; pages are `*PageDto` (`items, total, limit, offset, has_more`). Roll endpoints
+  return `RollOutcomeDto` (`pan`, `reward`, `achievements`, `events`).
