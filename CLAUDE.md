@@ -5,7 +5,7 @@ XP, levels and achievements. Two apps in one repo:
 
 | Path     | Stack                                                        |
 |----------|--------------------------------------------------------------|
-| `back/`  | Python 3.10, Flask 3.1, SQLAlchemy 2, SQLite                 |
+| `back/`  | Python 3.14 (`.python-version`), Flask 3.1, SQLAlchemy 2, SQLite |
 | `front/` | React 19, TypeScript, Zustand + SWR, antd, ejected CRA (webpack + jest) |
 
 There are no dev docs. The code map below and the module docstrings are the reference; read
