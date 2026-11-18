@@ -15,13 +15,15 @@ export interface PanFilter {
  * invalidated, so `replacePan` swaps in a fresh copy of a pan on an earlier page.
  */
 export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) {
-  const [offset, setOffset] = useState(0);
-  const [loaded, setLoaded] = useState<ReadonlyMap<number, PanDto[]>>(new Map());
-
-  useEffect(() => {
-    setOffset(0);
-    setLoaded(new Map());
-  }, [session_key, user_id]);
+  const filter = JSON.stringify([session_key, user_id]);
+  const [stored, setPages] = useState<Pages>(() => startOver(filter));
+  // Reset while rendering, not in an effect, so the old offset is never asked for with the new filter.
+  let pages = stored;
+  if (stored.filter !== filter) {
+    pages = startOver(filter);
+    setPages(pages);
+  }
+  const { offset, loaded } = pages;
 
   const params: ListPansParams = {
     ...(session_key ? { session_key } : {}),
@@ -39,32 +41,51 @@ export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) 
   });
 
   useEffect(() => {
-    if (page) setLoaded((previous) => new Map(previous).set(page.offset, page.items));
-  }, [page]);
+    if (page) {
+      setPages((previous) =>
+        previous.filter === filter
+          ? { ...previous, loaded: new Map(previous.loaded).set(page.offset, page.items) }
+          : previous,
+      );
+    }
+  }, [page, filter]);
 
   const loadMore = useCallback(() => {
-    if (page?.has_more) setOffset(page.offset + pageSize);
-  }, [page, pageSize]);
+    if (page?.has_more) {
+      const next = page.offset + pageSize;
+      setPages((previous) => (previous.filter === filter ? { ...previous, offset: next } : previous));
+    }
+  }, [page, pageSize, filter]);
 
   const replacePan = useCallback((fresh: PanDto) => {
-    setLoaded((previous) => {
+    setPages((previous) => {
       const next = new Map<number, PanDto[]>();
-      previous.forEach((items, at) => next.set(at, items.map((pan) => (pan.id === fresh.id ? fresh : pan))));
-      return next;
+      previous.loaded.forEach((items, at) => next.set(at, items.map((pan) => (pan.id === fresh.id ? fresh : pan))));
+      return { ...previous, loaded: next };
     });
   }, []);
 
   // The current page is read from SWR directly: right after a reset it is cached but not yet in `loaded`.
-  const pages = new Map(loaded);
-  if (page) pages.set(page.offset, page.items);
+  const shown = new Map(loaded);
+  if (page) shown.set(page.offset, page.items);
 
   return {
-    pans: newestFirst(pages),
+    pans: newestFirst(shown),
     hasMore: page?.has_more ?? false,
     loadMore,
     replacePan,
     isLoading,
   };
+}
+
+interface Pages {
+  filter: string;
+  offset: number;
+  loaded: ReadonlyMap<number, PanDto[]>;
+}
+
+function startOver(filter: string): Pages {
+  return { filter, offset: 0, loaded: new Map() };
 }
 
 function newestFirst(pages: ReadonlyMap<number, PanDto[]>): PanDto[] {

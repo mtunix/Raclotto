@@ -114,6 +114,35 @@ it("starts over when the filter changes", async () => {
   await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
 });
 
+it("never asks for or shows a page of the previous filter's offset", async () => {
+  fake.on("GET", "/pans", backend(5));
+  // Requests since `since` for any page but the first.
+  const later = (since: number) => fake.requests.slice(since).filter((r) => (r.query as { offset: number }).offset !== 0);
+  const loadAll = async () => {
+    await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4, 3, 2]));
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4, 3, 2, 1]));
+  };
+  const { result, rerender } = render({ session_key: "first" });
+  await loadAll();
+
+  let since = fake.requests.length;
+  rerender({ session_key: "second" });
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
+  expect(later(since)).toEqual([]);
+  await loadAll();
+
+  since = fake.requests.length;
+  rerender({ session_key: "first" });
+  await act(async () => {});
+
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
+  expect(result.current.hasMore).toBe(true);
+  expect(later(since)).toEqual([]);
+});
+
 it("fetches nothing without a filter", async () => {
   fake.on("GET", "/pans", backend(5));
   const { result } = render({ session_key: "" });
