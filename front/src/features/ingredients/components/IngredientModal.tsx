@@ -70,7 +70,7 @@ export function IngredientModal(props: IngredientModalProps) {
     const getInitialValues = () => {
         if (props.mode === 'edit' && props.ingredient) {
             return {
-                name: props.ingredient.name,
+                name: props.ingredient.name ?? "",
                 type: props.ingredient.type,
                 spicy: props.ingredient.spicy || 0,
                 wildcard: props.ingredient.wildcard || false,

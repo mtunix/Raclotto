@@ -9,7 +9,8 @@ from back.src.interactor.ingredient_category import category_problem
 
 class IngredientDto(ResponseDto):
     id: int
-    name: str
+    # Null for ingredients the old API created without one; new and changed ones always have one.
+    name: str | None
     type: IngredientType
     available: bool
     meat: bool

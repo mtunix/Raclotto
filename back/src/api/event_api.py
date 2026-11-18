@@ -69,8 +69,9 @@ class EventApi(BaseApi):
         config = self.event_service.create_or_update_config(
             body.event_type, body.enabled, body.frequency_minutes, session_id
         )
+        dto = EventConfigDto.model_validate(config)
         db.session.commit()
-        return EventConfigDto.model_validate(config)
+        return dto
 
     @BaseApi.endpoint("/configs/<int:config_id>", ["PATCH"], body=UpdateEventConfigBody, response=EventConfigDto,
                       operation_id="updateEventConfig", errors=(404,))
@@ -87,5 +88,6 @@ class EventApi(BaseApi):
             )
         for field in body.model_fields_set:
             setattr(config, field, getattr(body, field))
+        dto = EventConfigDto.model_validate(config)
         db.session.commit()
-        return EventConfigDto.model_validate(config)
+        return dto

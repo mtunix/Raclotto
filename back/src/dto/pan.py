@@ -19,7 +19,8 @@ from back.src.interactor.pan_roll import Reward, RollOutcome
 
 class PanDto(ResponseDto):
     id: int
-    name: str
+    # Null for pans the old API renamed to null; new and renamed ones always have one.
+    name: str | None
     user_id: int
     session_id: int
     timestamp: datetime

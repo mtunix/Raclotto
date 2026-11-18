@@ -41,6 +41,7 @@ import type {
 } from "../../api/generated/model";
 import { usePanPages } from "../history/usePanPages";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
+import { displayName } from "../../shared/displayName";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { getTextureBorderImage } from "../../lib/borderTextures";
@@ -515,7 +516,7 @@ export function ProfileView() {
             <Col xs={24} sm={12}>
               <Statistic
                 title={t("profile.panName") || "Pan Name"}
-                value={stats.most_ingredients_pan.name}
+                value={displayName(stats.most_ingredients_pan.name, t)}
               />
             </Col>
             <Col xs={24} sm={12}>
@@ -718,7 +719,7 @@ export function ProfileView() {
                             marginBottom: "4px",
                           }}
                         >
-                          {pan.name}
+                          {displayName(pan.name, t)}
                         </Title>
                         <Text type="secondary" style={{ fontSize: "0.7rem" }}>
                           {formatDate(pan.timestamp)}

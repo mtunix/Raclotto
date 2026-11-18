@@ -7,6 +7,7 @@
 import type { PanDtoAuthor } from './panDtoAuthor';
 import type { PanDtoCheeseLevel } from './panDtoCheeseLevel';
 import type { IngredientDto } from './ingredientDto';
+import type { PanDtoName } from './panDtoName';
 import type { PanDtoPreparationType } from './panDtoPreparationType';
 import type { PanDtoPreparationTypeId } from './panDtoPreparationTypeId';
 import type { RatingDto } from './ratingDto';
@@ -16,7 +17,7 @@ export interface PanDto {
   cheese_level: PanDtoCheeseLevel;
   id: number;
   ingredients: IngredientDto[];
-  name: string;
+  name: PanDtoName;
   preparation_type: PanDtoPreparationType;
   preparation_type_id: PanDtoPreparationTypeId;
   rating: number;

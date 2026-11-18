@@ -86,11 +86,12 @@ class IngredientApi(BaseApi):
         user = get_current_user()
         session = self._session(query.session_key)
         ingredient = self.repository.create({**body.model_dump(), "session": session})
+        dto = IngredientDto.model_validate(ingredient)
         db.session.commit()
 
         Achievements().record(IngredientAdded(ingredient=ingredient, user=user, session=session))
         db.session.commit()
-        return IngredientDto.model_validate(ingredient)
+        return dto
 
     @BaseApi.endpoint("/<int:ingredient_id>", ["GET"], response=IngredientDto, operation_id="getIngredient",
                       errors=(404,))
@@ -107,9 +108,10 @@ class IngredientApi(BaseApi):
         ingredient = self._ingredient(ingredient_id)
         for field in body.model_fields_set:
             setattr(ingredient, field, getattr(body, field))
+        dto = IngredientDto.model_validate(ingredient)
         db.session.commit()
         self._catalog_changed(ingredient.session)
-        return IngredientDto.model_validate(ingredient)
+        return dto
 
     @BaseApi.endpoint("/<int:ingredient_id>", ["DELETE"], query=DeleteIngredientQuery, status=204,
                       operation_id="deleteIngredient", errors=(404,))
@@ -136,9 +138,10 @@ class IngredientApi(BaseApi):
         """Mark an ingredient available again."""
         ingredient = self._ingredient(body.id)
         self.repository.mark_available(ingredient.id)
+        dto = IngredientDto.model_validate(ingredient)
         db.session.commit()
         self._catalog_changed(ingredient.session)
-        return IngredientDto.model_validate(ingredient)
+        return dto
 
     @BaseApi.endpoint("/available-counts", ["GET"], query=SessionKeyQuery, response=AvailableCountsDto,
                       operation_id="getAvailableCounts")
@@ -180,9 +183,10 @@ class IngredientApi(BaseApi):
         created = self.repository.bulk_create(
             [item.model_dump(exclude=_NOT_IMPORTED) for item in body.ingredients], session.id
         )
+        dto = IngredientImportDto(created=len(created), ingredients=_dtos(created))
         db.session.commit()
         self._catalog_changed(session)
-        return IngredientImportDto(created=len(created), ingredients=_dtos(created))
+        return dto
 
     @BaseApi.endpoint("/reimport", ["POST"], query=SessionKeyQuery, body=ImportIngredientsBody,
                       response=IngredientReimportDto, operation_id="reimportIngredients", errors=(404,))
@@ -222,12 +226,12 @@ class IngredientApi(BaseApi):
         updated = self.repository.bulk_update(to_update) if to_update else []
         unlisted = current_ids - listed_ids
         deleted = self.repository.mark_unavailable_by_ids(list(unlisted)) if unlisted else 0
-        db.session.commit()
-        self._catalog_changed(session)
-
-        return IngredientReimportDto(
+        dto = IngredientReimportDto(
             created=len(created),
             updated=len(updated),
             deleted=deleted,
             ingredients=_dtos(self.repository.by_session(session.key)),
         )
+        db.session.commit()
+        self._catalog_changed(session)
+        return dto

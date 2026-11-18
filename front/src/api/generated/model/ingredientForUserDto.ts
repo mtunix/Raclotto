@@ -4,6 +4,7 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { IngredientForUserDtoName } from './ingredientForUserDtoName';
 import type { IngredientType } from './ingredientType';
 
 /**
@@ -19,7 +20,7 @@ export interface IngredientForUserDto {
   id: number;
   lactose: boolean;
   meat: boolean;
-  name: string;
+  name: IngredientForUserDtoName;
   session_id: number;
   spicy: number;
   sweet: boolean;

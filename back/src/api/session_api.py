@@ -51,8 +51,9 @@ class SessionApi(BaseApi):
         db.session.execute(
             user_sessions.insert().values(user_id=user.id, session_id=session.id, joined_at=datetime.now())
         )
+        dto = SessionDto.model_validate(session)
         db.session.commit()
-        return SessionDto.model_validate(session)
+        return dto
 
     @BaseApi.endpoint("", ["GET"], query=ListSessionsQuery, response=list[SessionDto],
                       operation_id="listSessions")
@@ -86,8 +87,9 @@ class SessionApi(BaseApi):
         """Rename a session."""
         session = self._session(session_id)
         session.name = body.name
+        dto = SessionDto.model_validate(session)
         db.session.commit()
-        return SessionDto.model_validate(session)
+        return dto
 
     @BaseApi.endpoint("/<int:session_id>", ["DELETE"], status=204, operation_id="deleteSession", errors=(404,))
     @require_auth
@@ -105,8 +107,9 @@ class SessionApi(BaseApi):
         if not session:
             raise _not_found()
         Achievements().record(SessionClosed(session=session, actor=get_current_user()))
+        dto = SessionDto.model_validate(session)
         db.session.commit()
-        return SessionDto.model_validate(session)
+        return dto
 
     @BaseApi.endpoint("/reactivate", ["POST"], body=SessionKeyBody, response=SessionDto,
                       operation_id="reactivateSession", errors=(404,))
@@ -116,5 +119,6 @@ class SessionApi(BaseApi):
         session = self.repository.reactivate_session(body.key)
         if not session:
             raise _not_found()
+        dto = SessionDto.model_validate(session)
         db.session.commit()
-        return SessionDto.model_validate(session)
+        return dto

@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from back.src.driver.database import db
 from back.src.entity.profile_picture_history import ProfilePictureHistory
+from back.src.entity.user import User
 from back.src.repository.base_repository import BaseRepository
 
 
@@ -46,7 +47,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
         Add a new profile picture to the user's history.
 
         If no candidate picture exists for this user, the new picture is automatically
-        set as the candidate for generation context.
+        set as the candidate for generation context. The caller commits.
 
         :param user_id: User ID
         :param profile_picture_url: URL or path to the profile picture
@@ -70,7 +71,11 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
             is_candidate=is_candidate,
         )
         db.session.add(history_entry)
-        db.session.commit()
+        db.session.flush()
+        # A user loaded before sees the new picture only once its history is read again.
+        user = db.session.get(User, user_id)
+        if user is not None:
+            db.session.expire(user, ["profile_picture_history"])
         return history_entry
 
     def get_by_level(

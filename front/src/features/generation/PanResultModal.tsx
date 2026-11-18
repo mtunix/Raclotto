@@ -10,6 +10,7 @@ import {
   Button,
 } from "antd";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
+import { displayName } from "../../shared/displayName";
 import { PreparationTypeCard } from "./PreparationTypeCard/PreparationTypeCard";
 import { CheeseSlider } from "./CheeseSlider";
 import type { PanDto } from "../../api/generated/model";
@@ -147,7 +148,7 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
               <Row align="middle" justify="space-between" gutter={[16, 16]}>
                 <Col flex="auto" xs={24} sm={24} md={16}>
                   <Title level={2} className={styles.whiteTitle}>
-                    {pan.name}
+                    {displayName(pan.name, t)}
                   </Title>
                   {hasLeveledUp && (
                     <Text
@@ -277,7 +278,7 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
             <Row align="middle" justify="space-between" gutter={[16, 16]}>
               <Col flex="auto" xs={24} sm={24} md={16}>
                 <Title level={2} className={styles.whiteTitle}>
-                  {pan.name}
+                  {displayName(pan.name, t)}
                 </Title>
                 {hasLeveledUp && (
                   <Text

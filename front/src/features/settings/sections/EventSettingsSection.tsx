@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
 import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
 import { mutateEventConfigs, onErrorRetry } from "../../../lib/api/swrHooks";
-import type { EventConfigDto, SessionDto } from "../../../api/generated/model";
+import type { SaveEventConfigBody, SessionDto } from "../../../api/generated/model";
 import "../SettingsView.css";
 
 const { Title, Text } = Typography;
@@ -13,9 +13,9 @@ interface EventSettingsSectionProps {
     session: SessionDto | null;
 }
 
-type EventType = EventConfigDto["event_type"];
+type EventType = SaveEventConfigBody["event_type"];
 
-// Every event type the backend evaluates.
+// Every event type the backend evaluates; configs of other types are left out.
 const KNOWN_EVENT_TYPES: EventType[] = ["pan_swap"];
 
 interface EventConfigState {

@@ -5,6 +5,7 @@ import type {IngredientDto, IngredientForUserDto, PrepTypeDto} from "../../api/g
 import styles from "./GenerateView/GenerateView.module.css";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../shared/IngredientDisplay/IngredientDisplay";
+import {displayName} from "../../shared/displayName";
 import {rollBanditPan} from "../../api/generated/endpoints/pans/pans";
 import type {PanDto} from "../../api/generated/model";
 import {applyRollOutcome} from "./applyRollOutcome";
@@ -878,7 +879,7 @@ export function BanditView(props: BanditViewProps) {
                                 <Row align="middle" justify="space-between">
                                     <Col flex="auto">
                                         <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
-                                            {apiResultPan.name}
+                                            {displayName(apiResultPan.name, t)}
                                         </Title>
                                         {apiResultPan.preparation_type && (
                                             <Text style={{ color: 'white', opacity: 0.9, fontSize: '0.9rem', display: 'block', marginTop: '4px' }}>

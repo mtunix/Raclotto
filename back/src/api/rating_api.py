@@ -58,6 +58,8 @@ class RatingApi(BaseApi):
             db.session.add(rating)
         else:
             rating.rating = body.rating
+        db.session.flush()
+        dto = RatingDto.model_validate(rating)
         # Committed first so the evaluators see the new rating in pan.ratings.
         db.session.commit()
 
@@ -66,7 +68,7 @@ class RatingApi(BaseApi):
             Achievements().record(PanRated(rating=rating, pan=pan, rater=user, session=pan.session))
             db.session.commit()
 
-        return RatingDto.model_validate(rating)
+        return dto
 
     @BaseApi.endpoint("/<int:rating_id>", ["GET"], response=RatingDto, operation_id="getRating", errors=(404,))
     @require_auth
@@ -81,8 +83,9 @@ class RatingApi(BaseApi):
         """Change a rating's stars."""
         rating = self._rating(rating_id)
         rating.rating = body.rating
+        dto = RatingDto.model_validate(rating)
         db.session.commit()
-        return RatingDto.model_validate(rating)
+        return dto
 
     @BaseApi.endpoint("/<int:rating_id>", ["DELETE"], status=204, operation_id="deleteRating", errors=(404,))
     @require_auth

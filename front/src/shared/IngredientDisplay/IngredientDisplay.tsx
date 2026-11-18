@@ -5,6 +5,7 @@ import type {IngredientDto} from "../../api/generated/model";
 import {VectorGraphics} from "../../lib/vectorGraphics";
 import {useTranslation} from "react-i18next";
 import {getTagColors} from "../../lib/tagColors";
+import {displayName} from "../displayName";
 import "./IngredientDisplay.css";
 
 interface IngredientDisplayProps {
@@ -20,6 +21,7 @@ export function IngredientDisplay(props: IngredientDisplayProps) {
     
     const isFill = ingredient.type === IngredientType.FILL;
     const icon = isFill ? VectorGraphics.INGREDIENT : VectorGraphics.SAUCE;
+    const name = displayName(ingredient.name, t);
     
     const getTags = () => {
         if (!showTags) return null;
@@ -211,7 +213,7 @@ export function IngredientDisplay(props: IngredientDisplayProps) {
                 }}
             >
                 {showIcon && <span className="ingredient-badge-icon">{icon}</span>}
-                {ingredient.name}
+                {name}
             </Tag>
         );
     }
@@ -222,7 +224,7 @@ export function IngredientDisplay(props: IngredientDisplayProps) {
             <div className="ingredient-display-compact">
                 <div className="ingredient-display-compact-main">
                     {showIcon && <span className="ingredient-compact-icon">{icon}</span>}
-                    <span className="ingredient-name-compact">{ingredient.name}</span>
+                    <span className="ingredient-name-compact">{name}</span>
                     {showTags && (
                         <div className="ingredient-tags-container-inline">
                             {getTags()}
@@ -265,7 +267,7 @@ export function IngredientDisplay(props: IngredientDisplayProps) {
                 style={{ marginBottom: showTags ? '8px' : '0' }}
             >
                 {showIcon && <span className="ingredient-card-header-icon">{icon}</span>}
-                <span>{ingredient.name}</span>
+                <span>{name}</span>
             </div>
             {showTags && getTags()}
         </div>

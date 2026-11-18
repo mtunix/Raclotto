@@ -91,9 +91,9 @@ class AuthApi(BaseApi):
             )
 
         invite_token.mark_as_used()
+        dto = AuthResultDto(token=_token(user), user=_me(user))
         db.session.commit()
-
-        return AuthResultDto(token=_token(user), user=_me(user))
+        return dto
 
     @BaseApi.endpoint("/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login",
                       errors=(401,))
@@ -140,15 +140,15 @@ class AuthApi(BaseApi):
         Diet.of(user).apply_to(user)
 
         if "profile_picture" in body.model_fields_set:
-            # This commits, so it runs after the other changes: a rejected one rolls back both.
             ProfilePictureHistoryRepository().add_profile_picture(
                 user_id=user.id,
                 profile_picture_url=body.profile_picture,
                 level_id=user.level_id,
             )
 
+        dto = _me(user)
         db.session.commit()
-        return _me(user)
+        return dto
 
     @BaseApi.endpoint("/refresh", ["POST"], response=TokenDto, operation_id="refreshToken")
     @require_auth
@@ -176,8 +176,10 @@ class InviteApi(BaseApi):
             expires_at=InviteToken.create_expiration_date(expiration_days),
         )
         db.session.add(invite_token)
+        db.session.flush()
+        dto = InviteDto.model_validate(invite_token)
         db.session.commit()
-        return InviteDto.model_validate(invite_token)
+        return dto
 
     @BaseApi.endpoint("", ["GET"], response=list[InviteDto], operation_id="listInvites")
     @require_auth

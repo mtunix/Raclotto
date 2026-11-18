@@ -1,35 +1,29 @@
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
 from back.src.dto.base import RequestDto, ResponseDto
 
+# The types the backend evaluates; only these can be configured. Responses carry any stored
+# type, since the old API saved configs for any.
 EventType = Literal["pan_swap"]
-
-
-class PanSwapDataDto(ResponseDto):
-    pan1_id: int
-    pan1_user_id: int
-    pan1_user_name: str
-    pan2_id: int
-    pan2_user_id: int
-    pan2_user_name: str
-    time_window_minutes: int
 
 
 class EventDto(ResponseDto):
     id: int
     session_id: int
-    event_type: EventType
+    event_type: str
     message: str
-    data: PanSwapDataDto
+    # Whatever the event's evaluator stored. pan_swap: pan1_id, pan1_user_id, pan1_user_name,
+    # pan2_id, pan2_user_id, pan2_user_name, time_window_minutes.
+    data: dict[str, Any] | None
     created_at: datetime
 
 
 class EventConfigDto(ResponseDto):
     id: int
-    event_type: EventType
+    event_type: str
     # Null for the global config every session without its own falls back to.
     session_id: int | None
     enabled: bool

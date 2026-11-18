@@ -9,7 +9,7 @@ import type { EventConfigDtoSessionId } from './eventConfigDtoSessionId';
 
 export interface EventConfigDto {
   enabled: boolean;
-  event_type: 'pan_swap';
+  event_type: string;
   frequency_minutes: EventConfigDtoFrequencyMinutes;
   id: number;
   session_id: EventConfigDtoSessionId;

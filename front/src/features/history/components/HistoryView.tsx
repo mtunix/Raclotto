@@ -19,6 +19,7 @@ import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
 import {getUniqueUsers, getUniqueRatings, getIngredientCountRanges, filterPans, sortPans} from "./historyUtils";
 import useBreakpoint from "antd/es/grid/hooks/useBreakpoint";
+import {displayName} from "../../../shared/displayName";
 
 const {Title, Text} = Typography;
 
@@ -249,7 +250,7 @@ export function HistoryView() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <Space direction="vertical" size={0} style={{ flex: 1 }}>
                                 <Title level={4} style={{ margin: 0, fontSize: '1rem', marginBottom: '4px' }}>
-                                    {pan.name}
+                                    {displayName(pan.name, t)}
                                 </Title>
                                 <Space size="small" align="center">
                                     {author && (

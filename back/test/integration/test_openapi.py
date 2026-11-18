@@ -329,11 +329,12 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
         self.assertEqual(set(status["properties"]) - set(plain["properties"]), {"unlocked", "progress"})
         self.assertEqual(set(status["required"]), set(status["properties"]))
 
-    def test_event_configs_take_the_event_type_of_events(self):
-        event_type = self.schemas["EventDto"]["properties"]["event_type"]
+    def test_only_known_event_types_are_configured_but_any_stored_one_is_returned(self):
+        stored = {"title": "Event Type", "type": "string"}
 
-        self.assertEqual(self.schemas["EventConfigDto"]["properties"]["event_type"], event_type)
-        self.assertEqual(self.schemas["SaveEventConfigBody"]["properties"]["event_type"], event_type)
+        self.assertEqual(self.schemas["EventDto"]["properties"]["event_type"], stored)
+        self.assertEqual(self.schemas["EventConfigDto"]["properties"]["event_type"], stored)
+        self.assertEqual(self.schemas["SaveEventConfigBody"]["properties"]["event_type"]["const"], "pan_swap")
         self.assertEqual(self.schemas["SaveEventConfigBody"]["required"], ["event_type", "enabled"])
         self.assertNotIn("required", self.schemas["UpdateEventConfigBody"])
 

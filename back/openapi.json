@@ -413,7 +413,6 @@
             "type": "boolean"
           },
           "event_type": {
-            "const": "pan_swap",
             "title": "Event Type",
             "type": "string"
           },
@@ -462,10 +461,18 @@
             "type": "string"
           },
           "data": {
-            "$ref": "#/components/schemas/PanSwapDataDto"
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
           },
           "event_type": {
-            "const": "pan_swap",
             "title": "Event Type",
             "type": "string"
           },
@@ -727,8 +734,15 @@
             "type": "boolean"
           },
           "name": {
-            "title": "Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "session_id": {
             "title": "Session Id",
@@ -846,8 +860,15 @@
             "type": "boolean"
           },
           "name": {
-            "title": "Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "session_id": {
             "title": "Session Id",
@@ -1400,8 +1421,15 @@
             "type": "array"
           },
           "name": {
-            "title": "Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "preparation_type": {
             "anyOf": [
@@ -1522,49 +1550,6 @@
           "has_more"
         ],
         "title": "PanPageDto",
-        "type": "object"
-      },
-      "PanSwapDataDto": {
-        "properties": {
-          "pan1_id": {
-            "title": "Pan1 Id",
-            "type": "integer"
-          },
-          "pan1_user_id": {
-            "title": "Pan1 User Id",
-            "type": "integer"
-          },
-          "pan1_user_name": {
-            "title": "Pan1 User Name",
-            "type": "string"
-          },
-          "pan2_id": {
-            "title": "Pan2 Id",
-            "type": "integer"
-          },
-          "pan2_user_id": {
-            "title": "Pan2 User Id",
-            "type": "integer"
-          },
-          "pan2_user_name": {
-            "title": "Pan2 User Name",
-            "type": "string"
-          },
-          "time_window_minutes": {
-            "title": "Time Window Minutes",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "pan1_id",
-          "pan1_user_id",
-          "pan1_user_name",
-          "pan2_id",
-          "pan2_user_id",
-          "pan2_user_name",
-          "time_window_minutes"
-        ],
-        "title": "PanSwapDataDto",
         "type": "object"
       },
       "PrepTypeDto": {

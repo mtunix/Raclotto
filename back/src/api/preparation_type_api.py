@@ -46,8 +46,9 @@ class PreparationTypeApi(BaseApi):
     def create_preparation_type(self, query: SessionFilterQuery, body: CreatePrepTypeBody) -> PrepTypeDto:
         """Add a preparation type to a session; without a session it becomes a default type."""
         prep_type = self.repository.create({"name": body.name, "session_id": self._session_id(query.session_key)})
+        dto = PrepTypeDto.model_validate(prep_type)
         db.session.commit()
-        return PrepTypeDto.model_validate(prep_type)
+        return dto
 
     @BaseApi.endpoint("/<int:prep_type_id>", ["DELETE"], status=204, operation_id="deletePreparationType",
                       errors=(400, 404))

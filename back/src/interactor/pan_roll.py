@@ -6,14 +6,16 @@
 Behind ``roll``: diet eligibility, the fill/sauce split, sampling, naming,
 preparation type and cheese rolls, session membership, achievements,
 events, XP and level, all inside one transaction. ``roll`` commits on
-success and rolls back on failure. Randomness comes from an injectable
+success and rolls back on failure. ``roll_into`` also turns the outcome
+into something else (a response) before committing, so a failure there
+rolls the roll back too. Randomness comes from an injectable
 ``random.Random`` so tests can seed it.
 """
 
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
 
 from wonderwords import RandomWord
 
@@ -33,6 +35,8 @@ from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.level_repository import LevelRepository
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.src.repository.session_repository import SessionRepository
+
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -146,10 +150,15 @@ class PanRoll:
         self._levels = LevelRepository()
 
     def roll(self, user: User, session_key: str, options: RollOptions) -> RollOutcome:
+        return self.roll_into(user, session_key, options, lambda outcome: outcome)
+
+    def roll_into(
+        self, user: User, session_key: str, options: RollOptions, present: Callable[[RollOutcome], T]
+    ) -> T:
         try:
-            outcome = self._roll(user, session_key, options)
+            result = present(self._roll(user, session_key, options))
             db.session.commit()
-            return outcome
+            return result
         except Exception:
             db.session.rollback()
             raise
@@ -178,8 +187,10 @@ class PanRoll:
         db.session.flush()
 
         xp_before = int(user.experience_points or 0)
-        previous_level = self._levels.by_id(user.level_id) if user.level_id else None
-        LevelService().award_xp_for_pan(user, pan)
+        levels = LevelService()
+        # As the profile shows it, so a user without a stored level still sees their first level-up.
+        previous_level = levels.progress_of(user).level
+        levels.award_xp_for_pan(user, pan)
         level = self._levels.by_id(user.level_id) if user.level_id else None
         reward = Reward(
             xp_before=xp_before,

@@ -80,6 +80,22 @@ class TestPanRoll(AppTest):
         self.assertEqual(outcome.reward.level.required_experience, 100)
         self.assertEqual(outcome.reward.next_level.required_experience, 250)
 
+    def test_a_user_without_a_stored_level_starts_from_the_level_their_xp_reaches(self):
+        crossing = self.make_user("ben", experience_points=95, meat=True)
+        staying = self.make_user("cleo", experience_points=0, meat=True)
+        for user in (crossing, staying):
+            user.level_id = None
+        db.session.commit()
+
+        crossed = self.roll.roll(crossing, "s1", RollOptions(num_fill=2, num_sauce=1))
+        stayed = self.roll.roll(staying, "s1", RollOptions(num_fill=1, num_sauce=0))
+
+        self.assertTrue(crossed.reward.leveled_up)
+        self.assertEqual(crossed.reward.previous_level.required_experience, 0)
+        self.assertEqual(crossed.reward.level.required_experience, 100)
+        self.assertFalse(stayed.reward.leveled_up)
+        self.assertEqual(stayed.reward.previous_level.id, stayed.reward.level.id)
+
     def test_first_roll_unlocks_first_blood_and_joins_the_session_once(self):
         first = self.roll.roll(self.user, "s1", RollOptions(num_fill=1, num_sauce=0))
         second = self.roll.roll(self.user, "s1", RollOptions(num_fill=1, num_sauce=0))
@@ -200,15 +216,15 @@ class TestRollRoutes(AppTest):
         self.assertTrue(unnamed.name)
         self.assertNotEqual(unnamed.name, "")
 
-    def test_triggered_events_come_back_typed(self):
+    def test_triggered_events_come_back_with_their_data(self):
         ben = self.make_user("ben", meat=True)
         self.assert_outcome(self.roll("/pans/generate", {"num_fill": 1, "num_sauce": 1}))
         outcome = self.assert_outcome(self.roll("/pans/generate", {"num_fill": 1, "num_sauce": 1}, user=ben))
 
         [event] = outcome.events
         self.assertEqual(event.event_type, "pan_swap")
-        self.assertEqual(event.data.pan2_user_name, "ana")
-        self.assertEqual(event.data.pan1_id, outcome.pan.id)
+        self.assertEqual(event.data["pan2_user_name"], "ana")
+        self.assertEqual(event.data["pan1_id"], outcome.pan.id)
 
     def test_roll_errors_map_to_http_errors(self):
         missing = self.roll("/pans/generate", {}, session_key="nope")

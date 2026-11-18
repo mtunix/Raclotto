@@ -4,12 +4,12 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
-import type { PanSwapDataDto } from './panSwapDataDto';
+import type { EventDtoData } from './eventDtoData';
 
 export interface EventDto {
   created_at: string;
-  data: PanSwapDataDto;
-  event_type: 'pan_swap';
+  data: EventDtoData;
+  event_type: string;
   id: number;
   message: string;
   session_id: number;

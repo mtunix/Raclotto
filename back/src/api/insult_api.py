@@ -34,9 +34,9 @@ class InsultApi(BaseApi):
     @require_auth
     def create_insult(self, body: InsultBody) -> InsultDto:
         """Add an insult."""
-        insult = self.repository.create(body.model_dump())
+        dto = InsultDto.model_validate(self.repository.create(body.model_dump()))
         db.session.commit()
-        return InsultDto.model_validate(insult)
+        return dto
 
     @BaseApi.endpoint("/<int:insult_id>", ["GET"], response=InsultDto, operation_id="getInsult", errors=(404,))
     @require_auth
@@ -51,8 +51,9 @@ class InsultApi(BaseApi):
         """Change an insult's title."""
         insult = self._insult(insult_id)
         insult.title = body.title
+        dto = InsultDto.model_validate(insult)
         db.session.commit()
-        return InsultDto.model_validate(insult)
+        return dto
 
     @BaseApi.endpoint("/<int:insult_id>", ["DELETE"], status=204, operation_id="deleteInsult", errors=(404,))
     @require_auth

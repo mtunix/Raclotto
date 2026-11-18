@@ -209,6 +209,7 @@ class ImageApi(BaseApi):
                         level_id=picture_level_id,
                     )
                 )
+                db.session.commit()
                 logger.info(
                     f"Profile picture generated for user {user_id}, entry id: {profile_picture_entry.id}, level_id: {picture_level_id}"
                 )
@@ -300,6 +301,8 @@ class ImageApi(BaseApi):
                         level_id=current_user.level_id,
                     )
                 )
+                dto = _generated(profile_picture_entry, image_base64)
+                db.session.commit()
                 logger.info(
                     f"Profile picture updated for user {current_user.id}, entry id: {profile_picture_entry.id}"
                 )
@@ -312,7 +315,7 @@ class ImageApi(BaseApi):
                     detail=f"Profile picture was generated but could not be saved: {str(e)}",
                 )
 
-            return _generated(profile_picture_entry, image_base64)
+            return dto
 
         except ApiError:
             raise

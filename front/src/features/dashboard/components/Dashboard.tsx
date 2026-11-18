@@ -34,6 +34,7 @@ import type {
 } from "../../../api/generated/model";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
+import { displayName } from "../../../shared/displayName";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 import "./Dashboard.css";
 
@@ -61,6 +62,7 @@ interface IngredientListGroupItemRatingProps {
 function IngredientListGroupItemRating(
   props: IngredientListGroupItemRatingProps,
 ) {
+  const { t } = useTranslation();
   const { ingredient } = props.entry;
   const backgroundColor =
     ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
@@ -77,7 +79,7 @@ function IngredientListGroupItemRating(
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
           <span style={{ marginRight: "8px" }}>{icon}</span>
-          {ingredient.name}
+          {displayName(ingredient.name, t)}
         </span>
         <RatingViewer rating={props.entry.avg_rating} />
       </div>
@@ -92,6 +94,7 @@ interface IngredientListGroupItemCountProps {
 function IngredientListGroupItemCount(
   props: IngredientListGroupItemCountProps,
 ) {
+  const { t } = useTranslation();
   const { ingredient } = props.entry;
   const backgroundColor =
     ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
@@ -108,7 +111,7 @@ function IngredientListGroupItemCount(
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
           <span style={{ marginRight: "8px" }}>{icon}</span>
-          {ingredient.name}
+          {displayName(ingredient.name, t)}
         </span>
         <span className="dashboard-ingredient-count">
           {props.entry.pan_count}
@@ -130,7 +133,7 @@ function PanListItem(props: PanListItemProps) {
       <div style={{ width: "100%" }}>
         <div className="dashboard-pan-header">
           <div style={{ flex: 1 }}>
-            <div className="dashboard-pan-title">{props.pan.name}</div>
+            <div className="dashboard-pan-title">{displayName(props.pan.name, t)}</div>
             <div className="dashboard-pan-subtitle">
               {t("history.consumedBy")} {props.pan.author?.name}
             </div>

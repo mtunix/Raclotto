@@ -37,11 +37,12 @@ class PanApi(BaseApi):
     def _roll(self, query: RollQuery, options: RollOptions) -> RollOutcomeDto:
         user = get_current_user()
         try:
-            outcome = PanRoll().roll(user, query.session_key, options)
+            return PanRoll().roll_into(
+                user, query.session_key, options, lambda outcome: RollOutcomeDto.of(outcome, user)
+            )
         except RollError as error:
             code, status, title = _ROLL_ERRORS[error.kind]
             raise ApiError(code, status=status, title=title, detail=error.detail)
-        return RollOutcomeDto.of(outcome, user)
 
     def _pan(self, pan_id: int) -> Pan:
         pan = self.repository.by_id(pan_id)
@@ -124,8 +125,9 @@ class PanApi(BaseApi):
         pan = self._pan(pan_id)
         for field in body.model_fields_set:
             setattr(pan, field, getattr(body, field))
+        dto = self._dto(pan)
         db.session.commit()
-        return self._dto(pan)
+        return dto
 
     @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(404, 409))
     @require_auth

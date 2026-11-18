@@ -6,6 +6,7 @@ import { useAuthStore } from "../../../AuthSlice";
 import { session, stats } from "../../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../../lib/api/fakeTransport";
 import { setTransport, Transport } from "../../../lib/api/transport";
+import { displayName } from "../../../shared/displayName";
 import { Dashboard } from "./Dashboard";
 
 // The jest CSS transform is broken; the styles don't matter here.
@@ -35,6 +36,7 @@ function renderDashboard() {
 }
 
 const statsQueries = () => fake.requests.filter((r) => r.path === "/stats").map((r) => r.query);
+const shown = (name: string | null) => displayName(name, (key) => key);
 
 it("starts with the stats of every session", async () => {
   renderDashboard();
@@ -47,8 +49,8 @@ it("shows the newest pans with their authors, the ingredients and the leaderboar
   const [newest, older] = stats.pans;
   renderDashboard();
 
-  await waitFor(() => expect(screen.getByText(newest.name)).toBeInTheDocument());
-  expect(screen.getByText(older.name)).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText(shown(newest.name))).toBeInTheDocument());
+  expect(screen.getByText(shown(older.name))).toBeInTheDocument();
   expect(screen.getByText(`history.consumedBy ${newest.author?.name}`)).toBeInTheDocument();
   expect(screen.getByText(`history.consumedBy ${older.author?.name}`)).toBeInTheDocument();
   for (const entry of stats.leaderboard) {
@@ -58,6 +60,22 @@ it("shows the newest pans with their authors, the ingredients and the leaderboar
   const [mostUsed] = stats.ingredients_most_used;
   expect(mostUsed.pan_count).toBe(2);
   expect(screen.getAllByText(String(mostUsed.pan_count)).length).toBeGreaterThan(0);
+});
+
+it("pans and ingredients the old API left without a name show as unnamed", async () => {
+  const [newest, ...rest] = stats.pans;
+  const [mostUsed, ...used] = stats.ingredients_most_used;
+  const [topRated, ...rated] = stats.ingredients_top_rated;
+  fake.on("GET", "/stats", {
+    ...stats,
+    pans: [{ ...newest, name: null }, ...rest],
+    ingredients_most_used: [{ ...mostUsed, ingredient: { ...mostUsed.ingredient, name: null } }, ...used],
+    ingredients_top_rated: [{ ...topRated, ingredient: { ...topRated.ingredient, name: null } }, ...rated],
+  });
+  renderDashboard();
+
+  await waitFor(() => expect(screen.getByText(`history.consumedBy ${newest.author?.name}`)).toBeInTheDocument());
+  expect(screen.getAllByText("common.unnamed")).toHaveLength(3);
 });
 
 it("switching to the session asks for the session's stats", async () => {
