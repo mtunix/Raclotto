@@ -65,9 +65,14 @@ def development_config(environ: Mapping[str, str]) -> Type[ConfigProduction]:
     return _from_environment(ConfigDevelopment, environ)
 
 
+def database_url(environ: Mapping[str, str]) -> str:
+    """The SQLAlchemy URL both servers use; a relative SQLite path is under the instance folder."""
+    return environ.get("RACLOTTO_DATABASE_URL") or ConfigProduction.SQLALCHEMY_DATABASE_URI
+
+
 def _from_environment(base: Type[ConfigProduction], environ: Mapping[str, str], **overrides: object) -> Type[ConfigProduction]:
     settings = {
-        "SQLALCHEMY_DATABASE_URI": environ.get("RACLOTTO_DATABASE_URL") or base.SQLALCHEMY_DATABASE_URI,
+        "SQLALCHEMY_DATABASE_URI": database_url(environ),
         "ADMIN_PASSWORD": environ.get("RACLOTTO_ADMIN_PASSWORD") or None,
         "HOST": environ.get("RACLOTTO_HOST") or base.HOST,
         "PORT": _port(environ.get("RACLOTTO_PORT")) or base.PORT,
