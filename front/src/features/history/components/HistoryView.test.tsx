@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
@@ -123,9 +123,7 @@ it('rolls a copy of a pan after asking, and applies the reward', async () => {
 
     fireEvent.click(within(card).getByText('history.iWantThisToo'));
     const confirm = await screen.findByRole('dialog');
-    await act(async () => {
-        fireEvent.click(within(confirm).getByText('OK'));
-    });
+    fireEvent.click(within(confirm).getByText('OK'));
 
     await waitFor(() => expect(fake.last('POST', '/pans')).toBeDefined());
     const request = fake.last('POST', '/pans');
@@ -144,9 +142,7 @@ it("shows the copy, and offers the level-up picture once it closes", async () =>
     const card = await screen.findByText(newest.name as string).then(() => cardOf(newest.name as string));
     fireEvent.click(within(card).getByText('history.iWantThisToo'));
     const confirm = await screen.findByRole('dialog');
-    await act(async () => {
-        fireEvent.click(within(confirm).getByText('OK'));
-    });
+    fireEvent.click(within(confirm).getByText('OK'));
 
     const result = await screen.findByText(/level.leveledUp/);
     fireEvent.click(within(result.closest('.ant-modal') as HTMLElement).getByText('common.close'));

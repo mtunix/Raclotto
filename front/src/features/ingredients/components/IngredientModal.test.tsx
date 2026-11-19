@@ -91,24 +91,22 @@ const slider = () => within(dialog()).getByRole('slider');
 const chip = (tag: string) => within(dialog()).getByText(`tags.${tag}`);
 const button = (label: string) => within(dialog()).getByText(label).closest('button') as HTMLElement;
 
-async function press(label: string) {
-    await act(async () => {
-        fireEvent.click(button(label));
-    });
+function press(label: string) {
+    fireEvent.click(button(label));
 }
 
 const spiceUp = () => fireEvent.keyDown(slider(), { key: 'ArrowRight', keyCode: 39 });
 const typeName = (name: string) => fireEvent.change(nameField(), { target: { value: name } });
 const created = () => fake.last('POST', '/ingredients');
 
-async function fillInAndCancel() {
+function fillInAndCancel() {
     typeName('Corn');
     fireEvent.click(radio('ingredient.sauce'));
     fireEvent.click(chip('meat'));
     fireEvent.click(chip('gluten'));
     spiceUp();
     fireEvent.click(within(dialog()).getByRole('checkbox', { name: 'ingredient.sweet' }));
-    await press('common.cancel');
+    press('common.cancel');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 }
 
@@ -121,7 +119,7 @@ describe('adding', () => {
         expect(radio('ingredient.fill')).toBeChecked();
         expect(slider()).toHaveAttribute('aria-valuenow', '0');
         typeName('Corn');
-        await press('common.create');
+        press('common.create');
 
         await waitFor(() => expect(created()).toBeDefined());
         expect(created()?.query).toEqual({ session_key: session.key });
@@ -143,7 +141,7 @@ describe('adding', () => {
         spiceUp();
         fireEvent.click(within(dialog()).getByRole('checkbox', { name: 'ingredient.sweet' }));
         fireEvent.click(within(dialog()).getByRole('checkbox', { name: 'ingredient.wildcard' }));
-        await press('common.create');
+        press('common.create');
 
         await waitFor(() => expect(created()).toBeDefined());
         expect(created()?.body).toEqual({
@@ -165,7 +163,7 @@ describe('adding', () => {
         typeName('Tuna');
         fireEvent.click(chip('meat'));
         fireEvent.click(chip('fish'));
-        await press('common.create');
+        press('common.create');
 
         await waitFor(() => expect(created()).toBeDefined());
         expect(created()?.body).toMatchObject({ meat: false, vegetarian: false, vegan: false, fish: true });
@@ -188,7 +186,7 @@ describe('adding', () => {
     it('sends nothing without a name', async () => {
         renderAdd();
 
-        await press('common.create');
+        press('common.create');
 
         expect(await within(dialog()).findByText('ingredient.nameRequired')).toBeInTheDocument();
         expect(created()).toBeUndefined();
@@ -201,7 +199,7 @@ describe('adding', () => {
         renderAdd();
 
         typeName('Corn');
-        await press('common.create');
+        press('common.create');
 
         expect(await screen.findByText('ingredient.addFailed')).toBeInTheDocument();
         expect(nameField()).toHaveValue('Corn');
@@ -210,7 +208,7 @@ describe('adding', () => {
 
     it('starts over when reopened after a cancel', async () => {
         renderAdd();
-        await fillInAndCancel();
+        fillInAndCancel();
 
         show({ visible: true });
 
@@ -218,7 +216,7 @@ describe('adding', () => {
         expect(radio('ingredient.fill')).toBeChecked();
         expect(slider()).toHaveAttribute('aria-valuenow', '0');
         typeName('Leek');
-        await press('common.create');
+        press('common.create');
         await waitFor(() => expect(created()).toBeDefined());
         expect(created()?.body).toEqual({ ...nothingTicked, name: 'Leek', type: IngredientType.FILL, spicy: 0, vegetarian: true });
     });
@@ -228,17 +226,17 @@ describe('adding', () => {
         typeName('Corn');
         fireEvent.click(chip('meat'));
         spiceUp();
-        await press('common.create');
+        press('common.create');
         await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
         show({ visible: true });
 
         expect(nameField()).toHaveValue('');
         expect(slider()).toHaveAttribute('aria-valuenow', '0');
-        await press('common.create');
+        press('common.create');
         expect(await within(dialog()).findByText('ingredient.nameRequired')).toBeInTheDocument();
         typeName('Leek');
-        await press('common.create');
+        press('common.create');
         await waitFor(() => expect(created()?.body).toMatchObject({ name: 'Leek' }));
         expect(created()?.body).toMatchObject({ meat: false, vegetarian: true, spicy: 0 });
     });
@@ -254,7 +252,7 @@ describe('editing', () => {
         expect(slider()).toHaveAttribute('aria-valuenow', String(pork.spicy));
         typeName('Bacon');
         fireEvent.click(chip('histamine'));
-        await press('common.save');
+        press('common.save');
 
         await waitFor(() => expect(onSave).toHaveBeenCalled());
         expect(onSave).toHaveBeenCalledWith(pork.id, { ...bodyOf(pork), name: 'Bacon', histamine: true });
@@ -264,14 +262,14 @@ describe('editing', () => {
 
     it('starts over from the ingredient when reopened', async () => {
         renderEdit(pork);
-        await fillInAndCancel();
+        fillInAndCancel();
 
         show({ visible: true });
 
         expect(nameField()).toHaveValue(pork.name);
         expect(radio('ingredient.fill')).toBeChecked();
         expect(slider()).toHaveAttribute('aria-valuenow', String(pork.spicy));
-        await press('common.save');
+        press('common.save');
         await waitFor(() => expect(onSave).toHaveBeenCalled());
         expect(onSave).toHaveBeenCalledWith(pork.id, bodyOf(pork));
     });
@@ -286,26 +284,26 @@ describe('editing', () => {
         expect(nameField()).toHaveValue(aioli.name);
         expect(radio('ingredient.sauce')).toBeChecked();
         expect(slider()).toHaveAttribute('aria-valuenow', String(aioli.spicy));
-        await press('common.save');
+        press('common.save');
         await waitFor(() => expect(onSave).toHaveBeenCalled());
         expect(onSave).toHaveBeenCalledWith(aioli.id, bodyOf(aioli));
     });
 
     it('starts from the other ingredient when closed and opened on it', async () => {
         renderEdit(pork);
-        await fillInAndCancel();
+        fillInAndCancel();
 
         show({ visible: true, ingredient: aioli });
 
         expect(nameField()).toHaveValue(aioli.name);
-        await press('common.save');
+        press('common.save');
         await waitFor(() => expect(onSave).toHaveBeenCalled());
         expect(onSave).toHaveBeenCalledWith(aioli.id, bodyOf(aioli));
     });
 
     it('opens empty for adding after an edit', async () => {
         renderEdit(pork);
-        await press('common.cancel');
+        press('common.cancel');
 
         show({ visible: true, mode: 'add', ingredient: null, onSuccess, initialType: IngredientType.FILL });
 
@@ -313,7 +311,7 @@ describe('editing', () => {
         expect(nameField()).toHaveValue('');
         expect(slider()).toHaveAttribute('aria-valuenow', '0');
         typeName('Corn');
-        await press('common.create');
+        press('common.create');
         await waitFor(() => expect(created()).toBeDefined());
         expect(created()?.body).toEqual({ ...nothingTicked, name: 'Corn', type: IngredientType.FILL, spicy: 0, vegetarian: true });
         expect(onSave).not.toHaveBeenCalled();
@@ -323,7 +321,7 @@ describe('editing', () => {
         onSave.mockRejectedValue(new Error('Request failed with status code 404'));
         renderEdit(pork);
 
-        await press('common.save');
+        press('common.save');
 
         expect(await screen.findByText('ingredient.updateFailed')).toBeInTheDocument();
         expect(onCancel).not.toHaveBeenCalled();

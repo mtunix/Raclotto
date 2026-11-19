@@ -91,9 +91,7 @@ it('leaves for the start screen when the URL names another session', async () =>
     inSession();
     renderRoutes(routes, '/999', { sharedCache: true });
 
-    await act(async () => {
-        vi.advanceTimersByTime(500);
-    });
+    await act(() => vi.advanceTimersByTimeAsync(500));
 
     expect(currentPath()).toBe('/');
 });

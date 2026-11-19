@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
@@ -70,9 +70,7 @@ describe('user settings', () => {
 
         fireEvent.change(screen.getByPlaceholderText('common.enterName'), { target: { value: 'Grace' } });
         fireEvent.click(screen.getByText('tags.meat'));
-        await act(async () => {
-            fireEvent.click(button('common.save'));
-        });
+        fireEvent.click(button('common.save'));
 
         await waitFor(() => expect(useAuthStore.getState().user).toEqual(saved));
         expect(fake.last('PATCH', '/auth/me')?.body).toMatchObject({
@@ -95,9 +93,7 @@ describe('user settings', () => {
         expect(button('common.save')).toBeDisabled();
         fireEvent.click(screen.getByText('tags.meat'));
         fireEvent.click(screen.getByText('tags.vegetarian'));
-        await act(async () => {
-            fireEvent.click(button('common.save'));
-        });
+        fireEvent.click(button('common.save'));
 
         await waitFor(() => expect(fake.last('PATCH', '/auth/me')).toBeDefined());
         expect(fake.last('PATCH', '/auth/me')?.body).toMatchObject({ meat: false, vegetarian: false, vegan: true });
@@ -160,9 +156,7 @@ describe('session settings', () => {
         await renderSettings();
         await openTab('settings.sessionSettings');
 
-        await act(async () => {
-            fireEvent.click(button('settings.export', screen.getByRole('tabpanel')));
-        });
+        fireEvent.click(button('settings.export', screen.getByRole('tabpanel')));
 
         const json = JSON.stringify(ingredientExport, null, 2);
         await waitFor(() => expect(writeText).toHaveBeenCalledWith(json));
@@ -183,9 +177,7 @@ describe('session settings', () => {
             target: { value: JSON.stringify(ingredientExport) },
         });
         expect(within(dialog).getAllByPlaceholderText('ingredient.ingredientName')).toHaveLength(ingredientExport.ingredients.length);
-        await act(async () => {
-            fireEvent.click(button('settings.import', dialog));
-        });
+        fireEvent.click(button('settings.import', dialog));
 
         await waitFor(() => expect(fake.last('POST', '/ingredients/import')).toBeDefined());
         const request = fake.last('POST', '/ingredients/import');
@@ -203,9 +195,7 @@ describe('password', () => {
         fireEvent.change(screen.getByLabelText('settings.currentPassword'), { target: { value: current } });
         fireEvent.change(screen.getByLabelText('settings.newPassword'), { target: { value: next } });
         fireEvent.change(screen.getByLabelText('auth.confirmPassword'), { target: { value: confirm } });
-        await act(async () => {
-            fireEvent.click(button('settings.changePassword', passwordForm()));
-        });
+        fireEvent.click(button('settings.changePassword', passwordForm()));
     }
 
     it('changes the password and keeps this device signed in with the new token', async () => {
@@ -233,9 +223,7 @@ describe('password', () => {
 
         fireEvent.change(screen.getByLabelText('settings.newPassword'), { target: { value: 'long-enough' } });
         fireEvent.change(screen.getByLabelText('auth.confirmPassword'), { target: { value: 'different' } });
-        await act(async () => {
-            fireEvent.click(button('settings.changePassword', passwordForm()));
-        });
+        fireEvent.click(button('settings.changePassword', passwordForm()));
         expect(await screen.findByText('auth.passwordsDoNotMatch')).toBeInTheDocument();
 
         expect(fake.last('POST', '/auth/password')).toBeUndefined();
@@ -254,9 +242,7 @@ describe('invites', () => {
 
         expect(await screen.findByText(invite.token)).toBeInTheDocument();
         fireEvent.change(screen.getByPlaceholderText('invite.emailPlaceholder'), { target: { value: created.email } });
-        await act(async () => {
-            fireEvent.click(button('invite.generate'));
-        });
+        fireEvent.click(button('invite.generate'));
 
         expect(await screen.findByText(created.token)).toBeInTheDocument();
         expect(fake.last('POST', '/invites')?.body).toEqual({ email: created.email });
@@ -297,9 +283,7 @@ describe('admins', () => {
         await renderSettings();
         await openTab('settings.admins');
 
-        await act(async () => {
-            fireEvent.click(await screen.findByRole('switch', { name: ben.name }));
-        });
+        fireEvent.click(await screen.findByRole('switch', { name: ben.name }));
 
         await waitFor(() => expect(adminSwitch(ben.name)).toBeChecked());
         expect(fake.last('PATCH', `/users/${ben.id}`)?.body).toEqual({ is_admin: true });
@@ -312,9 +296,7 @@ describe('admins', () => {
         await renderSettings();
         await openTab('settings.admins');
 
-        await act(async () => {
-            fireEvent.click(await screen.findByRole('switch', { name: dora.name }));
-        });
+        fireEvent.click(await screen.findByRole('switch', { name: dora.name }));
 
         expect(fake.last('PATCH', `/users/${dora.id}`)?.body).toEqual({ is_admin: false });
         expect(await screen.findByText('settings.adminChangeFailed')).toBeInTheDocument();

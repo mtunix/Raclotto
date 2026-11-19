@@ -1,15 +1,7 @@
-import axios from "axios";
 import { axiosTransport } from "./transport";
 
-vi.mock("axios", () => {
-  const instance = {
-    request: vi.fn(() => Promise.resolve({ data: { ok: true } })),
-    isAxiosError: () => false,
-  };
-  return { __esModule: true, default: instance };
-});
-
-const request = vi.mocked(axios).request;
+const { request } = vi.hoisted(() => ({ request: vi.fn(() => Promise.resolve({ data: { ok: true } })) }));
+vi.mock("axios", () => ({ __esModule: true, default: { request, isAxiosError: () => false } }));
 
 describe("axiosTransport", () => {
   it("drops empty query values and repeats keys for arrays", async () => {

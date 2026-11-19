@@ -43,15 +43,6 @@ export default defineConfig(
         },
     },
     {
-        files: ["**/*.test.{ts,tsx}"],
-        rules: {
-            // `await act(async () => …)` flushes pending updates even when the callback awaits nothing.
-            "@typescript-eslint/require-await": "off",
-            // Mocks are passed around to assert on, never called unbound.
-            "@typescript-eslint/unbound-method": "off",
-        },
-    },
-    {
         files: ["src/shared/**"],
         ignores: ["**/*.test.{ts,tsx}"],
         rules: {

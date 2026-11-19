@@ -63,10 +63,9 @@ describe('a session creator', () => {
         fireEvent.change(frequency(), { target: { value: '30' } });
         expect(toggle()).toBeChecked();
         expect(frequency()).toHaveValue('30');
-        await act(async () => {
-            fireEvent.click(saveButton());
-        });
+        fireEvent.click(saveButton());
 
+        expect(await screen.findByText('common.saved')).toBeInTheDocument();
         expect(fake.last('POST', '/events/configs')?.body).toEqual({
             event_type: 'pan_swap',
             enabled: true,
@@ -104,9 +103,7 @@ describe('a session creator', () => {
 
         fireEvent.click(toggle());
         fireEvent.change(frequency(), { target: { value: '15' } });
-        await act(async () => {
-            fireEvent.click(saveButton());
-        });
+        fireEvent.click(saveButton());
 
         expect(await screen.findByText('common.saved')).toBeInTheDocument();
         expect(fake.last('POST', '/events/configs')?.body).toEqual({
@@ -127,9 +124,7 @@ describe('a session creator', () => {
         fake.on('POST', '/events/configs', { ...eventConfig, enabled: true });
 
         fireEvent.click(toggle());
-        await act(async () => {
-            fireEvent.click(saveButton());
-        });
+        fireEvent.click(saveButton());
 
         expect(await screen.findByText('common.saved')).toBeInTheDocument();
         expect(toggle()).toBeChecked();
@@ -163,9 +158,7 @@ describe('a session creator', () => {
         });
 
         fireEvent.click(toggle());
-        await act(async () => {
-            fireEvent.click(saveButton());
-        });
+        fireEvent.click(saveButton());
 
         expect(await screen.findByText('common.saveFailed')).toBeInTheDocument();
         expect(toggle()).toBeChecked();

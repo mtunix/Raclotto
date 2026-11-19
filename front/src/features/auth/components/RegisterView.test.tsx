@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { useAuthStore } from '../../../AuthSlice';
 import { inviteLookup, registeredMe, registration } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../../lib/api/fakeTransport';
@@ -40,9 +40,8 @@ async function submit({ token = 'invite-token', email = inviteLookup.email, pass
     type('auth.name', registration.user.name);
     type('auth.password', password);
     type('auth.confirmPassword', confirm);
-    await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: 'auth.register' }));
-    });
+    // The button reads `loading auth.register` while the invite is still being looked up.
+    fireEvent.click(await screen.findByRole('button', { name: 'auth.register' }));
 }
 
 it('registers with an invite token, saves the diet picked and signs the new user in', async () => {

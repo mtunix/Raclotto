@@ -84,9 +84,7 @@ describe('ingredients and sauces', () => {
 
         fireEvent.click(deleteButtonOf(potato.name as string));
         expect(fake.last('DELETE', `/ingredients/${potato.id}`)).toBeUndefined();
-        await act(async () => {
-            fireEvent.click(deleteButtonOf(potato.name as string));
-        });
+        fireEvent.click(deleteButtonOf(potato.name as string));
 
         expect(fake.last('DELETE', `/ingredients/${potato.id}`)?.query).toEqual({ session_key: current.key });
         expect(await screen.findByText('ingredient.unavailable')).toBeInTheDocument();
@@ -102,9 +100,7 @@ describe('ingredients and sauces', () => {
         const dialog = await screen.findByRole('dialog');
         expect(within(dialog).getByPlaceholderText('common.enterName')).toHaveValue(leek.name);
         fireEvent.change(within(dialog).getByPlaceholderText('common.enterName'), { target: { value: 'Ramps' } });
-        await act(async () => {
-            fireEvent.click(buttonWith('common.save', dialog));
-        });
+        fireEvent.click(buttonWith('common.save', dialog));
 
         await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
         expect(fake.last('PATCH', `/ingredients/${leek.id}`)?.body).toMatchObject({
@@ -129,9 +125,7 @@ describe('ingredients and sauces', () => {
         const dialog = await screen.findByRole('dialog');
         expect(within(dialog).getByRole('radio', { name: 'ingredient.sauce' })).toBeChecked();
         fireEvent.change(within(dialog).getByPlaceholderText('common.enterName'), { target: { value: 'Chili' } });
-        await act(async () => {
-            fireEvent.click(buttonWith('common.create', dialog));
-        });
+        fireEvent.click(buttonWith('common.create', dialog));
 
         await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
         expect(fake.last('POST', '/ingredients')?.query).toEqual({ session_key: current.key });
@@ -165,9 +159,7 @@ describe('preparation types', () => {
 
         fireEvent.click(deleteButtonOf(prepType.name));
         expect(fake.last('DELETE', `/preparation_type/${prepType.id}`)).toBeUndefined();
-        await act(async () => {
-            fireEvent.click(deleteButtonOf(prepType.name));
-        });
+        fireEvent.click(deleteButtonOf(prepType.name));
 
         expect(await screen.findByText('ingredient.preparationTypeDeleted')).toBeInTheDocument();
         expect(fake.last('DELETE', `/preparation_type/${prepType.id}`)).toBeDefined();
@@ -190,9 +182,7 @@ describe('preparation types', () => {
         fireEvent.change(name, { target: { value: '   ' } });
         expect(buttonWith('common.save')).toBeDisabled();
         fireEvent.change(name, { target: { value: ` ${prepType.name} ` } });
-        await act(async () => {
-            fireEvent.click(buttonWith('common.save'));
-        });
+        fireEvent.click(buttonWith('common.save'));
 
         expect(fake.last('POST', '/preparation_type')?.body).toEqual({ name: prepType.name });
         expect(fake.last('POST', '/preparation_type')?.query).toEqual({ session_key: current.key });

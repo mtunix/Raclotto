@@ -30,7 +30,7 @@ function fakeCamera() {
   const track = { stop: vi.fn() };
   Object.defineProperty(navigator, "mediaDevices", {
     configurable: true,
-    value: { getUserMedia: async () => ({ getTracks: () => [track] }) },
+    value: { getUserMedia: () => Promise.resolve({ getTracks: () => [track] }) },
   });
   return track;
 }

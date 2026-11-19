@@ -18,7 +18,7 @@ afterEach(() => {
 
 it("streams until stopped", async () => {
   const { track, stream } = fakeStream();
-  installCamera(async () => stream);
+  installCamera(() => Promise.resolve(stream));
   const { result } = renderHook(() => useCamera());
 
   await act(() => result.current.start());
@@ -31,7 +31,7 @@ it("streams until stopped", async () => {
 
 it("stops the stream on unmount", async () => {
   const { track, stream } = fakeStream();
-  installCamera(async () => stream);
+  installCamera(() => Promise.resolve(stream));
   const { result, unmount } = renderHook(() => useCamera());
   await act(() => result.current.start());
 
@@ -42,7 +42,7 @@ it("stops the stream on unmount", async () => {
 
 it("captures nothing before the video has a frame", async () => {
   const { stream } = fakeStream();
-  installCamera(async () => stream);
+  installCamera(() => Promise.resolve(stream));
   const { result } = renderHook(() => useCamera());
   await act(() => result.current.start());
 
@@ -52,9 +52,7 @@ it("captures nothing before the video has a frame", async () => {
 
 it("says why the camera could not start", async () => {
   vi.spyOn(console, "error").mockImplementation(() => {});
-  installCamera(async () => {
-    throw Object.assign(new Error("denied"), { name: "NotAllowedError" });
-  });
+  installCamera(() => Promise.reject(Object.assign(new Error("denied"), { name: "NotAllowedError" })));
   const { result } = renderHook(() => useCamera());
 
   await act(() => result.current.start());

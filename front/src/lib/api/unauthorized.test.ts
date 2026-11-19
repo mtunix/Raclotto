@@ -1,19 +1,16 @@
-import axios from "axios";
 import { getMe, login } from "../../api/generated/endpoints/auth/auth";
 import { useAuthStore } from "../../AuthSlice";
 import { loginResult } from "./__fixtures__/backendResponses";
 import { axiosTransport, setTransport, type Transport, UnauthorizedError } from "./transport";
 
-vi.mock("axios", () => {
-  const instance = {
-    request: vi.fn(),
-    isAxiosError: (error: unknown) =>
-      typeof error === "object" && error !== null && "isAxiosError" in error,
-  };
-  return { __esModule: true, default: instance };
-});
-
-const request = vi.mocked(axios).request;
+const { request } = vi.hoisted(() => ({ request: vi.fn() }));
+vi.mock("axios", () => ({
+  __esModule: true,
+  default: {
+    request,
+    isAxiosError: (error: unknown) => typeof error === "object" && error !== null && "isAxiosError" in error,
+  },
+}));
 const unauthorized = { isAxiosError: true, response: { status: 401, data: { errors: [] } } };
 
 let previous: Transport;

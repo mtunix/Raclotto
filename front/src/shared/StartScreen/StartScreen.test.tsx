@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
@@ -112,9 +112,7 @@ describe('JoinSession', () => {
 
         await choose(`${inactive.name} session.inactive`);
         expect(await screen.findByText('session.reactivateMessage')).toBeInTheDocument();
-        await act(async () => {
-            fireEvent.click(screen.getByText('session.joinAndReactivate'));
-        });
+        fireEvent.click(screen.getByText('session.joinAndReactivate'));
 
         await waitFor(() => expect(currentPath()).toBe(`/${inactive.id}/generate`));
         expect(fake.last('POST', '/sessions/reactivate')?.body).toEqual({ key: inactive.key });
