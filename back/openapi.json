@@ -3547,7 +3547,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "List the global event configs and the session's own; without a known session, every config.",
+        "summary": "List the session's effective config per event type, its own over the global; without a known session, all.",
         "tags": [
           "events"
         ]

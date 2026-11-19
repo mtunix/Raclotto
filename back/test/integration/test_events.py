@@ -47,16 +47,16 @@ class EventsTest(AppTest):
             pan=self.make_pan(user, self.session, [self.potato], minutes_ago), user=user, session=self.session
         )
 
-    def configure(self, enabled: bool, session=None, frequency_minutes=None) -> None:
-        db.session.add(
-            EventConfig(
-                event_type="always",
-                enabled=enabled,
-                frequency_minutes=frequency_minutes,
-                session_id=session.id if session else None,
-            )
+    def configure(self, enabled: bool, session=None, frequency_minutes=None, event_type="always") -> EventConfig:
+        config = EventConfig(
+            event_type=event_type,
+            enabled=enabled,
+            frequency_minutes=frequency_minutes,
+            session_id=session.id if session else None,
         )
+        db.session.add(config)
         db.session.commit()
+        return config
 
     def test_a_fired_event_is_stored_for_the_session(self):
         [event] = Events([Always()], clock=self.clock).record(self.rolled())
@@ -81,6 +81,20 @@ class EventsTest(AppTest):
         self.assertEqual(
             len(events.record(PanRolled(self.make_pan(self.ana, other, [self.potato]), self.ana, other))), 1
         )
+
+    def test_a_session_config_overrides_a_global_one_stored_after_it(self):
+        self.configure(enabled=False, session=self.session)
+        self.configure(enabled=True)
+
+        self.assertEqual(Events([Always()], clock=self.clock).record(self.rolled()), [])
+
+    def test_a_sessions_configs_are_its_own_and_the_global_ones_it_has_none_for(self):
+        own = self.configure(enabled=False, session=self.session)
+        self.configure(enabled=True)
+        rain = self.configure(enabled=True, event_type="rain")
+        self.configure(enabled=True, session=self.make_session("s2"), event_type="rain")
+
+        self.assertEqual({c.id for c in Events([Always()]).configs(self.session)}, {own.id, rain.id})
 
     def test_an_event_waits_out_its_cooldown(self):
         events = Events([Always()], clock=self.clock)

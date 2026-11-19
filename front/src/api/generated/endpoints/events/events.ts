@@ -72,7 +72,7 @@ export const useListEvents = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary List the global event configs and the session's own; without a known session, every config.
+ * @summary List the session's effective config per event type, its own over the global; without a known session, all.
  */
 export const listEventConfigs = (
     params?: ListEventConfigsParams,
@@ -91,7 +91,7 @@ export const getListEventConfigsKey = (params?: ListEventConfigsParams,) => [`/e
 export type ListEventConfigsQueryResult = NonNullable<Awaited<ReturnType<typeof listEventConfigs>>>
 
 /**
- * @summary List the global event configs and the session's own; without a known session, every config.
+ * @summary List the session's effective config per event type, its own over the global; without a known session, all.
  */
 export const useListEventConfigs = <TError = ErrorType<ErrorResponseDto>>(
   params?: ListEventConfigsParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listEventConfigs>>, TError> & { swrKey?: Key, enabled?: boolean },  }

@@ -52,6 +52,25 @@ describe('a session creator', () => {
         expect(saveButton()).toBeDisabled();
     });
 
+    it('shows the global config the session inherits and saves a change as its own', async () => {
+        const current = await renderSection([{ ...eventConfig, session_id: null, enabled: true, frequency_minutes: 15 }]);
+        fake.on('POST', '/events/configs', eventConfig);
+
+        expect(toggle()).toBeChecked();
+        expect(frequency()).toHaveValue('15');
+
+        fireEvent.click(toggle());
+        fireEvent.click(saveButton());
+
+        expect(await screen.findByText('common.saved')).toBeInTheDocument();
+        expect(fake.last('POST', '/events/configs')?.body).toEqual({
+            event_type: 'pan_swap',
+            enabled: false,
+            frequency_minutes: 15,
+            session_key: current.key,
+        });
+    });
+
     it('starts an event type without a config from the defaults and saves a changed frequency', async () => {
         const current = await renderSection([]);
         fake.on('POST', '/events/configs', { ...eventConfig, enabled: true, frequency_minutes: 30 });

@@ -66,7 +66,7 @@ class EventApi(BaseApi):
     )
     @require_auth
     def get_event_configs(self, query: SessionFilterQuery) -> list[EventConfigDto]:
-        """List the global event configs and the session's own; without a known session, every config."""
+        """List the session's effective config per event type, its own over the global; without a known session, all."""
         session = self.session_repository.by_key(query.session_key) if query.session_key is not None else None
         configs = self.events.configs(session)
         return [EventConfigDto.model_validate(config) for config in configs]

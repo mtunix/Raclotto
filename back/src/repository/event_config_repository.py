@@ -8,20 +8,21 @@ class EventConfigRepository(BaseRepository[EventConfig]):
         super().__init__(EventConfig)
 
     def own(self, event_type: str, session_id: int | None) -> EventConfig | None:
-        """The config stored for exactly this session, or the global one for None."""
+        """The config stored for exactly this session, or the global one for None; the oldest of duplicates."""
         scope = EventConfig.session_id.is_(None) if session_id is None else EventConfig.session_id == session_id
-        return db.session.query(EventConfig).filter(EventConfig.event_type == event_type, scope).first()
-
-    def effective(self, event_type: str, session_id: int) -> EventConfig | None:
-        """The session's own config, else the global one."""
-        return self.own(event_type, session_id) or self.own(event_type, None)
+        return (
+            db.session.query(EventConfig)
+            .filter(EventConfig.event_type == event_type, scope)
+            .order_by(EventConfig.id)
+            .first()
+        )
 
     def visible_to(self, session_id: int | None) -> list[EventConfig]:
-        """The global configs and the session's own; without a session, every config."""
+        """The global configs and the session's own, oldest first; without a session, every config."""
         query = db.session.query(EventConfig)
         if session_id is not None:
             query = query.filter((EventConfig.session_id == session_id) | EventConfig.session_id.is_(None))
-        return query.all()
+        return query.order_by(EventConfig.id).all()
 
     def save(
         self, event_type: str, enabled: bool, frequency_minutes: int | None, session_id: int | None

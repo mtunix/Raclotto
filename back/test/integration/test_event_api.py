@@ -92,17 +92,19 @@ class EventApiTest(AppTest):
         self.assertEqual(self.call("GET", "/events", self.ana, query={"session_key": "nope"}).status_code, 404)
         self.assertEqual(self.call("GET", "/events", query={"session_key": "s1"}).status_code, 401)
 
-    def test_configs_of_a_session_are_the_global_ones_and_its_own(self):
+    def test_configs_of_a_session_are_its_own_over_the_global_ones(self):
         other = self.make_session("s2")
         global_config = self.make_config(True)
         own = self.make_config(False, self.session, frequency_minutes=30)
         others = self.make_config(True, other)
 
-        self.assertEqual({c.id for c in self.configs(session_key="s1")}, {global_config.id, own.id})
+        self.assertEqual([c.id for c in self.configs(session_key="s1")], [own.id])
+        self.assertEqual([c.id for c in self.configs(session_key="s2")], [others.id])
+        self.assertEqual([c.id for c in self.configs(session_key=self.make_session("s3").key)], [global_config.id])
         self.assertEqual({c.id for c in self.configs()}, {global_config.id, own.id, others.id})
         # An unknown session is no filter at all.
         self.assertEqual({c.id for c in self.configs(session_key="nope")}, {global_config.id, own.id, others.id})
-        [listed] = [c for c in self.configs(session_key="s1") if c.id == own.id]
+        [listed] = self.configs(session_key="s1")
         self.assertEqual(
             listed.model_dump(),
             {
@@ -112,6 +114,14 @@ class EventApiTest(AppTest):
                 "enabled": False,
                 "frequency_minutes": 30,
             },
+        )
+
+    def test_a_sessions_own_config_wins_whichever_was_stored_first(self):
+        own = self.make_config(False, self.session, frequency_minutes=30)
+        self.make_config(True, frequency_minutes=5)
+
+        self.assertEqual(
+            [(c.id, c.enabled, c.frequency_minutes) for c in self.configs(session_key="s1")], [(own.id, False, 30)]
         )
 
     def test_saving_creates_a_session_config_then_changes_it(self):

@@ -45,11 +45,12 @@ class Events:
         """Ask every enabled evaluator that reacts to ``fact`` and is off cooldown; store what fires."""
         session = fact.session
         now = self._clock()
+        configs = self._effective(session)
         announced = []
         for evaluator in self._evaluators:
             if not isinstance(fact, evaluator.reacts_to):
                 continue
-            config = self._configs.effective(evaluator.event_type, session.id)
+            config = configs.get(evaluator.event_type)
             if config is not None and not config.enabled:
                 continue
             if self._events.fired_since(session.id, evaluator.event_type, now - self._cooldown(evaluator, config)):
@@ -83,8 +84,10 @@ class Events:
         return self._events.dismiss_for_user(event_id, user.id)
 
     def configs(self, session: RaclottoSession | None) -> list[EventConfig]:
-        """The global configs and the session's own; without a session, every config."""
-        return self._configs.visible_to(session.id if session else None)
+        """The session's effective config of each event type that has one; without a session, every config."""
+        if session is None:
+            return self._configs.visible_to(None)
+        return list(self._effective(session).values())
 
     def configure(
         self,
@@ -95,6 +98,13 @@ class Events:
     ) -> EventConfig:
         """Save the session's own config, or the global one without a session. A None frequency keeps the stored one."""
         return self._configs.save(event_type, enabled, frequency_minutes, session.id if session else None)
+
+    def _effective(self, session: RaclottoSession) -> dict[str, EventConfig]:
+        """Per event type, the session's own config, else the global one; of duplicates the oldest, as saving does."""
+        effective: dict[str, EventConfig] = {}
+        for config in sorted(self._configs.visible_to(session.id), key=lambda config: config.session_id is None):
+            effective.setdefault(config.event_type, config)
+        return effective
 
     @staticmethod
     def _cooldown(evaluator: EventEvaluator, config: EventConfig | None) -> timedelta:

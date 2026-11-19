@@ -21,7 +21,7 @@ interface EventConfigState {
     frequency_minutes: number | null;
 }
 
-/** Each known event type's settings, from its config or the defaults. */
+/** Each known event type's settings, from the session's effective config (one per type) or the defaults. */
 function configStates(configs: readonly { event_type: string; enabled: boolean; frequency_minutes?: number | null }[]) {
     const states: Record<string, EventConfigState> = {};
     for (const config of configs) {
