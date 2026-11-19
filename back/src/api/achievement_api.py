@@ -18,8 +18,9 @@ class AchievementApi(BaseApi):
         """List every achievement with the signed-in user's unlocked flag and progress."""
         return [AchievementStatusDto.of(status) for status in Achievements().statuses(get_current_user())]
 
-    @BaseApi.endpoint("/<int:achievement_id>", ["GET"], response=AchievementDto, operation_id="getAchievement",
-                      errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:achievement_id>", ["GET"], response=AchievementDto, operation_id="getAchievement", errors=(404,)
+    )
     @require_auth
     def get_achievement(self, achievement_id: int) -> AchievementDto:
         """Get an achievement by id."""
@@ -29,7 +30,7 @@ class AchievementApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Achievement not found",
-                detail="The specified achievement does not exist"
+                detail="The specified achievement does not exist",
             )
         return AchievementDto.model_validate(achievement)
 

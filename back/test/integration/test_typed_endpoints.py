@@ -44,13 +44,16 @@ class TypedEndpointTest(AppTest):
         response = self.call("GET", f"/levels/{level.id}", self.user)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, {
-            "id": level.id,
-            "name": level.name,
-            "label_en": level.label_en,
-            "label_de": level.label_de,
-            "required_experience": level.required_experience,
-        })
+        self.assertEqual(
+            response.json,
+            {
+                "id": level.id,
+                "name": level.name,
+                "label_en": level.label_en,
+                "label_de": level.label_de,
+                "required_experience": level.required_experience,
+            },
+        )
 
     def test_missing_level_is_an_error_body(self):
         response = self.call("GET", "/levels/9999", self.user)
@@ -79,9 +82,7 @@ class TypedEndpointTest(AppTest):
         self.assertEqual(len({error.id_ for error in errors}), len(errors))
 
     def test_malformed_json_points_at_body(self):
-        response = self.client.post(
-            "/api/probe/echo", data="{not json", headers={"Content-Type": "application/json"}
-        )
+        response = self.client.post("/api/probe/echo", data="{not json", headers={"Content-Type": "application/json"})
 
         [error] = self.assert_errors(response, 400)
         self.assertEqual(error.source.pointer, "/body")
@@ -168,13 +169,20 @@ class TypedEndpointDeclarationTest(unittest.TestCase):
             (["GET"], {"response": list[dict]}),
         ):
             with self.subTest(methods=methods, **{k: repr(v) for k, v in kwargs.items()}):
-                args: Dict[str, Any] = {"query": None, "body": None, "response": None, "status": 200,
-                                        "operation_id": None, **kwargs}
+                args: Dict[str, Any] = {
+                    "query": None,
+                    "body": None,
+                    "response": None,
+                    "status": 200,
+                    "operation_id": None,
+                    **kwargs,
+                }
                 with self.assertRaises((ValueError, TypeError)):
                     TypedEndpoint.declare(methods, **args)
 
     def test_rejects_an_endpoint_without_a_response(self):
         with self.assertRaises(ValueError):
+
             class UndeclaredApi(BaseApi):
                 @BaseApi.endpoint("/undeclared", ["GET"])
                 def undeclared(self):

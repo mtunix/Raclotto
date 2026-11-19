@@ -31,8 +31,14 @@ class PreparationTypeApi(BaseApi):
             )
         return session.id
 
-    @BaseApi.endpoint("", ["GET"], query=SessionFilterQuery, response=list[PrepTypeDto],
-                      operation_id="listPreparationTypes", errors=(404,))
+    @BaseApi.endpoint(
+        "",
+        ["GET"],
+        query=SessionFilterQuery,
+        response=list[PrepTypeDto],
+        operation_id="listPreparationTypes",
+        errors=(404,),
+    )
     @require_auth
     def list_preparation_types(self, query: SessionFilterQuery) -> list[PrepTypeDto]:
         """List the default preparation types and a session's own, or every preparation type."""
@@ -40,8 +46,15 @@ class PreparationTypeApi(BaseApi):
         prep_types = self.repository.all() if session_id is None else self.repository.by_session(session_id)
         return [PrepTypeDto.model_validate(prep_type) for prep_type in prep_types]
 
-    @BaseApi.endpoint("", ["POST"], query=SessionFilterQuery, body=CreatePrepTypeBody, response=PrepTypeDto,
-                      operation_id="createPreparationType", errors=(404,))
+    @BaseApi.endpoint(
+        "",
+        ["POST"],
+        query=SessionFilterQuery,
+        body=CreatePrepTypeBody,
+        response=PrepTypeDto,
+        operation_id="createPreparationType",
+        errors=(404,),
+    )
     @require_auth
     def create_preparation_type(self, query: SessionFilterQuery, body: CreatePrepTypeBody) -> PrepTypeDto:
         """Add a preparation type to a session; without a session it becomes a default type."""
@@ -50,8 +63,9 @@ class PreparationTypeApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/<int:prep_type_id>", ["DELETE"], status=204, operation_id="deletePreparationType",
-                      errors=(400, 404))
+    @BaseApi.endpoint(
+        "/<int:prep_type_id>", ["DELETE"], status=204, operation_id="deletePreparationType", errors=(400, 404)
+    )
     @require_auth
     def delete_preparation_type(self, prep_type_id: int) -> None:
         """Delete a session's preparation type; the default types stay."""

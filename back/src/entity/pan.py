@@ -33,34 +33,26 @@ class Pan(DomainMixin, Base):
     rolled_preparation_type: Mapped[bool] = mapped_column(default=False)
     rolled_cheese: Mapped[bool] = mapped_column(default=False)
 
-    ingredients: Mapped[list["Ingredient"]] = relationship(
-        "Ingredient",
-        secondary=pan_ingredients,
-        lazy="selectin"
-    )
+    ingredients: Mapped[list["Ingredient"]] = relationship("Ingredient", secondary=pan_ingredients, lazy="selectin")
 
-    ratings: Mapped[list[Rating]] = relationship(
-        "Rating",
-        lazy="selectin"
-    )
+    ratings: Mapped[list[Rating]] = relationship("Rating", lazy="selectin")
 
-    preparation_type: Mapped["PreparationType | None"] = relationship(
-        "PreparationType",
-        lazy="selectin"
-    )
+    preparation_type: Mapped["PreparationType | None"] = relationship("PreparationType", lazy="selectin")
 
     @hybrid_property
     def rating(self) -> float:
         if len(self.ratings) > 0:
-            return sum([x.rating for x in self.ratings])/len(self.ratings)
+            return sum([x.rating for x in self.ratings]) / len(self.ratings)
         else:
             return 0
 
     @rating.inplace.expression
     @classmethod
     def _rating_expression(cls) -> ScalarSelect[float]:
-        return select(func.avg(Rating.rating))\
-            .select_from(Rating)\
-            .where(cls.id == Rating.pan_id)\
-            .group_by(Rating.pan_id)\
+        return (
+            select(func.avg(Rating.rating))
+            .select_from(Rating)
+            .where(cls.id == Rating.pan_id)
+            .group_by(Rating.pan_id)
             .scalar_subquery()
+        )

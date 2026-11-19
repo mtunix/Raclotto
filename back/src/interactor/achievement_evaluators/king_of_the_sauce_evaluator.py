@@ -43,19 +43,11 @@ class KingOfTheSauceEvaluator(AchievementEvaluator):
         progress = self._progress(subject, achievement, context)
         return EvaluationResult(unlocked=progress >= 1.0, progress=progress)
 
-    def calculate_progress(
-        self, user: User, achievement: Achievement, context: EvaluationContext
-    ) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
         return self._progress(user, achievement, context)
 
-    def _progress(
-        self, user: User, achievement: Achievement, context: EvaluationContext
-    ) -> float:
-        session_ids = (
-            {context.session.id}
-            if not achievement.is_global
-            else {s.id for s in user.sessions}
-        )
+    def _progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float:
+        session_ids = {context.session.id} if not achievement.is_global else {s.id for s in user.sessions}
         all_sauces = self._available_sauces(session_ids)
         if not all_sauces:
             return 0.0
@@ -63,9 +55,7 @@ class KingOfTheSauceEvaluator(AchievementEvaluator):
         return len(used & all_sauces) / len(all_sauces)
 
     def _available_sauces(self, session_ids: Set[int]) -> Set[int]:
-        sauces = self.ingredient_repository.by_session_ids(
-            list(session_ids), IngredientType.SAUCE
-        )
+        sauces = self.ingredient_repository.by_session_ids(list(session_ids), IngredientType.SAUCE)
         return {s.id for s in sauces if s.available}
 
     def _sauces_used(self, user: User, session_ids: Set[int]) -> Set[int]:

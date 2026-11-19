@@ -43,13 +43,18 @@ class UserStatsDto(ResponseDto):
             total_ratings_given=stats.total_ratings_given,
             average_rating_received=stats.average_rating_received,
             favorite_ingredient=IngredientDto.model_validate(stats.favorite_ingredient)
-            if stats.favorite_ingredient else None,
-            best_rated_ingredient=IngredientRatingDto(ingredient=IngredientDto.model_validate(best[0]), avg_rating=best[1])
-            if best else None,
+            if stats.favorite_ingredient
+            else None,
+            best_rated_ingredient=IngredientRatingDto(
+                ingredient=IngredientDto.model_validate(best[0]), avg_rating=best[1]
+            )
+            if best
+            else None,
             total_achievement_points=stats.total_achievement_points,
             average_ingredients_per_pan=stats.average_ingredients_per_pan,
             most_pans_session=SessionPanCountDto(session_id=most[0].id, session_name=most[0].name, pan_count=most[1])
-            if most else None,
+            if most
+            else None,
             sessions_participated=stats.sessions_participated,
             most_ingredients_pan=PanDto.of(stats.most_ingredients_pan, user) if stats.most_ingredients_pan else None,
         )

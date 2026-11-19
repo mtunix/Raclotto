@@ -18,9 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _cli_url() -> str:
-    return os.environ.get(
-        "RACLOTTO_DATABASE_URL", f"sqlite:///{REPO_ROOT / 'instance' / 'raclotto.db'}"
-    )
+    return os.environ.get("RACLOTTO_DATABASE_URL", f"sqlite:///{REPO_ROOT / 'instance' / 'raclotto.db'}")
 
 
 def _run(connection) -> None:

@@ -58,8 +58,10 @@ class TestReadSessions(SessionApiTest):
 
         self.assertEqual([s["id"] for s in active.json], [open_.id])
         self.assertEqual(sorted(s["id"] for s in every.json), [open_.id, closed.id])
-        self.assertEqual(self.pointers(self.call("GET", "/sessions", self.ben, query={"include_inactive": "maybe"})),
-                         ["/query/include_inactive"])
+        self.assertEqual(
+            self.pointers(self.call("GET", "/sessions", self.ben, query={"include_inactive": "maybe"})),
+            ["/query/include_inactive"],
+        )
         self.assertEqual(self.call("GET", "/sessions").status_code, 401)
 
     def test_get_by_id_and_by_key(self):
@@ -94,8 +96,9 @@ class TestChangeSession(SessionApiTest):
     def test_rename_takes_only_a_name(self):
         session = self.make_session("s1")
 
-        self.assertEqual(self.pointers(self.call("PATCH", f"/sessions/{session.id}", self.ana, body={})),
-                         ["/body/name"])
+        self.assertEqual(
+            self.pointers(self.call("PATCH", f"/sessions/{session.id}", self.ana, body={})), ["/body/name"]
+        )
         self.assertEqual(
             self.pointers(self.call("PATCH", f"/sessions/{session.id}", self.ana, body={"name": "x", "active": False})),
             ["/body/active"],
@@ -146,7 +149,9 @@ class TestChangeSession(SessionApiTest):
     def test_any_signed_in_user_may_change_any_session(self):
         session = self.make_session("s1", creator=self.ana)
 
-        self.assertEqual(self.call("PATCH", f"/sessions/{session.id}", self.ben, body={"name": "mine"}).status_code, 200)
+        self.assertEqual(
+            self.call("PATCH", f"/sessions/{session.id}", self.ben, body={"name": "mine"}).status_code, 200
+        )
         self.assertEqual(self.call("POST", "/sessions/close", self.ben, body={"key": "s1"}).status_code, 200)
         self.assertEqual(self.call("POST", "/sessions/reactivate", self.ben, body={"key": "s1"}).status_code, 200)
         self.assertEqual(self.call("DELETE", f"/sessions/{session.id}", self.ben).status_code, 204)

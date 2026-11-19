@@ -36,9 +36,7 @@ class ConnoisseurEvaluator(AchievementEvaluator):
         is_new = self._is_name_new(fact.ingredient)
         return EvaluationResult(unlocked=is_new, progress=1.0 if is_new else 0.0)
 
-    def calculate_progress(
-        self, user: User, achievement: Achievement, context: EvaluationContext
-    ) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
         # Only earnable at the moment an ingredient is added; ingredients don't
         # record their author, so there is nothing to recompute afterwards.
         return 1.0 if achievement in user.achievements else 0.0

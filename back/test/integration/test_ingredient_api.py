@@ -91,9 +91,9 @@ class TestListIngredients(IngredientApiTest):
             with self.subTest(diet=name):
                 user = self.make_user(name, **diet)
 
-                self.assertEqual(self.applicable(user), {
-                    n: n in allowed for n in ("Potato", "Cheese", "Bacon", "Salmon")
-                })
+                self.assertEqual(
+                    self.applicable(user), {n: n in allowed for n in ("Potato", "Cheese", "Bacon", "Salmon")}
+                )
 
     def test_list_shape_and_filter(self):
         response = self.call("GET", "/ingredients", self.ana, query={"session_key": "s1"})
@@ -103,8 +103,9 @@ class TestListIngredients(IngredientApiTest):
         everywhere = self.call("GET", "/ingredients", self.ana)
         self.assertEqual({i["name"] for i in everywhere.json}, {"Potato", "Cheese", "Bacon", "Salmon", "Leek"})
         self.assertEqual(self.call("GET", "/ingredients", self.ana, query={"session_key": "nope"}).json, [])
-        self.assertEqual(self.pointers(self.call("GET", "/ingredients", self.ana, query={"session_key": ""})),
-                         ["/query/session_key"])
+        self.assertEqual(
+            self.pointers(self.call("GET", "/ingredients", self.ana, query={"session_key": ""})), ["/query/session_key"]
+        )
         self.assertEqual(self.call("GET", "/ingredients").status_code, 401)
 
     def test_available_counts(self):
@@ -118,13 +119,16 @@ class TestListIngredients(IngredientApiTest):
         response = self.call("GET", "/ingredients/available-counts", vegetarian, query={"session_key": "s1"})
 
         self.assertEqual(response.status_code, 200, response.json)
-        self.assertEqual(response.json, {"fill_count": 2, "sauce_count": 1, "total_fill_count": 4, "total_sauce_count": 2})
+        self.assertEqual(
+            response.json, {"fill_count": 2, "sauce_count": 1, "total_fill_count": 4, "total_sauce_count": 2}
+        )
         self.assertEqual(
             self.call("GET", "/ingredients/available-counts", vegetarian, query={"session_key": "nope"}).json,
             {"fill_count": 0, "sauce_count": 0, "total_fill_count": 0, "total_sauce_count": 0},
         )
-        self.assertEqual(self.pointers(self.call("GET", "/ingredients/available-counts", vegetarian)),
-                         ["/query/session_key"])
+        self.assertEqual(
+            self.pointers(self.call("GET", "/ingredients/available-counts", vegetarian)), ["/query/session_key"]
+        )
 
     def test_get_one(self):
         response = self.call("GET", f"/ingredients/{self.salmon.id}", self.ana)
@@ -153,10 +157,14 @@ class TestCreateIngredient(IngredientApiTest):
 
     def test_create_needs_a_known_session_in_the_query(self):
         self.assertEqual(self.pointers(self.create(self.fields(), session_key=None)), ["/query/session_key"])
-        self.assertEqual(self.pointers(self.create({**self.fields(), "session_key": "s1"}, session_key=None)),
-                         ["/query/session_key", "/body/session_key"])
+        self.assertEqual(
+            self.pointers(self.create({**self.fields(), "session_key": "s1"}, session_key=None)),
+            ["/query/session_key", "/body/session_key"],
+        )
         self.assertEqual(self.create(self.fields(), session_key="nope").status_code, 404)
-        self.assertEqual(self.call("POST", "/ingredients", body=self.fields(), query={"session_key": "s1"}).status_code, 401)
+        self.assertEqual(
+            self.call("POST", "/ingredients", body=self.fields(), query={"session_key": "s1"}).status_code, 401
+        )
         self.assertEqual(self.in_session(self.session), [])
 
     def test_create_enforces_one_category(self):
@@ -207,7 +215,9 @@ class TestChangeIngredient(IngredientApiTest):
         response = self.update({"name": "Spring onion", "spicy": 2})
 
         self.assertEqual(response.status_code, 200, response.json)
-        self.assertEqual((response.json["name"], response.json["spicy"], response.json["vegan"]), ("Spring onion", 2, True))
+        self.assertEqual(
+            (response.json["name"], response.json["spicy"], response.json["vegan"]), ("Spring onion", 2, True)
+        )
         stored = self.stored(self.leek.id)
         self.assertEqual((stored.name, stored.spicy, stored.vegan, stored.type), ("Spring onion", 2, True, FILL))
 
@@ -249,8 +259,9 @@ class TestChangeIngredient(IngredientApiTest):
 
         response = self.call("DELETE", f"/ingredients/{self.leek.id}", self.ana, query={"session_key": "s2"})
 
-        self.assertEqual(self.errors(response),
-                         [("/query/session_key", "Session key does not match ingredient's session")])
+        self.assertEqual(
+            self.errors(response), [("/query/session_key", "Session key does not match ingredient's session")]
+        )
         self.assertTrue(self.stored(self.leek.id).available)
         self.assertEqual(self.call("DELETE", "/ingredients/999", self.ana).status_code, 404)
 
@@ -296,7 +307,11 @@ class TestExportAndImport(IngredientApiTest):
 
     def ingredients_of(self, session) -> list:
         return [
-            {k: v for k, v in IngredientDto.model_validate(i).model_dump(mode="json").items() if k not in ("id", "session_id")}
+            {
+                k: v
+                for k, v in IngredientDto.model_validate(i).model_dump(mode="json").items()
+                if k not in ("id", "session_id")
+            }
             for i in self.in_session(session)
         ]
 
@@ -311,13 +326,20 @@ class TestExportAndImport(IngredientApiTest):
 
     def test_export_needs_a_known_session(self):
         self.assertEqual(self.pointers(self.call("GET", "/ingredients/export", self.ana)), ["/query/session_key"])
-        self.assertEqual(self.call("GET", "/ingredients/export", self.ana, query={"session_key": "nope"}).status_code, 404)
+        self.assertEqual(
+            self.call("GET", "/ingredients/export", self.ana, query={"session_key": "nope"}).status_code, 404
+        )
 
     def test_an_old_export_file_imports_into_another_session(self):
         target = self.make_session("target")
 
-        response = self.call("POST", "/ingredients/import", self.ana, query={"session_key": "target"},
-                             body={"ingredients": OLD_EXPORT["ingredients"]})
+        response = self.call(
+            "POST",
+            "/ingredients/import",
+            self.ana,
+            query={"session_key": "target"},
+            body={"ingredients": OLD_EXPORT["ingredients"]},
+        )
 
         self.assertEqual(response.status_code, 201, response.json)
         self.assertEqual(response.json["created"], 4)
@@ -328,8 +350,13 @@ class TestExportAndImport(IngredientApiTest):
     def test_import_fills_in_defaults(self):
         target = self.make_session("target")
 
-        response = self.call("POST", "/ingredients/import", self.ana, query={"session_key": "target"},
-                             body={"ingredients": [{"name": "Corn", "type": 1, "vegan": True}]})
+        response = self.call(
+            "POST",
+            "/ingredients/import",
+            self.ana,
+            query={"session_key": "target"},
+            body={"ingredients": [{"name": "Corn", "type": 1, "vegan": True}]},
+        )
 
         self.assertEqual(response.status_code, 201, response.json)
         [corn] = self.in_session(target)
@@ -340,18 +367,30 @@ class TestExportAndImport(IngredientApiTest):
             with self.subTest(case=case):
                 items = [self.fields("Good"), {"name": "Bad", "type": 1, **flags}]
 
-                response = self.call("POST", "/ingredients/import", self.ana, query={"session_key": "s1"},
-                                     body={"ingredients": items})
+                response = self.call(
+                    "POST", "/ingredients/import", self.ana, query={"session_key": "s1"}, body={"ingredients": items}
+                )
 
                 self.assertEqual(self.errors(response), [("/body/ingredients/1", message)])
-        missing = self.call("POST", "/ingredients/import", self.ana, query={"session_key": "s1"},
-                            body={"ingredients": [{"type": 1, "vegan": True, "applicable": True}]})
+        missing = self.call(
+            "POST",
+            "/ingredients/import",
+            self.ana,
+            query={"session_key": "s1"},
+            body={"ingredients": [{"type": 1, "vegan": True, "applicable": True}]},
+        )
         self.assertEqual(self.pointers(missing), ["/body/ingredients/0/name", "/body/ingredients/0/applicable"])
-        self.assertEqual(self.pointers(self.call("POST", "/ingredients/import", self.ana, query={"session_key": "s1"},
-                                                 body={})), ["/body/ingredients"])
+        self.assertEqual(
+            self.pointers(self.call("POST", "/ingredients/import", self.ana, query={"session_key": "s1"}, body={})),
+            ["/body/ingredients"],
+        )
         self.assertEqual(self.in_session(self.session), [])
-        self.assertEqual(self.call("POST", "/ingredients/import", self.ana, query={"session_key": "nope"},
-                                   body={"ingredients": []}).status_code, 404)
+        self.assertEqual(
+            self.call(
+                "POST", "/ingredients/import", self.ana, query={"session_key": "nope"}, body={"ingredients": []}
+            ).status_code,
+            404,
+        )
 
     def test_an_old_export_file_reimports_into_its_session(self):
         session = self.old_catalog()
@@ -361,16 +400,19 @@ class TestExportAndImport(IngredientApiTest):
         changed[3]["available"] = True
         new = {"name": "Corn", "type": 1, "vegan": True}
 
-        response = self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "old-export"},
-                             body={"ingredients": changed + [new]})
+        response = self.call(
+            "POST",
+            "/ingredients/reimport",
+            self.ana,
+            query={"session_key": "old-export"},
+            body={"ingredients": changed + [new]},
+        )
 
         self.assertEqual(response.status_code, 200, response.json)
         self.assertEqual((response.json["created"], response.json["updated"], response.json["deleted"]), (1, 4, 1))
         stored = {i.name: i for i in self.in_session(session)}
         self.assertEqual(set(stored), {"Sweet potato", "Salmon", "Bacon", "Pesto", "Leftover", "Corn"})
-        self.assertEqual(
-            {i["name"] for i in response.json["ingredients"]}, set(stored)
-        )
+        self.assertEqual({i["name"] for i in response.json["ingredients"]}, set(stored))
         self.assertFalse(stored["Leftover"].available)
         self.assertTrue(stored["Pesto"].available)
         self.assertEqual((stored["Salmon"].fish, stored["Salmon"].spicy, stored["Bacon"].wildcard), (True, 1, True))
@@ -381,8 +423,9 @@ class TestExportAndImport(IngredientApiTest):
         gone.available = False
         db.session.commit()
 
-        response = self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"},
-                             body={"ingredients": []})
+        response = self.call(
+            "POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"}, body={"ingredients": []}
+        )
 
         self.assertEqual((response.json["created"], response.json["updated"], response.json["deleted"]), (0, 0, 1))
 
@@ -391,19 +434,35 @@ class TestExportAndImport(IngredientApiTest):
         other = self.make_ingredient(self.make_session("s2"), "Leek", vegan=True)
         item = {"id": potato.id, "name": "Potato", "type": 1, "vegan": True}
 
-        mixed = self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"},
-                          body={"ingredients": [item, {**item, "session_id": other.session_id}]})
-        unknown = self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"},
-                            body={"ingredients": [{**item, "id": other.id}]})
+        mixed = self.call(
+            "POST",
+            "/ingredients/reimport",
+            self.ana,
+            query={"session_key": "s1"},
+            body={"ingredients": [item, {**item, "session_id": other.session_id}]},
+        )
+        unknown = self.call(
+            "POST",
+            "/ingredients/reimport",
+            self.ana,
+            query={"session_key": "s1"},
+            body={"ingredients": [{**item, "id": other.id}]},
+        )
 
         self.assertEqual(mixed.status_code, 400, mixed.json)
         [error] = mixed.json["errors"]
-        self.assertEqual((error["title"], error["source"]["pointer"]), ("Mixed sessions", "/body/ingredients/1/session_id"))
-        self.assertEqual(error["detail"], "ingredients[1] belongs to a different session. "
-                                          f"All ingredients must belong to session_id {self.session.id}")
+        self.assertEqual(
+            (error["title"], error["source"]["pointer"]), ("Mixed sessions", "/body/ingredients/1/session_id")
+        )
+        self.assertEqual(
+            error["detail"],
+            "ingredients[1] belongs to a different session. "
+            f"All ingredients must belong to session_id {self.session.id}",
+        )
         self.assertEqual(unknown.status_code, 404, unknown.json)
-        self.assertEqual(unknown.json["errors"][0]["detail"],
-                         f"ingredients[0] with id {other.id} does not exist in this session")
+        self.assertEqual(
+            unknown.json["errors"][0]["detail"], f"ingredients[0] with id {other.id} does not exist in this session"
+        )
         self.assertEqual(self.stored(other.id).name, "Leek")
         self.assertTrue(self.stored(potato.id).available)
 
@@ -413,8 +472,9 @@ class TestExportAndImport(IngredientApiTest):
             with self.subTest(case=case):
                 item = {"id": potato.id, "name": "Potato", "type": 1, **flags}
 
-                response = self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"},
-                                     body={"ingredients": [item]})
+                response = self.call(
+                    "POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"}, body={"ingredients": [item]}
+                )
 
                 self.assertEqual(self.errors(response), [("/body/ingredients/0", message)])
         self.assertTrue(self.stored(potato.id).vegan)
@@ -430,8 +490,9 @@ class TestExportAndImport(IngredientApiTest):
         self.assertNotIn("King of the Sauce", held(self.ana))
 
         only_aioli = {"id": aioli.id, "name": "Aioli", "type": 2, "vegetarian": True}
-        self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"},
-                  body={"ingredients": [only_aioli]})
+        self.call(
+            "POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"}, body={"ingredients": [only_aioli]}
+        )
         self.assertIn("King of the Sauce", held(self.ana))
 
 
@@ -458,12 +519,15 @@ class TestChangesWhoseAchievementsFail(IngredientApiTest):
         for name, response in (
             ("create", lambda: self.call("POST", "/ingredients", self.ana, query=query, body=self.fields())),
             ("update", lambda: self.call("PATCH", f"/ingredients/{self.potato.id}", self.ana, body={"name": "Leek"})),
-            ("import", lambda: self.call("POST", "/ingredients/import", self.ana, query=query,
-                                         body={"ingredients": [self.fields()]})),
+            (
+                "import",
+                lambda: self.call(
+                    "POST", "/ingredients/import", self.ana, query=query, body={"ingredients": [self.fields()]}
+                ),
+            ),
         ):
             with self.subTest(name):
                 self.assertEqual(response().status_code, 500)
                 # What the request committed; the app context the test holds outlives the request's.
                 db.session.rollback()
                 self.assertEqual([i.name for i in self.in_session(self.session)], ["Potato"])
-

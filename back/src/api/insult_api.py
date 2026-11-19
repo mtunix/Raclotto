@@ -20,7 +20,7 @@ class InsultApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Insult not found",
-                detail="The specified insult does not exist"
+                detail="The specified insult does not exist",
             )
         return insult
 
@@ -44,8 +44,9 @@ class InsultApi(BaseApi):
         """Get an insult by id."""
         return InsultDto.model_validate(self._insult(insult_id))
 
-    @BaseApi.endpoint("/<int:insult_id>", ["PATCH"], body=InsultBody, response=InsultDto,
-                      operation_id="updateInsult", errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:insult_id>", ["PATCH"], body=InsultBody, response=InsultDto, operation_id="updateInsult", errors=(404,)
+    )
     @require_auth
     def update_insult(self, insult_id: int, body: InsultBody) -> InsultDto:
         """Change an insult's title."""

@@ -73,9 +73,7 @@ class AppTest(unittest.TestCase):
         return user
 
     def make_session(self, key: str = "s1", creator: Optional[User] = None) -> RaclottoSession:
-        session = RaclottoSession(
-            key=key, name=key, created_by_user_id=creator.id if creator else None
-        )
+        session = RaclottoSession(key=key, name=key, created_by_user_id=creator.id if creator else None)
         db.session.add(session)
         db.session.commit()
         return session
@@ -90,9 +88,7 @@ class AppTest(unittest.TestCase):
         db.session.commit()
         return ingredient
 
-    def make_pan(
-        self, user: User, session: RaclottoSession, ingredients, minutes_ago: int = 0
-    ) -> Pan:
+    def make_pan(self, user: User, session: RaclottoSession, ingredients, minutes_ago: int = 0) -> Pan:
         pan = Pan(
             name="pan",
             user_id=user.id,
@@ -104,9 +100,7 @@ class AppTest(unittest.TestCase):
         db.session.commit()
         return pan
 
-    def make_invite(
-        self, creator: User, email: str, expires_in_days: int = 7, used: bool = False
-    ) -> InviteToken:
+    def make_invite(self, creator: User, email: str, expires_in_days: int = 7, used: bool = False) -> InviteToken:
         invite = InviteToken(
             token=InviteToken.generate_token(),
             email=email,

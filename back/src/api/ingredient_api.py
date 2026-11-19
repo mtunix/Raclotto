@@ -69,8 +69,9 @@ class IngredientApi(BaseApi):
             )
         return ingredient
 
-    @BaseApi.endpoint("", ["GET"], query=SessionFilterQuery, response=list[IngredientForUserDto],
-                      operation_id="listIngredients")
+    @BaseApi.endpoint(
+        "", ["GET"], query=SessionFilterQuery, response=list[IngredientForUserDto], operation_id="listIngredients"
+    )
     @require_auth
     def list_ingredients(self, query: SessionFilterQuery) -> list[IngredientForUserDto]:
         """List ingredients, optionally of one session, each marked whether the user's diet allows it."""
@@ -81,8 +82,15 @@ class IngredientApi(BaseApi):
         diet = Diet.of(get_current_user())
         return [IngredientForUserDto.of(ingredient, diet) for ingredient in ingredients]
 
-    @BaseApi.endpoint("", ["POST"], query=SessionKeyQuery, body=CreateIngredientBody, response=IngredientDto,
-                      operation_id="createIngredient", errors=(404,))
+    @BaseApi.endpoint(
+        "",
+        ["POST"],
+        query=SessionKeyQuery,
+        body=CreateIngredientBody,
+        response=IngredientDto,
+        operation_id="createIngredient",
+        errors=(404,),
+    )
     @require_auth
     def create_ingredient(self, query: SessionKeyQuery, body: CreateIngredientBody) -> IngredientDto:
         """Add an ingredient to a session."""
@@ -92,15 +100,22 @@ class IngredientApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/<int:ingredient_id>", ["GET"], response=IngredientDto, operation_id="getIngredient",
-                      errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:ingredient_id>", ["GET"], response=IngredientDto, operation_id="getIngredient", errors=(404,)
+    )
     @require_auth
     def get_ingredient(self, ingredient_id: int) -> IngredientDto:
         """Get an ingredient by id."""
         return IngredientDto.model_validate(self._ingredient(ingredient_id))
 
-    @BaseApi.endpoint("/<int:ingredient_id>", ["PATCH"], body=UpdateIngredientBody, response=IngredientDto,
-                      operation_id="updateIngredient", errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:ingredient_id>",
+        ["PATCH"],
+        body=UpdateIngredientBody,
+        response=IngredientDto,
+        operation_id="updateIngredient",
+        errors=(404,),
+    )
     @require_auth
     def update_ingredient(self, ingredient_id: int, body: UpdateIngredientBody) -> IngredientDto:
         """Change an ingredient's name, type, category or properties."""
@@ -110,8 +125,14 @@ class IngredientApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/<int:ingredient_id>", ["DELETE"], query=DeleteIngredientQuery, status=204,
-                      operation_id="deleteIngredient", errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:ingredient_id>",
+        ["DELETE"],
+        query=DeleteIngredientQuery,
+        status=204,
+        operation_id="deleteIngredient",
+        errors=(404,),
+    )
     @require_auth
     def delete_ingredient(self, ingredient_id: int, query: DeleteIngredientQuery) -> None:
         """Mark an ingredient unavailable; it stays in the session and its pans."""
@@ -127,8 +148,14 @@ class IngredientApi(BaseApi):
         IngredientCatalog().set_available(get_current_user(), ingredient, False)
         db.session.commit()
 
-    @BaseApi.endpoint("/refill", ["POST"], body=RefillIngredientBody, response=IngredientDto,
-                      operation_id="refillIngredient", errors=(404,))
+    @BaseApi.endpoint(
+        "/refill",
+        ["POST"],
+        body=RefillIngredientBody,
+        response=IngredientDto,
+        operation_id="refillIngredient",
+        errors=(404,),
+    )
     @require_auth
     def refill_ingredient(self, body: RefillIngredientBody) -> IngredientDto:
         """Mark an ingredient available again."""
@@ -138,8 +165,13 @@ class IngredientApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/available-counts", ["GET"], query=SessionKeyQuery, response=AvailableCountsDto,
-                      operation_id="getAvailableCounts")
+    @BaseApi.endpoint(
+        "/available-counts",
+        ["GET"],
+        query=SessionKeyQuery,
+        response=AvailableCountsDto,
+        operation_id="getAvailableCounts",
+    )
     @require_auth
     def get_available_counts(self, query: SessionKeyQuery) -> AvailableCountsDto:
         """Count a session's available fills and sauces, all of them and those the user's diet allows."""
@@ -157,8 +189,14 @@ class IngredientApi(BaseApi):
             total_sauce_count=count(available, IngredientType.SAUCE),
         )
 
-    @BaseApi.endpoint("/export", ["GET"], query=SessionKeyQuery, response=IngredientExportDto,
-                      operation_id="exportIngredients", errors=(404,))
+    @BaseApi.endpoint(
+        "/export",
+        ["GET"],
+        query=SessionKeyQuery,
+        response=IngredientExportDto,
+        operation_id="exportIngredients",
+        errors=(404,),
+    )
     @require_auth
     def export_ingredients(self, query: SessionKeyQuery) -> IngredientExportDto:
         """Export a session's ingredients, ids included, for a later import or reimport."""
@@ -169,8 +207,16 @@ class IngredientApi(BaseApi):
             ingredients=_dtos(self.repository.by_session(session.key)),
         )
 
-    @BaseApi.endpoint("/import", ["POST"], query=SessionKeyQuery, body=ImportIngredientsBody,
-                      response=IngredientImportDto, status=201, operation_id="importIngredients", errors=(404,))
+    @BaseApi.endpoint(
+        "/import",
+        ["POST"],
+        query=SessionKeyQuery,
+        body=ImportIngredientsBody,
+        response=IngredientImportDto,
+        status=201,
+        operation_id="importIngredients",
+        errors=(404,),
+    )
     @require_auth
     def import_ingredients(self, query: SessionKeyQuery, body: ImportIngredientsBody) -> IngredientImportDto:
         """Add every listed ingredient to a session as a new one."""
@@ -180,8 +226,15 @@ class IngredientApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/reimport", ["POST"], query=SessionKeyQuery, body=ImportIngredientsBody,
-                      response=IngredientReimportDto, operation_id="reimportIngredients", errors=(404,))
+    @BaseApi.endpoint(
+        "/reimport",
+        ["POST"],
+        query=SessionKeyQuery,
+        body=ImportIngredientsBody,
+        response=IngredientReimportDto,
+        operation_id="reimportIngredients",
+        errors=(404,),
+    )
     @require_auth
     def reimport_ingredients(self, query: SessionKeyQuery, body: ImportIngredientsBody) -> IngredientReimportDto:
         """Make a session's catalog the list: update listed ids, create the rest, mark the unlisted unavailable."""
@@ -190,10 +243,20 @@ class IngredientApi(BaseApi):
             result = IngredientCatalog().reimport(get_current_user(), session, _items(body))
         except CatalogError as e:
             if e.kind == CatalogError.OTHER_SESSION:
-                raise ApiError(ApiErrorCode.incorrect_parameters, status=400, title="Mixed sessions", detail=e.detail,
-                               source={"pointer": f"/body/ingredients/{e.index}/session_id"})
-            raise ApiError(ApiErrorCode.resource_not_found, status=404, title="Ingredient not found", detail=e.detail,
-                           source={"pointer": f"/body/ingredients/{e.index}/id"})
+                raise ApiError(
+                    ApiErrorCode.incorrect_parameters,
+                    status=400,
+                    title="Mixed sessions",
+                    detail=e.detail,
+                    source={"pointer": f"/body/ingredients/{e.index}/session_id"},
+                )
+            raise ApiError(
+                ApiErrorCode.resource_not_found,
+                status=404,
+                title="Ingredient not found",
+                detail=e.detail,
+                source={"pointer": f"/body/ingredients/{e.index}/id"},
+            )
         dto = IngredientReimportDto(
             created=result.created,
             updated=result.updated,

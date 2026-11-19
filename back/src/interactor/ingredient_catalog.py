@@ -89,7 +89,8 @@ class IngredientCatalog:
         for index, item in enumerate(items):
             if item.session_id is not None and item.session_id != session.id:
                 raise CatalogError(
-                    CatalogError.OTHER_SESSION, index,
+                    CatalogError.OTHER_SESSION,
+                    index,
                     f"ingredients[{index}] belongs to a different session. "
                     f"All ingredients must belong to session_id {session.id}",
                 )
@@ -98,7 +99,8 @@ class IngredientCatalog:
                 continue
             if item.id not in current_ids:
                 raise CatalogError(
-                    CatalogError.UNKNOWN_INGREDIENT, index,
+                    CatalogError.UNKNOWN_INGREDIENT,
+                    index,
                     f"ingredients[{index}] with id {item.id} does not exist in this session",
                 )
             to_update.append({"id": item.id, **item.fields})

@@ -8,7 +8,7 @@ from back.src.driver.app import App
 from back.src.driver.database import db
 from back.test.support import ConfigTest
 
-INDEX = "<div id=\"root\"></div>"
+INDEX = '<div id="root"></div>'
 
 
 class FrontendTest(unittest.TestCase):

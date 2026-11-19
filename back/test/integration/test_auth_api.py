@@ -58,7 +58,9 @@ class TestLogin(AuthTest):
 
                 self.assertEqual(response.status_code, 401, response.json)
                 [error] = response.json["errors"]
-                self.assertEqual((error["code"], error["title"]), ("api_error_code.invalid_token", "Invalid credentials"))
+                self.assertEqual(
+                    (error["code"], error["title"]), ("api_error_code.invalid_token", "Invalid credentials")
+                )
 
     def test_login_body_is_validated(self):
         self.assertEqual(self.pointers(self.login("ana", "")), ["/body/password"])
@@ -76,7 +78,9 @@ class TestMe(AuthTest):
         self.assertEqual(response.status_code, 200, response.json)
         me = MeDto.model_validate(response.json)
         self.assertEqual(set(response.json), set(MeDto.model_fields))
-        self.assertEqual((me.id, me.email, me.profile_picture, me.language), (self.ana.id, "ana@example.com", "/pics/ana.png", "de"))
+        self.assertEqual(
+            (me.id, me.email, me.profile_picture, me.language), (self.ana.id, "ana@example.com", "/pics/ana.png", "de")
+        )
         self.assertEqual((me.meat, me.vegetarian, me.vegan, me.fish), (False, True, True, False))
         self.assertEqual(me.experience_points, 120)
         assert me.level is not None and me.next_level is not None
@@ -129,7 +133,9 @@ class TestUpdateMe(AuthTest):
         assert me.level is not None
         self.assertEqual(me.level.id, self.levels[1].id)
         stored = self.stored(self.ana.id)
-        self.assertEqual((stored.name, stored.color, stored.language, stored.glow_effect), ("ana b", "#123456", "en", True))
+        self.assertEqual(
+            (stored.name, stored.color, stored.language, stored.glow_effect), ("ana b", "#123456", "en", True)
+        )
 
     def test_omitted_fields_stay(self):
         self.update({"border_style": "dotted"})
@@ -229,13 +235,17 @@ class TestRegister(AuthTest):
         self.assertEqual(response.status_code, 200, response.json)
         result = AuthResultDto.model_validate(response.json)
         ben = self.stored(result.user.id)
-        self.assertEqual((ben.name, ben.email, ben.experience_points, ben.level_id), ("ben", "Ben@Example.com", 0, self.levels[0].id))
+        self.assertEqual(
+            (ben.name, ben.email, ben.experience_points, ben.level_id), ("ben", "Ben@Example.com", 0, self.levels[0].id)
+        )
         self.assertEqual((result.user.name, result.user.profile_picture), ("ben", "/pics/ben.png"))
         assert result.user.level is not None and result.user.next_level is not None
         self.assertEqual((result.user.level.id, result.user.next_level.id), (self.levels[0].id, self.levels[1].id))
         self.assertTrue(db.session.get_one(InviteToken, invite.id).is_used)
         self.assertEqual(self.me_with(result.token).json["id"], ben.id)
-        self.assertEqual(self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw"}).status_code, 200)
+        self.assertEqual(
+            self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw"}).status_code, 200
+        )
 
     def test_the_first_picture_is_the_one_generation_starts_from(self):
         invite = self.make_invite(self.ana, "ben@example.com")
@@ -245,8 +255,10 @@ class TestRegister(AuthTest):
 
         self.assertEqual(changed.status_code, 200, changed.json)
         history = db.session.query(ProfilePictureHistory).filter_by(user_id=result.user.id)
-        self.assertEqual(sorted((h.profile_picture, h.is_candidate) for h in history),
-                         [("/pics/ben.png", True), ("/pics/new.png", False)])
+        self.assertEqual(
+            sorted((h.profile_picture, h.is_candidate) for h in history),
+            [("/pics/ben.png", True), ("/pics/new.png", False)],
+        )
 
     def test_unusable_invites_are_rejected(self):
         used = self.make_invite(self.ana, "ben@example.com", used=True)
@@ -278,8 +290,10 @@ class TestRegister(AuthTest):
         invite = self.make_invite(self.ana, "ben@example.com")
 
         self.assertEqual(self.pointers(self.register(invite, password="")), ["/body/password"])
-        self.assertEqual(self.pointers(self.call("POST", "/auth/register", body={})),
-                         ["/body/token", "/body/email", "/body/name", "/body/password"])
+        self.assertEqual(
+            self.pointers(self.call("POST", "/auth/register", body={})),
+            ["/body/token", "/body/email", "/body/name", "/body/password"],
+        )
 
 
 class TestInviteLookup(AuthTest):

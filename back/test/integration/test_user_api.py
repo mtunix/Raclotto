@@ -31,8 +31,9 @@ class TestUserProfile(AppTest):
         profile = UserProfileDto.model_validate(response.json)
         assert profile.level is not None and profile.next_level is not None
         self.assertEqual((profile.id, profile.name, profile.color), (self.ana.id, "ana", "#00ff00"))
-        self.assertEqual((profile.experience_points, profile.level.id, profile.next_level.id),
-                         (120, levels[1].id, levels[2].id))
+        self.assertEqual(
+            (profile.experience_points, profile.level.id, profile.next_level.id), (120, levels[1].id, levels[2].id)
+        )
         self.assertEqual([a.id for a in profile.achievements], [first.id, second.id])
 
     def test_profile_without_achievements_has_an_empty_list(self):
@@ -70,18 +71,21 @@ class TestUserStats(AppTest):
     def test_a_user_without_pans(self):
         stats = self.stats(self.ana)
 
-        self.assertEqual(stats.model_dump(), {
-            "total_pans": 0,
-            "total_ratings_given": 0,
-            "average_rating_received": 0.0,
-            "favorite_ingredient": None,
-            "best_rated_ingredient": None,
-            "total_achievement_points": 0,
-            "average_ingredients_per_pan": 0.0,
-            "most_pans_session": None,
-            "sessions_participated": 0,
-            "most_ingredients_pan": None,
-        })
+        self.assertEqual(
+            stats.model_dump(),
+            {
+                "total_pans": 0,
+                "total_ratings_given": 0,
+                "average_rating_received": 0.0,
+                "favorite_ingredient": None,
+                "best_rated_ingredient": None,
+                "total_achievement_points": 0,
+                "average_ingredients_per_pan": 0.0,
+                "most_pans_session": None,
+                "sessions_participated": 0,
+                "most_ingredients_pan": None,
+            },
+        )
 
     def test_stats_over_pans_ratings_and_achievements(self):
         big = self.make_pan(self.ana, self.s1, [self.potato, self.leek, self.aioli])
@@ -108,12 +112,14 @@ class TestUserStats(AppTest):
         assert stats.most_ingredients_pan.author is not None
         self.assertEqual(stats.favorite_ingredient.id, self.potato.id)
         self.assertEqual(stats.favorite_ingredient.name, "Potato")
-        self.assertEqual((stats.best_rated_ingredient.ingredient.id, stats.best_rated_ingredient.avg_rating),
-                         (self.leek.id, 5.0))
+        self.assertEqual(
+            (stats.best_rated_ingredient.ingredient.id, stats.best_rated_ingredient.avg_rating), (self.leek.id, 5.0)
+        )
         self.assertEqual(stats.total_achievement_points, achievement.value)
         self.assertEqual(stats.average_ingredients_per_pan, round(7 / 4, 2))
-        self.assertEqual(stats.most_pans_session.model_dump(),
-                         {"session_id": self.s1.id, "session_name": "s1", "pan_count": 3})
+        self.assertEqual(
+            stats.most_pans_session.model_dump(), {"session_id": self.s1.id, "session_name": "s1", "pan_count": 3}
+        )
         self.assertEqual(stats.sessions_participated, 2)
         self.assertEqual(stats.most_ingredients_pan.id, big.id)
         self.assertEqual(len(stats.most_ingredients_pan.ingredients), 3)

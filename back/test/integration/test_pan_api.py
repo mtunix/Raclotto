@@ -85,15 +85,18 @@ class TestPanApi(AppTest):
         [pan] = self.page(session_key="s1").items
 
         assert pan.author is not None
-        self.assertEqual(pan.author.model_dump(), {
-            "id": self.ana.id,
-            "name": "ana",
-            "color": "#00ff00",
-            "profile_picture": "/pics/ana.png",
-            "border_style": "dashed",
-            "border_texture": None,
-            "glow_effect": True,
-        })
+        self.assertEqual(
+            pan.author.model_dump(),
+            {
+                "id": self.ana.id,
+                "name": "ana",
+                "color": "#00ff00",
+                "profile_picture": "/pics/ana.png",
+                "border_style": "dashed",
+                "border_texture": None,
+                "glow_effect": True,
+            },
+        )
 
     def test_author_defaults_cover_missing_and_retired_styles(self):
         self.ben.color = None
@@ -156,10 +159,12 @@ class TestPanApi(AppTest):
 
     def test_get_pan(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
-        db.session.add_all([
-            Rating(rating=4, user_id=self.ben.id, pan_id=pan.id, session_id=self.s1.id),
-            Rating(rating=3, user_id=self.ana.id, pan_id=pan.id, session_id=self.s1.id),
-        ])
+        db.session.add_all(
+            [
+                Rating(rating=4, user_id=self.ben.id, pan_id=pan.id, session_id=self.s1.id),
+                Rating(rating=3, user_id=self.ana.id, pan_id=pan.id, session_id=self.s1.id),
+            ]
+        )
         db.session.commit()
 
         response = self.call("GET", f"/pans/{pan.id}", self.ben)
@@ -215,8 +220,9 @@ class TestPanApi(AppTest):
 
         db.session.expire_all()
         stored = db.session.get_one(Pan, pan.id)
-        self.assertEqual((stored.user_id, stored.session_id, stored.snacked, stored.name),
-                         (self.ana.id, self.s1.id, False, "pan"))
+        self.assertEqual(
+            (stored.user_id, stored.session_id, stored.snacked, stored.name), (self.ana.id, self.s1.id, False, "pan")
+        )
 
     def test_delete_is_204(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])

@@ -33,11 +33,7 @@ class JapanEvaluator(AchievementEvaluator):
             return False
 
         # Get all fill ingredients (exclude sauces)
-        fill_ingredients = [
-            ingredient
-            for ingredient in pan.ingredients
-            if ingredient.type == IngredientType.FILL
-        ]
+        fill_ingredients = [ingredient for ingredient in pan.ingredients if ingredient.type == IngredientType.FILL]
 
         # Must have at least one fill ingredient
         if not fill_ingredients:
@@ -46,9 +42,7 @@ class JapanEvaluator(AchievementEvaluator):
         # All fill ingredients must be fish
         return all(ingredient.fish for ingredient in fill_ingredients)
 
-    def evaluate(
-        self, pan: Pan, user: User, context: EvaluationContext
-    ) -> EvaluationResult:
+    def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
         """
         Check if the pan contains only fish fill ingredients.
 
@@ -65,9 +59,7 @@ class JapanEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(
-        self, user: User, achievement: Achievement, context: EvaluationContext
-    ) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
         """
         Calculate progress - binary achievement, either unlocked or not.
         Checks if user has created any pan with only fish fill ingredients.
@@ -82,9 +74,7 @@ class JapanEvaluator(AchievementEvaluator):
             return 1.0
 
         # Check if user has created any pan with only fish ingredients in the session
-        user_pans_in_session = [
-            pan for pan in context.session_pans if pan.user_id == user.id
-        ]
+        user_pans_in_session = [pan for pan in context.session_pans if pan.user_id == user.id]
 
         for pan in user_pans_in_session:
             if self._pan_has_only_fish(pan):

@@ -23,14 +23,26 @@ class VersionTest(unittest.TestCase):
                 self.assertEqual(str(Version.parse(text)), text)
 
     def test_rejects_anything_else(self):
-        for text in ("2026", "2026.1", "2026.001", "2026.00", "v2026.01", "2026.01A", "2026.01ab", "2026.01-rc", "26.01"):
+        for text in (
+            "2026",
+            "2026.1",
+            "2026.001",
+            "2026.00",
+            "v2026.01",
+            "2026.01A",
+            "2026.01ab",
+            "2026.01-rc",
+            "26.01",
+        ):
             with self.subTest(text=text), self.assertRaises(VersionError):
                 Version.parse(text)
 
     def test_orders_by_year_then_release_then_patch(self):
         tags = ["2027.01", "2026.10", "2026.02b", "2026.02", "2026.02a", "2026.09"]
 
-        self.assertEqual([str(v) for v in releases(tags)], ["2026.02", "2026.02a", "2026.02b", "2026.09", "2026.10", "2027.01"])
+        self.assertEqual(
+            [str(v) for v in releases(tags)], ["2026.02", "2026.02a", "2026.02b", "2026.09", "2026.10", "2027.01"]
+        )
 
     def test_ignores_tags_that_are_not_versions(self):
         self.assertEqual(releases(["v1.0", "2026.01", "deploy-test", ""]), [Version(2026, 1)])

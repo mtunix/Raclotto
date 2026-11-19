@@ -3,7 +3,12 @@ from typing import List, Optional
 
 from pydantic import TypeAdapter
 
-from back.src.interactor.profile_pictures import GeminiImageGenerator, PictureError, ProfilePictures, set_image_generator
+from back.src.interactor.profile_pictures import (
+    GeminiImageGenerator,
+    PictureError,
+    ProfilePictures,
+    set_image_generator,
+)
 from back.src.driver.database import db
 from back.src.dto.profile_picture import GeneratedPictureDto, ProfilePictureDto
 from back.src.entity.profile_picture_history import ProfilePictureHistory
@@ -45,10 +50,14 @@ class ImageApiTest(AppTest):
         set_image_generator(self.previous)
         super().tearDown()
 
-    def add_picture(self, user, picture: Optional[str], minutes_ago: int, candidate: bool = False,
-                    level_id: Optional[int] = None) -> ProfilePictureHistory:
+    def add_picture(
+        self, user, picture: Optional[str], minutes_ago: int, candidate: bool = False, level_id: Optional[int] = None
+    ) -> ProfilePictureHistory:
         entry = ProfilePictureHistory(
-            user_id=user.id, profile_picture=picture, level_id=level_id, is_candidate=candidate,
+            user_id=user.id,
+            profile_picture=picture,
+            level_id=level_id,
+            is_candidate=candidate,
             created_at=datetime.now() - timedelta(minutes=minutes_ago),
         )
         db.session.add(entry)
@@ -73,17 +82,23 @@ class ImageApiTest(AppTest):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual([e["id"] for e in response.json], [new.id, removed.id, old.id])
-        self.assertEqual(response.json[0], {
-            "id": new.id,
-            "profile_picture": "data:image/png;base64,abc",
-            "level_id": self.levels[1].id,
-            "level": {
-                "id": self.levels[1].id, "name": self.levels[1].name, "label_en": self.levels[1].label_en,
-                "label_de": self.levels[1].label_de, "required_experience": self.levels[1].required_experience,
+        self.assertEqual(
+            response.json[0],
+            {
+                "id": new.id,
+                "profile_picture": "data:image/png;base64,abc",
+                "level_id": self.levels[1].id,
+                "level": {
+                    "id": self.levels[1].id,
+                    "name": self.levels[1].name,
+                    "label_en": self.levels[1].label_en,
+                    "label_de": self.levels[1].label_de,
+                    "required_experience": self.levels[1].required_experience,
+                },
+                "created_at": new.created_at.isoformat(),
+                "is_candidate": True,
             },
-            "created_at": new.created_at.isoformat(),
-            "is_candidate": True,
-        })
+        )
         self.assertEqual((response.json[1]["profile_picture"], response.json[1]["level"]), (None, None))
 
     def test_history_of_an_unknown_user_is_404(self):
@@ -104,10 +119,16 @@ class ImageApiTest(AppTest):
         newest = self.history(self.ana)[0]
         self.assertEqual(newest.profile_picture, f"data:image/png;base64,{IMAGE}")
         self.assertEqual(newest.level_id, level.id)
-        self.assertEqual(GeneratedPictureDto.model_validate(response.json), GeneratedPictureDto(
-            id=newest.id, image_base64=IMAGE, mime_type="image/png", level_id=level.id,
-            created_at=newest.created_at,
-        ))
+        self.assertEqual(
+            GeneratedPictureDto.model_validate(response.json),
+            GeneratedPictureDto(
+                id=newest.id,
+                image_base64=IMAGE,
+                mime_type="image/png",
+                level_id=level.id,
+                created_at=newest.created_at,
+            ),
+        )
 
     def test_without_a_level_the_picture_is_for_the_users_level(self):
         response = self.call("POST", "/images/generate-profile-picture", self.ana, body={})
@@ -182,7 +203,9 @@ class ImageApiTest(AppTest):
         response = self.call("POST", f"/images/set-candidate-picture/{second.id}", self.ana)
 
         self.assertEqual((response.status_code, response.get_data()), (204, b""))
-        self.assertEqual([(e.id, e.is_candidate) for e in self.history(self.ana)], [(second.id, True), (first.id, False)])
+        self.assertEqual(
+            [(e.id, e.is_candidate) for e in self.history(self.ana)], [(second.id, True), (first.id, False)]
+        )
 
     def test_only_the_owner_chooses_the_candidate(self):
         picture = self.add_picture(self.ana, "/static/a.png", 10)

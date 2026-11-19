@@ -60,50 +60,94 @@ class LevelsSpecTest(unittest.TestCase):
         self.assertEqual(operation["summary"], "List all levels ordered by required experience.")
         self.assertEqual(operation["security"], [{"bearerAuth": []}])
         self.assertNotIn("parameters", operation)
-        self.assertEqual(operation["responses"], {
-            "200": {"description": "OK", "content": {"application/json": {"schema": {
-                "type": "array", "items": {"$ref": "#/components/schemas/LevelDto"},
-            }}}},
-            "401": _error("Unauthorized"),
-        })
+        self.assertEqual(
+            operation["responses"],
+            {
+                "200": {
+                    "description": "OK",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {"$ref": "#/components/schemas/LevelDto"},
+                            }
+                        }
+                    },
+                },
+                "401": _error("Unauthorized"),
+            },
+        )
 
     def test_get_level(self):
         operation = self.spec["paths"]["/levels/{level_id}"]["get"]
 
         self.assertEqual(operation["operationId"], "getLevel")
-        self.assertEqual(operation["parameters"], [
-            {"name": "level_id", "in": "path", "required": True, "schema": {"type": "integer"}},
-        ])
+        self.assertEqual(
+            operation["parameters"],
+            [
+                {"name": "level_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+            ],
+        )
         self.assertEqual(set(operation["responses"]), {"200", "401", "404"})
         self.assertEqual(operation["responses"]["404"], _error("Not Found"))
 
     def test_level_dto_schema(self):
         schema = self.spec["components"]["schemas"]["LevelDto"]
 
-        self.assertEqual(
-            set(schema["required"]), {"id", "name", "label_en", "label_de", "required_experience"}
-        )
+        self.assertEqual(set(schema["required"]), {"id", "name", "label_en", "label_de", "required_experience"})
 
     def test_every_path_is_in_the_spec(self):
-        self.assertEqual(set(self.spec["paths"]), {
-            "/levels", "/levels/{level_id}",
-            "/pans", "/pans/generate", "/pans/generate/bandit", "/pans/{pan_id}",
-            "/ratings", "/ratings/{rating_id}",
-            "/auth/register", "/auth/login", "/auth/me", "/auth/invite/{token}", "/auth/refresh",
-            "/invites", "/invites/{invite_id}",
-            "/users/{user_id}", "/users/{user_id}/stats",
-            "/sessions", "/sessions/{session_id}", "/sessions/by-key", "/sessions/close", "/sessions/reactivate",
-            "/ingredients", "/ingredients/{ingredient_id}", "/ingredients/refill", "/ingredients/available-counts",
-            "/ingredients/export", "/ingredients/import", "/ingredients/reimport",
-            "/preparation_type", "/preparation_type/{prep_type_id}",
-            "/achievements", "/achievements/{achievement_id}", "/achievements/leaderboard",
-            "/health",
-            "/events", "/events/{event_id}/dismiss", "/events/configs", "/events/configs/{config_id}",
-            "/images/profile-picture-history/{user_id}", "/images/generate-banana",
-            "/images/generate-profile-picture", "/images/set-candidate-picture/{picture_id}",
-            "/insults", "/insults/{insult_id}",
-            "/stats",
-        })
+        self.assertEqual(
+            set(self.spec["paths"]),
+            {
+                "/levels",
+                "/levels/{level_id}",
+                "/pans",
+                "/pans/generate",
+                "/pans/generate/bandit",
+                "/pans/{pan_id}",
+                "/ratings",
+                "/ratings/{rating_id}",
+                "/auth/register",
+                "/auth/login",
+                "/auth/me",
+                "/auth/invite/{token}",
+                "/auth/refresh",
+                "/invites",
+                "/invites/{invite_id}",
+                "/users/{user_id}",
+                "/users/{user_id}/stats",
+                "/sessions",
+                "/sessions/{session_id}",
+                "/sessions/by-key",
+                "/sessions/close",
+                "/sessions/reactivate",
+                "/ingredients",
+                "/ingredients/{ingredient_id}",
+                "/ingredients/refill",
+                "/ingredients/available-counts",
+                "/ingredients/export",
+                "/ingredients/import",
+                "/ingredients/reimport",
+                "/preparation_type",
+                "/preparation_type/{prep_type_id}",
+                "/achievements",
+                "/achievements/{achievement_id}",
+                "/achievements/leaderboard",
+                "/health",
+                "/events",
+                "/events/{event_id}/dismiss",
+                "/events/configs",
+                "/events/configs/{config_id}",
+                "/images/profile-picture-history/{user_id}",
+                "/images/generate-banana",
+                "/images/generate-profile-picture",
+                "/images/set-candidate-picture/{picture_id}",
+                "/insults",
+                "/insults/{insult_id}",
+                "/stats",
+            },
+        )
 
 
 class PansAndRatingsSpecTest(unittest.TestCase):
@@ -122,20 +166,23 @@ class PansAndRatingsSpecTest(unittest.TestCase):
             if path.startswith(("/pans", "/ratings"))
             for method, operation in methods.items()
         }
-        self.assertEqual(operations, {
-            ("/pans/generate", "post"): "rollPan",
-            ("/pans/generate/bandit", "post"): "rollBanditPan",
-            ("/pans", "post"): "createPan",
-            ("/pans", "get"): "listPans",
-            ("/pans/{pan_id}", "get"): "getPan",
-            ("/pans/{pan_id}", "patch"): "updatePan",
-            ("/pans/{pan_id}", "delete"): "deletePan",
-            ("/ratings", "get"): "listRatings",
-            ("/ratings", "post"): "createRating",
-            ("/ratings/{rating_id}", "get"): "getRating",
-            ("/ratings/{rating_id}", "patch"): "updateRating",
-            ("/ratings/{rating_id}", "delete"): "deleteRating",
-        })
+        self.assertEqual(
+            operations,
+            {
+                ("/pans/generate", "post"): "rollPan",
+                ("/pans/generate/bandit", "post"): "rollBanditPan",
+                ("/pans", "post"): "createPan",
+                ("/pans", "get"): "listPans",
+                ("/pans/{pan_id}", "get"): "getPan",
+                ("/pans/{pan_id}", "patch"): "updatePan",
+                ("/pans/{pan_id}", "delete"): "deletePan",
+                ("/ratings", "get"): "listRatings",
+                ("/ratings", "post"): "createRating",
+                ("/ratings/{rating_id}", "get"): "getRating",
+                ("/ratings/{rating_id}", "patch"): "updateRating",
+                ("/ratings/{rating_id}", "delete"): "deleteRating",
+            },
+        )
 
     def test_roll_takes_the_session_key_and_returns_the_outcome(self):
         operation = self.spec["paths"]["/pans/generate"]["post"]
@@ -153,9 +200,13 @@ class PansAndRatingsSpecTest(unittest.TestCase):
         pan = self.schemas["PanDto"]
 
         self.assertEqual(set(pan["required"]), set(pan["properties"]))
-        self.assertEqual(pan["properties"]["author"]["anyOf"], [
-            {"$ref": "#/components/schemas/UserSummaryDto"}, {"type": "null"},
-        ])
+        self.assertEqual(
+            pan["properties"]["author"]["anyOf"],
+            [
+                {"$ref": "#/components/schemas/UserSummaryDto"},
+                {"type": "null"},
+            ],
+        )
 
     def test_patch_body_takes_only_name_and_snacked(self):
         body = self.schemas["UpdatePanBody"]
@@ -187,28 +238,42 @@ class UsersAndAuthSpecTest(unittest.TestCase):
             if path.startswith(("/auth", "/invites", "/users"))
             for method, operation in methods.items()
         }
-        self.assertEqual(operations, {
-            ("/auth/register", "post"): ("register", False),
-            ("/auth/login", "post"): ("login", False),
-            ("/auth/invite/{token}", "get"): ("lookupInvite", False),
-            ("/auth/me", "get"): ("getMe", True),
-            ("/auth/me", "patch"): ("updateMe", True),
-            ("/auth/refresh", "post"): ("refreshToken", True),
-            ("/invites", "post"): ("createInvite", True),
-            ("/invites", "get"): ("listInvites", True),
-            ("/invites/{invite_id}", "delete"): ("revokeInvite", True),
-            ("/users/{user_id}", "get"): ("getUserProfile", True),
-            ("/users/{user_id}/stats", "get"): ("getUserStats", True),
-        })
+        self.assertEqual(
+            operations,
+            {
+                ("/auth/register", "post"): ("register", False),
+                ("/auth/login", "post"): ("login", False),
+                ("/auth/invite/{token}", "get"): ("lookupInvite", False),
+                ("/auth/me", "get"): ("getMe", True),
+                ("/auth/me", "patch"): ("updateMe", True),
+                ("/auth/refresh", "post"): ("refreshToken", True),
+                ("/invites", "post"): ("createInvite", True),
+                ("/invites", "get"): ("listInvites", True),
+                ("/invites/{invite_id}", "delete"): ("revokeInvite", True),
+                ("/users/{user_id}", "get"): ("getUserProfile", True),
+                ("/users/{user_id}/stats", "get"): ("getUserStats", True),
+            },
+        )
 
     def test_public_profile_leaves_out_private_fields(self):
         profile = set(self.schemas["UserProfileDto"]["properties"])
         me = set(self.schemas["MeDto"]["properties"])
 
-        self.assertEqual(me - profile, {
-            "email", "language", "meat", "vegetarian", "vegan", "fish",
-            "histamine", "fructose", "lactose", "gluten",
-        })
+        self.assertEqual(
+            me - profile,
+            {
+                "email",
+                "language",
+                "meat",
+                "vegetarian",
+                "vegan",
+                "fish",
+                "histamine",
+                "fructose",
+                "lactose",
+                "gluten",
+            },
+        )
         self.assertEqual(profile - me, {"achievements"})
 
     def test_update_me_takes_only_optional_known_fields(self):
@@ -241,29 +306,32 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
             if path.startswith(("/sessions", "/ingredients", "/preparation_type"))
             for method, operation in methods.items()
         }
-        self.assertEqual(operations, {
-            ("/sessions", "post"): "createSession",
-            ("/sessions", "get"): "listSessions",
-            ("/sessions/{session_id}", "get"): "getSession",
-            ("/sessions/by-key", "get"): "getSessionByKey",
-            ("/sessions/{session_id}", "patch"): "updateSession",
-            ("/sessions/{session_id}", "delete"): "deleteSession",
-            ("/sessions/close", "post"): "closeSession",
-            ("/sessions/reactivate", "post"): "reactivateSession",
-            ("/ingredients", "get"): "listIngredients",
-            ("/ingredients", "post"): "createIngredient",
-            ("/ingredients/{ingredient_id}", "get"): "getIngredient",
-            ("/ingredients/{ingredient_id}", "patch"): "updateIngredient",
-            ("/ingredients/{ingredient_id}", "delete"): "deleteIngredient",
-            ("/ingredients/refill", "post"): "refillIngredient",
-            ("/ingredients/available-counts", "get"): "getAvailableCounts",
-            ("/ingredients/export", "get"): "exportIngredients",
-            ("/ingredients/import", "post"): "importIngredients",
-            ("/ingredients/reimport", "post"): "reimportIngredients",
-            ("/preparation_type", "get"): "listPreparationTypes",
-            ("/preparation_type", "post"): "createPreparationType",
-            ("/preparation_type/{prep_type_id}", "delete"): "deletePreparationType",
-        })
+        self.assertEqual(
+            operations,
+            {
+                ("/sessions", "post"): "createSession",
+                ("/sessions", "get"): "listSessions",
+                ("/sessions/{session_id}", "get"): "getSession",
+                ("/sessions/by-key", "get"): "getSessionByKey",
+                ("/sessions/{session_id}", "patch"): "updateSession",
+                ("/sessions/{session_id}", "delete"): "deleteSession",
+                ("/sessions/close", "post"): "closeSession",
+                ("/sessions/reactivate", "post"): "reactivateSession",
+                ("/ingredients", "get"): "listIngredients",
+                ("/ingredients", "post"): "createIngredient",
+                ("/ingredients/{ingredient_id}", "get"): "getIngredient",
+                ("/ingredients/{ingredient_id}", "patch"): "updateIngredient",
+                ("/ingredients/{ingredient_id}", "delete"): "deleteIngredient",
+                ("/ingredients/refill", "post"): "refillIngredient",
+                ("/ingredients/available-counts", "get"): "getAvailableCounts",
+                ("/ingredients/export", "get"): "exportIngredients",
+                ("/ingredients/import", "post"): "importIngredients",
+                ("/ingredients/reimport", "post"): "reimportIngredients",
+                ("/preparation_type", "get"): "listPreparationTypes",
+                ("/preparation_type", "post"): "createPreparationType",
+                ("/preparation_type/{prep_type_id}", "delete"): "deletePreparationType",
+            },
+        )
 
     def test_the_ingredient_list_adds_only_applicable(self):
         listed = self.schemas["IngredientForUserDto"]
@@ -275,8 +343,9 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
     def test_create_takes_the_session_in_the_query(self):
         operation = self.spec["paths"]["/ingredients"]["post"]
 
-        self.assertEqual([(p["name"], p["in"], p["required"]) for p in operation["parameters"]],
-                         [("session_key", "query", True)])
+        self.assertEqual(
+            [(p["name"], p["in"], p["required"]) for p in operation["parameters"]], [("session_key", "query", True)]
+        )
         self.assertNotIn("session_key", self.schemas["CreateIngredientBody"]["properties"])
         self.assertEqual(self.schemas["CreateIngredientBody"]["required"], ["name", "type"])
 
@@ -284,22 +353,30 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
         imported = set(self.schemas["ImportedIngredient"]["properties"])
 
         self.assertEqual(imported, set(self.schemas["IngredientDto"]["properties"]))
-        self.assertEqual(self.schemas["ImportIngredientsBody"]["properties"]["ingredients"]["items"],
-                         {"$ref": "#/components/schemas/ImportedIngredient"})
-        self.assertEqual(self.schemas["IngredientExportDto"]["properties"]["ingredients"]["items"],
-                         {"$ref": "#/components/schemas/IngredientDto"})
+        self.assertEqual(
+            self.schemas["ImportIngredientsBody"]["properties"]["ingredients"]["items"],
+            {"$ref": "#/components/schemas/ImportedIngredient"},
+        )
+        self.assertEqual(
+            self.schemas["IngredientExportDto"]["properties"]["ingredients"]["items"],
+            {"$ref": "#/components/schemas/IngredientDto"},
+        )
 
     def test_delete_and_import_statuses(self):
         paths = self.spec["paths"]
 
-        self.assertEqual(paths["/ingredients/{ingredient_id}"]["delete"]["responses"]["204"], {"description": "No Content"})
+        self.assertEqual(
+            paths["/ingredients/{ingredient_id}"]["delete"]["responses"]["204"], {"description": "No Content"}
+        )
         self.assertIn("201", paths["/ingredients/import"]["post"]["responses"])
         self.assertIn("204", paths["/sessions/{session_id}"]["delete"]["responses"])
         self.assertIn("204", paths["/preparation_type/{prep_type_id}"]["delete"]["responses"])
 
     def test_session_timestamp_is_a_date_time(self):
-        self.assertEqual(self.schemas["SessionDto"]["properties"]["timestamp"],
-                         {"format": "date-time", "title": "Timestamp", "type": "string"})
+        self.assertEqual(
+            self.schemas["SessionDto"]["properties"]["timestamp"],
+            {"format": "date-time", "title": "Timestamp", "type": "string"},
+        )
 
 
 class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
@@ -318,26 +395,29 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
             if path.startswith(("/achievements", "/events", "/images", "/insults", "/stats"))
             for method, operation in methods.items()
         }
-        self.assertEqual(operations, {
-            ("/achievements", "get"): ("listAchievements", [200, 401]),
-            ("/achievements/{achievement_id}", "get"): ("getAchievement", [200, 401, 404]),
-            ("/achievements/leaderboard", "get"): ("getLeaderboard", [200, 401]),
-            ("/events", "get"): ("listEvents", [200, 400, 401, 404]),
-            ("/events/{event_id}/dismiss", "post"): ("dismissEvent", [204, 401, 404]),
-            ("/events/configs", "get"): ("listEventConfigs", [200, 400, 401]),
-            ("/events/configs", "post"): ("saveEventConfig", [200, 400, 401, 404]),
-            ("/events/configs/{config_id}", "patch"): ("updateEventConfig", [200, 400, 401, 404]),
-            ("/images/profile-picture-history/{user_id}", "get"): ("getProfilePictureHistory", [200, 401, 404]),
-            ("/images/generate-banana", "post"): ("generateImage", [200, 400, 401, 500]),
-            ("/images/generate-profile-picture", "post"): ("generateProfilePicture", [200, 400, 401, 500]),
-            ("/images/set-candidate-picture/{picture_id}", "post"): ("setCandidatePicture", [204, 401, 403, 404]),
-            ("/insults", "get"): ("listInsults", [200, 401]),
-            ("/insults", "post"): ("createInsult", [200, 400, 401]),
-            ("/insults/{insult_id}", "get"): ("getInsult", [200, 401, 404]),
-            ("/insults/{insult_id}", "patch"): ("updateInsult", [200, 400, 401, 404]),
-            ("/insults/{insult_id}", "delete"): ("deleteInsult", [204, 401, 404]),
-            ("/stats", "get"): ("getStats", [200, 400, 401]),
-        })
+        self.assertEqual(
+            operations,
+            {
+                ("/achievements", "get"): ("listAchievements", [200, 401]),
+                ("/achievements/{achievement_id}", "get"): ("getAchievement", [200, 401, 404]),
+                ("/achievements/leaderboard", "get"): ("getLeaderboard", [200, 401]),
+                ("/events", "get"): ("listEvents", [200, 400, 401, 404]),
+                ("/events/{event_id}/dismiss", "post"): ("dismissEvent", [204, 401, 404]),
+                ("/events/configs", "get"): ("listEventConfigs", [200, 400, 401]),
+                ("/events/configs", "post"): ("saveEventConfig", [200, 400, 401, 404]),
+                ("/events/configs/{config_id}", "patch"): ("updateEventConfig", [200, 400, 401, 404]),
+                ("/images/profile-picture-history/{user_id}", "get"): ("getProfilePictureHistory", [200, 401, 404]),
+                ("/images/generate-banana", "post"): ("generateImage", [200, 400, 401, 500]),
+                ("/images/generate-profile-picture", "post"): ("generateProfilePicture", [200, 400, 401, 500]),
+                ("/images/set-candidate-picture/{picture_id}", "post"): ("setCandidatePicture", [204, 401, 403, 404]),
+                ("/insults", "get"): ("listInsults", [200, 401]),
+                ("/insults", "post"): ("createInsult", [200, 400, 401]),
+                ("/insults/{insult_id}", "get"): ("getInsult", [200, 401, 404]),
+                ("/insults/{insult_id}", "patch"): ("updateInsult", [200, 400, 401, 404]),
+                ("/insults/{insult_id}", "delete"): ("deleteInsult", [204, 401, 404]),
+                ("/stats", "get"): ("getStats", [200, 400, 401]),
+            },
+        )
 
     def test_an_achievement_status_adds_only_unlocked_and_progress(self):
         status = self.schemas["AchievementStatusDto"]
@@ -360,17 +440,22 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
 
         self.assertEqual(stats["pans"]["items"], {"$ref": "#/components/schemas/PanDto"})
         self.assertEqual(stats["ingredients_top_rated"]["items"], {"$ref": "#/components/schemas/IngredientRatingDto"})
-        self.assertEqual(self.schemas["IngredientUsageDto"]["properties"]["ingredient"],
-                         {"$ref": "#/components/schemas/IngredientDto"})
+        self.assertEqual(
+            self.schemas["IngredientUsageDto"]["properties"]["ingredient"],
+            {"$ref": "#/components/schemas/IngredientDto"},
+        )
         self.assertEqual(stats["leaderboard"]["items"], {"$ref": "#/components/schemas/LeaderboardEntryDto"})
 
     def test_picture_history_entries_carry_the_shared_level(self):
         level = self.schemas["ProfilePictureDto"]["properties"]["level"]
 
         self.assertEqual(level["anyOf"], [{"$ref": "#/components/schemas/LevelDto"}, {"type": "null"}])
-        self.assertEqual(self.spec["paths"]["/images/profile-picture-history/{user_id}"]["get"]["responses"]["200"]
-                         ["content"]["application/json"]["schema"],
-                         {"type": "array", "items": {"$ref": "#/components/schemas/ProfilePictureDto"}})
+        self.assertEqual(
+            self.spec["paths"]["/images/profile-picture-history/{user_id}"]["get"]["responses"]["200"]["content"][
+                "application/json"
+            ]["schema"],
+            {"type": "array", "items": {"$ref": "#/components/schemas/ProfilePictureDto"}},
+        )
 
 
 class EveryEndpointTypedTest(unittest.TestCase):
@@ -404,10 +489,13 @@ class ProbeSpecTest(unittest.TestCase):
             [(p["name"], p["in"], p["required"], p["schema"]["type"]) for p in operation["parameters"]],
             [("limit", "query", False, "integer"), ("tags", "query", False, "array")],
         )
-        self.assertEqual(operation["requestBody"], {
-            "required": True,
-            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProbeBody"}}},
-        })
+        self.assertEqual(
+            operation["requestBody"],
+            {
+                "required": True,
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProbeBody"}}},
+            },
+        )
         self.assertEqual(set(operation["responses"]), {"201", "400"})
         self.assertNotIn("security", operation)
 

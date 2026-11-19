@@ -43,8 +43,14 @@ class TestNormalization(unittest.TestCase):
 
     def test_of_reads_and_normalizes_a_user_row(self):
         row = SimpleNamespace(
-            meat=False, vegetarian=False, vegan=False, fish=False,
-            histamine=True, fructose=True, lactose=False, gluten=True,
+            meat=False,
+            vegetarian=False,
+            vegan=False,
+            fish=False,
+            histamine=True,
+            fructose=True,
+            lactose=False,
+            gluten=True,
         )
         diet = Diet.of(row)
         self.assertEqual((diet.vegetarian, diet.vegan, diet.lactose), (True, True, False))

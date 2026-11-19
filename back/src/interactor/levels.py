@@ -41,11 +41,7 @@ class Reward:
 
     @property
     def leveled_up(self) -> bool:
-        return (
-            self.previous_level is not None
-            and self.level is not None
-            and self.level.id != self.previous_level.id
-        )
+        return self.previous_level is not None and self.level is not None and self.level.id != self.previous_level.id
 
 
 class Levels:
@@ -58,11 +54,7 @@ class Levels:
 
     def progress_of(self, user: User) -> LevelProgress:
         """Read-only; levels are stored only on registration and when XP is awarded."""
-        level = (
-            user.level
-            or self._levels.by_experience(int(user.experience_points or 0))
-            or self.starting()
-        )
+        level = user.level or self._levels.by_experience(int(user.experience_points or 0)) or self.starting()
         return LevelProgress(level=level, next_level=self._next(level))
 
     def award(self, user: User, pan: Pan) -> Reward:

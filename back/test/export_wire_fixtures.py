@@ -39,8 +39,13 @@ class _Recorder(AppTest):
     def record(self) -> dict:
         # 95 XP: the next roll crosses into the second level.
         ana = self.make_user(
-            "Ada", experience_points=95, meat=True, color="#ff8800",
-            border_style="dashed", border_texture="cheese", glow_effect=True,
+            "Ada",
+            experience_points=95,
+            meat=True,
+            color="#ff8800",
+            border_style="dashed",
+            border_texture="cheese",
+            glow_effect=True,
         )
         ana.email = "ada@example.com"
         ana.password = hash_password("secret")
@@ -55,10 +60,15 @@ class _Recorder(AppTest):
 
         self.ok(self.call("POST", "/pans/generate", ben, body={"num_fill": 1, "num_sauce": 1}, query=query))
         # Ben's pan rolled just before makes this roll a pan swap.
-        roll = self.ok(self.call(
-            "POST", "/pans/generate", ana,
-            body={"num_fill": 2, "num_sauce": 1, "roll_prep_type": True, "roll_cheese": True}, query=query,
-        ))
+        roll = self.ok(
+            self.call(
+                "POST",
+                "/pans/generate",
+                ana,
+                body={"num_fill": 2, "num_sauce": 1, "roll_prep_type": True, "roll_cheese": True},
+                query=query,
+            )
+        )
         rating = self.ok(self.call("POST", "/ratings", ben, body={"pan_id": roll["pan"]["id"], "rating": 4.5}))
         page = self.ok(self.call("GET", "/pans", ana, query={**query, "limit": 1}))
         login = self.ok(self.call("POST", "/auth/login", body={"name_or_email": "Ada", "password": "secret"}))
@@ -70,31 +80,52 @@ class _Recorder(AppTest):
         session_dto = self.ok(self.call("GET", "/sessions/by-key", ana, query=query))
         sessions = self.ok(self.call("GET", "/sessions", ana))
         prep_types = self.ok(self.call("GET", "/preparation_type", ana, query=query))
-        ingredient = self.ok(self.call(
-            "POST", "/ingredients", ana, body={"name": "Leek", "type": 1, "vegan": True, "spicy": 1}, query=query,
-        ))
+        ingredient = self.ok(
+            self.call(
+                "POST",
+                "/ingredients",
+                ana,
+                body={"name": "Leek", "type": 1, "vegan": True, "spicy": 1},
+                query=query,
+            )
+        )
         # A vegan: the meat and the vegetarian sauce are not for her.
         cleo = self.make_user("Cleo", vegetarian=False)
         ingredients = self.ok(self.call("GET", "/ingredients", cleo, query=query))
         counts = self.ok(self.call("GET", "/ingredients/available-counts", cleo, query=query))
         export = self.ok(self.call("GET", "/ingredients/export", ana, query=query))
-        imported = self.ok(self.call(
-            "POST", "/ingredients/import", ana, body={"ingredients": [{"name": "Corn", "type": 1, "vegan": True}]},
-            query=query,
-        ), status=201)
+        imported = self.ok(
+            self.call(
+                "POST",
+                "/ingredients/import",
+                ana,
+                body={"ingredients": [{"name": "Corn", "type": 1, "vegan": True}]},
+                query=query,
+            ),
+            status=201,
+        )
         kept = [i for i in export["ingredients"] if i["name"] != "Leek"]
-        reimported = self.ok(self.call(
-            "POST", "/ingredients/reimport", ana,
-            body={"ingredients": kept + [{"name": "Chili", "type": 2, "vegan": True, "spicy": 3}]}, query=query,
-        ))
+        reimported = self.ok(
+            self.call(
+                "POST",
+                "/ingredients/reimport",
+                ana,
+                body={"ingredients": kept + [{"name": "Chili", "type": 2, "vegan": True, "spicy": 3}]},
+                query=query,
+            )
+        )
 
         achievements = self.ok(self.call("GET", "/achievements", ana))
         leaderboard = self.ok(self.call("GET", "/achievements/leaderboard", ana))
         events = self.ok(self.call("GET", "/events", ben, query=query))
-        event_config = self.ok(self.call(
-            "POST", "/events/configs", ana,
-            body={"event_type": "pan_swap", "enabled": False, "frequency_minutes": 30, "session_key": session.key},
-        ))
+        event_config = self.ok(
+            self.call(
+                "POST",
+                "/events/configs",
+                ana,
+                body={"event_type": "pan_swap", "enabled": False, "frequency_minutes": 30, "session_key": session.key},
+            )
+        )
         event_configs = self.ok(self.call("GET", "/events/configs", ana, query=query))
         dashboard = self.ok(self.call("GET", "/stats", ana, query=query))
         previous = set_image_generator(_FixedImage())

@@ -79,9 +79,7 @@ class RollOutcome:
     events: List[Event] = field(default_factory=list)
 
 
-def split_columns(
-    total: int, fills_available: int, sauces_available: int, rng: random.Random
-) -> Tuple[int, int]:
+def split_columns(total: int, fills_available: int, sauces_available: int, rng: random.Random) -> Tuple[int, int]:
     """Randomly split ``total`` columns into (fills, sauces).
 
     Never exceeds what is available, never exceeds ``total``, and gives at
@@ -131,9 +129,7 @@ class PanRoll:
     def roll(self, user: User, session_key: str, options: RollOptions) -> RollOutcome:
         return self.roll_into(user, session_key, options, lambda outcome: outcome)
 
-    def roll_into(
-        self, user: User, session_key: str, options: RollOptions, present: Callable[[RollOutcome], T]
-    ) -> T:
+    def roll_into(self, user: User, session_key: str, options: RollOptions, present: Callable[[RollOutcome], T]) -> T:
         try:
             result = present(self._roll(user, session_key, options))
             db.session.commit()
@@ -178,9 +174,7 @@ class PanRoll:
             events=events,
         )
 
-    def _choose_ingredients(
-        self, user: User, session: RaclottoSession, options: RollOptions
-    ) -> List[Ingredient]:
+    def _choose_ingredients(self, user: User, session: RaclottoSession, options: RollOptions) -> List[Ingredient]:
         if options.ingredient_ids is not None:
             return self._picked(session, options.ingredient_ids)
 
@@ -190,17 +184,13 @@ class PanRoll:
 
         if options.total_columns is not None:
             if options.total_columns < 1:
-                raise RollError(
-                    RollError.INVALID_OPTIONS, "total_columns must be at least 1"
-                )
+                raise RollError(RollError.INVALID_OPTIONS, "total_columns must be at least 1")
             if not fills and not sauces:
                 raise RollError(
                     RollError.NO_INGREDIENTS,
                     "No available ingredients found for this session",
                 )
-            num_fill, num_sauce = split_columns(
-                options.total_columns, len(fills), len(sauces), self._rng
-            )
+            num_fill, num_sauce = split_columns(options.total_columns, len(fills), len(sauces), self._rng)
         else:
             num_fill = min(max(options.num_fill if options.num_fill is not None else 3, 0), len(fills))
             num_sauce = min(max(options.num_sauce if options.num_sauce is not None else 2, 0), len(sauces))
@@ -217,17 +207,13 @@ class PanRoll:
         if not ids:
             raise RollError(RollError.INVALID_OPTIONS, "ingredients must be a non-empty list")
         found = (
-            db.session.query(Ingredient)
-            .filter(Ingredient.id.in_(list(ids)), Ingredient.session_id == session.id)
-            .all()
+            db.session.query(Ingredient).filter(Ingredient.id.in_(list(ids)), Ingredient.session_id == session.id).all()
         )
         if not found:
             raise RollError(RollError.NO_INGREDIENTS, "None of the given ingredients exist in this session")
         return found
 
-    def _preparation_type(
-        self, session: RaclottoSession, options: RollOptions
-    ) -> Tuple[Optional[int], bool]:
+    def _preparation_type(self, session: RaclottoSession, options: RollOptions) -> Tuple[Optional[int], bool]:
         if options.roll_preparation_type:
             available = self._prep_types.by_session(session.id)
             if available:
@@ -260,7 +246,5 @@ class PanRoll:
         )
         if not is_member:
             db.session.execute(
-                user_sessions.insert().values(
-                    user_id=user.id, session_id=session.id, joined_at=datetime.now()
-                )
+                user_sessions.insert().values(user_id=user.id, session_id=session.id, joined_at=datetime.now())
             )

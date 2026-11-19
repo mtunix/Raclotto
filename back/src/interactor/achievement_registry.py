@@ -10,9 +10,7 @@ class AchievementRegistry:
     def __init__(self) -> None:
         self._evaluators: Dict[str, AchievementEvaluator] = {}
 
-    def register_evaluator(
-        self, achievement_title: str, evaluator: AchievementEvaluator
-    ) -> None:
+    def register_evaluator(self, achievement_title: str, evaluator: AchievementEvaluator) -> None:
         """
         Register an evaluator for an achievement.
 
@@ -123,9 +121,7 @@ def initialize_registry() -> None:
     _registry.register_evaluator("Last Pan standing", LastPanStandingEvaluator())
     _registry.register_evaluator("Vanilla", VanillaEvaluator())
     _registry.register_evaluator("Pandler", PandlerEvaluator())
-    _registry.register_evaluator(
-        "Survival of the Fittest", SurvivalOfTheFittestEvaluator()
-    )
+    _registry.register_evaluator("Survival of the Fittest", SurvivalOfTheFittestEvaluator())
     _registry.register_evaluator("Pantastic", PantasticEvaluator())
     _registry.register_evaluator("Steakholder", SteakholderEvaluator())
     _registry.register_evaluator("Biotonne", BiotonneEvaluator())

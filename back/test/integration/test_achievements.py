@@ -69,15 +69,11 @@ class TestAchievements(AppTest):
         self.assertNotIn("Connoisseur", titles(outcome.achievements))
 
         existing = self.make_ingredient(self.make_session("s2"), " potato ", FILL)
-        duplicate = self.achievements.record(
-            IngredientAdded(ingredient=existing, user=self.ana, session=self.session)
-        )
+        duplicate = self.achievements.record(IngredientAdded(ingredient=existing, user=self.ana, session=self.session))
         self.assertEqual(duplicate.unlocked_for(self.ana.id), [])
 
         truffle = self.make_ingredient(self.session, "Truffle", FILL)
-        unique = self.achievements.record(
-            IngredientAdded(ingredient=truffle, user=self.ana, session=self.session)
-        )
+        unique = self.achievements.record(IngredientAdded(ingredient=truffle, user=self.ana, session=self.session))
         self.assertEqual(titles(unique.unlocked_for(self.ana.id)), {"Connoisseur"})
 
     def test_rating_judges_the_rater_and_the_pan_owner_separately(self):
@@ -87,17 +83,11 @@ class TestAchievements(AppTest):
         rating = Rating(rating=5, pan_id=big_pan.id, user_id=self.ana.id, session_id=self.session.id)
         db.session.add(rating)
         db.session.commit()
-        changes = self.achievements.record(
-            PanRated(rating=rating, pan=big_pan, rater=self.ana, session=self.session)
-        )
+        changes = self.achievements.record(PanRated(rating=rating, pan=big_pan, rater=self.ana, session=self.session))
 
         # Rating someone's 11-ingredient pan must not count as stacking it yourself.
         self.assertNotIn("Stack Overflow!", titles(changes.unlocked_for(self.ana.id)))
-        progress = (
-            db.session.query(UserAchievementProgress)
-            .filter_by(user_id=self.ana.id)
-            .all()
-        )
+        progress = db.session.query(UserAchievementProgress).filter_by(user_id=self.ana.id).all()
         self.assertTrue(progress, "Local Guide progress is stored for the rater")
 
     def test_king_of_the_sauce_is_lost_when_a_new_sauce_appears(self):
@@ -105,9 +95,7 @@ class TestAchievements(AppTest):
         self.assertIn("King of the Sauce", held(self.ana))
 
         mayo = self.make_ingredient(self.session, "Mayo", SAUCE, vegetarian=True)
-        changes = self.achievements.record(
-            IngredientAdded(ingredient=mayo, user=self.ben, session=self.session)
-        )
+        changes = self.achievements.record(IngredientAdded(ingredient=mayo, user=self.ben, session=self.session))
         db.session.commit()
 
         self.assertEqual(titles(changes.revoked_for(self.ana.id)), {"King of the Sauce"})

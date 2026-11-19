@@ -70,11 +70,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
         :return: ProfilePictureHistory instance or None if no pictures exist
         """
         # First try to get the picture marked as candidate
-        candidate = (
-            db.session.query(ProfilePictureHistory)
-            .filter_by(user_id=user_id, is_candidate=True)
-            .first()
-        )
+        candidate = db.session.query(ProfilePictureHistory).filter_by(user_id=user_id, is_candidate=True).first()
 
         if candidate:
             return candidate

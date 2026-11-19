@@ -58,8 +58,15 @@ class PanApi(BaseApi):
     def _dto(self, pan: Pan) -> PanDto:
         return PanDto.of(pan, self.users.by_id(pan.user_id))
 
-    @BaseApi.endpoint("/generate", ["POST"], query=RollQuery, body=RollPanBody,
-                      response=RollOutcomeDto, operation_id="rollPan", errors=(404,))
+    @BaseApi.endpoint(
+        "/generate",
+        ["POST"],
+        query=RollQuery,
+        body=RollPanBody,
+        response=RollOutcomeDto,
+        operation_id="rollPan",
+        errors=(404,),
+    )
     @require_auth
     def generate(self, query: RollQuery, body: RollPanBody) -> RollOutcomeDto:
         """Roll a pan with a fixed number of fills and sauces."""
@@ -74,8 +81,15 @@ class PanApi(BaseApi):
             ),
         )
 
-    @BaseApi.endpoint("/generate/bandit", ["POST"], query=RollQuery, body=RollBanditPanBody,
-                      response=RollOutcomeDto, operation_id="rollBanditPan", errors=(404,))
+    @BaseApi.endpoint(
+        "/generate/bandit",
+        ["POST"],
+        query=RollQuery,
+        body=RollBanditPanBody,
+        response=RollOutcomeDto,
+        operation_id="rollBanditPan",
+        errors=(404,),
+    )
     @require_auth
     def generate_bandit(self, query: RollQuery, body: RollBanditPanBody) -> RollOutcomeDto:
         """Roll a pan with a random fill/sauce split (bandit mode)."""
@@ -88,8 +102,15 @@ class PanApi(BaseApi):
             ),
         )
 
-    @BaseApi.endpoint("", ["POST"], query=RollQuery, body=CreatePanBody,
-                      response=RollOutcomeDto, operation_id="createPan", errors=(404,))
+    @BaseApi.endpoint(
+        "",
+        ["POST"],
+        query=RollQuery,
+        body=CreatePanBody,
+        response=RollOutcomeDto,
+        operation_id="createPan",
+        errors=(404,),
+    )
     @require_auth
     def create_pan(self, query: RollQuery, body: CreatePanBody) -> RollOutcomeDto:
         """Create a pan from hand-picked ingredients."""
@@ -117,8 +138,9 @@ class PanApi(BaseApi):
         """Get a pan by id."""
         return self._dto(self._pan(pan_id))
 
-    @BaseApi.endpoint("/<int:pan_id>", ["PATCH"], body=UpdatePanBody, response=PanDto, operation_id="updatePan",
-                      errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:pan_id>", ["PATCH"], body=UpdatePanBody, response=PanDto, operation_id="updatePan", errors=(404,)
+    )
     @require_auth
     def update_pan(self, pan_id: int, body: UpdatePanBody) -> PanDto:
         """Rename a pan or mark it eaten."""

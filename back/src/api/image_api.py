@@ -18,8 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 def _unavailable(error: PictureError) -> ApiError:
-    return ApiError(ApiErrorCode.incorrect_parameters, status=500, title="Image generation unavailable",
-                    detail=error.detail)
+    return ApiError(
+        ApiErrorCode.incorrect_parameters, status=500, title="Image generation unavailable", detail=error.detail
+    )
 
 
 def _generated(entry: ProfilePictureHistory) -> GeneratedPictureDto:
@@ -41,8 +42,13 @@ class ImageApi(BaseApi):
         # Asked here so a missing key is logged at startup.
         _ = self.pictures.available
 
-    @BaseApi.endpoint("/profile-picture-history/<int:user_id>", ["GET"], response=list[ProfilePictureDto],
-                      operation_id="getProfilePictureHistory", errors=(404,))
+    @BaseApi.endpoint(
+        "/profile-picture-history/<int:user_id>",
+        ["GET"],
+        response=list[ProfilePictureDto],
+        operation_id="getProfilePictureHistory",
+        errors=(404,),
+    )
     @require_auth
     def get_profile_picture_history(self, user_id: int) -> list[ProfilePictureDto]:
         """List any user's profile pictures, newest first."""
@@ -56,8 +62,14 @@ class ImageApi(BaseApi):
         history = ProfilePictureHistoryRepository().by_user_id(user_id)
         return [ProfilePictureDto.model_validate(entry) for entry in history]
 
-    @BaseApi.endpoint("/generate-banana", ["POST"], body=GenerateImageBody, response=GeneratedPictureDto,
-                      operation_id="generateImage", errors=(500,))
+    @BaseApi.endpoint(
+        "/generate-banana",
+        ["POST"],
+        body=GenerateImageBody,
+        response=GeneratedPictureDto,
+        operation_id="generateImage",
+        errors=(500,),
+    )
     @require_auth
     def generate_banana_image(self, body: GenerateImageBody) -> GeneratedPictureDto:
         """Generate an image from a prompt and save it as the signed-in user's profile picture."""
@@ -67,17 +79,28 @@ class ImageApi(BaseApi):
             if e.kind == PictureError.UNAVAILABLE:
                 raise _unavailable(e)
             if e.kind == PictureError.NO_IMAGE:
-                raise ApiError(ApiErrorCode.incorrect_parameters, status=500, title="No image generated",
-                               detail=e.detail)
+                raise ApiError(
+                    ApiErrorCode.incorrect_parameters, status=500, title="No image generated", detail=e.detail
+                )
             # The generator's exception is logged; its text stays out of the response.
-            raise ApiError(ApiErrorCode.incorrect_parameters, status=500, title="Image generation failed",
-                           detail="Image generation failed. Please try again.")
+            raise ApiError(
+                ApiErrorCode.incorrect_parameters,
+                status=500,
+                title="Image generation failed",
+                detail="Image generation failed. Please try again.",
+            )
         dto = _generated(picture)
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/generate-profile-picture", ["POST"], body=GenerateProfilePictureBody,
-                      response=GeneratedPictureDto, operation_id="generateProfilePicture", errors=(500,))
+    @BaseApi.endpoint(
+        "/generate-profile-picture",
+        ["POST"],
+        body=GenerateProfilePictureBody,
+        response=GeneratedPictureDto,
+        operation_id="generateProfilePicture",
+        errors=(500,),
+    )
     @require_auth
     def generate_profile_picture(self, body: GenerateProfilePictureBody) -> GeneratedPictureDto:
         """Generate the signed-in user's next profile picture from their candidate picture and a level."""
@@ -97,8 +120,13 @@ class ImageApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/set-candidate-picture/<int:picture_id>", ["POST"], status=204,
-                      operation_id="setCandidatePicture", errors=(403, 404))
+    @BaseApi.endpoint(
+        "/set-candidate-picture/<int:picture_id>",
+        ["POST"],
+        status=204,
+        operation_id="setCandidatePicture",
+        errors=(403, 404),
+    )
     @require_auth
     def set_candidate_picture(self, picture_id: int) -> None:
         """Make one of the signed-in user's pictures the one the next generation starts from."""
@@ -106,7 +134,6 @@ class ImageApi(BaseApi):
             self.pictures.choose_candidate(get_current_user(), picture_id)
         except PictureError as e:
             if e.kind == PictureError.NOT_FOUND:
-                raise ApiError(ApiErrorCode.resource_not_found, status=404, title="Picture not found",
-                               detail=e.detail)
+                raise ApiError(ApiErrorCode.resource_not_found, status=404, title="Picture not found", detail=e.detail)
             raise ApiError(ApiErrorCode.incorrect_parameters, status=403, title="Forbidden", detail=e.detail)
         db.session.commit()

@@ -37,31 +37,16 @@ class Ingredient(DomainMixin, Base):
     histamine: Mapped[bool] = mapped_column(default=False)
     fructose: Mapped[bool] = mapped_column(default=False)
     lactose: Mapped[bool] = mapped_column(default=False)
-    
+
     # Additional ingredient properties for XP calculation
     spicy: Mapped[int] = mapped_column(default=0)  # 0-3 spiciness level
     wildcard: Mapped[bool] = mapped_column(default=False)
     sweet: Mapped[bool] = mapped_column(default=False)
 
     __table_args__ = (
-        CheckConstraint(
-            "NOT (meat AND (vegetarian OR vegan OR fish))",
-            name="check_not_meat_and_other_categories"
-        ),
-        CheckConstraint(
-            "NOT (vegetarian AND (vegan OR fish))",
-            name="check_not_vegetarian_and_other_categories"
-        ),
-        CheckConstraint(
-            "NOT (vegan AND fish)",
-            name="check_not_vegan_and_fish"
-        ),
-        CheckConstraint(
-            "vegetarian OR vegan OR meat OR fish",
-            name="check_at_least_one_category"
-        ),
-        CheckConstraint(
-            "spicy >= 0 AND spicy <= 3",
-            name="check_spicy_range"
-        )
+        CheckConstraint("NOT (meat AND (vegetarian OR vegan OR fish))", name="check_not_meat_and_other_categories"),
+        CheckConstraint("NOT (vegetarian AND (vegan OR fish))", name="check_not_vegetarian_and_other_categories"),
+        CheckConstraint("NOT (vegan AND fish)", name="check_not_vegan_and_fish"),
+        CheckConstraint("vegetarian OR vegan OR meat OR fish", name="check_at_least_one_category"),
+        CheckConstraint("spicy >= 0 AND spicy <= 3", name="check_spicy_range"),
     )

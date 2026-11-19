@@ -52,7 +52,8 @@ class StatsApiTest(AppTest):
         )
         self.assertEqual(stats.ingredients_top_rated[1].ingredient, IngredientDto.model_validate(self.potato))
         self.assertEqual(
-            [(u.ingredient.name, u.pan_count) for u in stats.ingredients_most_used][:1], [("Potato", 2)],
+            [(u.ingredient.name, u.pan_count) for u in stats.ingredients_most_used][:1],
+            [("Potato", 2)],
         )
         self.assertEqual({u.ingredient.name for u in stats.ingredients_most_used}, {"Potato", "Leek", "Aioli"})
         self.assertEqual([(e.name, e.rank) for e in stats.leaderboard], [("ana", 1), ("ben", 2)])

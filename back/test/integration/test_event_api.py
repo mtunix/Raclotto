@@ -22,8 +22,12 @@ class EventApiTest(AppTest):
             event_type="pan_swap",
             message="Swap!",
             data={
-                "pan1_id": 1, "pan1_user_id": self.ana.id, "pan1_user_name": "ana",
-                "pan2_id": 2, "pan2_user_id": self.ben.id, "pan2_user_name": "ben",
+                "pan1_id": 1,
+                "pan1_user_id": self.ana.id,
+                "pan1_user_name": "ana",
+                "pan2_id": 2,
+                "pan2_user_id": self.ben.id,
+                "pan2_user_name": "ben",
                 "time_window_minutes": 10,
             },
             created_at=datetime.now() - timedelta(minutes=minutes_ago),
@@ -34,7 +38,9 @@ class EventApiTest(AppTest):
 
     def make_config(self, enabled: bool, session=None, frequency_minutes=None) -> EventConfig:
         config = EventConfig(
-            event_type="pan_swap", enabled=enabled, frequency_minutes=frequency_minutes,
+            event_type="pan_swap",
+            enabled=enabled,
+            frequency_minutes=frequency_minutes,
             session_id=session.id if session else None,
         )
         db.session.add(config)
@@ -99,15 +105,22 @@ class EventApiTest(AppTest):
         [listed] = [c for c in self.configs(session_key="s1") if c.id == own.id]
         self.assertEqual(
             listed.model_dump(),
-            {"id": own.id, "event_type": "pan_swap", "session_id": self.session.id, "enabled": False,
-             "frequency_minutes": 30},
+            {
+                "id": own.id,
+                "event_type": "pan_swap",
+                "session_id": self.session.id,
+                "enabled": False,
+                "frequency_minutes": 30,
+            },
         )
 
     def test_saving_creates_a_session_config_then_changes_it(self):
         body = {"event_type": "pan_swap", "enabled": False, "frequency_minutes": 20, "session_key": "s1"}
 
         created = self.call("POST", "/events/configs", self.ana, body=body)
-        changed = self.call("POST", "/events/configs", self.ana, body={**body, "enabled": True, "frequency_minutes": None})
+        changed = self.call(
+            "POST", "/events/configs", self.ana, body={**body, "enabled": True, "frequency_minutes": None}
+        )
 
         self.assertEqual((created.status_code, changed.status_code), (200, 200))
         self.assertEqual(created.json["id"], changed.json["id"])
@@ -119,8 +132,9 @@ class EventApiTest(AppTest):
     def test_saving_a_session_config_leaves_the_global_one_alone(self):
         global_config = self.make_config(enabled=True)
 
-        response = self.call("POST", "/events/configs", self.ana,
-                             body={"event_type": "pan_swap", "enabled": False, "session_key": "s1"})
+        response = self.call(
+            "POST", "/events/configs", self.ana, body={"event_type": "pan_swap", "enabled": False, "session_key": "s1"}
+        )
 
         self.assertEqual(response.status_code, 200, response.json)
         self.assertNotEqual(response.json["id"], global_config.id)

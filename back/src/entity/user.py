@@ -25,9 +25,7 @@ user_achievements = Table(
     "user_achievements",
     Base.metadata,
     Column("user_id", ForeignKey("user.id"), primary_key=True, nullable=False),
-    Column(
-        "achievement_id", ForeignKey("achievement.id"), primary_key=True, nullable=False
-    ),
+    Column("achievement_id", ForeignKey("achievement.id"), primary_key=True, nullable=False),
 )
 
 user_event_dismissals = Table(
@@ -66,9 +64,7 @@ class User(Base):
     border_texture: Mapped[str | None] = mapped_column(
         default=None
     )  # Texture name: cheese, bread, crispy, sauce, grilled, herbs, spices, or null
-    glow_effect: Mapped[bool | None] = mapped_column(
-        default=False
-    )  # Card glow effect (unlocked at level 7)
+    glow_effect: Mapped[bool | None] = mapped_column(default=False)  # Card glow effect (unlocked at level 7)
 
     # Leveling system
     experience_points: Mapped[int] = mapped_column(default=0)
@@ -96,8 +92,6 @@ class User(Base):
         """Get the latest profile picture URL from history, or None if no history exists."""
         if self.profile_picture_history:
             # Sort by created_at descending and get the first (most recent)
-            latest = sorted(
-                self.profile_picture_history, key=lambda x: x.created_at, reverse=True
-            )
+            latest = sorted(self.profile_picture_history, key=lambda x: x.created_at, reverse=True)
             return latest[0].profile_picture if latest else None
         return None

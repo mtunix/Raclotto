@@ -37,7 +37,9 @@ class TestPreparationTypeApi(AppTest):
 
         self.assertEqual(set(response.json[0]), set(PrepTypeDto.model_fields))
         self.assertEqual({p["session_id"] for p in response.json}, {None, self.s1.id})
-        self.assertEqual(self.call("GET", "/preparation_type", self.ana, query={"session_key": "nope"}).status_code, 404)
+        self.assertEqual(
+            self.call("GET", "/preparation_type", self.ana, query={"session_key": "nope"}).status_code, 404
+        )
         self.assertEqual(self.call("GET", "/preparation_type").status_code, 401)
 
     def test_create_adds_to_the_session(self):

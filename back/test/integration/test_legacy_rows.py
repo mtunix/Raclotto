@@ -56,9 +56,11 @@ class TestNullNames(AppTest):
     def test_rolls_succeed_next_to_nameless_rows(self):
         self.make_ingredient(self.session, "Potato")
         # Random rolls skip nameless ingredients; only a hand-picked pan takes one.
-        for path, body, names in (("/pans", {"ingredients": [self.nameless.id]}, [None]),
-                                  ("/pans/generate", {"num_fill": 1, "num_sauce": 0}, ["Potato"]),
-                                  ("/pans/generate/bandit", {"total_columns": 1}, ["Potato"])):
+        for path, body, names in (
+            ("/pans", {"ingredients": [self.nameless.id]}, [None]),
+            ("/pans/generate", {"num_fill": 1, "num_sauce": 0}, ["Potato"]),
+            ("/pans/generate/bandit", {"total_columns": 1}, ["Potato"]),
+        ):
             with self.subTest(path=path):
                 response = self.call("POST", path, self.ana, body=body, query={"session_key": "s1"})
                 self.assertEqual(response.status_code, 200, response.json)
@@ -115,8 +117,11 @@ class TestLegacyEventTypes(AppTest):
 
     def test_events_of_unknown_types_or_shapes_are_listed(self):
         for event_type, data in (("rain", None), ("rain", {"mm": 3}), ("pan_swap", {"pan1_id": 1})):
-            db.session.add(Event(session_id=self.session.id, event_type=event_type, message="m", data=data,
-                                 created_at=datetime.now()))
+            db.session.add(
+                Event(
+                    session_id=self.session.id, event_type=event_type, message="m", data=data, created_at=datetime.now()
+                )
+            )
         db.session.commit()
 
         response = self.call("GET", "/events", self.ana, query={"session_key": "s1"})
@@ -170,8 +175,9 @@ class TestResponseBuiltBeforeCommit(AppTest):
         self.assertFalse(self.stored(Ingredient, self.odd.id).available)
 
     def test_rolling_a_pan(self):
-        response = self.call("POST", "/pans", self.ana, body={"ingredients": [self.odd.id]},
-                             query={"session_key": "s1"})
+        response = self.call(
+            "POST", "/pans", self.ana, body={"ingredients": [self.odd.id]}, query={"session_key": "s1"}
+        )
 
         self.assertEqual(response.status_code, 500)
         user = self.stored(User, self.ana.id)

@@ -82,8 +82,10 @@ class ErrorStatusRulesTest(unittest.TestCase):
         self.assertEqual(self.statuses("/things/lookup/{token}", "get"), ["200", "400"])
         self.assertEqual(
             self.spec["paths"]["/things/{thing_id}/declared"]["get"]["responses"]["409"],
-            {"description": "Conflict",
-             "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponseDto"}}}},
+            {
+                "description": "Conflict",
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponseDto"}}},
+            },
         )
 
     def test_request_dtos_imply_400(self):
@@ -160,8 +162,9 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         self.assert_answers(
             "rollPan",
             self.call("POST", "/pans/generate", body={}, query={"session_key": "s1"}),
-            self.call("POST", "/pans/generate", self.ana, body={"num_fill": 0, "num_sauce": 0},
-                      query={"session_key": "s1"}),
+            self.call(
+                "POST", "/pans/generate", self.ana, body={"num_fill": 0, "num_sauce": 0}, query={"session_key": "s1"}
+            ),
             self.call("POST", "/pans/generate", self.ana, body={}, query={"session_key": "nope"}),
         )
 
@@ -210,8 +213,13 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             self.call("POST", "/ingredients/reimport", body={"ingredients": []}, query=query),
             self.call("POST", "/ingredients/reimport", self.ana, body={}, query=query),
             self.call("POST", "/ingredients/reimport", self.ana, body={"ingredients": []}, query={"session_key": "x"}),
-            self.call("POST", "/ingredients/reimport", self.ana, query=query,
-                      body={"ingredients": [{"id": 999, "name": "x", "type": 1, "vegan": True}]}),
+            self.call(
+                "POST",
+                "/ingredients/reimport",
+                self.ana,
+                query=query,
+                body={"ingredients": [{"id": 999, "name": "x", "type": 1, "vegan": True}]},
+            ),
         )
 
     def test_delete_preparation_type(self):
@@ -239,8 +247,12 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             "saveEventConfig",
             self.call("POST", "/events/configs", body={"event_type": "pan_swap", "enabled": True}),
             self.call("POST", "/events/configs", self.ana, body={"event_type": "rain", "enabled": True}),
-            self.call("POST", "/events/configs", self.ana,
-                      body={"event_type": "pan_swap", "enabled": True, "session_key": "nope"}),
+            self.call(
+                "POST",
+                "/events/configs",
+                self.ana,
+                body={"event_type": "pan_swap", "enabled": True, "session_key": "nope"},
+            ),
         )
 
     def test_generate_profile_picture(self):

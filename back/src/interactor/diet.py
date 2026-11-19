@@ -65,9 +65,5 @@ class Diet:
         from back.src.entity.ingredient import Ingredient
 
         diet = self.normalized()
-        excluded = [
-            not_(getattr(Ingredient, flag))
-            for flag in CATEGORIES + SUBSTANCES
-            if not getattr(diet, flag)
-        ]
+        excluded = [not_(getattr(Ingredient, flag)) for flag in CATEGORIES + SUBSTANCES if not getattr(diet, flag)]
         return and_(true(), *excluded)

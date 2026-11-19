@@ -282,4 +282,3 @@ class TestServe(ServerTest):
         self.assertEqual(calls, [{"host": "127.0.0.1", "port": 9000}])
         self.assertTrue(app.debug)
         self.assertEqual(app.config["JWT_SECRET_KEY"], DEV_JWT_SECRET)
-

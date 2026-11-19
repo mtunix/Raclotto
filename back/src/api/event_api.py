@@ -25,12 +25,13 @@ class EventApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Session not found",
-                detail="The specified session does not exist"
+                detail="The specified session does not exist",
             )
         return session
 
-    @BaseApi.endpoint("", ["GET"], query=SessionKeyQuery, response=list[EventDto], operation_id="listEvents",
-                      errors=(404,))
+    @BaseApi.endpoint(
+        "", ["GET"], query=SessionKeyQuery, response=list[EventDto], operation_id="listEvents", errors=(404,)
+    )
     @require_auth
     def get_events(self, query: SessionKeyQuery) -> list[EventDto]:
         """List a session's events the signed-in user has not dismissed, newest first."""
@@ -46,12 +47,13 @@ class EventApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Event not found",
-                detail="The specified event does not exist or has already been dismissed"
+                detail="The specified event does not exist or has already been dismissed",
             )
         db.session.commit()
 
-    @BaseApi.endpoint("/configs", ["GET"], query=SessionFilterQuery, response=list[EventConfigDto],
-                      operation_id="listEventConfigs")
+    @BaseApi.endpoint(
+        "/configs", ["GET"], query=SessionFilterQuery, response=list[EventConfigDto], operation_id="listEventConfigs"
+    )
     @require_auth
     def get_event_configs(self, query: SessionFilterQuery) -> list[EventConfigDto]:
         """List the global event configs and the session's own; without a known session, every config."""
@@ -59,8 +61,14 @@ class EventApi(BaseApi):
         configs = self.events.configs(session)
         return [EventConfigDto.model_validate(config) for config in configs]
 
-    @BaseApi.endpoint("/configs", ["POST"], body=SaveEventConfigBody, response=EventConfigDto,
-                      operation_id="saveEventConfig", errors=(404,))
+    @BaseApi.endpoint(
+        "/configs",
+        ["POST"],
+        body=SaveEventConfigBody,
+        response=EventConfigDto,
+        operation_id="saveEventConfig",
+        errors=(404,),
+    )
     @require_auth
     def create_event_config(self, body: SaveEventConfigBody) -> EventConfigDto:
         """Create or change the config of an event type, the session's own or the global one."""
@@ -70,8 +78,14 @@ class EventApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/configs/<int:config_id>", ["PATCH"], body=UpdateEventConfigBody, response=EventConfigDto,
-                      operation_id="updateEventConfig", errors=(404,))
+    @BaseApi.endpoint(
+        "/configs/<int:config_id>",
+        ["PATCH"],
+        body=UpdateEventConfigBody,
+        response=EventConfigDto,
+        operation_id="updateEventConfig",
+        errors=(404,),
+    )
     @require_auth
     def update_event_config(self, config_id: int, body: UpdateEventConfigBody) -> EventConfigDto:
         """Change an event config by id."""
@@ -81,7 +95,7 @@ class EventApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Configuration not found",
-                detail="The specified configuration does not exist"
+                detail="The specified configuration does not exist",
             )
         for field in body.model_fields_set:
             setattr(config, field, getattr(body, field))

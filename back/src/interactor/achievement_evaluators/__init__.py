@@ -5,9 +5,9 @@ from .local_guide_evaluator import LocalGuideEvaluator
 from .king_of_the_sauce_evaluator import KingOfTheSauceEvaluator
 
 __all__ = [
-    'PlaceholderEvaluator',
-    'StackOverflowEvaluator',
-    'FirstBloodEvaluator',
-    'LocalGuideEvaluator',
-    'KingOfTheSauceEvaluator',
+    "PlaceholderEvaluator",
+    "StackOverflowEvaluator",
+    "FirstBloodEvaluator",
+    "LocalGuideEvaluator",
+    "KingOfTheSauceEvaluator",
 ]

@@ -30,8 +30,7 @@ def migrate(db: SQLAlchemy) -> None:
         missing = missing_columns(db, connection)
     if missing:
         raise SchemaDriftError(
-            "The database is missing columns the models need; add a migration for: "
-            + ", ".join(missing)
+            "The database is missing columns the models need; add a migration for: " + ", ".join(missing)
         )
 
 

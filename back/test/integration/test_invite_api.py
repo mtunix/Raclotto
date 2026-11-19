@@ -14,7 +14,9 @@ class TestInviteApi(AppTest):
 
     def stored(self) -> list:
         db.session.expire_all()
-        return [(i.email, i.created_by_user_id, i.is_used) for i in db.session.query(InviteToken).order_by(InviteToken.id)]
+        return [
+            (i.email, i.created_by_user_id, i.is_used) for i in db.session.query(InviteToken).order_by(InviteToken.id)
+        ]
 
     def test_any_signed_in_user_creates_invites(self):
         response = self.call("POST", "/invites", self.ben, body={"email": "carl@example.com"})

@@ -8,6 +8,7 @@ Revision ID: 8f3c2a1d5b7e
 Revises:
 Create Date: 2026-11-18
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -64,11 +65,7 @@ def upgrade() -> None:
     level = sa.table("level", sa.column("name", sa.String), *(sa.column(n, sa.String) for n in missing))
     for name, (label_en, label_de) in LABELS.items():
         values = {"label_en": label_en, "label_de": label_de}
-        op.execute(
-            level.update()
-            .where(level.c.name == name)
-            .values({column: values[column] for column in missing})
-        )
+        op.execute(level.update().where(level.c.name == name).values({column: values[column] for column in missing}))
     # Levels outside the default set still need a readable label.
     for column in missing:
         op.execute(level.update().where(level.c[column] == "").values({column: level.c.name}))

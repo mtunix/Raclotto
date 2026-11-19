@@ -43,12 +43,19 @@ class EventsTest(AppTest):
 
     def rolled(self, user=None, minutes_ago: int = 0) -> PanRolled:
         user = user or self.ana
-        return PanRolled(pan=self.make_pan(user, self.session, [self.potato], minutes_ago), user=user,
-                         session=self.session)
+        return PanRolled(
+            pan=self.make_pan(user, self.session, [self.potato], minutes_ago), user=user, session=self.session
+        )
 
     def configure(self, enabled: bool, session=None, frequency_minutes=None) -> None:
-        db.session.add(EventConfig(event_type="always", enabled=enabled, frequency_minutes=frequency_minutes,
-                                   session_id=session.id if session else None))
+        db.session.add(
+            EventConfig(
+                event_type="always",
+                enabled=enabled,
+                frequency_minutes=frequency_minutes,
+                session_id=session.id if session else None,
+            )
+        )
         db.session.commit()
 
     def test_a_fired_event_is_stored_for_the_session(self):
@@ -71,7 +78,9 @@ class EventsTest(AppTest):
         events = Events([Always()], clock=self.clock)
 
         self.assertEqual(events.record(self.rolled()), [])
-        self.assertEqual(len(events.record(PanRolled(self.make_pan(self.ana, other, [self.potato]), self.ana, other))), 1)
+        self.assertEqual(
+            len(events.record(PanRolled(self.make_pan(self.ana, other, [self.potato]), self.ana, other))), 1
+        )
 
     def test_an_event_waits_out_its_cooldown(self):
         events = Events([Always()], clock=self.clock)

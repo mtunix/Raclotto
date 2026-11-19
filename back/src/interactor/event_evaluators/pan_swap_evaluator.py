@@ -19,7 +19,8 @@ class PanSwapEvaluator(EventEvaluator):
         pan = fact.pan
         rolled_at = pan.timestamp or datetime.now()
         nearby = [
-            p for p in PanRepository().by_session(fact.session.key)
+            p
+            for p in PanRepository().by_session(fact.session.key)
             if p.id != pan.id and p.timestamp and abs(p.timestamp - rolled_at) <= self.window
         ]
         if not nearby:

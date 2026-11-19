@@ -55,9 +55,7 @@ class App(Flask):
             app_context.push()
 
         self.init_mikado_api()
-        self.add_url_rule(
-            rule="/", defaults={"path": ""}, view_func=self.serve, methods=["GET"]
-        )
+        self.add_url_rule(rule="/", defaults={"path": ""}, view_func=self.serve, methods=["GET"])
         self.add_url_rule(rule="/<path:path>", view_func=self.serve, methods=["GET"])
 
         self.init_logging()
@@ -125,9 +123,7 @@ class App(Flask):
             )
             self.db.session.add(default_prep_type)
             self.db.session.commit()
-            logging.info(
-                f"Default preparation type '{default_name}' created successfully"
-            )
+            logging.info(f"Default preparation type '{default_name}' created successfully")
 
     def init_achievements(self) -> None:
         """Initialize achievements from default_data if they don't exist."""
@@ -207,16 +203,10 @@ class App(Flask):
 
         # Also update existing levels if their data changed
         for level_data in LEVELS:
-            existing = (
-                level_repository.by_id(level_data.id)
-                if hasattr(level_data, "id")
-                else None
-            )
+            existing = level_repository.by_id(level_data.id) if hasattr(level_data, "id") else None
             if not existing:
                 # Try to find by name
-                existing = next(
-                    (l for l in existing_levels if l.name == level_data.name), None
-                )
+                existing = next((l for l in existing_levels if l.name == level_data.name), None)
             if existing:
                 # Update required_experience if it differs
                 if existing.required_experience != level_data.required_experience:
@@ -229,9 +219,7 @@ class App(Flask):
         if log_file:
             log_format_str = "%(asctime)s - %(levelname)s - p%(process)s - %(pathname)s:%(lineno)d - %(message)s"
             file_handler = _LazyFileHandler(Path(self.instance_path) / log_file)
-            file_handler.setFormatter(
-                logging.Formatter(log_format_str, "%d.%m.%y %H:%M:%S")
-            )
+            file_handler.setFormatter(logging.Formatter(log_format_str, "%d.%m.%y %H:%M:%S"))
             self.logger.addHandler(file_handler)
 
         self.logger.setLevel(logging.DEBUG)

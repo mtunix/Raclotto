@@ -8,7 +8,19 @@ from enum import Enum, auto
 from functools import wraps
 from http import HTTPStatus
 from typing import (
-    Any, Callable, Dict, Iterator, List, Optional, ParamSpec, Sequence, Tuple, TypeVar, Union, get_args, get_origin,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    ParamSpec,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
 )
 from flask import Blueprint, Response, current_app, typing as ft, request, jsonify
 from flask.views import View
@@ -34,13 +46,19 @@ class ApiErrorCode(Enum):
     internal_error = auto()
 
 
-ERROR_FIELDS = ('id_', 'status', 'code', 'title', 'detail', 'source')
+ERROR_FIELDS = ("id_", "status", "code", "title", "detail", "source")
 
 
 class ApiError(Exception):
-    def __init__(self, code: Enum, id_: Optional[uuid.UUID] = None,
-                 status: int = 400, title: Optional[str] = None, detail: Optional[str] = None,
-                 source: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        code: Enum,
+        id_: Optional[uuid.UUID] = None,
+        status: int = 400,
+        title: Optional[str] = None,
+        detail: Optional[str] = None,
+        source: Optional[Dict[str, str]] = None,
+    ):
         super(ApiError, self).__init__()
         self.code = str_code_from_enum(code)
         self.id_ = id_ if id_ is not None else uuid.uuid4()
@@ -99,9 +117,16 @@ class TypedEndpoint:
     adapter: Optional[TypeAdapter[Any]] = field(default=None, compare=False, repr=False)
 
     @classmethod
-    def declare(cls, methods: List[str], query: Optional[type[BaseModel]], body: Optional[type[BaseModel]],
-                response: Any, status: int, operation_id: Optional[str],
-                errors: Sequence[int] = ()) -> TypedEndpoint:
+    def declare(
+        cls,
+        methods: List[str],
+        query: Optional[type[BaseModel]],
+        body: Optional[type[BaseModel]],
+        response: Any,
+        status: int,
+        operation_id: Optional[str],
+        errors: Sequence[int] = (),
+    ) -> TypedEndpoint:
         if len(methods) != 1:
             raise ValueError(f"an endpoint serves exactly one method, got {methods}")
         if (response is None) != (status == 204):
@@ -138,15 +163,15 @@ class TypedEndpoint:
                 ApiErrorCode.incorrect_header,
                 status=415,
                 title="Unsupported Media Type",
-                detail="Content-Type must be application/json"
+                detail="Content-Type must be application/json",
             )
         # A missing Accept header accepts anything.
-        if request.headers.get('Accept') and request.accept_mimetypes.best_match([JSON_MIMETYPE]) is None:
+        if request.headers.get("Accept") and request.accept_mimetypes.best_match([JSON_MIMETYPE]) is None:
             raise ApiError(
                 ApiErrorCode.incorrect_header,
                 status=406,
                 title="Not Acceptable",
-                detail="Accept header must allow application/json"
+                detail="Accept header must allow application/json",
             )
 
     def parse_request(self) -> Dict[str, BaseModel]:
@@ -259,6 +284,7 @@ def _routed_endpoint() -> Callable[..., Any]:
 
 def catch_integrity_errors(session: scoped_session[Any]) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Answer 409 when a write breaks a database constraint (a taken name, a duplicate)."""
+
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -275,12 +301,15 @@ def catch_integrity_errors(session: scoped_session[Any]) -> Callable[[Callable[P
                 # The database's message names tables and values; only the log gets it.
                 logging.warning("Integrity error %s: %s", error.id_, e)
                 raise error from e
+
         return wrapper
+
     return decorator
 
 
 def catch_processing_exceptions(func: Callable[P, R]) -> Callable[P, R]:
     """Decorator to catch processing exceptions."""
+
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
@@ -297,6 +326,7 @@ def catch_processing_exceptions(func: Callable[P, R]) -> Callable[P, R]:
             )
             logging.error("Unexpected error %s: %s", error.id_, e, exc_info=True)
             raise error from e
+
     return wrapper
 
 
@@ -326,6 +356,7 @@ class BaseApi(View):
     @staticmethod
     def typed_wrapper(func: Callable[..., Any], typed: TypedEndpoint) -> Callable[..., Response]:
         """Validates the request into DTOs, calls the handler and renders its DTO as plain JSON."""
+
         @wraps(func)
         def new_func(api: BaseApi, **kwargs: Any) -> Response:
             typed.check_media_types()
@@ -347,21 +378,19 @@ class BaseApi(View):
         blueprint_name = un_camel_case(cls.__name__)
         api = Blueprint(blueprint_name, __name__, url_prefix=cls.url_prefix)
         view = cls.as_view(blueprint_name)
-        
+
         for e in cls.get_api_endpoints():
             route = getattr(e, cls.route_marker)
             methods = getattr(e, cls.method_marker)
-            api.add_url_rule(
-                route, endpoint=e.__name__, view_func=view, methods=methods
-            )
+            api.add_url_rule(route, endpoint=e.__name__, view_func=view, methods=methods)
             cls.endpoints[f"{blueprint_name}.{e.__name__}"] = e
-        
+
         return api
-    
+
     def get_endpoint(self) -> Callable[..., Any]:
         """Get the endpoint function from request."""
         return _routed_endpoint()
-    
+
     @classmethod
     def get_api_endpoints(cls) -> Iterator[Callable[..., Any]]:
         """Yields all methods of cls which have the route_marker attribute."""
@@ -369,11 +398,20 @@ class BaseApi(View):
             f = getattr(cls, func)
             if callable(f) and hasattr(f, cls.route_marker):
                 yield f
-    
+
     @classmethod
-    def endpoint(cls, route: str, methods: List[str], *, query: Optional[type[BaseModel]] = None,
-                 body: Optional[type[BaseModel]] = None, response: Any = None, status: int = 200,
-                 operation_id: Optional[str] = None, errors: Sequence[int] = ()) -> Callable[[Handler], Handler]:
+    def endpoint(
+        cls,
+        route: str,
+        methods: List[str],
+        *,
+        query: Optional[type[BaseModel]] = None,
+        body: Optional[type[BaseModel]] = None,
+        response: Any = None,
+        status: int = 200,
+        operation_id: Optional[str] = None,
+        errors: Sequence[int] = (),
+    ) -> Callable[[Handler], Handler]:
         """Decorator to mark a method as endpoint; it must declare `response=` or `status=204`.
 
         The handler gets `query=`/`body=` as validated DTOs, returns the response DTO and appears
@@ -393,15 +431,15 @@ class BaseApi(View):
 
 def init_api_rules(apis: Sequence[type[BaseApi]], session: scoped_session[Any]) -> Blueprint:
     """Initialize API rules and register blueprints.
-    
+
     :param apis: List of API classes
     :param session: Database session
     :return: Blueprint with all APIs registered
     """
     BaseApi.session = session
-    
+
     api_rules = Blueprint("api_rules", __name__, url_prefix="/api")
     for api in apis:
         api_rules.register_blueprint(api.get_blueprint())
-    
+
     return api_rules

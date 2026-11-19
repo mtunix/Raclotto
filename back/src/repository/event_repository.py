@@ -36,10 +36,14 @@ class EventRepository(BaseRepository[Event]):
         """False when the event does not exist or the user dismissed it already."""
         if self.by_id(event_id) is None:
             return False
-        dismissed = db.session.query(user_event_dismissals).filter(
-            user_event_dismissals.c.user_id == user_id,
-            user_event_dismissals.c.event_id == event_id,
-        ).first()
+        dismissed = (
+            db.session.query(user_event_dismissals)
+            .filter(
+                user_event_dismissals.c.user_id == user_id,
+                user_event_dismissals.c.event_id == event_id,
+            )
+            .first()
+        )
         if dismissed:
             return False
         db.session.execute(user_event_dismissals.insert().values(user_id=user_id, event_id=event_id))

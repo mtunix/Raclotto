@@ -21,7 +21,7 @@ class RatingApi(BaseApi):
             ApiErrorCode.resource_not_found,
             status=404,
             title="Rating not found",
-            detail="The specified rating does not exist"
+            detail="The specified rating does not exist",
         )
 
     def _rating(self, rating_id: int) -> Rating:
@@ -40,8 +40,9 @@ class RatingApi(BaseApi):
             ratings = self.repository.all()
         return [RatingDto.model_validate(rating) for rating in ratings]
 
-    @BaseApi.endpoint("", ["POST"], body=CreateRatingBody, response=RatingDto, operation_id="createRating",
-                      errors=(404,))
+    @BaseApi.endpoint(
+        "", ["POST"], body=CreateRatingBody, response=RatingDto, operation_id="createRating", errors=(404,)
+    )
     @require_auth
     def create_rating(self, body: CreateRatingBody) -> RatingDto:
         """Rate a pan as the signed-in user, or change the rating they gave it."""
@@ -51,7 +52,7 @@ class RatingApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Pan not found",
-                detail="The specified pan does not exist"
+                detail="The specified pan does not exist",
             )
         rating = PanRatings().rate(get_current_user(), pan, body.rating)
         dto = RatingDto.model_validate(rating)
@@ -64,8 +65,14 @@ class RatingApi(BaseApi):
         """Get a rating by id."""
         return RatingDto.model_validate(self._rating(rating_id))
 
-    @BaseApi.endpoint("/<int:rating_id>", ["PATCH"], body=UpdateRatingBody, response=RatingDto,
-                      operation_id="updateRating", errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:rating_id>",
+        ["PATCH"],
+        body=UpdateRatingBody,
+        response=RatingDto,
+        operation_id="updateRating",
+        errors=(404,),
+    )
     @require_auth
     def update_rating(self, rating_id: int, body: UpdateRatingBody) -> RatingDto:
         """Change the stars of a rating the signed-in user gave."""

@@ -27,6 +27,6 @@ class LevelApi(BaseApi):
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Level not found",
-                detail="The specified level does not exist"
+                detail="The specified level does not exist",
             )
         return LevelDto.model_validate(level)

@@ -40,8 +40,9 @@ class TestRatingApi(AppTest):
 
         self.assertEqual(response.status_code, 200, response.json)
         rating = RatingDto.model_validate(response.json)
-        self.assertEqual((rating.user_id, rating.pan_id, rating.session_id, rating.rating),
-                         (self.ben.id, self.pan.id, self.s1.id, 4))
+        self.assertEqual(
+            (rating.user_id, rating.pan_id, rating.session_id, rating.rating), (self.ben.id, self.pan.id, self.s1.id, 4)
+        )
         self.assertEqual(self.stored(), [(self.ben.id, self.pan.id, self.s1.id, 4)])
 
     def test_a_rating_whose_achievements_fail_is_not_saved(self):
@@ -148,7 +149,8 @@ class TestRatingApi(AppTest):
 
     def test_changing_a_rating_lets_achievements_react(self):
         titles = self.best_rated_by_a_change(
-            lambda rating_id: self.call("PATCH", f"/ratings/{rating_id}", self.ben, body={"rating": 5}))
+            lambda rating_id: self.call("PATCH", f"/ratings/{rating_id}", self.ben, body={"rating": 5})
+        )
         self.assertIn("Pantastic", titles)
 
     def test_rating_routes_require_auth(self):

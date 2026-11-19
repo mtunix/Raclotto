@@ -130,9 +130,7 @@ class TestPanRoll(AppTest):
     def test_hand_picked_pan_only_takes_ingredients_from_its_session(self):
         other = self.make_session("s2")
         foreign = self.make_ingredient(other, "Foreign", FILL)
-        outcome = self.roll.roll(
-            self.user, "s1", RollOptions(ingredient_ids=[self.pork.id, foreign.id], name="Mine")
-        )
+        outcome = self.roll.roll(self.user, "s1", RollOptions(ingredient_ids=[self.pork.id, foreign.id], name="Mine"))
         self.assertEqual([i.name for i in outcome.pan.ingredients], ["Pork"])
         self.assertEqual(outcome.pan.name, "Mine")
 
@@ -190,10 +188,18 @@ class TestRollRoutes(AppTest):
             with self.subTest(path):
                 pan = self.assert_outcome(self.roll(path, body)).pan
                 self.assertEqual(pan.user_id, self.user.id)
-                self.assertEqual(pan.author, UserSummaryDto(
-                    id=self.user.id, name="ana", color="#00ff00", profile_picture=None,
-                    border_style="solid", border_texture="cheese", glow_effect=False,
-                ))
+                self.assertEqual(
+                    pan.author,
+                    UserSummaryDto(
+                        id=self.user.id,
+                        name="ana",
+                        color="#00ff00",
+                        profile_picture=None,
+                        border_style="solid",
+                        border_texture="cheese",
+                        glow_effect=False,
+                    ),
+                )
 
     def test_classic_roll_defaults_to_three_fills_and_two_sauces(self):
         outcome = self.assert_outcome(self.roll("/pans/generate", {}))

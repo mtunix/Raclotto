@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 class UserAchievementProgress(Base):
     """Tracks progress towards achievements for users."""
+
     __tablename__ = "user_achievement_progress"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)

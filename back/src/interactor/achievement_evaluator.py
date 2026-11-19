@@ -66,15 +66,9 @@ class AchievementEvaluator(ABC):
             )
         return self.evaluate(fact.pan, subject, context)
 
-    def evaluate(
-        self, pan: Pan, user: User, context: EvaluationContext
-    ) -> EvaluationResult:
-        raise NotImplementedError(
-            f"{type(self).__name__} must implement evaluate() or judge()"
-        )
+    def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
+        raise NotImplementedError(f"{type(self).__name__} must implement evaluate() or judge()")
 
     @abstractmethod
-    def calculate_progress(
-        self, user: User, achievement: Achievement, context: EvaluationContext
-    ) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
         """Current progress (0.0-1.0) without any new fact, or None if untracked."""

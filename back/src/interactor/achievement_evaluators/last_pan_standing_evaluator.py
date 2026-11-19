@@ -35,9 +35,7 @@ class LastPanStandingEvaluator(AchievementEvaluator):
         unlocked = self._owns_last_pan(subject, context.session_pans)
         return EvaluationResult(unlocked=unlocked, progress=1.0 if unlocked else 0.0)
 
-    def calculate_progress(
-        self, user: User, achievement: Achievement, context: EvaluationContext
-    ) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
         if achievement in user.achievements:
             return 1.0
         return 1.0 if self._owns_last_pan(user, context.session_pans) else 0.0

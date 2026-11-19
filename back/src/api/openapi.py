@@ -73,9 +73,7 @@ def build_openapi(app: Flask) -> Dict[str, Any]:
     _check_unique_operation_ids(operations)
 
     schema_inputs = _schema_inputs(operations)
-    refs, defs = models_json_schema(
-        schema_inputs, ref_template=REF_TEMPLATE, schema_generator=_SchemaGenerator
-    )
+    refs, defs = models_json_schema(schema_inputs, ref_template=REF_TEMPLATE, schema_generator=_SchemaGenerator)
     schemas: Dict[str, Any] = defs.get("$defs", {})
     _check_schema_names(schemas)
 
@@ -96,9 +94,7 @@ def build_openapi(app: Flask) -> Dict[str, Any]:
         "paths": paths,
         "components": {
             "schemas": schemas,
-            "securitySchemes": {
-                SECURITY_SCHEME: {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
-            },
+            "securitySchemes": {SECURITY_SCHEME: {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}},
         },
     }
     _check_refs_resolve(spec)
@@ -121,7 +117,7 @@ def _operations(app: Flask) -> Iterator[_Operation]:
         tag = view_class.url_prefix.strip("/")
         if not tag:
             raise ValueError(f"{view_class.__name__} needs a url_prefix to tag its operations")
-        path = rule.rule[len(API_PREFIX):]
+        path = rule.rule[len(API_PREFIX) :]
         yield _Operation(
             path=_PATH_ARG.sub(lambda m: "{" + m["name"] + "}", path),
             method=getattr(func, BaseApi.method_marker)[0].lower(),
@@ -162,7 +158,7 @@ def _check_schema_names(schemas: Dict[str, Any]) -> None:
     for name in schemas:
         if name.endswith(("-Input", "-Output")):
             raise ValueError(
-                f"{name[:name.rindex('-')]} has different request and response schemas; "
+                f"{name[: name.rindex('-')]} has different request and response schemas; "
                 "use separate request and response DTOs"
             )
         if not _SCHEMA_NAME.match(name) or "__" in name:

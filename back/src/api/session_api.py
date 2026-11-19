@@ -55,23 +55,22 @@ class SessionApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("", ["GET"], query=ListSessionsQuery, response=list[SessionDto],
-                      operation_id="listSessions")
+    @BaseApi.endpoint("", ["GET"], query=ListSessionsQuery, response=list[SessionDto], operation_id="listSessions")
     @require_auth
     def list_sessions(self, query: ListSessionsQuery) -> list[SessionDto]:
         """List the active sessions, or every session."""
         sessions = self.repository.all_sessions() if query.include_inactive else self.repository.active_sessions()
         return [SessionDto.model_validate(session) for session in sessions]
 
-    @BaseApi.endpoint("/<int:session_id>", ["GET"], response=SessionDto, operation_id="getSession",
-                      errors=(404,))
+    @BaseApi.endpoint("/<int:session_id>", ["GET"], response=SessionDto, operation_id="getSession", errors=(404,))
     @require_auth
     def get_session(self, session_id: int) -> SessionDto:
         """Get a session by id."""
         return SessionDto.model_validate(self._session(session_id))
 
-    @BaseApi.endpoint("/by-key", ["GET"], query=SessionKeyQuery, response=SessionDto,
-                      operation_id="getSessionByKey", errors=(404,))
+    @BaseApi.endpoint(
+        "/by-key", ["GET"], query=SessionKeyQuery, response=SessionDto, operation_id="getSessionByKey", errors=(404,)
+    )
     @require_auth
     def get_session_by_key(self, query: SessionKeyQuery) -> SessionDto:
         """Get a session by its key."""
@@ -80,8 +79,14 @@ class SessionApi(BaseApi):
             raise _not_found()
         return SessionDto.model_validate(session)
 
-    @BaseApi.endpoint("/<int:session_id>", ["PATCH"], body=UpdateSessionBody, response=SessionDto,
-                      operation_id="updateSession", errors=(404,))
+    @BaseApi.endpoint(
+        "/<int:session_id>",
+        ["PATCH"],
+        body=UpdateSessionBody,
+        response=SessionDto,
+        operation_id="updateSession",
+        errors=(404,),
+    )
     @require_auth
     def update_session(self, session_id: int, body: UpdateSessionBody) -> SessionDto:
         """Rename a session."""
@@ -98,8 +103,9 @@ class SessionApi(BaseApi):
         db.session.delete(self._session(session_id))
         db.session.commit()
 
-    @BaseApi.endpoint("/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession",
-                      errors=(404,))
+    @BaseApi.endpoint(
+        "/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession", errors=(404,)
+    )
     @require_auth
     def close_session(self, body: SessionKeyBody) -> SessionDto:
         """Close a session; achievements that wait for the end are judged."""
@@ -111,8 +117,14 @@ class SessionApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/reactivate", ["POST"], body=SessionKeyBody, response=SessionDto,
-                      operation_id="reactivateSession", errors=(404,))
+    @BaseApi.endpoint(
+        "/reactivate",
+        ["POST"],
+        body=SessionKeyBody,
+        response=SessionDto,
+        operation_id="reactivateSession",
+        errors=(404,),
+    )
     @require_auth
     def reactivate_session(self, body: SessionKeyBody) -> SessionDto:
         """Reopen a closed session."""
