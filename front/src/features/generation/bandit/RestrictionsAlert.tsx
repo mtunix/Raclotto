@@ -1,0 +1,35 @@
+import React from "react";
+import { Alert, Typography } from "antd";
+import { useTranslation } from "react-i18next";
+import { Availability, isRestricted } from "./banditLimits";
+
+const { Text } = Typography;
+
+/** How many fills and sauces the user's diet excludes; nothing when it excludes none. */
+export function RestrictionsAlert({ fills, sauces }: { fills: Availability; sauces: Availability }) {
+    const { t } = useTranslation();
+    if (!isRestricted(fills) && !isRestricted(sauces)) return null;
+
+    const line = (label: string, { allowed, total }: Availability) => (
+        <Text>
+            {label}: {allowed} / {total}
+            <Text type="secondary"> ({total - allowed} {t("generate.excluded") || "excluded"})</Text>
+        </Text>
+    );
+
+    return (
+        <Alert
+            type="info"
+            message={t("generate.restrictionsApplied") || "Dietary restrictions applied"}
+            description={
+                <div>
+                    {isRestricted(fills) && line(t("generate.availableIngredients") || "Available ingredients", fills)}
+                    {isRestricted(fills) && isRestricted(sauces) && <br />}
+                    {isRestricted(sauces) && line(t("generate.availableSauces") || "Available sauces", sauces)}
+                </div>
+            }
+            style={{ marginBottom: "16px" }}
+            showIcon
+        />
+    );
+}

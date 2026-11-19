@@ -36,8 +36,7 @@ afterEach(() => {
     jest.useRealTimers();
 });
 
-/** Spins two columns, the most the fixture's applicable ingredients allow, and lets them stop. */
-async function spin() {
+function renderBandit() {
     renderRoute(
         <BanditView
             ingredients={ingredientsForUser}
@@ -48,6 +47,11 @@ async function spin() {
             onRollCheeseChange={() => {}}
         />,
     );
+}
+
+/** Spins two columns, the most the fixture's applicable ingredients allow, and lets them stop. */
+async function spin() {
+    renderBandit();
     fireEvent.click(await screen.findByText("−"));
     jest.useFakeTimers();
     fireEvent.click(screen.getByText("generate.banditSpin"));
@@ -81,4 +85,33 @@ it("rates the result, and offers the level-up picture once it closes", async () 
 
     await waitFor(() => expect(fake.last("POST", "/images/generate-profile-picture")?.body)
         .toEqual({ level_id: rollOutcome.reward.level?.id }));
+});
+
+it("stops every column on the pan's ingredients", async () => {
+    const dialog = await spin();
+
+    expect(within(dialog).getByText("Potato")).toBeInTheDocument();
+    expect(within(dialog).getByText("Pork")).toBeInTheDocument();
+    expect(dialog.querySelectorAll(".bandit-locked-emoji")).toHaveLength(2);
+    expect(dialog.querySelector(".bandit-spinning-emoji")).toBeNull();
+});
+
+it("counts what the diet excludes against all available ingredients", async () => {
+    renderBandit();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("generate.availableIngredients: 2 / 3 (1 generate.excluded)");
+    expect(alert).toHaveTextContent("generate.availableSauces: 0 / 1 (1 generate.excluded)");
+});
+
+it("reports a failed roll and offers the lever again", async () => {
+    fake.on("POST", "/pans/generate/bandit", () => {
+        throw Object.assign(new Error("Server error"), { status: 500 });
+    });
+    renderBandit();
+    fireEvent.click(await screen.findByText("−"));
+    fireEvent.click(screen.getByText("generate.banditSpin"));
+
+    expect(await screen.findByText("generate.banditError")).toBeInTheDocument();
+    expect(screen.getByText("generate.banditSpin")).toBeInTheDocument();
 });
