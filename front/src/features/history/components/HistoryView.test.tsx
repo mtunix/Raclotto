@@ -6,7 +6,7 @@ import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/mode
 import { generatedPicture, imageGeneration, me, panFilterOptions, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport, type RecordedRequest } from '../../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../../lib/api/transport';
-import { currentPath, renderRoutes } from '../../../testUtils';
+import { currentPath, renderRoutes, setViewportWidth } from '../../../testUtils';
 import { HistoryView } from './HistoryView';
 
 const [newest] = panPage.items;
@@ -182,6 +182,30 @@ it('asks the server for the best-rated pans first, whatever is loaded', async ()
     expect(fake.last('GET', '/pans')?.query).toMatchObject({ sort: 'rating', direction: 'desc', offset: 0 });
     const names = screen.getAllByRole('heading', { level: 4 }).map((heading) => heading.textContent);
     expect(names).toEqual(['Pan 1', 'Pan 14']);
+});
+
+it('shows sorting and filters open on a desktop', async () => {
+    setViewportWidth(1280);
+    fake.on('GET', '/pans', { ...panPage, has_more: false });
+    renderHistory();
+    await screen.findByText(newest.name as string);
+
+    expect(screen.getByText('history.time')).toBeInTheDocument();
+    expect(screen.getByText('history.users')).toBeInTheDocument();
+    expect(screen.queryByText('history.sortAndFilters')).not.toBeInTheDocument();
+});
+
+it('folds sorting and filters behind a toggle on a phone', async () => {
+    setViewportWidth(390);
+    fake.on('GET', '/pans', { ...panPage, has_more: false });
+    renderHistory();
+    await screen.findByText(newest.name as string);
+    expect(screen.queryByText('history.time')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('history.sortAndFilters'));
+
+    expect(screen.getByText('history.time')).toBeInTheDocument();
+    expect(screen.getByText('history.users')).toBeInTheDocument();
 });
 
 it("offers every user of the session to filter by, and keeps the filters when nothing matches", async () => {

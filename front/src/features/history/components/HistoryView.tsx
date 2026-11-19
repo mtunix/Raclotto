@@ -44,7 +44,8 @@ export function HistoryView() {
     const [selectedIngredientCounts, setSelectedIngredientCounts] = useState<ListPansIngredientCountItem[]>([]);
     const [filtersExpanded, setFiltersExpanded] = useState(false);
     const screens = Grid.useBreakpoint();
-    const isMobile = screens.xs || screens.sm;
+    // antd's breakpoints are minimum widths: anything narrower than md (768px) is a phone.
+    const isMobile = !screens.md;
     const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({
         session_key: sessionKey,
         user_id: selectedUsers,

@@ -1,9 +1,8 @@
+import type { Page } from "@playwright/test";
 import { PANTRY, addIngredients, api, createSession, expect, t, test } from "./support";
 
-test("sorts the whole history by rating, not just the page it has loaded", async ({ page }) => {
-  const session = await createSession(page);
-  await addIngredients(page, session, PANTRY);
-  // A cook of its own rolls the pans, so their XP can't level up the admin other tests roll as.
+/** A cook of its own rolls the pans, so their XP can't level up the admin other tests roll as. */
+async function newCook(page: Page) {
   const admin = await api(page);
   const email = `cook-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@example.test`;
   const { token } = await admin.post<{ token: string }>("/invites", { email });
@@ -13,7 +12,13 @@ test("sorts the whole history by rating, not just the page it has loaded", async
     name: email.split("@")[0],
     password: "cook-password-1",
   });
-  const client = await api(page, cook.token);
+  return api(page, cook.token);
+}
+
+test("sorts the whole history by rating, not just the page it has loaded", async ({ page }) => {
+  const session = await createSession(page);
+  await addIngredients(page, session, PANTRY);
+  const client = await newCook(page);
   const ingredients = await client.get<{ id: number }[]>("/ingredients", { session_key: session.key });
   // The best pan is the oldest, so newest first it is on the second page.
   for (let i = 0; i < 13; i++) {
@@ -30,9 +35,31 @@ test("sorts the whole history by rating, not just the page it has loaded", async
   await expect(titles.first()).toHaveText("Pan 12");
   await expect(page.getByText("Best Pan")).toBeHidden();
 
-  await page.getByText(t("history.sortAndFilters")).click();
+  // A desktop shows sorting and filters without a toggle.
+  await expect(page.getByText(t("history.sortAndFilters"))).toBeHidden();
   await page.locator(".ant-select").filter({ hasText: t("history.time") }).click();
   await page.locator(".ant-select-item-option").filter({ hasText: t("history.rating") }).click();
 
   await expect(titles.first()).toHaveText("Best Pan");
+});
+
+test.describe("on a phone", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("folds sorting and filters behind a toggle", async ({ page }) => {
+    const session = await createSession(page);
+    await addIngredients(page, session, PANTRY);
+    const client = await newCook(page);
+    const ingredients = await client.get<{ id: number }[]>("/ingredients", { session_key: session.key });
+    await client.post("/pans", { name: "Phone Pan", ingredients: [ingredients[0].id] }, { session_key: session.key });
+
+    await page.goto(`/${session.id}/history`);
+    await expect(page.getByText("Phone Pan")).toBeVisible();
+    const sorting = page.locator(".ant-select").filter({ hasText: t("history.time") });
+    await expect(sorting).toBeHidden();
+
+    await page.getByText(t("history.sortAndFilters")).click();
+
+    await expect(sorting).toBeVisible();
+  });
 });

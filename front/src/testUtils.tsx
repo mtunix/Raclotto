@@ -45,3 +45,8 @@ export function renderRoutes(routes: RouteObject[], path: string, options: Rende
 export function renderRoute(element: ReactNode, options: RenderOptions = {}) {
     return renderRoutes([{ path: "/", element }], "/", options);
 }
+
+/** Renders what follows at `width` px wide, as antd's breakpoints see it; reset after each test. */
+export function setViewportWidth(width: number) {
+    window.innerWidth = width;
+}

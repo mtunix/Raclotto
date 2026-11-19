@@ -16,13 +16,23 @@ vi.mock('axios', () => {
 });
 
 // antd's grid and typography watch media queries and element sizes, which jsdom does not implement.
+// Width queries match `window.innerWidth` (jsdom's 1024, a desktop; `setViewportWidth` changes it), others never.
+function matchesWidth(query: string): boolean {
+    const conditions = [...query.matchAll(/\((min|max)-width:\s*([\d.]+)px\)/g)];
+    return conditions.length > 0 && conditions.every(([, bound, px]) =>
+        bound === 'min' ? window.innerWidth >= Number(px) : window.innerWidth <= Number(px));
+}
 Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     value: (query: string) => ({
-        matches: false, media: query, onchange: null,
+        matches: matchesWidth(query), media: query, onchange: null,
         addListener: () => {}, removeListener: () => {},
         addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => false,
     }),
+});
+const defaultWidth = window.innerWidth;
+afterEach(() => {
+    window.innerWidth = defaultWidth;
 });
 // antd's form schedules macrotasks over a MessageChannel; Node's would keep the test run from exiting.
 class TimeoutMessageChannel {
