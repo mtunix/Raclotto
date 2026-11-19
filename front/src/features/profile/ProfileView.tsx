@@ -33,6 +33,8 @@ import type {
 import { usePanPages } from "../history/usePanPages";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
 import { displayName } from "../../shared/displayName";
+import { achievementValueColor } from "../../shared/achievementValueColor";
+import { levelProgress } from "../../model/levelProgress";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { getTextureBorderImage } from "../../lib/borderTextures";
@@ -84,14 +86,6 @@ export function ProfileView() {
     } catch {
       return dateString;
     }
-  };
-
-  const getValueColor = (value: number): string => {
-    if (value >= 30) return "red";
-    if (value >= 15) return "orange";
-    if (value >= 10) return "gold";
-    if (value >= 5) return "blue";
-    return "default";
   };
 
   const handleProfilePictureChange = async (newPicture: string | null) => {
@@ -292,26 +286,11 @@ export function ProfileView() {
                 {profileData.next_level &&
                   profileData.experience_points !== undefined &&
                   (() => {
-                    const currentXP = profileData.experience_points;
-                    const currentLevelXP =
-                      profileData.level.required_experience;
-                    const nextLevelXP =
-                      profileData.next_level.required_experience;
-                    const xpInCurrentLevel = Math.max(
-                      0,
-                      currentXP - currentLevelXP,
+                    const { xpInLevel, xpNeeded, percent } = levelProgress(
+                      profileData.experience_points,
+                      profileData.level,
+                      profileData.next_level,
                     );
-                    const xpNeededForNext = nextLevelXP - currentLevelXP;
-                    const progressPercent =
-                      xpNeededForNext > 0
-                        ? Math.min(
-                            100,
-                            Math.max(
-                              0,
-                              (xpInCurrentLevel / xpNeededForNext) * 100,
-                            ),
-                          )
-                        : 100;
 
                     return (
                       <div style={{ marginTop: "8px" }}>
@@ -331,11 +310,11 @@ export function ProfileView() {
                             )}
                           </Text>
                           <Text type="secondary" style={{ fontSize: "12px" }}>
-                            {xpInCurrentLevel} / {xpNeededForNext} XP
+                            {xpInLevel} / {xpNeeded} XP
                           </Text>
                         </div>
                         <Progress
-                          percent={progressPercent}
+                          percent={percent}
                           strokeColor={{
                             "0%": "#108ee9",
                             "100%": "#87d068",
@@ -574,7 +553,7 @@ export function ProfileView() {
                         {achievement.description || ""}
                       </Text>
                     </div>
-                    <Tag color={getValueColor(achievement.value || 0)}>
+                    <Tag color={achievementValueColor(achievement.value || 0)}>
                       {achievement.value || 0}{" "}
                       {t("achievement.points") || "pts"}
                     </Tag>

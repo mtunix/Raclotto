@@ -4,6 +4,7 @@ import {useListAchievements} from "../../api/generated/endpoints/achievements/ac
 import type {AchievementStatusDto} from "../../api/generated/model";
 import {onErrorRetry} from "../../lib/api/swrHooks";
 import { VectorGraphics } from "../../lib/vectorGraphics";
+import { achievementValueColor } from "../../shared/achievementValueColor";
 import {useTranslation} from "react-i18next";
 
 const {Title, Text} = Typography;
@@ -23,14 +24,6 @@ export function AchievementView(props: AchievementViewProps) {
             </div>
         );
     }
-
-    const getValueColor = (value: number): string => {
-        if (value >= 30) return 'red';
-        if (value >= 15) return 'orange';
-        if (value >= 10) return 'gold';
-        if (value >= 5) return 'blue';
-        return 'default';
-    };
 
     const renderAchievementCard = (achievement: AchievementStatusDto) => {
         const isHidden = achievement.hidden;
@@ -68,7 +61,7 @@ export function AchievementView(props: AchievementViewProps) {
                                     {displayTitle}
                                 </Title>
                             </Space>
-                            <Tag color={getValueColor(achievement.value)} style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                                 {achievement.value} {t("achievement.points") || "pts"}
                             </Tag>
                         </div>

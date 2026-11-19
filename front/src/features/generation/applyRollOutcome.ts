@@ -36,17 +36,7 @@ export function applyRollOutcome(outcome: RollOutcomeDto, sessionKey: string): L
   }
 
   if (reward.xp_gained > 0 && reward.level) {
-    useAppStore
-      .getState()
-      .showXpNotification(
-        reward.xp_gained,
-        reward.xp_before,
-        reward.xp_after,
-        reward.level,
-        reward.next_level,
-        reward.leveled_up,
-        achievements,
-      );
+    useAppStore.getState().showXpNotification(reward, achievements);
   }
 
   mutatePanLists();

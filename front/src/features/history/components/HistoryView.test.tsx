@@ -125,7 +125,7 @@ it('rolls a copy of a pan after asking, and applies the reward', async () => {
     expect(request?.query).toEqual({ session_key: current.key });
     expect(request?.body).toEqual({ name: newest.name, ingredients: newest.ingredients.map((i) => i.id) });
     await waitFor(() => expect(useAuthStore.getState().user?.experience_points).toBe(rollOutcome.reward.xp_after));
-    expect(useAppStore.getState().xpNotification).toMatchObject({ visible: true, xpGained: rollOutcome.reward.xp_gained });
+    expect(useAppStore.getState().xpNotification).toMatchObject({ visible: true, reward: rollOutcome.reward });
 });
 
 it("opens the author's profile from their avatar", async () => {

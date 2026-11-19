@@ -1,26 +1,9 @@
 import { create } from "zustand";
-import type { AchievementDto, SessionDto } from "./api/generated/model";
-
-interface Level {
-    id: number;
-    name: string;
-    required_experience: number;
-}
-
-interface NextLevel {
-    id: number;
-    name: string;
-    required_experience: number;
-}
+import type { AchievementDto, RewardDto, SessionDto } from "./api/generated/model";
 
 interface XpNotificationState {
     visible: boolean;
-    xpGained: number;
-    oldXP: number;
-    newXP: number;
-    level: Level | null;
-    nextLevel: NextLevel | null;
-    levelUp: boolean;
+    reward: RewardDto | null;
     achievements: AchievementDto[];
 }
 
@@ -33,7 +16,7 @@ interface AppState {
     removeWidthCap: boolean;
     setRemoveWidthCap: (remove: boolean) => void;
     xpNotification: XpNotificationState;
-    showXpNotification: (xpGained: number, oldXP: number, newXP: number, level: Level, nextLevel: NextLevel | null, levelUp: boolean, achievements?: AchievementDto[]) => void;
+    showXpNotification: (reward: RewardDto, achievements: AchievementDto[]) => void;
     hideXpNotification: () => void;
 }
 
@@ -49,25 +32,11 @@ export const useAppStore = create<AppState>((set) => ({
     setRemoveWidthCap: (remove: boolean) => set({ removeWidthCap: remove }),
     xpNotification: {
         visible: false,
-        xpGained: 0,
-        oldXP: 0,
-        newXP: 0,
-        level: null,
-        nextLevel: null,
-        levelUp: false,
+        reward: null,
         achievements: [],
     },
-    showXpNotification: (xpGained, oldXP, newXP, level, nextLevel, levelUp, achievements = []) => set({
-        xpNotification: {
-            visible: true,
-            xpGained,
-            oldXP,
-            newXP,
-            level,
-            nextLevel,
-            levelUp,
-            achievements: achievements || [],
-        },
+    showXpNotification: (reward, achievements) => set({
+        xpNotification: { visible: true, reward, achievements },
     }),
     hideXpNotification: () => set((state) => ({
         xpNotification: {

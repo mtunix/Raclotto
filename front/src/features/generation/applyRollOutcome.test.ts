@@ -76,16 +76,10 @@ it("keeps the known level when the reward has none", () => {
 it("shows the XP notification with the unlocked achievements", () => {
     applyRollOutcome(withReward({ leveled_up: false }), "s1");
 
-    const { reward, achievements } = rollOutcome;
-    expect(useAppStore.getState().xpNotification).toMatchObject({
+    expect(useAppStore.getState().xpNotification).toEqual({
         visible: true,
-        xpGained: reward.xp_gained,
-        oldXP: reward.xp_before,
-        newXP: reward.xp_after,
-        levelUp: false,
-        level: { id: reward.level?.id },
-        nextLevel: { id: reward.next_level?.id },
-        achievements: achievements.map(({ id, title }) => expect.objectContaining({ id, title })),
+        reward: { ...rollOutcome.reward, leveled_up: false },
+        achievements: rollOutcome.achievements,
     });
 });
 
