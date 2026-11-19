@@ -10,3 +10,4 @@ front/build/
 front/coverage/
 static/
 VERSION
+.idea/
