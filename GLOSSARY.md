@@ -64,7 +64,8 @@ Code: `IngredientCatalog`, `IngredientExportDto`. Changes report `IngredientAdde
 **Available**:
 Whether rolls may draw an ingredient. Deleting an ingredient makes it unavailable; it stays in the
 catalog and in its pans. Refilling makes it available again.
-Code: `available`, `deleteIngredient`, `refillIngredient`. UI: "Unavailable".
+Code: `available`, `deleteIngredient`, `refillIngredient`. UI: "Unavailable", "Mark unavailable",
+"Make available again".
 
 **Ingredient type**:
 Fill or sauce; every ingredient is one of the two, and a roll draws each type separately.
@@ -158,7 +159,8 @@ Code: `cheese_level`, `rolled_cheese`. UI: "Roll Cheese", "Cheese Level".
 ## Ratings and progress
 
 **Rating**:
-One user's stars for one pan: 0 to 5 in half steps (the app offers half a star to five). A user
+One user's stars for one pan: 0 to 5 in half steps (the app offers whole stars right after a roll,
+half stars in the history; clicking the given stars again clears them to 0). A user
 has at most one rating per pan, which only they can change or withdraw. A pan's rating is the
 average of its stars.
 Code: `Rating`, `RatingDto`, `PanRatings`; a change of stars reports `PanRated`.

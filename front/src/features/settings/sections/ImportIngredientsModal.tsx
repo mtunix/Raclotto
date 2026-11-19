@@ -108,7 +108,7 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
             } else {
                 const result = await ingredientCatalog.reimport(sessionKey, ingredients);
                 message.success(
-                    t("settings.reimportSuccess", { created: result.created, updated: result.updated, deleted: result.deleted }),
+                    t("settings.reimportSuccess", { created: result.created, updated: result.updated, unavailable: result.deleted }),
                 );
             }
             close();

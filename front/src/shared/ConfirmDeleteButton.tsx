@@ -9,10 +9,12 @@ interface ConfirmDeleteButtonProps {
     style?: CSSProperties;
     confirmationTimeout?: number; // in milliseconds, default 5000
     icon?: string | ReactNode; // Icon to display, defaults to REMOVE
+    /** What a confirmed click does: the button's tooltip and accessible name, since it shows only an icon. */
+    label: string;
 }
 
 export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {
-    const { onConfirm, danger = true, className = "", style = {}, confirmationTimeout = 5000, icon = VectorGraphics.REMOVE } = props;
+    const { onConfirm, danger = true, className = "", style = {}, confirmationTimeout = 5000, icon = VectorGraphics.REMOVE, label } = props;
     const [isConfirming, setIsConfirming] = useState(false);
     const [progress, setProgress] = useState(0);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,6 +102,8 @@ export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {
             className={`${className} confirm-delete-button ${isConfirming ? 'confirming' : ''}`}
             style={style}
             onClick={handleClick}
+            title={label}
+            aria-label={label}
         >
             {icon}
             {isConfirming && (

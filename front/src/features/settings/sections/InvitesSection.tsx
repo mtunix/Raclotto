@@ -134,6 +134,7 @@ export function InvitesSection() {
                                     {!invite.is_used && !isExpired(invite) && (
                                         <ConfirmDeleteButton
                                             onConfirm={() => onRevoke(invite.id)}
+                                            label={t("invite.revoke")}
                                             danger={true}
                                             icon={<CloseOutlined />}
                                             style={iconButtonStyle}

@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { createSession, expect, t, test } from "./support";
 
-/** An ingredient's row; its buttons are edit, then delete. */
+/** An ingredient's row; its buttons are edit, then mark unavailable. */
 const row = (page: Page, name: string) =>
   page.getByText(name, { exact: true }).locator("xpath=ancestor::*[.//button][1]");
 
@@ -29,8 +29,8 @@ test("adds, edits and deletes an ingredient", async ({ page }) => {
   await expect(name).toHaveValue("");
   await dialog.getByRole("button", { name: t("common.cancel") }).click();
 
-  // Deleting asks for a second click.
-  const remove = row(page, "Zucchini").getByRole("button").nth(1);
+  // Deleting only marks it unavailable, and asks for a second click.
+  const remove = row(page, "Zucchini").getByRole("button", { name: t("ingredient.markUnavailable") });
   await remove.click();
   await expect(row(page, "Zucchini")).toBeVisible();
   await remove.click();

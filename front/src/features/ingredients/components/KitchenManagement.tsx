@@ -171,6 +171,7 @@ export function KitchenManagement() {
                                         {(prepType.session_id !== null && prepType.session_id !== undefined) && (
                                             <ConfirmDeleteButton
                                                 onConfirm={() => onPrepTypeDelete(prepType)}
+                                                label={t("ingredient.deletePreparationType")}
                                                 danger={true}
                                                 className="prep-type-action-button"
                                                 style={{

@@ -76,6 +76,7 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                     {props.available && props.onDelete && (
                         <ConfirmDeleteButton
                             onConfirm={props.onDelete}
+                            label={t("ingredient.markUnavailable")}
                             danger={true}
                             className="ingredient-action-button"
                             style={{
@@ -89,6 +90,7 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                     {!props.available && props.onRefill && (
                         <ConfirmDeleteButton
                             onConfirm={props.onRefill}
+                            label={t("ingredient.makeAvailable")}
                             danger={false}
                             className="ingredient-action-button"
                             style={{
