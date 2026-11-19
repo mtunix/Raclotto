@@ -55,9 +55,3 @@ class Achievement(Base):
     title: Mapped[str | None]
     value: Mapped[int | None]
     hidden: Mapped[bool | None]
-    is_global: Mapped[bool] = mapped_column(default=True)
-    """
-    Flag to indicate if achievement is global or session-specific.
-    - True: Achievement is global (evaluated across all sessions)
-    - False: Achievement is session-specific (evaluated within a single session)
-    """

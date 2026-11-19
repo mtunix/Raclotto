@@ -13,7 +13,6 @@ class AchievementDto(ResponseDto):
     key: AchievementKey | None
     value: int
     hidden: bool
-    is_global: bool
 
 
 class AchievementStatusDto(AchievementDto):

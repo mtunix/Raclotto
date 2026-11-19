@@ -36,18 +36,14 @@ Code: the `user_sessions` table (`User.sessions`); `Participant` in the recap.
 _Avoid_: player, guest
 
 **Admin**:
-A user who may change every session and pan, and the global settings: global event configs,
-default preparation types and insults.
+A user who may change every session and pan, and the global settings: global event configs
+and default preparation types.
 Code: `User.is_admin`; the first admin comes from `RACLOTTO_ADMIN_PASSWORD`.
 
 **Invite**:
 A single-use token that lets one email address register. It expires (7 days by default) and its
 creator can revoke it until it is used. Any signed-in user can issue one.
 Code: `InviteToken`, `InviteDto`, `Accounts.invite` / `register` / `revoke`. UI: "Invite Token".
-
-**Insult**:
-A name from an admin-maintained list. Anyone signed in can read the list; no view in the app shows it.
-Code: `Insult`, `InsultDto`.
 
 ## Ingredients
 
@@ -119,12 +115,8 @@ Code: `Pan`, `PanDto`. Without a name given, it gets a random "<Adjective> Raclo
 _Avoid_: dish, plate, result
 
 **Author**:
-The user a pan belongs to: the one who rolled it. It is theirs to rename, mark eaten and delete.
+The user a pan belongs to: the one who rolled it. It is theirs to rename and delete.
 Code: `Pan.user_id`, `PanDto.author`. UI: "Consumed by".
-
-**Snacked**:
-Whether a pan has been eaten. Settable through the API; no view in the app shows it.
-Code: `Pan.snacked`.
 
 **Roll**:
 Making a pan: choosing its ingredients, optionally rolling preparation type and cheese, joining
@@ -188,8 +180,8 @@ Code: `Reward`, `RewardDto`, part of `RollOutcome`.
 
 **Achievement**:
 A titled goal worth a number of points; some are hidden until unlocked. A user holds it or not,
-and may have progress (0 to 1) towards it. Seed data marks each as global or session-specific.
-Code: `Achievement` (`key`, `value` = points, `hidden`, `is_global`), `AchievementKey`,
+and may have progress (0 to 1) towards it.
+Code: `Achievement` (`key`, `value` = points, `hidden`), `AchievementKey`,
 `AchievementStatusDto`, `UserAchievementProgress`. The leaderboard sums points. The UI shows its title
 and description from the translations, by key; the stored `title` only names the row.
 

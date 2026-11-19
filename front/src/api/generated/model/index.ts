@@ -52,8 +52,6 @@ export * from './ingredientRatingDto';
 export * from './ingredientReimportDto';
 export * from './ingredientType';
 export * from './ingredientUsageDto';
-export * from './insultBody';
-export * from './insultDto';
 export * from './inviteDto';
 export * from './inviteLookupDto';
 export * from './leaderboardEntryDto';

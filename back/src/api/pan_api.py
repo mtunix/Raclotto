@@ -165,10 +165,9 @@ class PanApi(BaseApi):
     )
     @require_auth
     def update_pan(self, pan_id: int, body: UpdatePanBody) -> PanDto:
-        """Rename your own pan or mark it eaten."""
+        """Rename your own pan."""
         pan = self._changeable(pan_id)
-        for field in body.model_fields_set:
-            setattr(pan, field, getattr(body, field))
+        pan.name = body.name
         dto = self._dto(pan)
         db.session.commit()
         return dto

@@ -334,7 +334,7 @@ export const useGetPan = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Rename your own pan or mark it eaten.
+ * @summary Rename your own pan.
  */
 export const updatePan = (
     panId: number,
@@ -360,7 +360,7 @@ export const getUpdatePanMutationKey = (panId: number,) => [`/pans/${panId}`] as
 export type UpdatePanMutationResult = NonNullable<Awaited<ReturnType<typeof updatePan>>>
 
 /**
- * @summary Rename your own pan or mark it eaten.
+ * @summary Rename your own pan.
  */
 export const useUpdatePan = <TError = ErrorType<ErrorResponseDto>>(
   panId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updatePan>>, TError, Key, UpdatePanBody, Awaited<ReturnType<typeof updatePan>>> & { swrKey?: string }, }

@@ -12,7 +12,6 @@ import type { AchievementKey } from './achievementKey';
 export interface AchievementStatusDto {
   hidden: boolean;
   id: number;
-  is_global: boolean;
   key: AchievementKey | null;
   progress: number | null;
   unlocked: boolean;

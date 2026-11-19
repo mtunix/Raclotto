@@ -1,7 +1,6 @@
 from .achievement_repository import AchievementRepository
 from .base_repository import BaseRepository
 from .ingredient_repository import IngredientRepository
-from .insult_repository import InsultRepository
 from .invite_token_repository import InviteTokenRepository
 from .pan_repository import PanRepository
 from .preparation_type_repository import PreparationTypeRepository
@@ -15,7 +14,6 @@ __all__ = [
     "AchievementRepository",
     "BaseRepository",
     "IngredientRepository",
-    "InsultRepository",
     "InviteTokenRepository",
     "PanRepository",
     "PreparationTypeRepository",

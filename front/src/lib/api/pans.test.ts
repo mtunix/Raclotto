@@ -75,13 +75,13 @@ describe("pan lists", () => {
   });
 });
 
-it("patches a pan with only the changed fields", async () => {
-  fake.on("PATCH", `/pans/${rollOutcome.pan.id}`, { ...rollOutcome.pan, snacked: true });
+it("renames a pan", async () => {
+  fake.on("PATCH", `/pans/${rollOutcome.pan.id}`, { ...rollOutcome.pan, name: "Lunch" });
 
-  const pan = await updatePan(rollOutcome.pan.id, { snacked: true });
+  const pan = await updatePan(rollOutcome.pan.id, { name: "Lunch" });
 
-  expect(fake.last("PATCH", `/pans/${rollOutcome.pan.id}`)?.body).toEqual({ snacked: true });
-  expect(pan.snacked).toBe(true);
+  expect(fake.last("PATCH", `/pans/${rollOutcome.pan.id}`)?.body).toEqual({ name: "Lunch" });
+  expect(pan.name).toBe("Lunch");
 });
 
 it("rates a pan without naming the user", async () => {

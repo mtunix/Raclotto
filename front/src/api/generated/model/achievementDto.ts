@@ -9,7 +9,6 @@ import type { AchievementKey } from './achievementKey';
 export interface AchievementDto {
   hidden: boolean;
   id: number;
-  is_global: boolean;
   key: AchievementKey | null;
   value: number;
 }

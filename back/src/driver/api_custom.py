@@ -3,7 +3,6 @@ from back.src.api.event_api import EventApi
 from back.src.api.health_api import HealthApi
 from back.src.api.image_api import ImageApi
 from back.src.api.ingredient_api import IngredientApi
-from back.src.api.insult_api import InsultApi
 from back.src.api.level_api import LevelApi
 from back.src.api.pan_api import PanApi
 from back.src.api.preparation_type_api import PreparationTypeApi
@@ -19,7 +18,6 @@ apis_custom = [
     IngredientApi,
     RatingApi,
     AchievementApi,
-    InsultApi,
     PreparationTypeApi,
     StatsApi,
     EventApi,

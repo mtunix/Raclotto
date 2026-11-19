@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 
 import back.src.entity  # noqa: F401  registers every model on the metadata
 from back.src.driver.database import Base
+from back.src.driver.migrations import include_object
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("connection") is None:
@@ -23,13 +24,24 @@ def _cli_url() -> str:
 
 def _run(connection) -> None:
     # SQLite can't alter most columns in place; batch mode rebuilds the table instead.
-    context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_as_batch=True,
+        include_object=include_object,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
 
 if context.is_offline_mode():
-    context.configure(url=_cli_url(), target_metadata=target_metadata, literal_binds=True, render_as_batch=True)
+    context.configure(
+        url=_cli_url(),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        render_as_batch=True,
+        include_object=include_object,
+    )
     with context.begin_transaction():
         context.run_migrations()
 elif config.attributes.get("connection") is not None:

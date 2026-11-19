@@ -4,7 +4,6 @@ export * from './events/events';
 export * from './health/health';
 export * from './images/images';
 export * from './ingredients/ingredients';
-export * from './insults/insults';
 export * from './invites/invites';
 export * from './levels/levels';
 export * from './pans/pans';

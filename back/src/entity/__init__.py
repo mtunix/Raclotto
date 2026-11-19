@@ -2,7 +2,6 @@ from .achievement import Achievement
 from .event import Event
 from .event_config import EventConfig
 from .ingredient import Ingredient, IngredientType
-from .insult import Insult
 from .invite_token import InviteToken
 from .level import Level
 from .pan import Pan
@@ -19,7 +18,6 @@ __all__ = [
     "EventConfig",
     "Ingredient",
     "IngredientType",
-    "Insult",
     "InviteToken",
     "Level",
     "Pan",

@@ -7,6 +7,5 @@
 
 export interface UpdatePanBody {
   /** @minLength 1 */
-  name?: string;
-  snacked?: boolean;
+  name: string;
 }

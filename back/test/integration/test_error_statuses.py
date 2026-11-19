@@ -298,15 +298,6 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             self.call("POST", "/images/set-candidate-picture/999", self.ana),
         )
 
-    def test_update_insult(self):
-        self.assert_answers(
-            "updateInsult",
-            self.call("PATCH", "/insults/999", body={"title": "x"}),
-            self.call("PATCH", "/insults/999", self.ana, body={}),
-            self.call("PATCH", "/insults/999", self.ana, body={"title": "x"}),
-            self.call("PATCH", "/insults/999", self.root, body={"title": "x"}),
-        )
-
     def test_stats(self):
         self.assert_answers(
             "getStats",

@@ -148,8 +148,6 @@ class LevelsSpecTest(unittest.TestCase):
                 "/images/generate-banana",
                 "/images/generate-profile-picture",
                 "/images/set-candidate-picture/{picture_id}",
-                "/insults",
-                "/insults/{insult_id}",
                 "/stats",
             },
         )
@@ -214,11 +212,11 @@ class PansAndRatingsSpecTest(unittest.TestCase):
             ],
         )
 
-    def test_patch_body_takes_only_name_and_snacked(self):
+    def test_patch_body_takes_only_a_name(self):
         body = self.schemas["UpdatePanBody"]
 
-        self.assertEqual(set(body["properties"]), {"name", "snacked"})
-        self.assertNotIn("required", body)
+        self.assertEqual(set(body["properties"]), {"name"})
+        self.assertEqual(body["required"], ["name"])
         self.assertEqual(body["additionalProperties"], False)
 
     def test_rating_body_has_no_user(self):
@@ -390,7 +388,7 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
         )
 
 
-class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
+class AchievementsEventsImagesStatsSpecTest(unittest.TestCase):
     spec: dict[str, Any]
     schemas: dict[str, Any]
 
@@ -403,7 +401,7 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
         operations = {
             (path, method): (operation["operationId"], sorted(int(s) for s in operation["responses"]))
             for path, methods in self.spec["paths"].items()
-            if path.startswith(("/achievements", "/events", "/images", "/insults", "/stats"))
+            if path.startswith(("/achievements", "/events", "/images", "/stats"))
             for method, operation in methods.items()
         }
         self.assertEqual(
@@ -422,11 +420,6 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
                 ("/images/generate-banana", "post"): ("generateImage", [200, 400, 401, 500, 503]),
                 ("/images/generate-profile-picture", "post"): ("generateProfilePicture", [200, 400, 401, 500, 503]),
                 ("/images/set-candidate-picture/{picture_id}", "post"): ("setCandidatePicture", [204, 401, 403, 404]),
-                ("/insults", "get"): ("listInsults", [200, 401]),
-                ("/insults", "post"): ("createInsult", [200, 400, 401, 403]),
-                ("/insults/{insult_id}", "get"): ("getInsult", [200, 401, 404]),
-                ("/insults/{insult_id}", "patch"): ("updateInsult", [200, 400, 401, 403, 404]),
-                ("/insults/{insult_id}", "delete"): ("deleteInsult", [204, 401, 403, 404]),
                 ("/stats", "get"): ("getStats", [200, 400, 401]),
             },
         )

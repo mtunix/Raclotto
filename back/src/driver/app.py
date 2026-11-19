@@ -142,7 +142,6 @@ class App(Flask):
             achievement.title = seed.title
             achievement.value = seed.value
             achievement.hidden = seed.hidden
-            achievement.is_global = seed.is_global
         self.db.session.commit()
         if created:
             logging.info(f"Initialized {created} achievements")

@@ -5,10 +5,15 @@ from pathlib import Path
 from alembic import command
 from alembic.config import Config as AlembicConfig
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import inspect
+from sqlalchemy import Column, Table, inspect
 from sqlalchemy.engine import Connection
+from sqlalchemy.sql.schema import SchemaItem
 
 SCRIPT_LOCATION = Path(__file__).resolve().parents[2] / "migrations"
+
+# Left the models but stay in the database, so reverting their removal brings their data back.
+RETIRED_TABLES = frozenset({"insult"})
+RETIRED_COLUMNS = frozenset({("pan", "snacked"), ("achievement", "is_global"), ("achievement", "description")})
 
 
 class SchemaDriftError(RuntimeError):
@@ -40,6 +45,17 @@ def missing_columns(db: SQLAlchemy, connection: Connection) -> list[str]:
         present = {column["name"] for column in inspector.get_columns(table.name)}
         missing += [f"{table.name}.{column.name}" for column in table.columns if column.name not in present]
     return missing
+
+
+def include_object(
+    item: SchemaItem, name: str | None, type_: str, reflected: bool, compare_to: SchemaItem | None
+) -> bool:
+    """Alembic's autogenerate filter: never propose dropping a retired table or column."""
+    if isinstance(item, Table):
+        return name not in RETIRED_TABLES
+    if isinstance(item, Column) and isinstance(item.table, Table):
+        return (item.table.name, name) not in RETIRED_COLUMNS
+    return True
 
 
 def _alembic_config(connection: Connection) -> AlembicConfig:

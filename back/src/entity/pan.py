@@ -27,7 +27,6 @@ class Pan(DomainMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     timestamp: Mapped[datetime] = mapped_column(default=datetime.now)
-    snacked: Mapped[bool] = mapped_column(default=False)
     preparation_type_id: Mapped[int | None] = mapped_column(ForeignKey("preparation_type.id"))
     cheese_level: Mapped[int | None] = mapped_column(default=0)
     rolled_preparation_type: Mapped[bool] = mapped_column(default=False)

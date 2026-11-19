@@ -1,8 +1,8 @@
 """Permissions: who may change what.
 
     Permissions(user).manage_session(session)   # rename, close, reactivate, delete
-    Permissions(user).change_pan(pan)           # rename, mark eaten, delete
-    Permissions(user).change_global()           # global event configs, default preparation types, insults
+    Permissions(user).change_pan(pan)           # rename, delete
+    Permissions(user).change_global()           # global event configs, default preparation types
     Permissions(user).manage_admins()           # see who is an admin
     Permissions(user).change_admin(other)       # grant or revoke admin
 

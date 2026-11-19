@@ -151,7 +151,7 @@ class TestSeededAchievements(AppTest):
         self.assertEqual((first_blood.title, first_blood.value), ("First Blood!", 10))
 
     def test_an_achievement_no_longer_seeded_is_listed_without_a_key(self):
-        db.session.add(Achievement(title="First blood!", value=10, hidden=False, is_global=False))
+        db.session.add(Achievement(title="First blood!", value=10, hidden=False))
         db.session.commit()
 
         response = self.call("GET", "/achievements", self.make_user("ana"))

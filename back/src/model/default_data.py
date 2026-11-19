@@ -1,5 +1,4 @@
 from back.src.entity.achievement import Achievement, AchievementKey
-from back.src.entity.insult import Insult
 from back.src.entity.level import Level
 
 # The UI shows each achievement's title and description from front/src/locales, under achievements.<key>.
@@ -9,259 +8,211 @@ ACHIEVEMENTS = [
         title="Gotta eat'em all!",
         value=10,
         hidden=False,
-        is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
         key=AchievementKey.king_of_the_sauce,
         title="King of the Sauce",
         value=10,
         hidden=False,
-        is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
         key=AchievementKey.stack_overflow,
         title="Stack Overflow!",
         value=8,
         hidden=False,
-        is_global=True,  # Global: any pan
     ),
     Achievement(
         key=AchievementKey.king_of_the_grill,
         title="King of the Grill",
         value=20,
         hidden=False,
-        is_global=False,  # Session-specific: "in einem Raclotto"
     ),
     Achievement(
         key=AchievementKey.garbage_collector,
         title="Garbage Collector",
         value=5,
         hidden=False,
-        is_global=False,  # Session-specific: track pause within current session
     ),
     Achievement(
         key=AchievementKey.happy_new_year,
         title="Happy new Year",
         value=6,
         hidden=True,
-        is_global=True,  # Global: first pan of the year
     ),
     Achievement(
         key=AchievementKey.local_guide,
         title="Local Guide",
         value=3,
         hidden=False,
-        is_global=True,  # Global: 10 ratings total
     ),
     Achievement(
         key=AchievementKey.local_host,
         title="Local Host",
         value=10,
         hidden=False,
-        is_global=True,  # Global: 1 session total
     ),
     Achievement(
         key=AchievementKey.first_blood,
         title="First Blood!",
         value=10,
         hidden=False,
-        is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
         key=AchievementKey.double_kill,
         title="Double Kill!",
         value=30,
         hidden=False,
-        is_global=False,  # Session-specific: consecutive pans in current session
     ),
     Achievement(
         key=AchievementKey.second_to_none,
         title="Second to none",
         value=15,
         hidden=True,
-        is_global=True,  # Global: any pan at end of year
     ),
     Achievement(
         key=AchievementKey.duel,
         title="Zeit für ein D- D- D- Duell!",
         value=8,
         hidden=True,
-        is_global=False,  # Session-specific: "ein Raclotto"
     ),
     Achievement(
         key=AchievementKey.connoisseur,
         title="Connoisseur",
         value=3,
         hidden=False,
-        is_global=True,  # Global: any new ingredient
     ),
     Achievement(
         key=AchievementKey.last_pan_standing,
         title="Last Pan standing",
         value=8,
         hidden=False,
-        is_global=False,  # Session-specific: "eines Raclottos"
     ),
     Achievement(
         key=AchievementKey.easter_egg,
         title="Easter Egg",
         value=50,
         hidden=False,
-        is_global=True,  # Global: any pan at Easter
     ),
     Achievement(
         key=AchievementKey.vanilla,
         title="Vanilla",
         value=10,
         hidden=False,
-        is_global=False,  # Session-specific: pan in current session
     ),
     Achievement(
         key=AchievementKey.pandler,
         title="Pandler",
         value=10,
         hidden=False,
-        is_global=True,  # Global: across sessions
     ),
     Achievement(
         key=AchievementKey.wizard,
         title="Wizard",
         value=35,
         hidden=False,
-        is_global=False,  # Session-specific: "eines Raclottos"
     ),
     Achievement(
         key=AchievementKey.survival_of_the_fittest,
         title="Survival of the Fittest",
         value=10,
         hidden=False,
-        is_global=False,  # Session-specific: worst in a session
     ),
     Achievement(
         key=AchievementKey.raclotto_normalverbraucher,
         title="Raclotto Normalverbraucher",
         value=12,
         hidden=False,
-        is_global=True,  # Global: any pan
     ),
     Achievement(
         key=AchievementKey.verpant,
         title="VerPant",
         value=5,
         hidden=True,
-        is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
         key=AchievementKey.pantastic,
         title="Pantastic",
         value=8,
         hidden=False,
-        is_global=False,  # Session-specific: "eines Raclottos"
     ),
     Achievement(
         key=AchievementKey.steakholder,
         title="Steakholder",
         value=5,
         hidden=False,
-        is_global=False,  # Session-specific: 5 pans in a session
     ),
     Achievement(
         key=AchievementKey.biotonne,
         title="Biotonne",
         value=5,
         hidden=False,
-        is_global=False,  # Session-specific: 5 pans in a session
     ),
     Achievement(
         key=AchievementKey.pan_sexual,
         title="Pan Sexual",
         value=8,
         hidden=True,
-        is_global=True,  # Global: average across all ratings
     ),
     Achievement(
         key=AchievementKey.japan,
         title="JaPan",
         value=12,
         hidden=False,
-        is_global=True,  # Global: any pan
     ),
     Achievement(
         key=AchievementKey.pan_o_rama,
         title="Pan-O-Rama",
         value=5,
         hidden=False,
-        is_global=True,  # Global: any pan
     ),
     Achievement(
         key=AchievementKey.panini,
         title="Panini",
         value=6,
         hidden=False,
-        is_global=True,  # Global: any pan
     ),
     Achievement(
         key=AchievementKey.panda,
         title="Panda",
         value=11,
         hidden=False,
-        is_global=True,  # Global: any pan
     ),
     Achievement(
         key=AchievementKey.pan_nic,
         title="Pan-nic",
         value=15,
         hidden=False,
-        is_global=True,  # Global: any session creation
     ),
     Achievement(
         key=AchievementKey.copy_paste,
         title="Copy & Paste",
         value=10,
         hidden=True,
-        is_global=False,
     ),
     Achievement(
         key=AchievementKey.cheesus_christ,
         title="Cheesus Christ",
         value=12,
         hidden=False,
-        is_global=False,
     ),
     Achievement(
         key=AchievementKey.marzi_pan,
         title="Marzi-Pan",
         value=5,
         hidden=False,
-        is_global=False,
     ),
     Achievement(
         key=AchievementKey.firewall,
         title="Firewall",
         value=10,
         hidden=False,
-        is_global=False,
     ),
     Achievement(
         key=AchievementKey.cheese_not_found,
         title="404 Cheese not found",
         value=20,
         hidden=True,
-        is_global=False,
     ),
-]
-
-INSULTS = [
-    Insult(title="5-Minuten Terrinen Kocher"),
-    Insult(title="Rabingospieler"),
-    Insult(title="Thermomixer"),
-    Insult(title="Nichtsnutz"),
-    Insult(title="Unkreativling"),
-    Insult(title="BZgA Beratungsstelle"),
-    Insult(title="Panner"),
-    Insult(title="Langweiler"),
-    Insult(title="Spielverderber"),
-    Insult(title="Lauch"),
 ]
 
 LEVELS = [

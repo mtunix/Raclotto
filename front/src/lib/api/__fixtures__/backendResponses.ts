@@ -6,35 +6,31 @@ export const rollOutcome: RollOutcomeDto = {
     {
       "hidden": false,
       "id": 1,
-      "is_global": false,
       "key": "gotta_eat_em_all",
       "value": 10
     },
     {
       "hidden": false,
       "id": 2,
-      "is_global": false,
       "key": "king_of_the_sauce",
       "value": 10
     },
     {
       "hidden": false,
       "id": 4,
-      "is_global": false,
       "key": "king_of_the_grill",
       "value": 20
     },
     {
       "hidden": false,
       "id": 8,
-      "is_global": true,
       "key": "local_host",
       "value": 10
     }
   ],
   "events": [
     {
-      "created_at": "2026-11-19T17:03:35.708773",
+      "created_at": "2026-11-19T17:33:11.311087",
       "data": {
         "pan1_id": 2,
         "pan1_user_id": 1,
@@ -59,7 +55,7 @@ export const rollOutcome: RollOutcomeDto = {
       "name": "Ada",
       "profile_picture": "/static/pictures/ada.png"
     },
-    "cheese_level": 1,
+    "cheese_level": 6,
     "id": 2,
     "ingredients": [
       {
@@ -117,7 +113,7 @@ export const rollOutcome: RollOutcomeDto = {
         "wildcard": false
       }
     ],
-    "name": "Delicious Raclotto Pan",
+    "name": "Various Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -129,8 +125,7 @@ export const rollOutcome: RollOutcomeDto = {
     "rolled_cheese": true,
     "rolled_preparation_type": true,
     "session_id": 1,
-    "snacked": false,
-    "timestamp": "2026-11-19T17:03:35.706745",
+    "timestamp": "2026-11-19T17:33:11.308858",
     "user_id": 1
   },
   "reward": {
@@ -183,7 +178,7 @@ export const panPage: PanPageDto = {
         "name": "Ada",
         "profile_picture": "/static/pictures/ada.png"
       },
-      "cheese_level": 1,
+      "cheese_level": 6,
       "id": 2,
       "ingredients": [
         {
@@ -241,7 +236,7 @@ export const panPage: PanPageDto = {
           "wildcard": false
         }
       ],
-      "name": "Delicious Raclotto Pan",
+      "name": "Various Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -261,8 +256,7 @@ export const panPage: PanPageDto = {
       "rolled_cheese": true,
       "rolled_preparation_type": true,
       "session_id": 1,
-      "snacked": false,
-      "timestamp": "2026-11-19T17:03:35.706745",
+      "timestamp": "2026-11-19T17:33:11.308858",
       "user_id": 1
     }
   ],
@@ -301,7 +295,7 @@ export const panFilterOptions: PanFilterOptionsDto = {
 };
 
 export const loginResult: AuthResultDto = {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ2ZXIiOjAsImV4cCI6MTc5NTcwOTAxNSwiaWF0IjoxNzk1MTA0MjE1fQ.NHTXbrIZsWMNylRwNQ_04yuPAUIKYJQmbV3tr91YJxY",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ2ZXIiOjAsImV4cCI6MTc5NTcxMDc5MSwiaWF0IjoxNzk1MTA1OTkxfQ.MyE2nn1oiIJYnPMFznRGIEyHZNBHIrXxKJAbmYH-erQ",
   "user": {
     "border_style": "dashed",
     "border_texture": "cheese",
@@ -380,28 +374,24 @@ export const userProfile: UserProfileDto = {
     {
       "hidden": false,
       "id": 1,
-      "is_global": false,
       "key": "gotta_eat_em_all",
       "value": 10
     },
     {
       "hidden": false,
       "id": 2,
-      "is_global": false,
       "key": "king_of_the_sauce",
       "value": 10
     },
     {
       "hidden": false,
       "id": 4,
-      "is_global": false,
       "key": "king_of_the_grill",
       "value": 20
     },
     {
       "hidden": false,
       "id": 8,
-      "is_global": true,
       "key": "local_host",
       "value": 10
     }
@@ -482,7 +472,7 @@ export const userStats: UserStatsDto = {
       "name": "Ada",
       "profile_picture": "/static/pictures/ada.png"
     },
-    "cheese_level": 1,
+    "cheese_level": 6,
     "id": 2,
     "ingredients": [
       {
@@ -540,7 +530,7 @@ export const userStats: UserStatsDto = {
         "wildcard": false
       }
     ],
-    "name": "Delicious Raclotto Pan",
+    "name": "Various Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -560,8 +550,7 @@ export const userStats: UserStatsDto = {
     "rolled_cheese": true,
     "rolled_preparation_type": true,
     "session_id": 1,
-    "snacked": false,
-    "timestamp": "2026-11-19T17:03:35.706745",
+    "timestamp": "2026-11-19T17:33:11.308858",
     "user_id": 1
   },
   "most_pans_session": {
@@ -577,20 +566,20 @@ export const userStats: UserStatsDto = {
 
 export const invite: InviteDto = {
   "email": "carl@example.com",
-  "expires_at": "2026-11-26T17:03:35.827219",
+  "expires_at": "2026-11-26T17:33:11.421504",
   "id": 1,
   "is_used": false,
-  "token": "ax6I-FNZ7bCU-ruDxUhC4fBT2NBrGgPqk21vOa7QlZg",
+  "token": "n95RiADOKXHxYncRDNSxk2qPD3XpBs9ck9pHAzrEvHU",
   "used_at": null
 };
 
 export const inviteLookup: InviteLookupDto = {
   "email": "carl@example.com",
-  "expires_at": "2026-11-26T17:03:35.827219"
+  "expires_at": "2026-11-26T17:33:11.421504"
 };
 
 export const registration: AuthResultDto = {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJ2ZXIiOjAsImV4cCI6MTc5NTcwOTAxNiwiaWF0IjoxNzk1MTA0MjE2fQ.OkDuNZ4ZMITLwXCaOOHjmdSmUFtmfM1IhC45L1MR3Co",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJ2ZXIiOjAsImV4cCI6MTc5NTcxMDc5MSwiaWF0IjoxNzk1MTA1OTkxfQ.1AndErvOO2ZQ5Jh_ddvmcYVjSHZjm_jC9cKEmBPv4Qk",
   "user": {
     "border_style": "solid",
     "border_texture": null,
@@ -670,7 +659,7 @@ export const session: SessionDto = {
   "id": 1,
   "key": "s1",
   "name": "s1",
-  "timestamp": "2026-11-19T17:03:35.596749"
+  "timestamp": "2026-11-19T17:33:11.203714"
 };
 
 export const sessions: SessionDto[] = [
@@ -680,7 +669,7 @@ export const sessions: SessionDto[] = [
     "id": 1,
     "key": "s1",
     "name": "s1",
-    "timestamp": "2026-11-19T17:03:35.596749"
+    "timestamp": "2026-11-19T17:33:11.203714"
   }
 ];
 
@@ -1026,7 +1015,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 1,
-    "is_global": false,
     "key": "gotta_eat_em_all",
     "progress": 1.0,
     "unlocked": true,
@@ -1035,7 +1023,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 2,
-    "is_global": false,
     "key": "king_of_the_sauce",
     "progress": 0.5,
     "unlocked": false,
@@ -1044,7 +1031,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 3,
-    "is_global": true,
     "key": "stack_overflow",
     "progress": 0.0,
     "unlocked": false,
@@ -1053,7 +1039,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 4,
-    "is_global": false,
     "key": "king_of_the_grill",
     "progress": 1.0,
     "unlocked": true,
@@ -1062,7 +1047,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 5,
-    "is_global": false,
     "key": "garbage_collector",
     "progress": 0.0,
     "unlocked": false,
@@ -1071,7 +1055,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 6,
-    "is_global": true,
     "key": "happy_new_year",
     "progress": null,
     "unlocked": false,
@@ -1080,7 +1063,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 7,
-    "is_global": true,
     "key": "local_guide",
     "progress": 0.0,
     "unlocked": false,
@@ -1089,7 +1071,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 8,
-    "is_global": true,
     "key": "local_host",
     "progress": 1.0,
     "unlocked": true,
@@ -1098,7 +1079,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 9,
-    "is_global": false,
     "key": "first_blood",
     "progress": 0.0,
     "unlocked": false,
@@ -1107,7 +1087,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 10,
-    "is_global": false,
     "key": "double_kill",
     "progress": 0.0,
     "unlocked": false,
@@ -1116,7 +1095,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 11,
-    "is_global": true,
     "key": "second_to_none",
     "progress": null,
     "unlocked": false,
@@ -1125,7 +1103,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 12,
-    "is_global": false,
     "key": "duel",
     "progress": null,
     "unlocked": false,
@@ -1134,7 +1111,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 13,
-    "is_global": true,
     "key": "connoisseur",
     "progress": 1.0,
     "unlocked": true,
@@ -1143,7 +1119,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 14,
-    "is_global": false,
     "key": "last_pan_standing",
     "progress": 1.0,
     "unlocked": false,
@@ -1152,7 +1127,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 15,
-    "is_global": true,
     "key": "easter_egg",
     "progress": null,
     "unlocked": false,
@@ -1161,7 +1135,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 16,
-    "is_global": false,
     "key": "vanilla",
     "progress": 0.0,
     "unlocked": false,
@@ -1170,7 +1143,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 17,
-    "is_global": true,
     "key": "pandler",
     "progress": 0.0,
     "unlocked": false,
@@ -1179,7 +1151,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 18,
-    "is_global": false,
     "key": "wizard",
     "progress": null,
     "unlocked": false,
@@ -1188,7 +1159,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 19,
-    "is_global": false,
     "key": "survival_of_the_fittest",
     "progress": 0.0,
     "unlocked": false,
@@ -1197,7 +1167,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 20,
-    "is_global": true,
     "key": "raclotto_normalverbraucher",
     "progress": null,
     "unlocked": false,
@@ -1206,7 +1175,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 21,
-    "is_global": false,
     "key": "verpant",
     "progress": null,
     "unlocked": false,
@@ -1215,7 +1183,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 22,
-    "is_global": false,
     "key": "pantastic",
     "progress": 0.0,
     "unlocked": false,
@@ -1224,7 +1191,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 23,
-    "is_global": false,
     "key": "steakholder",
     "progress": 0.2,
     "unlocked": false,
@@ -1233,7 +1199,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 24,
-    "is_global": false,
     "key": "biotonne",
     "progress": 0.0,
     "unlocked": false,
@@ -1242,7 +1207,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 25,
-    "is_global": true,
     "key": "pan_sexual",
     "progress": null,
     "unlocked": false,
@@ -1251,7 +1215,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 26,
-    "is_global": true,
     "key": "japan",
     "progress": 0.0,
     "unlocked": false,
@@ -1260,7 +1223,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 27,
-    "is_global": true,
     "key": "pan_o_rama",
     "progress": null,
     "unlocked": false,
@@ -1269,7 +1231,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 28,
-    "is_global": true,
     "key": "panini",
     "progress": null,
     "unlocked": false,
@@ -1278,7 +1239,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 29,
-    "is_global": true,
     "key": "panda",
     "progress": null,
     "unlocked": false,
@@ -1287,7 +1247,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 30,
-    "is_global": true,
     "key": "pan_nic",
     "progress": null,
     "unlocked": false,
@@ -1296,7 +1255,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 31,
-    "is_global": false,
     "key": "copy_paste",
     "progress": null,
     "unlocked": false,
@@ -1305,7 +1263,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 32,
-    "is_global": false,
     "key": "cheesus_christ",
     "progress": null,
     "unlocked": false,
@@ -1314,7 +1271,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 33,
-    "is_global": false,
     "key": "marzi_pan",
     "progress": null,
     "unlocked": false,
@@ -1323,7 +1279,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": false,
     "id": 34,
-    "is_global": false,
     "key": "firewall",
     "progress": null,
     "unlocked": false,
@@ -1332,7 +1287,6 @@ export const achievementStatuses: AchievementStatusDto[] = [
   {
     "hidden": true,
     "id": 35,
-    "is_global": false,
     "key": "cheese_not_found",
     "progress": null,
     "unlocked": false,
@@ -1366,7 +1320,7 @@ export const leaderboard: LeaderboardEntryDto[] = [
 
 export const events: EventDto[] = [
   {
-    "created_at": "2026-11-19T17:03:35.708773",
+    "created_at": "2026-11-19T17:33:11.311087",
     "data": {
       "pan1_id": 2,
       "pan1_user_id": 1,
@@ -1565,7 +1519,7 @@ export const stats: StatsDto = {
         "name": "Ada",
         "profile_picture": "/static/pictures/ada.png"
       },
-      "cheese_level": 1,
+      "cheese_level": 6,
       "id": 2,
       "ingredients": [
         {
@@ -1623,7 +1577,7 @@ export const stats: StatsDto = {
           "wildcard": false
         }
       ],
-      "name": "Delicious Raclotto Pan",
+      "name": "Various Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -1643,8 +1597,7 @@ export const stats: StatsDto = {
       "rolled_cheese": true,
       "rolled_preparation_type": true,
       "session_id": 1,
-      "snacked": false,
-      "timestamp": "2026-11-19T17:03:35.706745",
+      "timestamp": "2026-11-19T17:33:11.308858",
       "user_id": 1
     },
     {
@@ -1697,7 +1650,7 @@ export const stats: StatsDto = {
           "wildcard": false
         }
       ],
-      "name": "Jumbled Raclotto Pan",
+      "name": "Unbiased Raclotto Pan",
       "preparation_type": null,
       "preparation_type_id": null,
       "rating": 0.0,
@@ -1705,8 +1658,7 @@ export const stats: StatsDto = {
       "rolled_cheese": false,
       "rolled_preparation_type": false,
       "session_id": 1,
-      "snacked": false,
-      "timestamp": "2026-11-19T17:03:35.643450",
+      "timestamp": "2026-11-19T17:33:11.248172",
       "user_id": 2
     }
   ]
@@ -1723,7 +1675,7 @@ export const sessionRecap: SessionRecapDto = {
       "name": "Ada",
       "profile_picture": "/static/pictures/ada.png"
     },
-    "cheese_level": 1,
+    "cheese_level": 6,
     "id": 2,
     "ingredients": [
       {
@@ -1781,7 +1733,7 @@ export const sessionRecap: SessionRecapDto = {
         "wildcard": false
       }
     ],
-    "name": "Delicious Raclotto Pan",
+    "name": "Various Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -1801,8 +1753,7 @@ export const sessionRecap: SessionRecapDto = {
     "rolled_cheese": true,
     "rolled_preparation_type": true,
     "session_id": 1,
-    "snacked": false,
-    "timestamp": "2026-11-19T17:03:35.706745",
+    "timestamp": "2026-11-19T17:33:11.308858",
     "user_id": 1
   },
   "boldest_pan": {
@@ -1816,7 +1767,7 @@ export const sessionRecap: SessionRecapDto = {
         "name": "Ada",
         "profile_picture": "/static/pictures/ada.png"
       },
-      "cheese_level": 1,
+      "cheese_level": 6,
       "id": 2,
       "ingredients": [
         {
@@ -1874,7 +1825,7 @@ export const sessionRecap: SessionRecapDto = {
           "wildcard": false
         }
       ],
-      "name": "Delicious Raclotto Pan",
+      "name": "Various Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -1894,8 +1845,7 @@ export const sessionRecap: SessionRecapDto = {
       "rolled_cheese": true,
       "rolled_preparation_type": true,
       "session_id": 1,
-      "snacked": false,
-      "timestamp": "2026-11-19T17:03:35.706745",
+      "timestamp": "2026-11-19T17:33:11.308858",
       "user_id": 1
     },
     "xp": 33
@@ -1921,7 +1871,7 @@ export const sessionRecap: SessionRecapDto = {
     },
     "pan_count": 2
   },
-  "last_pan_at": "2026-11-19T17:03:35.706745",
+  "last_pan_at": "2026-11-19T17:33:11.308858",
   "pan_count": 2,
   "participants": [
     {
@@ -1962,7 +1912,7 @@ export const sessionRecap: SessionRecapDto = {
     "id": 1,
     "key": "s1",
     "name": "s1",
-    "timestamp": "2026-11-19T17:03:35.596749"
+    "timestamp": "2026-11-19T17:33:11.203714"
   },
   "worst_pan": null
 };
@@ -1976,7 +1926,7 @@ export const imageGenerationUnavailable: ImageGenerationDto = {
 };
 
 export const generatedPicture: GeneratedPictureDto = {
-  "created_at": "2026-11-19T17:03:36.001158",
+  "created_at": "2026-11-19T17:33:11.573411",
   "id": 2,
   "image_base64": "iVBORw0KGgo=",
   "level_id": 2,
@@ -1985,7 +1935,7 @@ export const generatedPicture: GeneratedPictureDto = {
 
 export const pictureHistory: ProfilePictureDto[] = [
   {
-    "created_at": "2026-11-19T17:03:36.001158",
+    "created_at": "2026-11-19T17:33:11.573411",
     "id": 2,
     "is_candidate": true,
     "level": {
@@ -1999,7 +1949,7 @@ export const pictureHistory: ProfilePictureDto[] = [
     "profile_picture": "data:image/png;base64,iVBORw0KGgo="
   },
   {
-    "created_at": "2026-11-19T17:03:35.598062",
+    "created_at": "2026-11-19T17:33:11.205041",
     "id": 1,
     "is_candidate": false,
     "level": null,

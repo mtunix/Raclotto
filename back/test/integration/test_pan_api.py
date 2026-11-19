@@ -180,38 +180,33 @@ class TestPanApi(AppTest):
         self.assertEqual(response.json["timestamp"], pan.timestamp.isoformat())
 
     def test_missing_pan_is_404(self):
-        for method, body in (("GET", None), ("PATCH", {"snacked": True}), ("DELETE", None)):
+        for method, body in (("GET", None), ("PATCH", {"name": "Lunch"}), ("DELETE", None)):
             with self.subTest(method):
                 response = self.call(method, "/pans/999", self.ana, body=body)
                 self.assertEqual(response.status_code, 404, response.json)
                 self.assertEqual(response.json["errors"][0]["title"], "Pan not found")
 
-    def test_patch_changes_name_and_snacked(self):
+    def test_patch_renames(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
 
-        response = self.call("PATCH", f"/pans/{pan.id}", self.ana, body={"snacked": True})
         renamed = self.call("PATCH", f"/pans/{pan.id}", self.ana, body={"name": "Lunch"})
 
-        self.assertEqual(response.status_code, 200, response.json)
-        self.assertTrue(response.json["snacked"])
-        self.assertEqual(response.json["name"], "pan")
         self.assertEqual(renamed.status_code, 200, renamed.json)
-        self.assertEqual((renamed.json["name"], renamed.json["snacked"]), ("Lunch", True))
+        self.assertEqual(renamed.json["name"], "Lunch")
         self.assertEqual(renamed.json["author"]["name"], "ana")
         db.session.expire_all()
-        stored = db.session.get_one(Pan, pan.id)
-        self.assertEqual((stored.name, stored.snacked), ("Lunch", True))
+        self.assertEqual(db.session.get_one(Pan, pan.id).name, "Lunch")
 
     def test_patch_rejects_fields_it_does_not_own(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
 
         for body, pointer in (
-            ({"user_id": self.ben.id}, "/body/user_id"),
-            ({"session_id": self.s2.id}, "/body/session_id"),
-            ({"snacked": True, "user_id": self.ben.id}, "/body/user_id"),
+            ({"name": "Lunch", "user_id": self.ben.id}, "/body/user_id"),
+            ({"name": "Lunch", "session_id": self.s2.id}, "/body/session_id"),
+            ({"snacked": True, "name": "Lunch"}, "/body/snacked"),
             ({"name": None}, "/body/name"),
             ({"name": ""}, "/body/name"),
-            ({}, "/body"),
+            ({}, "/body/name"),
         ):
             with self.subTest(body=body):
                 response = self.call("PATCH", f"/pans/{pan.id}", self.ana, body=body)
@@ -220,9 +215,7 @@ class TestPanApi(AppTest):
 
         db.session.expire_all()
         stored = db.session.get_one(Pan, pan.id)
-        self.assertEqual(
-            (stored.user_id, stored.session_id, stored.snacked, stored.name), (self.ana.id, self.s1.id, False, "pan")
-        )
+        self.assertEqual((stored.user_id, stored.session_id, stored.name), (self.ana.id, self.s1.id, "pan"))
 
     def test_delete_is_204(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
@@ -243,7 +236,7 @@ class TestPanApi(AppTest):
         self.assertEqual((renamed.status_code, deleted.status_code), (403, 403))
         db.session.expire_all()
         self.assertEqual(db.session.get_one(Pan, pan.id).name, "pan")
-        self.assertEqual(self.call("PATCH", f"/pans/{pan.id}", root, body={"snacked": True}).status_code, 200)
+        self.assertEqual(self.call("PATCH", f"/pans/{pan.id}", root, body={"name": "Root's"}).status_code, 200)
         self.assertEqual(self.call("DELETE", f"/pans/{pan.id}", root).status_code, 204)
 
     def test_pan_routes_require_auth(self):

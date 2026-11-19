@@ -151,8 +151,7 @@ class TestAdminRights(AppTest):
         self.assertEqual(response.status_code, 200, response.json)
         self.assertEqual(UserAccountDto.model_validate(response.json).is_admin, True)
         self.assertEqual(self.admins(), ["ana", "Ben", "cleo"])
-        self.assertEqual(self.call("GET", "/insults", self.ben).status_code, 200)
-        self.assertEqual(self.call("POST", "/insults", self.ben, body={"title": "Panner"}).status_code, 200)
+        self.assertEqual(self.call("POST", "/preparation_type", self.ben, body={"name": "Grill"}).status_code, 200)
 
     def test_an_admin_revokes_another_admins_rights(self):
         response = self.call("PATCH", f"/users/{self.cleo.id}", self.ana, body={"is_admin": False})

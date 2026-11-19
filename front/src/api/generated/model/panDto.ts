@@ -22,7 +22,6 @@ export interface PanDto {
   rolled_cheese: boolean;
   rolled_preparation_type: boolean;
   session_id: number;
-  snacked: boolean;
   timestamp: string;
   user_id: number;
 }

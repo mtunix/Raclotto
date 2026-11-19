@@ -1,15 +1,28 @@
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
 
+from alembic import command
+from alembic.autogenerate import compare_metadata
 from alembic.config import Config as AlembicConfig
+from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from flask import Flask
+from flask.globals import app_ctx
 from sqlalchemy import create_engine, text
 
 import back.src.entity  # noqa: F401  registers every model on the metadata
+from back.src.driver.app import App
+from back.src.driver.config import ConfigInMemory
 from back.src.driver.database import db
-from back.src.driver.migrations import SCRIPT_LOCATION, SchemaDriftError, migrate
+from back.src.driver.migrations import SCRIPT_LOCATION, SchemaDriftError, include_object, migrate
+from back.src.entity.pan import Pan
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.entity.user import User
+from back.src.model.default_data import ACHIEVEMENTS
+
+FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
 
 def _head() -> str:
@@ -132,6 +145,7 @@ class MigrateTest(unittest.TestCase):
             "DROP INDEX ix_achievement_key",
             "ALTER TABLE achievement DROP COLUMN key",
             "ALTER TABLE achievement ADD COLUMN description VARCHAR",
+            "ALTER TABLE achievement ADD COLUMN is_global BOOLEAN NOT NULL DEFAULT 1",
             "INSERT INTO achievement (title, description, value, hidden, is_global) VALUES "
             "('First Blood!', 'Esse die erste Pfanne', 10, 0, 0), ('First blood!', 'alt', 10, 0, 0), "
             "('First Blood!', 'doppelt', 10, 0, 0), ('Vanilla', 'Eine Zutat', 10, 0, 0)",
@@ -156,6 +170,98 @@ class MigrateTest(unittest.TestCase):
             migrate(db)
 
         self.assertIn("user.glow_effect", str(raised.exception))
+
+
+class RetiredColumnsTest(unittest.TestCase):
+    """A database from before pan.snacked, achievement.is_global and the insult table left the models keeps them."""
+
+    # The revision before that, and the one the deployed databases were at.
+    REVISIONS = ("1e2e43eb5cf6", "3d9e6b2f4a10")
+
+    def given_database_at(self, revision: str) -> None:
+        """The schema create_all built at 3d9e6b2f4a10, with old rows, upgraded to `revision`."""
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.path = Path(directory.name) / "raclotto.db"
+        with sqlite3.connect(self.path) as connection:
+            connection.executescript((FIXTURES / "schema_3d9e6b2f4a10.sql").read_text())
+            connection.executescript(
+                """
+                CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY);
+                INSERT INTO alembic_version VALUES ('3d9e6b2f4a10');
+                INSERT INTO user (id, name, password, meat, vegetarian, vegan, fish, histamine, fructose, lactose,
+                    gluten, language, is_admin, token_version, experience_points)
+                    VALUES (1, 'ana', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0, 0, 0);
+                INSERT INTO session (id, key, name, timestamp, active) VALUES (1, 's1', 's1', '2025-12-24', 1);
+                INSERT INTO pan (id, user_id, timestamp, snacked, rolled_preparation_type, rolled_cheese, name,
+                    session_id) VALUES (1, 1, '2025-12-24', 1, 0, 0, 'old', 1);
+                INSERT INTO achievement (title, description, value, hidden, is_global)
+                    VALUES ('King of the Sauce', 'old', 1, 0, 0);
+                INSERT INTO insult (title) VALUES ('Lauch');
+                """
+            )
+        connection.close()
+        engine = create_engine(f"sqlite:///{self.path}")
+        with engine.begin() as migrating:
+            config = AlembicConfig()
+            config.set_main_option("script_location", str(SCRIPT_LOCATION))
+            config.attributes["connection"] = migrating
+            command.upgrade(config, revision)
+        engine.dispose()
+
+    def start(self) -> App:
+        config = type("Config", (ConfigInMemory,), {"SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.path}"})
+        app = App("retired-columns-test", db, config)
+        # App() leaves its startup context pushed; the test brings its own.
+        app_ctx.pop()
+        self.addCleanup(self.dispose, app)
+        return app
+
+    @staticmethod
+    def dispose(app: App) -> None:
+        with app.app_context():
+            db.session.remove()
+            db.engine.dispose()
+
+    def query(self, sql: str) -> list:
+        with sqlite3.connect(self.path) as connection:
+            rows = connection.execute(sql).fetchall()
+        connection.close()
+        return rows
+
+    def test_the_app_starts_seeds_achievements_and_inserts_pans_while_the_old_data_stays(self):
+        for revision in self.REVISIONS:
+            with self.subTest(revision=revision):
+                self.given_database_at(revision)
+                app = self.start()
+
+                with app.app_context():
+                    db.session.add(Pan(user_id=1, session_id=1, name="new"))
+                    db.session.commit()
+                    self.assertEqual(db.session.get_one(User, 1).name, "ana")
+                    self.assertEqual(db.session.get_one(RaclottoSession, 1).key, "s1")
+
+                self.assertEqual(self.query("SELECT name, snacked FROM pan ORDER BY id"), [("old", 1), ("new", 0)])
+                self.assertEqual(self.query("SELECT COUNT(*) FROM achievement"), [(len(ACHIEVEMENTS),)])
+                self.assertEqual(
+                    self.query("SELECT DISTINCT key = 'king_of_the_sauce', is_global FROM achievement ORDER BY 1"),
+                    [(0, 1), (1, 0)],
+                )
+                self.assertEqual(
+                    self.query("SELECT description FROM achievement WHERE key = 'king_of_the_sauce'"), [("old",)]
+                )
+                self.assertEqual(self.query("SELECT title FROM insult"), [("Lauch",)])
+                self.assertEqual(self.query("SELECT version_num FROM alembic_version"), [(_head(),)])
+
+    def test_autogenerate_proposes_no_drop(self):
+        self.given_database_at(self.REVISIONS[0])
+        self.start()
+
+        engine = create_engine(f"sqlite:///{self.path}")
+        with engine.connect() as connection:
+            context = MigrationContext.configure(connection, opts={"include_object": include_object})
+            self.assertEqual(compare_metadata(context, db.metadata), [])
+        engine.dispose()
 
 
 if __name__ == "__main__":

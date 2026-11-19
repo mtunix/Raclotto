@@ -67,9 +67,9 @@ class TestNullNames(AppTest):
                 self.assertEqual([i["name"] for i in response.json["pan"]["ingredients"]], names)
 
     def test_writes_on_nameless_rows_succeed(self):
-        snacked = self.call("PATCH", f"/pans/{self.pan.id}", self.ana, body={"snacked": True})
-        self.assertEqual(snacked.status_code, 200, snacked.json)
-        self.assertEqual((snacked.json["name"], snacked.json["snacked"]), (None, True))
+        renamed = self.call("PATCH", f"/pans/{self.pan.id}", self.ana, body={"name": "Named"})
+        self.assertEqual(renamed.status_code, 200, renamed.json)
+        self.assertEqual(renamed.json["name"], "Named")
 
         spicy = self.call("PATCH", f"/ingredients/{self.nameless.id}", self.ana, body={"spicy": 1})
         self.assertEqual(spicy.status_code, 200, spicy.json)
@@ -153,11 +153,10 @@ class TestResponseBuiltBeforeCommit(AppTest):
         return db.session.get(entity, entity_id)
 
     def test_patching_a_pan(self):
-        response = self.call("PATCH", f"/pans/{self.pan.id}", self.ana, body={"snacked": True, "name": "New"})
+        response = self.call("PATCH", f"/pans/{self.pan.id}", self.ana, body={"name": "New"})
 
         self.assertEqual(response.status_code, 500)
-        pan = self.stored(Pan, self.pan.id)
-        self.assertEqual((pan.name, pan.snacked), ("pan", False))
+        self.assertEqual(self.stored(Pan, self.pan.id).name, "pan")
 
     def test_patching_an_ingredient(self):
         response = self.call("PATCH", f"/ingredients/{self.odd.id}", self.ana, body={"name": "New"})

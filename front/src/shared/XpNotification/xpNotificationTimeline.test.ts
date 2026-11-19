@@ -17,7 +17,7 @@ const levelUp: RewardDto = {
 };
 
 const achievement = (id: number): AchievementDto => ({
-    id, key: null, value: 5, hidden: false, is_global: false,
+    id, key: null, value: 5, hidden: false,
 });
 const [first, second] = [achievement(1), achievement(2)];
 

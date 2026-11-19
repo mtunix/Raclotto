@@ -11,10 +11,6 @@
             "title": "Id",
             "type": "integer"
           },
-          "is_global": {
-            "title": "Is Global",
-            "type": "boolean"
-          },
           "key": {
             "anyOf": [
               {
@@ -34,8 +30,7 @@
           "id",
           "key",
           "value",
-          "hidden",
-          "is_global"
+          "hidden"
         ],
         "title": "AchievementDto",
         "type": "object"
@@ -130,10 +125,6 @@
             "title": "Id",
             "type": "integer"
           },
-          "is_global": {
-            "title": "Is Global",
-            "type": "boolean"
-          },
           "key": {
             "anyOf": [
               {
@@ -169,7 +160,6 @@
           "key",
           "value",
           "hidden",
-          "is_global",
           "unlocked",
           "progress"
         ],
@@ -1210,46 +1200,6 @@
         "title": "IngredientUsageDto",
         "type": "object"
       },
-      "InsultBody": {
-        "additionalProperties": false,
-        "properties": {
-          "title": {
-            "minLength": 1,
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title"
-        ],
-        "title": "InsultBody",
-        "type": "object"
-      },
-      "InsultDto": {
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          }
-        },
-        "required": [
-          "id",
-          "title"
-        ],
-        "title": "InsultDto",
-        "type": "object"
-      },
       "InviteDto": {
         "description": "An invite as its creator sees it; the token is what the registration link carries.",
         "properties": {
@@ -1659,10 +1609,6 @@
             "title": "Session Id",
             "type": "integer"
           },
-          "snacked": {
-            "title": "Snacked",
-            "type": "boolean"
-          },
           "timestamp": {
             "format": "date-time",
             "title": "Timestamp",
@@ -1679,7 +1625,6 @@
           "user_id",
           "session_id",
           "timestamp",
-          "snacked",
           "preparation_type_id",
           "preparation_type",
           "cheese_level",
@@ -2653,17 +2598,14 @@
         "additionalProperties": false,
         "properties": {
           "name": {
-            "default": null,
             "minLength": 1,
             "title": "Name",
             "type": "string"
-          },
-          "snacked": {
-            "default": null,
-            "title": "Snacked",
-            "type": "boolean"
           }
         },
+        "required": [
+          "name"
+        ],
         "title": "UpdatePanBody",
         "type": "object"
       },
@@ -4910,306 +4852,6 @@
         ]
       }
     },
-    "/insults": {
-      "get": {
-        "operationId": "listInsults",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/InsultDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "List all insults.",
-        "tags": [
-          "insults"
-        ]
-      },
-      "post": {
-        "operationId": "createInsult",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InsultBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsultDto"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Add an insult.",
-        "tags": [
-          "insults"
-        ]
-      }
-    },
-    "/insults/{insult_id}": {
-      "delete": {
-        "operationId": "deleteInsult",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "insult_id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Delete an insult.",
-        "tags": [
-          "insults"
-        ]
-      },
-      "get": {
-        "operationId": "getInsult",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "insult_id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsultDto"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Get an insult by id.",
-        "tags": [
-          "insults"
-        ]
-      },
-      "patch": {
-        "operationId": "updateInsult",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "insult_id",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InsultBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsultDto"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Change an insult's title.",
-        "tags": [
-          "insults"
-        ]
-      }
-    },
     "/invites": {
       "get": {
         "operationId": "listInvites",
@@ -6114,7 +5756,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Rename your own pan or mark it eaten.",
+        "summary": "Rename your own pan.",
         "tags": [
           "pans"
         ]

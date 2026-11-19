@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from back.src.dto.achievement import AchievementDto
-from back.src.dto.base import RequestDto, ResponseDto, omittable
+from back.src.dto.base import RequestDto, ResponseDto
 from back.src.dto.event import EventDto
 from back.src.dto.ingredient import IngredientDto
 from back.src.dto.level import LevelDto
@@ -25,7 +25,6 @@ class PanDto(ResponseDto):
     user_id: int
     session_id: int
     timestamp: datetime
-    snacked: bool
     preparation_type_id: int | None
     preparation_type: PrepTypeDto | None
     cheese_level: int | None
@@ -46,7 +45,6 @@ class PanDto(ResponseDto):
             user_id=pan.user_id,
             session_id=pan.session_id,
             timestamp=pan.timestamp,
-            snacked=pan.snacked,
             preparation_type_id=pan.preparation_type_id,
             preparation_type=PrepTypeDto.model_validate(pan.preparation_type) if pan.preparation_type else None,
             cheese_level=pan.cheese_level,
@@ -171,12 +169,4 @@ class PanFilterOptionsDto(ResponseDto):
 
 
 class UpdatePanBody(RequestDto):
-    # Omitted fields are left unchanged; null is not a value either field takes.
-    name: str = omittable(min_length=1)
-    snacked: bool = omittable()
-
-    @model_validator(mode="after")
-    def _changes_something(self) -> UpdatePanBody:
-        if not self.model_fields_set:
-            raise ValueError("Give at least one field to change")
-        return self
+    name: str = Field(min_length=1)

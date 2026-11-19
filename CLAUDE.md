@@ -32,7 +32,9 @@ patterns from its neighbours.
 Schema changes ship with an Alembic revision (`venv/bin/alembic revision -m "..."`; render it with
 `--autogenerate` against a database at head via `RACLOTTO_DATABASE_URL`). At startup `migrate()`
 creates and stamps a new database, upgrades an existing one, and refuses to start if a model
-column is still missing. Revisions don't import app code: freeze any data they need.
+column is still missing. Revisions don't import app code: freeze any data they need. A table or
+column the models drop stays in the database, listed in `RETIRED_*` (`driver/migrations.py`) so
+autogenerate leaves it alone; a revision gives a NOT NULL one a server default.
 
 Every endpoint is typed: `BaseApi.endpoint(route, methods, query=, body=, response=, status=, errors=, operation_id=)`.
 
@@ -75,7 +77,7 @@ The deep modules in `interactor/` and what they own:
   starts at the lowest level.
 - **`permissions.py` — `Permissions(user)`**: who may change what. A session is its creator's to
   rename, close, reactivate, delete and configure events for; a pan its author's; the global event
-  configs, default preparation types and insults an admin's. Admins may do all of it, and grant or
+  configs and default preparation types an admin's. Admins may do all of it, and grant or
   revoke admin for anyone but themselves, so the last admin can't be lost. Rolling,
   rating and a session's ingredients are open to everyone signed in. Never check ownership in a route.
 - **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
