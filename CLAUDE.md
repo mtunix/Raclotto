@@ -80,7 +80,7 @@ The deep modules in `interactor/` and what they own:
 | `api/generated/` | orval output from `back/openapi.json`: endpoint functions, SWR hooks, key getters, DTO types. Never edit; `npm run gen:api`. |
 | `lib/api/transport.ts`, `orvalMutator.ts` | The seam: generated code calls the mutator, which calls `transport()`. Auth hooks are registered by `AuthSlice`. |
 | `lib/api/swrHooks.ts` | Cache invalidation (`mutateX`) built on the generated key getters; SWR retry policy. |
-| `model/diet.ts`, `model/levelProgress.ts`, `features/generation/applyRollOutcome.ts`, `features/rating/ratePan.ts`, `features/ingredients/ingredientCatalog.ts`, `features/history/usePanPages.ts`, `features/settings/ingredientImport.ts`, `shared/EventDisplay/sessionEvents.ts`, `shared/XpNotification/xpNotificationTimeline.ts`, `shared/profilePictureHistory.ts` | Hand-written domain logic over the generated types. |
+| `model/diet.ts`, `model/levelProgress.ts`, `features/generation/applyRollOutcome.ts`, `features/rating/ratePan.ts`, `features/ingredients/ingredientCatalog.ts`, `features/history/usePanPages.ts`, `features/settings/ingredientImport.ts`, `shared/EventDisplay/sessionEvents.ts`, `shared/XpNotification/xpNotificationTimeline.ts`, `shared/myProfilePicture.ts` | Hand-written domain logic over the generated types. |
 | `features/`, `shared/` | Feature views and shared components. `shared/` never imports `features/`. |
 | `AuthSlice.ts`, `AppSlice.ts` | Zustand stores (signed-in user, current session). |
 

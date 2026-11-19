@@ -11,17 +11,15 @@ import {
 } from "antd";
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import {
-  getProfilePictureHistory,
-  useGetProfilePictureHistory,
-} from "../api/generated/endpoints/images/images";
-import { mutateProfilePictureHistory, onErrorRetry } from "../lib/api/swrHooks";
-import { chooseCandidatePicture } from "./profilePictureHistory";
+import { useGetProfilePictureHistory } from "../api/generated/endpoints/images/images";
+import { onErrorRetry } from "../lib/api/swrHooks";
+import { chooseCandidatePicture } from "./myProfilePicture";
 import { getProfilePictureUrl } from "../lib/utils/profilePictureUrl";
 
 interface ProfilePictureManagerProps {
   currentPicture?: string | null;
-  onPictureChange: (picture: string | null) => void;
+  /** Saving waits for it; in direct mode it is called on every change instead. */
+  onPictureChange: (picture: string | null) => void | Promise<void>;
   disabled?: boolean;
   size?: number;
   showLabel?: boolean;
@@ -251,30 +249,7 @@ export function ProfilePictureManager({
 
   const handleSave = async () => {
     if (tempPicture !== currentPicture) {
-      onPictureChange(tempPicture);
-
-      // After the picture is saved, refetch history to get the newly saved picture
-      // and automatically set it as the candidate
-      if (userId && !directMode) {
-        try {
-          // Wait a bit for the backend to process the picture
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // The history is newest first.
-          const [newestPicture] = await getProfilePictureHistory(userId);
-          if (newestPicture && !newestPicture.is_candidate) {
-            await chooseCandidatePicture(userId, newestPicture.id);
-          } else {
-            await mutateProfilePictureHistory(userId);
-          }
-        } catch (error) {
-          console.error(
-            "Failed to set newly saved picture as candidate:",
-            error,
-          );
-          // Continue anyway, the picture was still saved successfully
-        }
-      }
+      await onPictureChange(tempPicture);
     }
     setIsModalVisible(false);
   };

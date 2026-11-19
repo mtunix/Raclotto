@@ -11,10 +11,8 @@ import {
   message,
 } from "antd";
 import { useTranslation } from "react-i18next";
-import { generateProfilePicture } from "../../api/generated/endpoints/images/images";
 import type { GeneratedPictureDto } from "../../api/generated/model";
-import { mutateUserProfile } from "../../lib/api/swrHooks";
-import { useAuthStore } from "../../AuthSlice";
+import { generateMyPicture } from "../../shared/myProfilePicture";
 import styles from "./GenerateView/GenerateView.module.css";
 
 const { Title, Text } = Typography;
@@ -43,12 +41,9 @@ export function LevelUpPictureModal({
     if (!open || !levelId) return;
     let cancelled = false;
     setNewProfilePicture(null);
-    generateProfilePicture({ level_id: levelId })
+    generateMyPicture(levelId)
       .then((picture) => {
-        if (cancelled) return;
-        setNewProfilePicture(picture);
-        // Refetch profile data to update the display with the new image
-        mutateUserProfile(useAuthStore.getState().user?.id);
+        if (!cancelled) setNewProfilePicture(picture);
       })
       .catch((error) => {
         console.error("Error generating profile picture:", error);

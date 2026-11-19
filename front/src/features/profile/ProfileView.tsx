@@ -18,9 +18,7 @@ import { ReloadOutlined } from "@ant-design/icons";
 import { useParams } from "react-router";
 import { useAuthStore } from "../../AuthSlice";
 import { useTranslation } from "react-i18next";
-import { mutateMe, onErrorRetry } from "../../lib/api/swrHooks";
-import { updateMe } from "../../api/generated/endpoints/auth/auth";
-import { generateProfilePicture } from "../../api/generated/endpoints/images/images";
+import { onErrorRetry } from "../../lib/api/swrHooks";
 import {
   useGetUserProfile,
   useGetUserStats,
@@ -36,6 +34,7 @@ import { displayName } from "../../shared/displayName";
 import { achievementValueColor } from "../../shared/achievementValueColor";
 import { levelProgress } from "../../model/levelProgress";
 import { ProfilePictureManager } from "../../shared/ProfilePictureManager";
+import { changeMyPicture, generateMyPicture } from "../../shared/myProfilePicture";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { getTextureBorderImage } from "../../lib/borderTextures";
 
@@ -45,7 +44,6 @@ export function ProfileView() {
   const { t } = useTranslation();
   const { userId } = useParams<{ userId?: string }>();
   const currentUser = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
 
   // Use current user ID if no userId provided
   const targetUserId = userId || currentUser?.id?.toString() || "0";
@@ -65,7 +63,6 @@ export function ProfileView() {
     data: userProfile,
     isLoading: loadingProfile,
     error: profileError,
-    mutate: mutateUserProfile,
   } = useGetUserProfile(targetUserIdNumber, { swr });
   const { data: userStats, isLoading: loadingStats } = useGetUserStats(
     targetUserIdNumber,
@@ -93,13 +90,7 @@ export function ProfileView() {
 
     setIsUpdatingProfile(true);
     try {
-      // null removes the profile picture
-      setUser(await updateMe({ profile_picture: newPicture }));
-      await mutateMe();
-
-      // Re-fetch profile data to update the display immediately
-      await mutateUserProfile();
-
+      await changeMyPicture(newPicture);
       message.success(
         t("profile.pictureUpdated") || "Profile picture updated successfully",
       );
@@ -120,19 +111,10 @@ export function ProfileView() {
 
     setIsRegeneratingPicture(true);
     try {
-      // Call the new profile picture generation endpoint
-      // This endpoint includes the user's previous picture as context for Gemini
-      const { image_base64 } = await generateProfilePicture({
-        level_id: profileData.level?.id,
-      });
-
+      const { image_base64 } = await generateMyPicture(profileData.level?.id);
       if (!image_base64) {
         throw new Error("No image data returned from server");
       }
-
-      // Refetch profile data to update the display with the new image
-      await mutateUserProfile();
-
       message.success(
         t("profile.pictureUpdated") || "Profile picture updated successfully",
       );
