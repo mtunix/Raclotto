@@ -6,8 +6,8 @@ from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
     EvaluationResult,
-    PanRated,
 )
+from back.src.interactor.facts import PanRated
 
 
 class LocalGuideEvaluator(AchievementEvaluator):

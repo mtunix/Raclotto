@@ -8,9 +8,8 @@ from back.src.interactor.achievement_evaluator import (
     Audience,
     EvaluationContext,
     EvaluationResult,
-    Fact,
-    SessionClosed,
 )
+from back.src.interactor.facts import Fact, SessionClosed
 
 
 class LastPanStandingEvaluator(AchievementEvaluator):

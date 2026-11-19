@@ -116,6 +116,18 @@ class EventApiTest(AppTest):
         self.assertEqual((changed.json["enabled"], changed.json["frequency_minutes"]), (True, 20))
         self.assertEqual(db.session.query(EventConfig).count(), 1)
 
+    def test_saving_a_session_config_leaves_the_global_one_alone(self):
+        global_config = self.make_config(enabled=True)
+
+        response = self.call("POST", "/events/configs", self.ana,
+                             body={"event_type": "pan_swap", "enabled": False, "session_key": "s1"})
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertNotEqual(response.json["id"], global_config.id)
+        self.assertEqual(response.json["session_id"], self.session.id)
+        db.session.refresh(global_config)
+        self.assertTrue(global_config.enabled)
+
     def test_saving_without_a_session_changes_the_global_config(self):
         response = self.call("POST", "/events/configs", self.ana, body={"event_type": "pan_swap", "enabled": False})
 

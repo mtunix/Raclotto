@@ -7,9 +7,8 @@ from back.src.interactor.achievement_evaluator import (
     Audience,
     EvaluationContext,
     EvaluationResult,
-    Fact,
-    PanRated,
 )
+from back.src.interactor.facts import Fact, PanRated
 
 
 class SurvivalOfTheFittestEvaluator(AchievementEvaluator):

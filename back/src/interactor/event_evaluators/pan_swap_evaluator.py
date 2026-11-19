@@ -1,119 +1,47 @@
-from typing import Any, Dict, Optional
 from datetime import datetime, timedelta
-from back.src.entity.event import Event
-from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.pan import Pan
-from back.src.interactor.event_evaluator import EventEvaluator
+from typing import Optional
+
+from back.src.interactor.event_evaluator import EventEvaluator, Triggered
+from back.src.interactor.facts import Fact, PanRolled
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.user_repository import UserRepository
-from back.src.repository.event_repository import EventRepository
-from back.src.driver.database import db
 
 
 class PanSwapEvaluator(EventEvaluator):
-    """
-    Evaluator for "Pan Swap" event.
-    Triggers when two pans are created within 10 minutes of each other in the same session.
-    Can only occur once per hour.
-    """
-    
-    def __init__(self) -> None:
-        self.pan_repository = PanRepository()
-        self.user_repository = UserRepository()
-        self.event_repository = EventRepository()
-        self.time_window_minutes = 10
-        self.cooldown_hours = 1
-    
-    def get_event_type(self) -> str:
-        return "pan_swap"
-    
-    def evaluate(
-        self,
-        session: RaclottoSession,
-        context: Dict[str, Any]
-    ) -> Optional[Event]:
-        """
-        Check if a pan swap event should be triggered.
-        Expects context to contain 'pan' key with the newly created pan.
-        
-        :param session: The session
-        :param context: Context dict with 'pan' key
-        :return: Event if triggered, None otherwise
-        """
-        pan = context.get('pan')
-        if not pan or not isinstance(pan, Pan):
-            return None
-        
-        # Check if a pan_swap event has occurred in the last hour
-        pan_timestamp = pan.timestamp if pan.timestamp else datetime.now()
-        one_hour_ago = pan_timestamp - timedelta(hours=self.cooldown_hours)
-        
-        recent_events = db.session.query(Event).filter(
-            Event.session_id == session.id,
-            Event.event_type == self.get_event_type(),
-            Event.created_at >= one_hour_ago
-        ).all()
-        
-        if recent_events:
-            # Event already occurred in the last hour, don't trigger again
-            return None
-        
-        # Get all pans in the session
-        session_pans = self.pan_repository.by_session(session.key)
-        
-        if len(session_pans) < 2:
-            return None
-        
-        # Find pans created within the time window
-        time_window_start = pan_timestamp - timedelta(minutes=self.time_window_minutes)
-        time_window_end = pan_timestamp + timedelta(minutes=self.time_window_minutes)
-        
-        # Find other pans within the time window (excluding the current pan)
-        nearby_pans = [
-            p for p in session_pans
-            if p.id != pan.id
-            and p.timestamp
-            and time_window_start <= p.timestamp <= time_window_end
-        ]
-        
-        if not nearby_pans:
-            return None
-        
-        # Get the closest pan (most recent within window)
-        closest_pan = max(nearby_pans, key=lambda p: p.timestamp if p.timestamp else datetime.min)
-        
-        # Don't trigger if both pans belong to the same user
-        if pan.user_id == closest_pan.user_id:
-            return None
-        
-        # Get user names
-        pan_user = self.user_repository.by_id(pan.user_id)
-        closest_pan_user = self.user_repository.by_id(closest_pan.user_id)
-        
-        if not pan_user or not closest_pan_user:
-            return None
-        
-        # Create event message
-        message = f"Swap your pans! {pan_user.name} and {closest_pan_user.name} created pans within {self.time_window_minutes} minutes of each other."
-        
-        # Create event data
-        event_data = {
-            "pan1_id": pan.id,
-            "pan1_user_id": pan.user_id,
-            "pan1_user_name": pan_user.name,
-            "pan2_id": closest_pan.id,
-            "pan2_user_id": closest_pan.user_id,
-            "pan2_user_name": closest_pan_user.name,
-            "time_window_minutes": self.time_window_minutes
-        }
-        
-        # Create event
-        event = Event(
-            session_id=session.id,
-            event_type=self.get_event_type(),
-            message=message,
-            data=event_data
-        )
-        
-        return event
+    """Two users rolled pans within ``window`` of each other: they swap pans."""
 
+    event_type = "pan_swap"
+    window = timedelta(minutes=10)
+
+    def evaluate(self, fact: Fact) -> Optional[Triggered]:
+        if not isinstance(fact, PanRolled):
+            return None
+        pan = fact.pan
+        rolled_at = pan.timestamp or datetime.now()
+        nearby = [
+            p for p in PanRepository().by_session(fact.session.key)
+            if p.id != pan.id and p.timestamp and abs(p.timestamp - rolled_at) <= self.window
+        ]
+        if not nearby:
+            return None
+        other = max(nearby, key=lambda p: p.timestamp)
+        if other.user_id == pan.user_id:
+            return None
+
+        users = UserRepository()
+        roller, partner = users.by_id(pan.user_id), users.by_id(other.user_id)
+        if roller is None or partner is None:
+            return None
+        minutes = int(self.window.total_seconds() // 60)
+        return Triggered(
+            message=f"Swap your pans! {roller.name} and {partner.name} created pans within {minutes} minutes of each other.",
+            data={
+                "pan1_id": pan.id,
+                "pan1_user_id": roller.id,
+                "pan1_user_name": roller.name,
+                "pan2_id": other.id,
+                "pan2_user_id": partner.id,
+                "pan2_user_name": partner.name,
+                "time_window_minutes": minutes,
+            },
+        )

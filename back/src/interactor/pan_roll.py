@@ -29,7 +29,7 @@ from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.src.interactor.achievements import Achievements, PanRolled
 from back.src.interactor.diet import Diet
-from back.src.interactor.event_service import EventService
+from back.src.interactor.events import Events
 from back.src.interactor.level_service import LevelService
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.level_repository import LevelRepository
@@ -140,10 +140,12 @@ class PanRoll:
         rng: Optional[random.Random] = None,
         name_pan: Callable[[], str] = _random_pan_name,
         achievements: Optional[Achievements] = None,
+        events: Optional[Events] = None,
     ):
         self._rng = rng or random.Random()
         self._name_pan = name_pan
         self._achievements = achievements or Achievements()
+        self._events = events or Events()
         self._sessions = SessionRepository()
         self._ingredients = IngredientRepository()
         self._prep_types = PreparationTypeRepository()
@@ -200,8 +202,9 @@ class PanRoll:
             next_level=self._levels.next_level(level) if level else None,
         )
 
-        events = EventService().evaluate_events_for_session(session, {"pan": pan})
-        changes = self._achievements.record(PanRolled(pan=pan, user=user, session=session))
+        rolled = PanRolled(pan=pan, user=user, session=session)
+        events = self._events.record(rolled)
+        changes = self._achievements.record(rolled)
 
         return RollOutcome(
             pan=pan,

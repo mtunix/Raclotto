@@ -1,41 +1,30 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
-from datetime import datetime
+from dataclasses import dataclass, field
+from datetime import timedelta
+from typing import Any, ClassVar, Optional
 
-from back.src.entity.event import Event
-from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.pan import Pan
+from back.src.interactor.facts import Fact, PanRolled
+
+
+@dataclass(frozen=True)
+class Triggered:
+    """An event to announce: its message and the data the frontend shows with it."""
+
+    message: str
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 class EventEvaluator(ABC):
-    """Base class for event evaluators."""
-    
+    """Decides whether one event type fires for a fact.
+
+    ``event_type`` names it in configs and stored events. ``cooldown`` is how long a session
+    waits before the event can fire again, unless the event's config sets ``frequency_minutes``.
+    """
+
+    event_type: ClassVar[str]
+    reacts_to: ClassVar[tuple[type[Fact], ...]] = (PanRolled,)
+    cooldown: ClassVar[timedelta] = timedelta(hours=1)
+
     @abstractmethod
-    def evaluate(
-        self,
-        session: RaclottoSession,
-        context: Dict[str, Any]
-    ) -> Optional[Event]:
-        """
-        Evaluate whether an event should be triggered.
-        
-        :param session: The session to evaluate events for
-        :param context: Context information (e.g., newly created pan)
-        :return: Event instance if event should be triggered, None otherwise
-        """
-        pass
-    
-    @abstractmethod
-    def get_event_type(self) -> str:
-        """
-        Get the event type this evaluator handles.
-        
-        :return: Event type string
-        """
-        pass
-
-
-
-
-
-
+    def evaluate(self, fact: Fact) -> Optional[Triggered]:
+        """The event to announce for ``fact``, or None."""

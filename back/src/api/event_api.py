@@ -4,7 +4,7 @@ from back.src.driver.database import db
 from back.src.dto.event import EventConfigDto, EventDto, SaveEventConfigBody, UpdateEventConfigBody
 from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.interactor.event_service import EventService
+from back.src.interactor.events import Events
 from back.src.repository.event_config_repository import EventConfigRepository
 from back.src.repository.session_repository import SessionRepository
 
@@ -14,7 +14,7 @@ class EventApi(BaseApi):
 
     def __init__(self) -> None:
         super().__init__()
-        self.event_service = EventService()
+        self.events = Events()
         self.session_repository = SessionRepository()
         self.config_repository = EventConfigRepository()
 
@@ -34,15 +34,14 @@ class EventApi(BaseApi):
     @require_auth
     def get_events(self, query: SessionKeyQuery) -> list[EventDto]:
         """List a session's events the signed-in user has not dismissed, newest first."""
-        self._session(query.session_key)
-        events = self.event_service.get_pending_events(query.session_key, get_current_user().id)
+        events = self.events.pending(self._session(query.session_key), get_current_user())
         return [EventDto.model_validate(event) for event in events]
 
     @BaseApi.endpoint("/<int:event_id>/dismiss", ["POST"], status=204, operation_id="dismissEvent", errors=(404,))
     @require_auth
     def dismiss_event(self, event_id: int) -> None:
         """Hide an event from the signed-in user; other users still see it."""
-        if not self.event_service.dismiss_event(event_id, get_current_user().id):
+        if not self.events.dismiss(event_id, get_current_user()):
             raise ApiError(
                 ApiErrorCode.resource_not_found,
                 status=404,
@@ -57,7 +56,7 @@ class EventApi(BaseApi):
     def get_event_configs(self, query: SessionFilterQuery) -> list[EventConfigDto]:
         """List the global event configs and the session's own; without a known session, every config."""
         session = self.session_repository.by_key(query.session_key) if query.session_key is not None else None
-        configs = self.event_service.get_all_configs(session.id if session else None)
+        configs = self.events.configs(session)
         return [EventConfigDto.model_validate(config) for config in configs]
 
     @BaseApi.endpoint("/configs", ["POST"], body=SaveEventConfigBody, response=EventConfigDto,
@@ -65,10 +64,8 @@ class EventApi(BaseApi):
     @require_auth
     def create_event_config(self, body: SaveEventConfigBody) -> EventConfigDto:
         """Create or change the config of an event type, the session's own or the global one."""
-        session_id = self._session(body.session_key).id if body.session_key is not None else None
-        config = self.event_service.create_or_update_config(
-            body.event_type, body.enabled, body.frequency_minutes, session_id
-        )
+        session = self._session(body.session_key) if body.session_key is not None else None
+        config = self.events.configure(body.event_type, body.enabled, body.frequency_minutes, session)
         dto = EventConfigDto.model_validate(config)
         db.session.commit()
         return dto

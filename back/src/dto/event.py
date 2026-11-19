@@ -27,7 +27,7 @@ class EventConfigDto(ResponseDto):
     # Null for the global config every session without its own falls back to.
     session_id: int | None
     enabled: bool
-    # Stored and returned, but no event evaluator reads it yet.
+    # Minimum minutes between two events of this type in a session; null: the event's own cooldown.
     frequency_minutes: int | None
 
 

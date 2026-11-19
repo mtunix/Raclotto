@@ -3,62 +3,11 @@ from dataclasses import dataclass
 from typing import List, Literal, Optional, Tuple
 
 from back.src.entity.achievement import Achievement
-from back.src.entity.ingredient import Ingredient
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.rating import Rating
 from back.src.entity.user import User
+from back.src.interactor.facts import Fact, PanRated, PanRolled
 
-
-@dataclass(frozen=True)
-class PanRolled:
-    pan: Pan
-    user: User
-    session: RaclottoSession
-
-    @property
-    def actor(self) -> Optional[User]:
-        return self.user
-
-
-@dataclass(frozen=True)
-class PanRated:
-    rating: Rating
-    pan: Pan
-    rater: User
-    session: RaclottoSession
-
-    @property
-    def actor(self) -> Optional[User]:
-        return self.rater
-
-
-@dataclass(frozen=True)
-class IngredientAdded:
-    ingredient: Ingredient
-    user: User
-    session: RaclottoSession
-
-    @property
-    def actor(self) -> Optional[User]:
-        return self.user
-
-
-@dataclass(frozen=True)
-class CatalogChanged:
-    """A session's ingredient catalog was replaced or merged."""
-
-    session: RaclottoSession
-    actor: Optional[User] = None
-
-
-@dataclass(frozen=True)
-class SessionClosed:
-    session: RaclottoSession
-    actor: Optional[User] = None
-
-
-Fact = PanRolled | PanRated | IngredientAdded | CatalogChanged | SessionClosed
 
 Audience = Literal["actor", "pan_owner", "session_members", "last_pan_owner"]
 """Whom an evaluator judges when a fact arrives:

@@ -6,13 +6,10 @@ from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     Audience,
-    CatalogChanged,
     EvaluationContext,
     EvaluationResult,
-    Fact,
-    IngredientAdded,
-    PanRolled,
 )
+from back.src.interactor.facts import CatalogChanged, Fact, IngredientAdded, PanRolled
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.pan_repository import PanRepository
 

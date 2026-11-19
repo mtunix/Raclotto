@@ -10,9 +10,8 @@ from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     EvaluationContext,
     EvaluationResult,
-    Fact,
-    IngredientAdded,
 )
+from back.src.interactor.facts import Fact, IngredientAdded
 
 
 class ConnoisseurEvaluator(AchievementEvaluator):

@@ -19,15 +19,17 @@ from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     Audience,
-    CatalogChanged,
     EvaluationContext,
+)
+from back.src.interactor.achievement_registry import get_registry
+from back.src.interactor.facts import (
+    CatalogChanged,
     Fact,
     IngredientAdded,
     PanRated,
     PanRolled,
     SessionClosed,
 )
-from back.src.interactor.achievement_registry import get_registry
 from back.src.repository.achievement_repository import AchievementRepository
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.rating_repository import RatingRepository
