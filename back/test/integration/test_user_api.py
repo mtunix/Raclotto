@@ -1,9 +1,10 @@
 from back.src.driver.database import db
-from back.src.dto.user import UserProfileDto
+from back.src.dto.user import UserAccountDto, UserProfileDto
 from back.src.dto.user_stats import UserStatsDto
 from back.src.entity.achievement import Achievement
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.rating import Rating
+from back.src.entity.user import User
 from back.src.repository.level_repository import LevelRepository
 from back.test.support import AppTest
 
@@ -124,3 +125,82 @@ class TestUserStats(AppTest):
         self.assertEqual(stats.most_ingredients_pan.id, big.id)
         self.assertEqual(len(stats.most_ingredients_pan.ingredients), 3)
         self.assertEqual(stats.most_ingredients_pan.author.name, "ana")
+
+
+class TestAdminRights(AppTest):
+    def setUp(self):
+        super().setUp()
+        self.ana = self.make_user("ana", is_admin=True)
+        self.ben = self.make_user("Ben")
+        self.cleo = self.make_user("cleo", is_admin=True)
+
+    def admins(self) -> list[str]:
+        return sorted((u.name for u in db.session.query(User).filter_by(is_admin=True)), key=str.casefold)
+
+    def test_an_admin_lists_every_user_by_name_with_their_rights(self):
+        response = self.call("GET", "/users", self.ana)
+
+        self.assertEqual(response.status_code, 200, response.json)
+        users = [UserAccountDto.model_validate(u) for u in response.json]
+        self.assertEqual([(u.name, u.is_admin) for u in users], [("ana", True), ("Ben", False), ("cleo", True)])
+        self.assertNotIn("email", response.json[0])
+
+    def test_an_admin_grants_admin(self):
+        response = self.call("PATCH", f"/users/{self.ben.id}", self.ana, body={"is_admin": True})
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(UserAccountDto.model_validate(response.json).is_admin, True)
+        self.assertEqual(self.admins(), ["ana", "Ben", "cleo"])
+        self.assertEqual(self.call("GET", "/insults", self.ben).status_code, 200)
+        self.assertEqual(self.call("POST", "/insults", self.ben, body={"title": "Panner"}).status_code, 200)
+
+    def test_an_admin_revokes_another_admins_rights(self):
+        response = self.call("PATCH", f"/users/{self.cleo.id}", self.ana, body={"is_admin": False})
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertFalse(response.json["is_admin"])
+        self.assertEqual(self.admins(), ["ana"])
+        self.assertEqual(self.call("GET", "/users", self.cleo).status_code, 403)
+
+    def test_granting_twice_changes_nothing(self):
+        self.call("PATCH", f"/users/{self.ben.id}", self.ana, body={"is_admin": True})
+
+        response = self.call("PATCH", f"/users/{self.ben.id}", self.ana, body={"is_admin": True})
+
+        self.assertEqual((response.status_code, response.json["is_admin"]), (200, True))
+
+    def test_a_non_admin_neither_lists_nor_changes_admin_rights(self):
+        with self.recorded_writes() as writes:
+            responses = [
+                self.call("GET", "/users", self.ben),
+                self.call("PATCH", f"/users/{self.ben.id}", self.ben, body={"is_admin": True}),
+                self.call("PATCH", f"/users/{self.ana.id}", self.ben, body={"is_admin": False}),
+            ]
+
+        self.assertEqual([r.status_code for r in responses], [403, 403, 403])
+        self.assertEqual(writes, [])
+        self.assertEqual(self.admins(), ["ana", "cleo"])
+
+    def test_an_admin_cant_revoke_their_own_admin(self):
+        with self.recorded_writes() as writes:
+            response = self.call("PATCH", f"/users/{self.ana.id}", self.ana, body={"is_admin": False})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(writes, [])
+        self.assertEqual(self.admins(), ["ana", "cleo"])
+
+    def test_the_last_admin_stays_one(self):
+        self.call("PATCH", f"/users/{self.cleo.id}", self.ana, body={"is_admin": False})
+
+        response = self.call("PATCH", f"/users/{self.ana.id}", self.ana, body={"is_admin": False})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.admins(), ["ana"])
+
+    def test_unknown_user_invalid_body_and_no_token(self):
+        self.assertEqual(self.call("PATCH", "/users/999", self.ana, body={"is_admin": True}).status_code, 404)
+        for body in ({}, {"is_admin": None}, {"is_admin": True, "name": "x"}):
+            with self.subTest(body=body):
+                self.assertEqual(self.call("PATCH", f"/users/{self.ben.id}", self.ana, body=body).status_code, 400)
+        self.assertEqual(self.call("GET", "/users").status_code, 401)
+        self.assertEqual(self.call("PATCH", f"/users/{self.ben.id}", body={"is_admin": True}).status_code, 401)

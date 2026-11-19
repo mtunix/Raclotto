@@ -213,7 +213,16 @@
     "changePasswordInfo": "Changing your password signs you out on every other device.",
     "passwordChanged": "Password changed. Your other devices are signed out.",
     "wrongPassword": "Your current password is not right.",
-    "onlyCreatorManages": "Only the session's creator or an admin can rename it, change its events or end it."
+    "onlyCreatorManages": "Only the session's creator or an admin can rename it, change its events or end it.",
+    "admins": "Admins",
+    "adminRights": "Admin rights",
+    "adminsDescription": "Admins may change every session and pan, and the global settings. Your own rights are changed by another admin.",
+    "admin": "Admin",
+    "you": "You",
+    "ownAdminLocked": "Only another admin can change your rights",
+    "adminGranted": "{{name}} is now an admin",
+    "adminRevoked": "{{name}} is no longer an admin",
+    "adminChangeFailed": "Failed to change admin rights"
   },
   "events": {
     "panSwap": "Pan Swap Event"

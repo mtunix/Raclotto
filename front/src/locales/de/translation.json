@@ -213,7 +213,16 @@
     "changePasswordInfo": "Wenn Sie Ihr Passwort ändern, werden Sie auf allen anderen Geräten abgemeldet.",
     "passwordChanged": "Passwort geändert. Ihre anderen Geräte sind abgemeldet.",
     "wrongPassword": "Ihr aktuelles Passwort stimmt nicht.",
-    "onlyCreatorManages": "Nur wer die Session erstellt hat oder ein Admin kann sie umbenennen, ihre Ereignisse ändern oder sie beenden."
+    "onlyCreatorManages": "Nur wer die Session erstellt hat oder ein Admin kann sie umbenennen, ihre Ereignisse ändern oder sie beenden.",
+    "admins": "Admins",
+    "adminRights": "Adminrechte",
+    "adminsDescription": "Admins dürfen jede Session und Pfanne sowie die globalen Einstellungen ändern. Ihre eigenen Rechte ändert ein anderer Admin.",
+    "admin": "Admin",
+    "you": "Sie",
+    "ownAdminLocked": "Nur ein anderer Admin kann Ihre Rechte ändern",
+    "adminGranted": "{{name}} ist jetzt Admin",
+    "adminRevoked": "{{name}} ist kein Admin mehr",
+    "adminChangeFailed": "Adminrechte konnten nicht geändert werden"
   },
   "events": {
     "panSwap": "Pfannen-Tausch-Ereignis"

@@ -3,11 +3,13 @@ import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
 import {
+    grantedAdmin,
     ingredientExport,
     ingredientImport,
     invite,
     me,
     session,
+    users,
 } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../lib/api/transport';
@@ -258,5 +260,64 @@ describe('invites', () => {
 
         expect(await screen.findByText(created.token)).toBeInTheDocument();
         expect(fake.last('POST', '/invites')?.body).toEqual({ email: created.email });
+    });
+});
+
+describe('admins', () => {
+    const [, ben, , dora] = users;
+
+    beforeEach(() => {
+        useAuthStore.setState({ user: { ...me, is_admin: true } });
+        fake.on('GET', '/users', users);
+    });
+
+    const adminSwitch = (name: string) => screen.getByRole('switch', { name });
+
+    it('is a tab for admins only', async () => {
+        useAuthStore.setState({ user: me });
+        await renderSettings();
+
+        expect(screen.queryByText('settings.admins')).not.toBeInTheDocument();
+        expect(fake.last('GET', '/users')).toBeUndefined();
+    });
+
+    it("lists every user with their rights and leaves the admin's own to another admin", async () => {
+        await renderSettings();
+        await openTab('settings.admins');
+
+        await waitFor(() => expect(adminSwitch(dora.name)).toBeChecked());
+        expect(adminSwitch(ben.name)).not.toBeChecked();
+        expect(adminSwitch(ben.name)).toBeEnabled();
+        expect(adminSwitch(me.name)).toBeDisabled();
+        expect(screen.getByText('settings.ownAdminLocked')).toBeInTheDocument();
+    });
+
+    it('grants admin to a user', async () => {
+        fake.on('PATCH', `/users/${ben.id}`, grantedAdmin);
+        await renderSettings();
+        await openTab('settings.admins');
+
+        await act(async () => {
+            fireEvent.click(await screen.findByRole('switch', { name: ben.name }));
+        });
+
+        await waitFor(() => expect(adminSwitch(ben.name)).toBeChecked());
+        expect(fake.last('PATCH', `/users/${ben.id}`)?.body).toEqual({ is_admin: true });
+    });
+
+    it('revokes an admin and keeps the switch when the backend refuses', async () => {
+        fake.on('PATCH', `/users/${dora.id}`, () => {
+            throw Object.assign(new Error('Forbidden'), { status: 403 });
+        });
+        await renderSettings();
+        await openTab('settings.admins');
+
+        await act(async () => {
+            fireEvent.click(await screen.findByRole('switch', { name: dora.name }));
+        });
+
+        expect(fake.last('PATCH', `/users/${dora.id}`)?.body).toEqual({ is_admin: false });
+        expect(await screen.findByText('settings.adminChangeFailed')).toBeInTheDocument();
+        expect(adminSwitch(dora.name)).toBeChecked();
     });
 });

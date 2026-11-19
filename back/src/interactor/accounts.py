@@ -6,6 +6,7 @@
     Accounts().revoke(creator, invite_id)
     admin = Accounts().create_user(name, email, password, is_admin=True)
     Accounts().change_password(user, current, new)
+    Accounts().set_admin(user, is_admin=True)
 
 An invite is usable until it is used or expires, and only for its own email, in any case. Only
 its creator can revoke it, until it is used. A new user starts at the lowest level, and their
@@ -91,6 +92,11 @@ class Accounts:
             raise AccountError(AccountError.WRONG_PASSWORD)
         user.password = hash_password(new)
         user.token_version += 1
+        db.session.flush()
+
+    def set_admin(self, user: User, is_admin: bool) -> None:
+        """Whether ``user`` is an admin; who may change it is ``Permissions.change_admin``."""
+        user.is_admin = is_admin
         db.session.flush()
 
     def create_user(self, name: str, email: str, password: str, is_admin: bool = False) -> User:

@@ -27,7 +27,8 @@ cd front && npm start               # frontend dev server, proxies the API to it
 `.env.example` lists every variable; copy it to `.env` to set any. Set `RACLOTTO_ADMIN_PASSWORD`
 there to get an `admin` user on the first start, who can then invite others. A session can be
 renamed, closed, reopened or deleted only by its creator or an admin, and only admins change the
-global settings; there is no screen for granting admin yet, so set `is_admin` in the database.
+global settings. An admin grants or revokes admin for other users under Settings → Admins; nobody
+changes their own, so there is always an admin left.
 
 The checks CI runs:
 

@@ -73,6 +73,16 @@ class UserSummaryDto(_UserCard):
         return cls(**_card(user))
 
 
+class UserAccountDto(_UserCard):
+    """A user as admins see them to grant or revoke admin."""
+
+    is_admin: bool
+
+    @classmethod
+    def of(cls, user: User) -> UserAccountDto:
+        return cls(**_card(user), is_admin=user.is_admin)
+
+
 class UserProfileDto(_UserCard):
     """Any user's profile page; their email, diet and language stay private."""
 
@@ -159,3 +169,9 @@ class UpdateMeBody(RequestDto):
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         return self
+
+
+class UpdateUserBody(RequestDto):
+    """What an admin changes on another user's account."""
+
+    is_admin: bool

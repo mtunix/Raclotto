@@ -116,6 +116,7 @@ class LevelsSpecTest(unittest.TestCase):
                 "/auth/password",
                 "/invites",
                 "/invites/{invite_id}",
+                "/users",
                 "/users/{user_id}",
                 "/users/{user_id}/stats",
                 "/sessions",
@@ -253,7 +254,9 @@ class UsersAndAuthSpecTest(unittest.TestCase):
                 ("/invites", "post"): ("createInvite", True),
                 ("/invites", "get"): ("listInvites", True),
                 ("/invites/{invite_id}", "delete"): ("revokeInvite", True),
+                ("/users", "get"): ("listUsers", True),
                 ("/users/{user_id}", "get"): ("getUserProfile", True),
+                ("/users/{user_id}", "patch"): ("updateUser", True),
                 ("/users/{user_id}/stats", "get"): ("getUserStats", True),
             },
         )

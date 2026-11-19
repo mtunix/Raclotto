@@ -135,6 +135,9 @@ class _Recorder(AppTest):
         finally:
             set_image_generator(previous)
         picture_history = self.ok(self.call("GET", f"/images/profile-picture-history/{ana.id}", ben))
+        dora = self.make_user("Dora", is_admin=True)
+        users = self.ok(self.call("GET", "/users", dora))
+        granted = self.ok(self.call("PATCH", f"/users/{ben.id}", dora, body={"is_admin": True}))
 
         assert roll["reward"]["leveled_up"] and roll["events"] and roll["achievements"], roll
         assert {a["unlocked"] for a in achievements} == {True, False}, achievements
@@ -152,6 +155,7 @@ class _Recorder(AppTest):
         assert {i["applicable"] for i in ingredients} == {True, False}, ingredients
         assert counts["fill_count"] < counts["total_fill_count"], counts
         assert (reimported["created"], reimported["deleted"]) == (1, 2), reimported
+        assert [u["is_admin"] for u in users] == [False, False, False, True] and granted["is_admin"], users
         return {
             "rollOutcome": ("RollOutcomeDto", roll),
             "rating": ("RatingDto", rating),
@@ -179,6 +183,8 @@ class _Recorder(AppTest):
             "sessionRecap": ("SessionRecapDto", recap),
             "generatedPicture": ("GeneratedPictureDto", generated),
             "pictureHistory": ("ProfilePictureDto[]", picture_history),
+            "users": ("UserAccountDto[]", users),
+            "grantedAdmin": ("UserAccountDto", granted),
         }
 
 

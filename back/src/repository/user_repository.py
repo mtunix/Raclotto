@@ -1,5 +1,7 @@
 from collections.abc import Iterable
 
+from sqlalchemy import func
+
 from back.src.driver.database import db
 from back.src.entity.user import User
 from back.src.repository.base_repository import BaseRepository
@@ -28,6 +30,9 @@ class UserRepository(BaseRepository[User]):
         :return: User instance or None if not found
         """
         return db.session.query(User).filter_by(name=name).first()
+
+    def all_by_name(self) -> list[User]:
+        return db.session.query(User).order_by(func.lower(User.name)).all()
 
     def by_ids(self, ids: Iterable[int]) -> dict[int, User]:
         """The users with these ids, loaded together and keyed by id; unknown ids are left out."""

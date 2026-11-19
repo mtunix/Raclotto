@@ -10,8 +10,15 @@ import type {
   SWRConfiguration
 } from 'swr';
 
+import useSWRMutation from 'swr/mutation';
+import type {
+  SWRMutationConfiguration
+} from 'swr/mutation';
+
 import type {
   ErrorResponseDto,
+  UpdateUserBody,
+  UserAccountDto,
   UserProfileDto,
   UserStatsDto
 } from '../../model';
@@ -24,6 +31,43 @@ import type { ErrorType } from '../../../../lib/api/orvalMutator';
 
 
  /**
+ * @summary List every user with their admin rights, by name; admins only.
+ */
+export const listUsers = (
+
+ ) => {
+    return orvalMutator<UserAccountDto[]>(
+    {url: `/users`, method: 'GET'
+    },
+    );
+  }
+
+
+
+export const getListUsersKey = () => [`/users`] as const;
+
+export type ListUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listUsers>>>
+
+/**
+ * @summary List every user with their admin rights, by name; admins only.
+ */
+export const useListUsers = <TError = ErrorType<ErrorResponseDto>>(
+   options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listUsers>>, TError> & { swrKey?: Key, enabled?: boolean },  }
+) => {
+  const {swr: swrOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getListUsersKey() : null);
+  const swrFn = () => listUsers()
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
  * @summary Get a user's public profile: card, level and achievements.
  */
 export const getUserProfile = (
@@ -54,6 +98,51 @@ export const useGetUserProfile = <TError = ErrorType<ErrorResponseDto>>(
   const swrFn = () => getUserProfile(userId)
 
   const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Grant or revoke another user's admin; admins only, and never their own.
+ */
+export const updateUser = (
+    userId: number,
+    updateUserBody: UpdateUserBody,
+ ) => {
+    return orvalMutator<UserAccountDto>(
+    {url: `/users/${userId}`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: updateUserBody
+    },
+    );
+  }
+
+
+
+export const getUpdateUserMutationFetcher = (userId: number, ) => {
+  return (_: Key, { arg }: { arg: UpdateUserBody }) => {
+    return updateUser(userId, arg);
+  }
+}
+export const getUpdateUserMutationKey = (userId: number,) => [`/users/${userId}`] as const;
+
+export type UpdateUserMutationResult = NonNullable<Awaited<ReturnType<typeof updateUser>>>
+
+/**
+ * @summary Grant or revoke another user's admin; admins only, and never their own.
+ */
+export const useUpdateUser = <TError = ErrorType<ErrorResponseDto>>(
+  userId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateUser>>, TError, Key, UpdateUserBody, Awaited<ReturnType<typeof updateUser>>> & { swrKey?: string }, }
+) => {
+
+  const {swr: swrOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateUserMutationKey(userId);
+  const swrFn = getUpdateUserMutationFetcher(userId);
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
 
   return {
     swrKey,

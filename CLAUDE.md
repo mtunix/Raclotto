@@ -66,11 +66,13 @@ The deep modules in `interactor/` and what they own:
   enabled/frequency config (a session's own overrides the global one). A new event type also goes
   into `EventType` in `dto/event.py`.
 - **`accounts.py` — `Accounts`**: invites (issue, look up, revoke), creating users, by
-  registration or the admin seed (`is_admin`), and changing a password, which bumps the user's
-  `token_version` and so revokes every token issued before; a new user starts at the lowest level.
+  registration or the admin seed (`is_admin`), granting or revoking admin, and changing a password,
+  which bumps the user's `token_version` and so revokes every token issued before; a new user
+  starts at the lowest level.
 - **`permissions.py` — `Permissions(user)`**: who may change what. A session is its creator's to
   rename, close, reactivate, delete and configure events for; a pan its author's; the global event
-  configs, default preparation types and insults an admin's. Admins may do all of it. Rolling,
+  configs, default preparation types and insults an admin's. Admins may do all of it, and grant or
+  revoke admin for anyone but themselves, so the last admin can't be lost. Rolling,
   rating and a session's ingredients are open to everyone signed in. Never check ownership in a route.
 - **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
   worst and boldest pan, favorite ingredient, each participant's pans, XP and stars); read-only.

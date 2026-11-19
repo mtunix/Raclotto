@@ -2523,6 +2523,98 @@
         "title": "UpdateSessionBody",
         "type": "object"
       },
+      "UpdateUserBody": {
+        "additionalProperties": false,
+        "description": "What an admin changes on another user's account.",
+        "properties": {
+          "is_admin": {
+            "title": "Is Admin",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_admin"
+        ],
+        "title": "UpdateUserBody",
+        "type": "object"
+      },
+      "UserAccountDto": {
+        "description": "A user as admins see them to grant or revoke admin.",
+        "properties": {
+          "border_style": {
+            "enum": [
+              "solid",
+              "dashed",
+              "dotted",
+              "double"
+            ],
+            "title": "Border Style",
+            "type": "string"
+          },
+          "border_texture": {
+            "anyOf": [
+              {
+                "enum": [
+                  "cheese",
+                  "bread",
+                  "sauce-01",
+                  "sauce-02",
+                  "herbs-01",
+                  "herbs-02"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Border Texture"
+          },
+          "color": {
+            "title": "Color",
+            "type": "string"
+          },
+          "glow_effect": {
+            "title": "Glow Effect",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_admin": {
+            "title": "Is Admin",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "profile_picture",
+          "border_style",
+          "border_texture",
+          "glow_effect",
+          "is_admin"
+        ],
+        "title": "UserAccountDto",
+        "type": "object"
+      },
       "UserProfileDto": {
         "description": "Any user's profile page; their email, diet and language stay private.",
         "properties": {
@@ -6892,6 +6984,55 @@
         ]
       }
     },
+    "/users": {
+      "get": {
+        "operationId": "listUsers",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserAccountDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List every user with their admin rights, by name; admins only.",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/users/{user_id}": {
       "get": {
         "operationId": "getUserProfile",
@@ -6943,6 +7084,90 @@
           }
         ],
         "summary": "Get a user's public profile: card, level and achievements.",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAccountDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Grant or revoke another user's admin; admins only, and never their own.",
         "tags": [
           "users"
         ]
