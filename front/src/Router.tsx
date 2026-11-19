@@ -15,6 +15,7 @@ import {SettingsView} from "./features/settings/SettingsView";
 import {AchievementView} from "./features/achievements/AchievementView";
 import {ProfileView} from "./features/profile/ProfileView";
 import {RecapView} from "./features/recap/RecapView";
+import {RulesView} from "./shared/Rules/RulesView";
 
 export const RaclottoRouter = createBrowserRouter([
     {
@@ -30,6 +31,11 @@ export const RaclottoRouter = createBrowserRouter([
             {
                 path: "register",
                 element: <RegisterView/>,
+                errorElement: <ErrorPage/>,
+            },
+            {
+                path: "rules",
+                element: <RulesView/>,
                 errorElement: <ErrorPage/>,
             },
             {

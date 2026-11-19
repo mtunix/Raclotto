@@ -112,6 +112,9 @@ export function LoginView() {
             >
               {t("auth.noAccount")} {t("auth.register")}
             </Button>
+            <Button type="link" block onClick={() => navigate("/rules")}>
+              {t("rules.newHere")}
+            </Button>
           </Form.Item>
         </Form>
       </Card>

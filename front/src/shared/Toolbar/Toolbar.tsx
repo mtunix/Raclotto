@@ -8,6 +8,7 @@ import {
   TrophyOutlined,
   SettingOutlined,
   LogoutOutlined,
+  ReadOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useLocation } from "react-router";
@@ -135,9 +136,14 @@ export function Toolbar(props: ToolbarProps) {
                 <Text type="secondary">{t("session.session")}:</Text>
                 <Text strong>{sessionName}</Text>
               </Space>
-              <Button type="default" onClick={handleLeaveSession} size="small">
-                ← {t("session.leave")}
-              </Button>
+              <Space size="small">
+                <Button type="default" onClick={handleLeaveSession} size="small">
+                  ← {t("session.leave")}
+                </Button>
+                <Button type="default" icon={<ReadOutlined />} onClick={() => navigate("/rules")} size="small">
+                  {t("rules.title")}
+                </Button>
+              </Space>
             </Flex>
             <Avatar
               src={getProfilePictureUrl(profilePicture)}
@@ -179,9 +185,14 @@ export function Toolbar(props: ToolbarProps) {
               {sessionName}
             </Text>
           </Space>
-          <Button type="default" onClick={handleLeaveSession} size="small">
-            ← {t("session.leave")}
-          </Button>
+          <Space size="small">
+            <Button type="default" onClick={handleLeaveSession} size="small">
+              ← {t("session.leave")}
+            </Button>
+            <Button type="default" icon={<ReadOutlined />} onClick={() => navigate("/rules")} size="small">
+              {t("rules.title")}
+            </Button>
+          </Space>
         </Flex>
         <Avatar
           src={getProfilePictureUrl(profilePicture)}

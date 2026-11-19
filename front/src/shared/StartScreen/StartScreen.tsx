@@ -1,4 +1,4 @@
-import {Button, Form, Input, Select, Card, Row, Col, Tag, message} from "antd";
+import {Button, Form, Input, Select, Card, Row, Col, Space, Tag, message} from "antd";
 import {SpinnerContainer} from "../Spinner/Spinner";
 import ErrorPage from "../ErrorPage/ErrorPage";
 import {
@@ -216,6 +216,11 @@ export function SessionSelector() {
                     <JoinSession/>
                 </Col>
             </Row>
+            <Space style={{ width: '100%', justifyContent: 'center', marginTop: 24 }}>
+                <Button type="link" onClick={() => navigate("/rules")}>
+                    {t("rules.newHere")}
+                </Button>
+            </Space>
         </div>
     );
 }

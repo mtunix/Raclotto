@@ -20,7 +20,8 @@
     "saved": "Gespeichert",
     "saveFailed": "Fehler beim Speichern",
     "edit": "Bearbeiten",
-    "loading": "Lädt..."
+    "loading": "Lädt...",
+    "back": "Zurück"
   },
   "ingredient": {
     "ingredientName": "Zutatname",
@@ -471,5 +472,33 @@
     "ratingCount_other": "{{count}} Bewertungen",
     "nothingRolled": "In dieser Session hat niemand eine Pfanne gezogen.",
     "nothingRated": "Keine Pfanne wurde bewertet, also gibt es keine beste oder schlechteste."
+  },
+  "rules": {
+    "title": "Regeln",
+    "newHere": "Neu hier? So funktioniert Raclotto",
+    "firstVisitTitle": "Willkommen bei Raclotto!",
+    "gotIt": "Verstanden, los geht's",
+    "intro": "Raclotto ist eine Raclette-Lotterie: Statt selbst auszuwählen, was in Ihre Pfanne kommt, entscheidet der Zufall. Sie essen, was Sie bekommen, und bewerten es.",
+    "joinTitle": "1. Einer Session beitreten",
+    "joinBody": "Alle am Tisch treten derselben Session bei. Unter Einstellungen legen Sie fest, was Sie essen: vegetarisch, vegan, Fleisch oder Fisch, und Unverträglichkeiten. Sie bekommen nur Zutaten, die zu Ihrer Ernährung passen.",
+    "rollTitle": "2. Eine Pfanne ziehen",
+    "rollBody": "Unter Mischen ziehen Sie eine Pfanne mit zufälligen Zutaten aus dem Katalog der Session: Wählen Sie, wie viele Füllungen und Saucen Sie möchten, oder ziehen Sie am Hebel des Bandits und lassen Sie auch die Mischung entscheiden. Auch Zubereitungsart und Käsemenge können Sie ziehen.",
+    "rateTitle": "3. Essen und bewerten",
+    "rateBody": "Was Sie gezogen haben, kommt in die Pfanne. Wenn Sie gegessen haben, bewerten Sie die Pfanne mit einem halben bis fünf Sternen. Alle können auch die Pfannen der anderen bewerten.",
+    "xpTitle": "4. XP sammeln",
+    "xpBody": "Jede gezogene Pfanne bringt XP: 10, plus 5 bis 13 pro Zutat, umso mehr pro Zutat, je voller die Pfanne. Ein Kombinationsbonus zählt, der höchste, und gezogene Extras multiplizieren obendrauf:",
+    "xpBonusWildcardSpicy": "Ein Joker und etwas Scharfes: ×1,7",
+    "xpBonusWildcard": "Ein Joker: ×1,5",
+    "xpBonusSpicySweet": "Scharf und süß zusammen: ×1,25",
+    "xpBonusPrepType": "Gezogene Zubereitungsart: ×1,1",
+    "xpBonusCheese": "Gezogener Käse: ×1,2",
+    "levelsTitle": "5. Aufsteigen",
+    "levelsBody": "XP erhöhen Ihr Level. Höhere Level schalten Verzierungen für Ihre Pfannenkarten frei: Rahmenstile ab Level 3, Texturen ab Level 5 und ein Leuchten ab Level 7. Bei jedem Aufstieg können Sie außerdem ein neues Profilbild wählen.",
+    "achievementsTitle": "6. Erfolge",
+    "achievementsBody": "Ziehen, Bewerten und Zutaten hinzufügen schalten Erfolge frei, manche davon versteckt. Einige werden erst entschieden, wenn die Session endet.",
+    "eventsTitle": "7. Ereignisse",
+    "eventsBody": "Ereignisse halten den Tisch in Bewegung. Ein Pfannen-Tausch passiert, wenn zwei Personen innerhalb von 10 Minuten eine Pfanne ziehen: Sie tauschen ihre Pfannen. Wer die Session erstellt hat, kann Ereignisse abschalten oder ändern, wie oft sie vorkommen.",
+    "endTitle": "8. Ende des Abends",
+    "endBody": "Wer die Session erstellt hat (oder ein Admin), beendet sie unter Einstellungen. Danach sehen alle den Rückblick: die beste, schlechteste und mutigste Pfanne, die Lieblingszutat und die Pfannen, XP und Sterne aller."
   }
 }

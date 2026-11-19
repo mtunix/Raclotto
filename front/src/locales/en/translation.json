@@ -20,7 +20,8 @@
     "saved": "Saved",
     "saveFailed": "Failed to save",
     "edit": "Edit",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "back": "Back"
   },
   "ingredient": {
     "ingredientName": "Ingredient Name",
@@ -471,5 +472,33 @@
     "ratingCount_other": "{{count}} ratings",
     "nothingRolled": "Nobody rolled a pan in this session.",
     "nothingRated": "No pan was rated, so there is no best or worst pan."
+  },
+  "rules": {
+    "title": "Rules",
+    "newHere": "New here? How Raclotto works",
+    "firstVisitTitle": "Welcome to Raclotto!",
+    "gotIt": "Got it, let's roll",
+    "intro": "Raclotto is a raclette lottery: instead of choosing what goes into your pan, you let chance decide, eat what you get, and rate it.",
+    "joinTitle": "1. Join a session",
+    "joinBody": "Everyone at the table joins the same session. Set what you eat under Settings: vegetarian, vegan, meat or fish, and intolerances. You only ever get ingredients your diet allows.",
+    "rollTitle": "2. Roll a pan",
+    "rollBody": "Under Shuffle, roll a pan of random ingredients from the session's catalog: pick how many fillings and sauces you want, or pull the lever of the bandit and let it choose the mix too. You can also roll the preparation type and the amount of cheese.",
+    "rateTitle": "3. Eat it and rate it",
+    "rateBody": "Whatever you rolled goes into the pan. Once you have eaten it, rate it from half a star to five stars. Everyone can rate everyone else's pans too.",
+    "xpTitle": "4. Earn XP",
+    "xpBody": "Every pan you roll earns XP: 10, plus 5 to 13 per ingredient, more per ingredient the fuller the pan. One combination bonus applies, the highest, and rolled extras multiply on top:",
+    "xpBonusWildcardSpicy": "A wildcard and something spicy: ×1.7",
+    "xpBonusWildcard": "A wildcard: ×1.5",
+    "xpBonusSpicySweet": "Spicy and sweet together: ×1.25",
+    "xpBonusPrepType": "Rolled preparation type: ×1.1",
+    "xpBonusCheese": "Rolled cheese: ×1.2",
+    "levelsTitle": "5. Level up",
+    "levelsBody": "XP raises your level. Higher levels unlock decorations for your pan cards: border styles at level 3, textures at level 5 and a glow at level 7. Every level-up also lets you pick a new profile picture.",
+    "achievementsTitle": "6. Achievements",
+    "achievementsBody": "Rolling, rating and adding ingredients unlock achievements, some of them hidden. Some are only decided when the session ends.",
+    "eventsTitle": "7. Events",
+    "eventsBody": "Events keep the table moving. A pan swap happens when two people roll within 10 minutes of each other: they swap pans. The session's creator can turn events off or change how often they happen.",
+    "endTitle": "8. End of the evening",
+    "endBody": "The person who created the session (or an admin) ends it under Settings. Everyone then sees the recap: the best, worst and boldest pans, the favorite ingredient, and everyone's pans, XP and stars."
   }
 }

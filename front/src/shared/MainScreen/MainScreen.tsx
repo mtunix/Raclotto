@@ -5,6 +5,7 @@ import {useListIngredients} from "../../api/generated/endpoints/ingredients/ingr
 import {Toolbar} from "../Toolbar/Toolbar";
 import {EventDisplay} from "../EventDisplay/EventDisplay";
 import {dismissSessionEvent, useSessionEvents} from "../EventDisplay/sessionEvents";
+import {RulesIntroModal} from "../Rules/RulesIntroModal";
 import {useAppStore} from "../../AppSlice";
 import {useNavigate, useParams, Outlet, useLocation} from "react-router";
 import {useTranslation} from "react-i18next";
@@ -74,6 +75,7 @@ export function MainScreen(props: MainScreenProps) {
 
     return (
         <div style={{margin: "0", padding: "40px 24px", paddingBottom: '48px', maxWidth: removeWidthCap ? 'none' : 1440, marginLeft: 'auto', marginRight: 'auto'}}>
+            <RulesIntroModal/>
             <Row gutter={[0, 24]}>
                 <Col span={24}>
                     <Toolbar
