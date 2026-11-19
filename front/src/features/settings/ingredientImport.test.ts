@@ -1,8 +1,8 @@
 import { ingredientExport } from "../../lib/api/__fixtures__/backendResponses";
 // What users downloaded from the export before the typed endpoints; the backend tests import it too.
 import OLD_EXPORT_FILE from "../../../../back/test/fixtures/ingredient_export_before_dtos.json?raw";
+import { categoryProblem } from "../ingredients/ingredientCatalog";
 import {
-  categoryProblem,
   stageExportFile,
   type StagedIngredient,
   toImported,

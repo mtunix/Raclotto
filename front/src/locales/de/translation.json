@@ -54,6 +54,7 @@
     "added": "Zutat erfolgreich hinzugefügt",
     "addFailed": "Fehler beim Hinzufügen der Zutat",
     "category": "Kategorie",
+    "categoryRequired": "Wählen Sie eine Kategorie",
     "allergens": "Allergene",
     "addIngredient": "Zutat hinzufügen",
     "addSauce": "Soße hinzufügen",

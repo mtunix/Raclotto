@@ -192,6 +192,25 @@ describe('adding', () => {
         expect(created()).toBeUndefined();
     });
 
+    it('asks for a category and sends nothing until one is picked', async () => {
+        renderAdd();
+        typeName('Corn');
+
+        fireEvent.click(chip('vegetarian'));
+
+        expect(within(dialog()).getByText('ingredient.categoryRequired')).toBeInTheDocument();
+        expect(button('common.create')).toBeDisabled();
+        press('common.create');
+        expect(created()).toBeUndefined();
+
+        fireEvent.click(chip('vegan'));
+
+        expect(within(dialog()).queryByText('ingredient.categoryRequired')).not.toBeInTheDocument();
+        press('common.create');
+        await waitFor(() => expect(created()).toBeDefined());
+        expect(created()?.body).toMatchObject({ meat: false, vegetarian: false, vegan: true, fish: false });
+    });
+
     it('stays open when creating fails', async () => {
         fake.on('POST', '/ingredients', () => {
             throw Object.assign(new Error('Request failed with status code 400'), { status: 400 });

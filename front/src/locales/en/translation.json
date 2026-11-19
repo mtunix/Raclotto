@@ -54,6 +54,7 @@
     "added": "Ingredient added successfully",
     "addFailed": "Failed to add ingredient",
     "category": "Category",
+    "categoryRequired": "Choose a category",
     "allergens": "Allergens",
     "addIngredient": "Add Ingredient",
     "addSauce": "Add Sauce",

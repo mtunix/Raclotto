@@ -9,8 +9,6 @@ export interface StagedIngredient extends Required<Omit<ImportedIngredient, "id"
   type: number;
 }
 
-export type CategoryProblem = "none" | "several";
-
 type Raw = Record<string, unknown>;
 
 const isRaw = (value: unknown): value is Raw =>
@@ -58,14 +56,6 @@ export function stageExportFile(text: string): StagedIngredient[] | null {
 
 export function isIngredientType(type: number): type is IngredientType {
   return type === IngredientType.FILL || type === IngredientType.SAUCE;
-}
-
-/** The backend's rule: exactly one of meat, vegetarian, vegan and fish. */
-export function categoryProblem(ingredient: StagedIngredient): CategoryProblem | null {
-  const { meat, vegetarian, vegan, fish } = ingredient;
-  const count = [meat, vegetarian, vegan, fish].filter(Boolean).length;
-  if (count === 0) return "none";
-  return count > 1 ? "several" : null;
 }
 
 /**

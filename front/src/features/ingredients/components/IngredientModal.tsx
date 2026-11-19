@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { IngredientType } from "../../../api/generated/model";
 import type { CreateIngredientBody, IngredientForUserDto, UpdateIngredientBody } from "../../../api/generated/model";
 import { useAppStore } from "../../../AppSlice";
-import { ingredientCatalog } from "../ingredientCatalog";
+import { categoryProblem, ingredientCatalog } from "../ingredientCatalog";
 import { ExclusiveTagChipGroup } from "../../../shared/ExclusiveTagChipGroup";
 import { MultiTagChipGroup } from "../../../shared/MultiTagChipGroup";
 
@@ -155,17 +155,18 @@ export function IngredientModal(props: IngredientModalProps) {
         }));
     };
 
+    const categoryFlags = {
+        meat: selectedCategory === "meat",
+        vegetarian: selectedCategory === "vegetarian",
+        vegan: selectedCategory === "vegan",
+        fish: selectedCategory === "fish",
+    };
+    // The chips allow at most one, so the only problem left is none.
+    const categoryMissing = categoryProblem(categoryFlags) !== null;
+
     const handleSave = async () => {
         try {
             const values = await form.validateFields();
-            
-            // Convert category selection to boolean flags
-            const categoryFlags = {
-                meat: selectedCategory === "meat",
-                vegetarian: selectedCategory === "vegetarian",
-                vegan: selectedCategory === "vegan",
-                fish: selectedCategory === "fish",
-            };
             
             // Combine all data
             const ingredientData: CreateIngredientBody = {
@@ -256,6 +257,7 @@ export function IngredientModal(props: IngredientModalProps) {
                     key="save" 
                     type="primary" 
                     loading={loading} 
+                    disabled={categoryMissing}
                     onClick={handleSave}
                 >
                     {getButtonText()}
@@ -372,11 +374,17 @@ export function IngredientModal(props: IngredientModalProps) {
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
                                     {t("ingredient.category")}
                                 </div>
-                                <ExclusiveTagChipGroup
-                                    options={categoryOptions}
-                                    selectedValue={selectedCategory}
-                                    onChange={handleCategoryChange}
-                                />
+                                <Form.Item
+                                    style={{ marginBottom: 0 }}
+                                    validateStatus={categoryMissing ? "error" : undefined}
+                                    help={categoryMissing ? t("ingredient.categoryRequired") : undefined}
+                                >
+                                    <ExclusiveTagChipGroup
+                                        options={categoryOptions}
+                                        selectedValue={selectedCategory}
+                                        onChange={handleCategoryChange}
+                                    />
+                                </Form.Item>
                             </div>
                         </Card>
                     </Col>

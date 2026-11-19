@@ -16,6 +16,15 @@ import type {
 } from "../../api/generated/model";
 import { mutateIngredientCatalog } from "../../lib/api/swrHooks";
 
+export type CategoryProblem = "none" | "several";
+
+/** The backend's rule: exactly one of meat, vegetarian, vegan and fish. */
+export function categoryProblem(flags: { meat: boolean; vegetarian: boolean; vegan: boolean; fish: boolean }): CategoryProblem | null {
+  const count = [flags.meat, flags.vegetarian, flags.vegan, flags.fish].filter(Boolean).length;
+  if (count === 0) return "none";
+  return count > 1 ? "several" : null;
+}
+
 async function thenRefetch<T>(sessionKey: string, change: Promise<T>): Promise<T> {
   const result = await change;
   void mutateIngredientCatalog(sessionKey);

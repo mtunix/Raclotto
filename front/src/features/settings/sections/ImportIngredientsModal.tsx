@@ -2,8 +2,8 @@ import { useMemo, useState, type CSSProperties, type ChangeEvent } from "react";
 import { Button, Card, Input, message, Modal, Radio, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ImportedIngredient } from "../../../api/generated/model";
-import { ingredientCatalog } from "../../ingredients/ingredientCatalog";
-import { categoryProblem, isIngredientType, stageExportFile, type StagedIngredient, toImported } from "../ingredientImport";
+import { categoryProblem, ingredientCatalog } from "../../ingredients/ingredientCatalog";
+import { isIngredientType, stageExportFile, type StagedIngredient, toImported } from "../ingredientImport";
 import { type StagedFieldChange, StagedIngredientCard } from "./StagedIngredientCard";
 import "../SettingsView.css";
 
