@@ -5,7 +5,7 @@ import { useAuthStore } from '../../AuthSlice';
 import { me, session, userProfile } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../lib/api/transport';
-import { currentPath, renderRoutes } from '../../testUtils';
+import { currentPath, renderRoutes, settle } from '../../testUtils';
 import { Toolbar } from './Toolbar';
 
 let fake: FakeTransport;
@@ -33,13 +33,14 @@ function renderAt(path: string) {
 const button = (label: string) => screen.getByText(label).closest('button') as HTMLElement;
 const labels = ['common.dashboard', 'common.shuffle', 'common.history', 'ingredient.ingredients', 'common.achievements', 'common.settings'];
 
-it("shows the session's name and a button per view", () => {
+it("shows the session's name and a button per view", async () => {
     renderAt(`/${session.id}`);
 
     expect(screen.getAllByText(session.name).length).toBeGreaterThan(0);
     for (const label of labels) {
         expect(button(label)).toBeInTheDocument();
     }
+    await settle();
 });
 
 it.each(labels.map((label, i) => [label, views[i]]))('%s opens the %s view', async (label, view) => {
@@ -50,7 +51,7 @@ it.each(labels.map((label, i) => [label, views[i]]))('%s opens the %s view', asy
     await waitFor(() => expect(router.state.location.pathname).toBe(`/${session.id}/${view}`));
 });
 
-it('highlights the open view and stays on it when clicked again', () => {
+it('highlights the open view and stays on it when clicked again', async () => {
     const { router } = renderAt(`/${session.id}/history`);
 
     expect(button('common.history')).toHaveClass('ant-btn-primary');
@@ -59,6 +60,7 @@ it('highlights the open view and stays on it when clicked again', () => {
 
     expect(router.state.location.pathname).toBe(`/${session.id}/history`);
     expect(router.state.historyAction).toBe('POP');
+    await settle();
 });
 
 it("opens the signed-in user's profile from the avatar", async () => {

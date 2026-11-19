@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { createMemoryRouter, type RouteObject, RouterProvider, useLocation } from "react-router";
 import { SWRConfig } from "swr";
 import { ConfigProvider } from "antd";
@@ -39,6 +39,14 @@ export function renderRoutes(routes: RouteObject[], path: string, options: Rende
         </ConfigProvider>,
     );
     return { router, ...result };
+}
+
+/**
+ * Lets the responses to requests already made, and the renders they cause, land inside act, for a
+ * test whose last assertion needs nothing more to arrive.
+ */
+export async function settle() {
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
 }
 
 /** Renders `element` alone at `/`. */

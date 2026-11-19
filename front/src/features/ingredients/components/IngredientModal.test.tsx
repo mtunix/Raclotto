@@ -1,6 +1,5 @@
 import type { ComponentProps } from 'react';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { message } from 'antd';
 import { create } from 'zustand';
 import { useAppStore } from '../../../AppSlice';
 import { IngredientType, type IngredientForUserDto } from '../../../api/generated/model';
@@ -67,7 +66,6 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-    act(() => message.destroy());
 });
 
 function show(props: Partial<ModalProps>) {

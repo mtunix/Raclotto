@@ -1,5 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { message } from 'antd';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { useAppStore } from '../../../AppSlice';
 import { IngredientType, type IngredientForUserDto, type SessionDto } from '../../../api/generated/model';
 import { ingredient, ingredientsForUser, prepType, prepTypes, session } from '../../../lib/api/__fixtures__/backendResponses';
@@ -26,7 +25,6 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-    act(() => message.destroy());
 });
 
 const fetches = (path: string) => fake.requests.filter((r) => r.method === 'GET' && r.path === path).length;

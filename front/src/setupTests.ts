@@ -1,10 +1,16 @@
 import '@testing-library/jest-dom/vitest';
+import { act, cleanup } from '@testing-library/react';
+import { message } from 'antd';
 
 // Tests see translation keys, and reach the network only through a transport they set or a mock of their own.
-vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key }),
-    initReactI18next: { type: '3rdParty', init: () => {} },
-}));
+vi.mock('react-i18next', () => {
+    // One `t` for every render, as the real hook keeps while the language stays; effects depend on it.
+    const translation = { t: (key: string) => key };
+    return {
+        useTranslation: () => translation,
+        initReactI18next: { type: '3rdParty', init: () => {} },
+    };
+});
 vi.mock('axios', () => {
     const axios = {
         get: vi.fn(() => Promise.resolve({ data: {} })),
@@ -45,3 +51,15 @@ globalThis.ResizeObserver = class {
     unobserve() {}
     disconnect() {}
 };
+
+// antd's messages live outside the trees Testing Library unmounts, and render on React's scheduler: a
+// render still queued when the file's jsdom is torn down fails the run. The first destroy mounts their
+// holder, which destroys them a microtask later; the macrotask lets the scheduler's queued work run.
+afterEach(async () => {
+    cleanup();
+    await act(async () => {
+        message.destroy();
+        await Promise.resolve();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+});

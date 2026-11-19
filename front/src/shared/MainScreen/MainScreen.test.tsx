@@ -6,7 +6,7 @@ import type { SessionDto } from '../../api/generated/model';
 import { events, ingredientsForUser, session } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../lib/api/transport';
-import { currentPath, renderRoutes } from '../../testUtils';
+import { currentPath, renderRoutes, settle } from '../../testUtils';
 import { MainScreen } from './MainScreen';
 
 let fake: FakeTransport;
@@ -64,12 +64,13 @@ it("shows the session's toolbar and loads its ingredients and events", async () 
     expect(fake.last('GET', '/events')?.query).toEqual({ session_key: current.key });
 });
 
-it('frames a view in a card titled after its route', () => {
+it('frames a view in a card titled after its route', async () => {
     const current = inSession();
     renderRoutes(routes, `/${current.id}/history`, { sharedCache: true });
 
     expect(screen.getByText('toolbar.historyTitle')).toBeInTheDocument();
     expect(screen.getByText('pans')).toBeInTheDocument();
+    await settle();
 });
 
 it('dismisses the newest event and refetches the rest', async () => {

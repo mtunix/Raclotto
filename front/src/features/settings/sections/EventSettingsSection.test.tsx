@@ -1,5 +1,4 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { message } from 'antd';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
 import type { EventConfigDto, SessionDto } from '../../../api/generated/model';
@@ -21,7 +20,6 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-    act(() => message.destroy());
 });
 
 const configFetches = () => fake.requests.filter((r) => r.method === 'GET' && r.path === '/events/configs').length;

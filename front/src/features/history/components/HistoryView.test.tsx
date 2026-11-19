@@ -7,7 +7,7 @@ import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/mode
 import { generatedPicture, imageGeneration, me, panFilterOptions, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport, type RecordedRequest } from '../../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../../lib/api/transport';
-import { currentPath, renderRoutes, setViewportWidth } from '../../../testUtils';
+import { currentPath, renderRoutes, setViewportWidth, settle } from '../../../testUtils';
 import { HistoryView } from './HistoryView';
 
 const [newest] = panPage.items;
@@ -51,11 +51,12 @@ function renderHistory(): SessionDto {
 
 const cardOf = (name: string) => screen.getByText(name).closest('.ant-card') as HTMLElement;
 
-it('shows a spinner while the first page loads', () => {
+it('shows a spinner while the first page loads', async () => {
     fake.on('GET', '/pans', () => new Promise(() => {}));
     renderHistory();
 
     expect(document.querySelector('.ant-spin')).toBeInTheDocument();
+    await settle();
 });
 
 it('says so when the session has no pans yet', async () => {
@@ -164,9 +165,9 @@ it("opens the author's profile from their avatar", async () => {
     await waitFor(() => expect(currentPath()).toBe(`/${session.id}/profile/${newest.author!.id}`));
 });
 
-async function choose(current: string, option: string) {
+function choose(current: string, option: string) {
     fireEvent.mouseDown(screen.getByText(current).closest('.ant-select') as HTMLElement);
-    const options = await screen.findAllByText(option);
+    const options = screen.getAllByText(option);
     fireEvent.click(options[options.length - 1]);
 }
 
@@ -179,7 +180,7 @@ it('asks the server for the best-rated pans first, whatever is loaded', async ()
     await screen.findByText('Pan 14');
     expect(screen.queryByText('Pan 1')).not.toBeInTheDocument();
 
-    await choose('history.time', 'history.rating');
+    choose('history.time', 'history.rating');
 
     expect(await screen.findByText('Pan 1')).toBeInTheDocument();
     expect(fake.last('GET', '/pans')?.query).toMatchObject({ sort: 'rating', direction: 'desc', offset: 0 });

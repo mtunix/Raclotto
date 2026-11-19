@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { message } from "antd";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { pictureHistory } from "../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../lib/api/fakeTransport";
 import { setTransport, type Transport } from "../lib/api/transport";
@@ -22,7 +21,6 @@ beforeEach(() => {
 
 afterEach(() => {
   setTransport(previous);
-  act(() => message.destroy());
   Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: undefined });
 });
 

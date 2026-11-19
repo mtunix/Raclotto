@@ -4,7 +4,7 @@ import i18n from "../i18n";
 import { AntdLocale } from "../AntdLocale";
 import { formatDate, formatDateTime, formatNumber, formatRating, numberFormatter, useLanguage } from "./language";
 
-afterEach(async () => {
+beforeEach(async () => {
   await i18n.changeLanguage("de");
 });
 
@@ -33,7 +33,6 @@ function Today() {
 }
 
 it("re-renders dates and antd's texts when the language switches", async () => {
-  await i18n.changeLanguage("de");
   render(
     <AntdLocale>
       <Today />

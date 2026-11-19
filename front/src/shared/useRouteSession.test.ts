@@ -6,6 +6,7 @@ import { useAppStore } from "../AppSlice";
 import { session } from "../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../lib/api/fakeTransport";
 import { setTransport, type Transport } from "../lib/api/transport";
+import { settle } from "../testUtils";
 import { useRouteSession } from "./useRouteSession";
 
 const other: SessionDto = { ...session, id: session.id + 1, key: "s2", name: "s2" };
@@ -54,12 +55,14 @@ it("replaces another session in the store", async () => {
   expect(useAppStore.getState().session?.id).toBe(session.id);
 });
 
-it("is ready at once when the store already holds the session", () => {
+it("is ready at once when the store already holds the session", async () => {
   useAppStore.getState().setSession(session);
   fake.on("GET", "/sessions", []);
 
   const { result } = render(String(session.id));
 
+  expect(result.current).toBe("ready");
+  await settle();
   expect(result.current).toBe("ready");
 });
 

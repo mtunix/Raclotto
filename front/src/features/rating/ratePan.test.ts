@@ -1,5 +1,5 @@
 import { type ReactNode, createElement } from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { useListAchievements } from "../../api/generated/endpoints/achievements/achievements";
 import { useListPans } from "../../api/generated/endpoints/pans/pans";
@@ -61,7 +61,7 @@ it("refetches pan lists, achievements and the rater's and author's profiles", as
     }
     const fetched = fake.requests.length;
 
-    await ratePan(pan.id, 3);
+    await act(() => ratePan(pan.id, 3));
 
     await waitFor(() =>
         expect(fake.requests.slice(fetched).map((r) => r.path)).toEqual(

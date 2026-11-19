@@ -1,5 +1,4 @@
 import { act, renderHook, screen } from "@testing-library/react";
-import { message } from "antd";
 import { useCamera } from "./useCamera";
 
 function installCamera(getUserMedia: () => Promise<unknown>) {
@@ -12,7 +11,6 @@ function fakeStream() {
 }
 
 afterEach(() => {
-  act(() => message.destroy());
   Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: undefined });
 });
 

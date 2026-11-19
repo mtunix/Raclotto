@@ -15,7 +15,7 @@ function renderAt(path: string) {
   );
 }
 
-afterEach(() => {
+beforeEach(() => {
   useAppStore.setState({ removeWidthCap: false });
 });
 
