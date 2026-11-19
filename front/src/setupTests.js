@@ -3,10 +3,6 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
-import { TextDecoder, TextEncoder } from 'util';
-
-// react-router reads these at import time; jsdom does not provide them.
-Object.assign(global, { TextEncoder, TextDecoder });
 
 // antd's grid and typography watch media queries and element sizes, which jsdom does not implement.
 Object.defineProperty(window, 'matchMedia', {
@@ -17,6 +13,14 @@ Object.defineProperty(window, 'matchMedia', {
         addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => false,
     }),
 });
+// antd's form schedules macrotasks over a MessageChannel; Node's would keep jest from exiting.
+global.MessageChannel = class {
+    constructor() {
+        const port1 = { onmessage: null };
+        this.port1 = port1;
+        this.port2 = { postMessage: (data) => setTimeout(() => port1.onmessage?.({ data }), 0) };
+    }
+};
 global.ResizeObserver = class {
     observe() {}
     unobserve() {}

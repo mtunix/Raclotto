@@ -2,7 +2,7 @@ module.exports = {
   roots: ['<rootDir>/src'],
 
   // Test environment
-  testEnvironment: 'jsdom',
+  testEnvironment: '<rootDir>/config/jest/jsdomEnvironment.js',
 
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
