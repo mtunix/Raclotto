@@ -89,7 +89,7 @@ test("levels up a new cook without asking for a picture the server can't make", 
   const result = page.getByRole("dialog").filter({ hasText: t("common.rate") });
   await expect(result).toBeVisible({ timeout: 15_000 });
   await expect(result.getByText(t("level.leveledUp"))).toBeVisible();
-  await result.getByRole("button", { name: t("common.close") }).click();
+  await result.getByRole("button", { name: t("common.close") }).last().click();
 
   await expect(result).toBeHidden();
   await expect(page.getByRole("button", { name: t("generate.generateButton") })).toBeVisible();
