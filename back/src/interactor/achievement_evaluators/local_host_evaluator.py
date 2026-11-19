@@ -1,7 +1,6 @@
-from typing import Optional
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -33,7 +32,7 @@ class LocalHostEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress based on the number of sessions created by the user.
         Progress is a ratio of sessions_created / REQUIRED_SESSIONS_COUNT.

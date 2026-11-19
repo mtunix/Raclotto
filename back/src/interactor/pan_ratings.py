@@ -10,8 +10,6 @@ in the same transaction; withdrawing reports nothing, since no achievement can b
 through ratings. Callers own the transaction: nothing here commits.
 """
 
-from typing import Optional
-
 from back.src.driver.database import db
 from back.src.entity.pan import Pan
 from back.src.entity.rating import Rating
@@ -27,7 +25,7 @@ class RatingNotFound(Exception):
 
 
 class PanRatings:
-    def __init__(self, achievements: Optional[Achievements] = None):
+    def __init__(self, achievements: Achievements | None = None):
         self._achievements = achievements or Achievements()
         self._pans = PanRepository()
         self._ratings = RatingRepository()

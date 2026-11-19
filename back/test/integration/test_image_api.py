@@ -1,17 +1,16 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
 
 from pydantic import TypeAdapter
 
+from back.src.driver.database import db
+from back.src.dto.profile_picture import GeneratedPictureDto, ProfilePictureDto
+from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.interactor.profile_pictures import (
     GeminiImageGenerator,
     PictureError,
     ProfilePictures,
     set_image_generator,
 )
-from back.src.driver.database import db
-from back.src.dto.profile_picture import GeneratedPictureDto, ProfilePictureDto
-from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.repository.level_repository import LevelRepository
 from back.test.support import AppTest
 
@@ -19,21 +18,21 @@ IMAGE = "aW1hZ2U="
 
 
 class FakeImageGenerator:
-    def __init__(self, image: Optional[str] = IMAGE):
+    def __init__(self, image: str | None = IMAGE):
         self.image = image
-        self.calls: List[list] = []
+        self.calls: list[list] = []
 
     @property
     def available(self) -> bool:
         return True
 
-    def generate(self, contents: list) -> Optional[str]:
+    def generate(self, contents: list) -> str | None:
         self.calls.append(contents)
         return self.image
 
 
 class RaisingImageGenerator(FakeImageGenerator):
-    def generate(self, contents: list) -> Optional[str]:
+    def generate(self, contents: list) -> str | None:
         raise RuntimeError("quota exceeded for key sk-secret")
 
 
@@ -51,7 +50,7 @@ class ImageApiTest(AppTest):
         super().tearDown()
 
     def add_picture(
-        self, user, picture: Optional[str], minutes_ago: int, candidate: bool = False, level_id: Optional[int] = None
+        self, user, picture: str | None, minutes_ago: int, candidate: bool = False, level_id: int | None = None
     ) -> ProfilePictureHistory:
         entry = ProfilePictureHistory(
             user_id=user.id,
@@ -64,7 +63,7 @@ class ImageApiTest(AppTest):
         db.session.commit()
         return entry
 
-    def history(self, user) -> List[ProfilePictureDto]:
+    def history(self, user) -> list[ProfilePictureDto]:
         response = self.call("GET", f"/images/profile-picture-history/{user.id}", self.ben)
         self.assertEqual(response.status_code, 200, response.json)
         return TypeAdapter(list[ProfilePictureDto]).validate_python(response.json)

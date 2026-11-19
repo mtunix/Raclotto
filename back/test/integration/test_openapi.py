@@ -1,7 +1,7 @@
 import enum
 import re
 import unittest
-from typing import Any, Dict
+from typing import Any
 
 from flask import Flask
 
@@ -10,8 +10,8 @@ from back.src.api.openapi import SPEC_PATH, build_openapi, render_openapi
 from back.src.driver.api_custom import apis_custom
 from back.src.driver.database import db
 from back.src.dto.base import RequestDto, ResponseDto
-from back.test.integration.probe_api import ProbeApi
 from back.src.utils import un_camel_case
+from back.test.integration.probe_api import ProbeApi
 from back.test.support import get_app
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponseDto"}
@@ -38,7 +38,7 @@ class CommittedSpecTest(unittest.TestCase):
 
 
 class LevelsSpecTest(unittest.TestCase):
-    spec: Dict[str, Any]
+    spec: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):
@@ -151,8 +151,8 @@ class LevelsSpecTest(unittest.TestCase):
 
 
 class PansAndRatingsSpecTest(unittest.TestCase):
-    spec: Dict[str, Any]
-    schemas: Dict[str, Any]
+    spec: dict[str, Any]
+    schemas: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):
@@ -223,8 +223,8 @@ class PansAndRatingsSpecTest(unittest.TestCase):
 
 
 class UsersAndAuthSpecTest(unittest.TestCase):
-    spec: Dict[str, Any]
-    schemas: Dict[str, Any]
+    spec: dict[str, Any]
+    schemas: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):
@@ -291,8 +291,8 @@ class UsersAndAuthSpecTest(unittest.TestCase):
 
 
 class SessionsAndIngredientsSpecTest(unittest.TestCase):
-    spec: Dict[str, Any]
-    schemas: Dict[str, Any]
+    spec: dict[str, Any]
+    schemas: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):
@@ -380,8 +380,8 @@ class SessionsAndIngredientsSpecTest(unittest.TestCase):
 
 
 class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
-    spec: Dict[str, Any]
-    schemas: Dict[str, Any]
+    spec: dict[str, Any]
+    schemas: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):
@@ -475,7 +475,7 @@ class EveryEndpointTypedTest(unittest.TestCase):
 
 
 class ProbeSpecTest(unittest.TestCase):
-    spec: Dict[str, Any]
+    spec: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):

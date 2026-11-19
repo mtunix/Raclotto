@@ -1,14 +1,14 @@
-from typing import Any, Dict, TypeVar, Generic, Optional, List, Type
+from typing import Any
+
 from sqlalchemy.exc import NoResultFound
-from back.src.driver.database import db, Base
 
-T = TypeVar("T", bound=Base)
+from back.src.driver.database import Base, db
 
 
-class BaseRepository(Generic[T]):
+class BaseRepository[T: Base]:
     """Base repository with common CRUD operations."""
 
-    def __init__(self, entity_type: Type[T]):
+    def __init__(self, entity_type: type[T]):
         """
         Initialize repository with entity type.
 
@@ -16,7 +16,7 @@ class BaseRepository(Generic[T]):
         """
         self.entity_type = entity_type
 
-    def by_id(self, id: int) -> Optional[T]:
+    def by_id(self, id: int) -> T | None:
         """
         Get entity by ID.
 
@@ -28,7 +28,7 @@ class BaseRepository(Generic[T]):
         except NoResultFound:
             return None
 
-    def all(self) -> List[T]:
+    def all(self) -> list[T]:
         """
         Get all entities.
 
@@ -36,7 +36,7 @@ class BaseRepository(Generic[T]):
         """
         return db.session.query(self.entity_type).all()
 
-    def create(self, data: Dict[str, Any]) -> T:
+    def create(self, data: dict[str, Any]) -> T:
         """
         Create a new entity.
 

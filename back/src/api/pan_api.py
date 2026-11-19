@@ -42,7 +42,7 @@ class PanApi(BaseApi):
             )
         except RollError as error:
             code, status, title = _ROLL_ERRORS[error.kind]
-            raise ApiError(code, status=status, title=title, detail=error.detail)
+            raise ApiError(code, status=status, title=title, detail=error.detail) from error
 
     def _pan(self, pan_id: int) -> Pan:
         pan = self.repository.by_id(pan_id)

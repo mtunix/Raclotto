@@ -112,12 +112,13 @@ the release number restarts at 01 each year), made by the script, never by hand.
 
 Run from the repo root unless noted. The venv is `venv/`; it has drifted from
 `requirements.txt` before — rebuild it (`pip install -r requirements-dev.txt`: the runtime
-requirements plus mypy and stubs) if imports fail. Dev-only tools go in `requirements-dev.txt`.
+requirements plus ruff, mypy and stubs) if imports fail. Dev-only tools go in `requirements-dev.txt`.
 
 ```bash
 venv/bin/python -m unittest discover -s back/test -t .     # whole backend suite
 venv/bin/python -m unittest back.test.integration.test_pan_roll   # one module
 venv/bin/mypy                                              # type check: back/src strict, back/test bodies (pyproject.toml)
+venv/bin/ruff check --fix && venv/bin/ruff format           # lint (autofix what it can) and format the backend
 venv/bin/python -m back.src.dev                            # dev server for `npm start`: Flask debug + reload, 127.0.0.1:8081
 venv/bin/python -m back.src.main                           # production server (waitress); needs RACLOTTO_JWT_SECRET
 venv/bin/alembic current                                   # revision of instance/raclotto.db (RACLOTTO_DATABASE_URL overrides)
@@ -140,6 +141,10 @@ cd front && npm run build:static         # the same into ../static/, where the b
 one-line `eslint-disable-next-line <rule> -- <why>`, never a file- or rule-wide disable. TypeScript
 stays on 6: TS 7's native compiler has no JS API yet, which `@typescript-eslint`,
 fork-ts-checker and `config/modules.js` need.
+
+`ruff` (config in `pyproject.toml`) lints and formats all Python; CI runs `ruff check` and
+`ruff format --check`. A deliberate exception gets `# noqa: <code>  # <why>` on its line. Commits
+that only reformat go into `.git-blame-ignore-revs`.
 
 ## Configuration
 
@@ -181,7 +186,7 @@ The README has the operator steps. The pieces:
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `dev`, release tags, pull requests and by hand
-(`workflow_dispatch`): the backend suite, `venv/bin/mypy`, `tsc`, `npm run lint`, jest, the
+(`workflow_dispatch`): `ruff`, the backend suite, `venv/bin/mypy`, `tsc`, `npm run lint`, jest, the
 production build (with `CI=true`, so build warnings fail it), and `npm run gen:api:check`. A push to
 `master` alone runs nothing; its release tag does. Python and Node versions come from
 `.python-version` and `front/.nvmrc`; actions are pinned to commit SHAs. After those pass, for a
@@ -198,7 +203,7 @@ images (patch and digest only), pip and npm; Node, Python and TypeScript major l
 
 | Changed only | Loop with |
 |---|---|
-| `back/` | the touched test module, then the whole backend suite, then `venv/bin/mypy` |
+| `back/` | the touched test module, then the whole backend suite, then `venv/bin/mypy` and `ruff` |
 | `front/src/` | `npx jest <path>`, then `npx tsc --noEmit`, then the whole frontend suite |
 | both sides | the two rows above; also check the wire contract (below) |
 

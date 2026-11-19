@@ -7,8 +7,9 @@ Every change reports its fact (``IngredientAdded`` or ``CatalogChanged``) to
 achievements in the same transaction. Callers own it: nothing here commits.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 from back.src.entity.ingredient import Ingredient
 from back.src.entity.raclotto_session import RaclottoSession
@@ -17,7 +18,7 @@ from back.src.interactor.achievements import Achievements
 from back.src.interactor.facts import CatalogChanged, IngredientAdded
 from back.src.repository.ingredient_repository import IngredientRepository
 
-Fields = Dict[str, Any]
+Fields = dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -25,8 +26,8 @@ class CatalogItem:
     """One ingredient of an import list; ``id`` and ``session_id`` say where an exported one came from."""
 
     fields: Fields
-    id: Optional[int] = None
-    session_id: Optional[int] = None
+    id: int | None = None
+    session_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -51,7 +52,7 @@ class CatalogError(Exception):
 
 
 class IngredientCatalog:
-    def __init__(self, achievements: Optional[Achievements] = None):
+    def __init__(self, achievements: Achievements | None = None):
         self._achievements = achievements or Achievements()
         self._ingredients = IngredientRepository()
 
@@ -73,7 +74,7 @@ class IngredientCatalog:
             self._ingredients.mark_unavailable(ingredient.id)
         self._changed(user, ingredient.session)
 
-    def import_new(self, user: User, session: RaclottoSession, items: Sequence[CatalogItem]) -> List[Ingredient]:
+    def import_new(self, user: User, session: RaclottoSession, items: Sequence[CatalogItem]) -> list[Ingredient]:
         """Add every item as a new ingredient, whatever ``id`` and ``session_id`` it names."""
         created = self._ingredients.bulk_create([dict(item.fields) for item in items], session.id)
         self._changed(user, session)
@@ -83,8 +84,8 @@ class IngredientCatalog:
         """Make the session's catalog the list: update listed ids, create the rest, make the unlisted unavailable."""
         current_ids = {ingredient.id for ingredient in self._ingredients.by_session(session.key)}
 
-        to_create: List[Fields] = []
-        to_update: List[Fields] = []
+        to_create: list[Fields] = []
+        to_update: list[Fields] = []
         listed_ids = set()
         for index, item in enumerate(items):
             if item.session_id is not None and item.session_id != session.id:

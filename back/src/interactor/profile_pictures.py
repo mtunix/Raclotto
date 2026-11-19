@@ -11,7 +11,7 @@ history entry. Callers own the transaction: nothing here commits.
 import base64
 import logging
 import os
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
 
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.user import User
@@ -31,7 +31,7 @@ class ImageGenerator(Protocol):
         ...
 
     # `contents` holds google-genai content parts; the SDK is an optional import.
-    def generate(self, contents: list[Any]) -> Optional[str]:
+    def generate(self, contents: list[Any]) -> str | None:
         """The first image generated for `contents` (the prompt, then reference pictures), base64-encoded."""
         ...
 
@@ -39,7 +39,7 @@ class ImageGenerator(Protocol):
 class GeminiImageGenerator:
     """Google Gemini's image model; unavailable without an API key or the google-genai package."""
 
-    def __init__(self, api_key: Optional[str]):
+    def __init__(self, api_key: str | None):
         self.client = None
         try:
             import google.genai as genai
@@ -55,7 +55,7 @@ class GeminiImageGenerator:
     def available(self) -> bool:
         return self.client is not None
 
-    def generate(self, contents: list[Any]) -> Optional[str]:
+    def generate(self, contents: list[Any]) -> str | None:
         assert self.client is not None  # callers check `available` first
         response = self.client.models.generate_content(
             model="gemini-2.5-flash-image",
@@ -74,7 +74,7 @@ class GeminiImageGenerator:
         return None
 
 
-_generator: Optional[ImageGenerator] = None
+_generator: ImageGenerator | None = None
 
 
 def image_generator() -> ImageGenerator:
@@ -85,7 +85,7 @@ def image_generator() -> ImageGenerator:
     return _generator
 
 
-def set_image_generator(generator: Optional[ImageGenerator]) -> Optional[ImageGenerator]:
+def set_image_generator(generator: ImageGenerator | None) -> ImageGenerator | None:
     """Replace the generator (tests); None goes back to Gemini. Returns the previous one."""
     global _generator
     previous, _generator = _generator, generator
@@ -113,7 +113,7 @@ class PictureError(Exception):
 
 
 class ProfilePictures:
-    def __init__(self, generator: Optional[ImageGenerator] = None):
+    def __init__(self, generator: ImageGenerator | None = None):
         """``generator`` defaults to the app's, looked up on each generation."""
         self._generator = generator
         self._history = ProfilePictureHistoryRepository()
@@ -123,11 +123,11 @@ class ProfilePictures:
     def available(self) -> bool:
         return self._image_generator().available
 
-    def add(self, user: User, picture: Optional[str]) -> ProfilePictureHistory:
+    def add(self, user: User, picture: str | None) -> ProfilePictureHistory:
         """Show ``picture`` from now on; None shows none."""
         return self._add(user, picture, user.level_id)
 
-    def generate_for_level(self, user: User, level_id: Optional[int] = None) -> ProfilePictureHistory:
+    def generate_for_level(self, user: User, level_id: int | None = None) -> ProfilePictureHistory:
         """The user's candidate picture redrawn for a level, theirs by default, added to their history."""
         generator = self._available_generator()
         level_id = level_id if level_id is not None else user.level_id
@@ -170,15 +170,15 @@ class ProfilePictures:
             raise PictureError(PictureError.NO_IMAGE, "Gemini API did not return a valid image")
         return image
 
-    def _save(self, user: User, image_base64: str, level_id: Optional[int]) -> ProfilePictureHistory:
+    def _save(self, user: User, image_base64: str, level_id: int | None) -> ProfilePictureHistory:
         return self._add(user, f"data:{MIME_TYPE};base64,{image_base64}", level_id)
 
-    def _add(self, user: User, picture: Optional[str], level_id: Optional[int]) -> ProfilePictureHistory:
+    def _add(self, user: User, picture: str | None, level_id: int | None) -> ProfilePictureHistory:
         # Until the user chooses one, their first picture is the one generation starts from.
         is_candidate = not self._history.has_marked_candidate(user.id)
         return self._history.add_profile_picture(user.id, picture, level_id, is_candidate)
 
-    def _prompt(self, user: User, level_id: Optional[int]) -> str:
+    def _prompt(self, user: User, level_id: int | None) -> str:
         level = self._levels.by_id(level_id) if level_id else None
         if level is None:
             raise PictureError(PictureError.UNKNOWN_LEVEL, f"Level {level_id} does not exist")

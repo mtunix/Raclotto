@@ -1,5 +1,3 @@
-from typing import Dict
-
 from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator
 
@@ -8,7 +6,7 @@ class AchievementRegistry:
     """Registry for mapping achievements to their evaluators."""
 
     def __init__(self) -> None:
-        self._evaluators: Dict[str, AchievementEvaluator] = {}
+        self._evaluators: dict[str, AchievementEvaluator] = {}
 
     def register_evaluator(self, achievement_title: str, evaluator: AchievementEvaluator) -> None:
         """
@@ -20,7 +18,7 @@ class AchievementRegistry:
         self._evaluators[achievement_title] = evaluator
 
     @property
-    def evaluators(self) -> Dict[str, AchievementEvaluator]:
+    def evaluators(self) -> dict[str, AchievementEvaluator]:
         """Achievement title -> evaluator."""
         return self._evaluators
 
@@ -48,8 +46,6 @@ def initialize_registry() -> None:
     Initialize the registry with evaluators for achievements.
     This should be called after achievements are loaded from the database.
     """
-    from back.src.driver.database import db
-    from back.src.entity.achievement import Achievement
     from back.src.interactor.achievement_evaluators.biotonne_evaluator import (
         BiotonneEvaluator,
     )

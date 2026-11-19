@@ -5,7 +5,7 @@ Uses the production database and admin bootstrap with the dev JWT secret. Always
 """
 
 import os
-from typing import Callable, Mapping
+from collections.abc import Callable, Mapping
 
 from dotenv import load_dotenv
 

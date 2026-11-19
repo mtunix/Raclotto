@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
@@ -35,13 +33,13 @@ class LastPanStandingEvaluator(AchievementEvaluator):
         unlocked = self._owns_last_pan(subject, context.session_pans)
         return EvaluationResult(unlocked=unlocked, progress=1.0 if unlocked else 0.0)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         if achievement in user.achievements:
             return 1.0
         return 1.0 if self._owns_last_pan(user, context.session_pans) else 0.0
 
     @staticmethod
-    def _owns_last_pan(user: User, session_pans: List[Pan]) -> bool:
+    def _owns_last_pan(user: User, session_pans: list[Pan]) -> bool:
         timed = [p for p in session_pans if p.timestamp]
         if not timed:
             return False

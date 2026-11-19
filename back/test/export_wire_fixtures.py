@@ -9,11 +9,11 @@ generated client disagree. Rerun after changing a DTO and regenerating the clien
 import json
 from pathlib import Path
 
-from back.src.interactor.profile_pictures import set_image_generator
 from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.profile_picture_history import ProfilePictureHistory
+from back.src.interactor.profile_pictures import set_image_generator
 from back.test.support import AppTest
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "front/src/lib/api/__fixtures__/backendResponses.ts"
@@ -110,7 +110,7 @@ class _Recorder(AppTest):
                 "POST",
                 "/ingredients/reimport",
                 ana,
-                body={"ingredients": kept + [{"name": "Chili", "type": 2, "vegan": True, "spicy": 3}]},
+                body={"ingredients": [*kept, {"name": "Chili", "type": 2, "vegan": True, "spicy": 3}]},
                 query=query,
             )
         )
@@ -141,7 +141,7 @@ class _Recorder(AppTest):
         assert leaderboard[0]["name"] == "Ada" and leaderboard[0]["total_points"] > 0, leaderboard
         assert events and events[0]["id"] == roll["events"][0]["id"], events
         assert dashboard["pans"][0]["author"] and dashboard["ingredients_top_rated"], dashboard
-        assert [p["id"] for p in picture_history][0] == generated["id"] and len(picture_history) == 2, picture_history
+        assert picture_history[0]["id"] == generated["id"] and len(picture_history) == 2, picture_history
         assert page["has_more"] and page["items"][0]["ratings"], page
         assert me["level"] == roll["reward"]["level"] and me["next_level"], me
         assert profile["achievements"] and "email" not in profile, profile

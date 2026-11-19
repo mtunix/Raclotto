@@ -1,7 +1,8 @@
-from typing import Dict, Iterable, Optional, Set
-from back.src.repository.base_repository import BaseRepository
-from back.src.entity.user import User
+from collections.abc import Iterable
+
 from back.src.driver.database import db
+from back.src.entity.user import User
+from back.src.repository.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):
@@ -10,7 +11,7 @@ class UserRepository(BaseRepository[User]):
     def __init__(self) -> None:
         super().__init__(User)
 
-    def by_email(self, email: str) -> Optional[User]:
+    def by_email(self, email: str) -> User | None:
         """
         Get user by email.
 
@@ -19,7 +20,7 @@ class UserRepository(BaseRepository[User]):
         """
         return db.session.query(User).filter_by(email=email).first()
 
-    def by_name(self, name: str) -> Optional[User]:
+    def by_name(self, name: str) -> User | None:
         """
         Get user by name.
 
@@ -28,14 +29,14 @@ class UserRepository(BaseRepository[User]):
         """
         return db.session.query(User).filter_by(name=name).first()
 
-    def by_ids(self, ids: Iterable[int]) -> Dict[int, User]:
+    def by_ids(self, ids: Iterable[int]) -> dict[int, User]:
         """The users with these ids, loaded together and keyed by id; unknown ids are left out."""
         wanted = set(ids)
         if not wanted:
             return {}
         return {user.id: user for user in db.session.query(User).filter(User.id.in_(wanted))}
 
-    def by_email_or_name(self, identifier: str) -> Optional[User]:
+    def by_email_or_name(self, identifier: str) -> User | None:
         """
         Get user by email or name.
 
@@ -47,7 +48,7 @@ class UserRepository(BaseRepository[User]):
             return user
         return self.by_name(identifier)
 
-    def get_users_in_session(self, session_id: int) -> Set[int]:
+    def get_users_in_session(self, session_id: int) -> set[int]:
         """
         Get set of user IDs in a session.
 

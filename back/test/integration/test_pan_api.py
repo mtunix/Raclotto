@@ -1,5 +1,5 @@
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator, List, Optional
 
 from sqlalchemy import event
 
@@ -22,7 +22,7 @@ class TestPanApi(AppTest):
         self.potato = self.make_ingredient(self.s1, "Potato")
         self.leek = self.make_ingredient(self.s2, "Leek")
 
-    def page(self, user: Optional[User] = None, **query) -> PanPageDto:
+    def page(self, user: User | None = None, **query) -> PanPageDto:
         response = self.call("GET", "/pans", user or self.ana, query=query)
         self.assertEqual(response.status_code, 200, response.json)
         return PanPageDto.model_validate(response.json)
@@ -34,8 +34,8 @@ class TestPanApi(AppTest):
         return db.session.get_one(User, user_id)
 
     @contextmanager
-    def count_selects(self) -> Iterator[List[str]]:
-        statements: List[str] = []
+    def count_selects(self) -> Iterator[list[str]]:
+        statements: list[str] = []
 
         def record(conn, cursor, statement, *args):
             if statement.lstrip().upper().startswith("SELECT"):

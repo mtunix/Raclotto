@@ -1,10 +1,9 @@
 import unittest
-from typing import Any, Dict, Set, Tuple
+from typing import Any
 
 from flask import Flask
 
 from back.src.api.base_api import BaseApi, TypedEndpoint, init_api_rules
-from back.src.interactor.profile_pictures import GeminiImageGenerator, set_image_generator
 from back.src.api.openapi import build_openapi
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
@@ -12,6 +11,7 @@ from back.src.dto.base import RequestDto, ResponseDto
 from back.src.entity.preparation_type import PreparationType
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.rating import Rating
+from back.src.interactor.profile_pictures import GeminiImageGenerator, set_image_generator
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.test.support import AppTest, get_app
 
@@ -63,7 +63,7 @@ class ThingApi(BaseApi):
 
 
 class ErrorStatusRulesTest(unittest.TestCase):
-    spec: Dict[str, Any]
+    spec: dict[str, Any]
 
     @classmethod
     def setUpClass(cls):
@@ -97,12 +97,11 @@ class ErrorStatusRulesTest(unittest.TestCase):
         self.assertEqual(self.statuses("/things/secure", "get"), ["200", "401"])
 
     def test_only_error_statuses_may_be_declared_once_each(self):
-        args: Dict[str, Any] = {"query": None, "body": None, "response": ThingDto, "status": 200, "operation_id": None}
-        invalid: Tuple[Tuple[Any, ...], ...] = ((200,), (302,), (99,), (600,), (404, 404), ("404",), (404.0,))
+        args: dict[str, Any] = {"query": None, "body": None, "response": ThingDto, "status": 200, "operation_id": None}
+        invalid: tuple[tuple[Any, ...], ...] = ((200,), (302,), (99,), (600,), (404, 404), ("404",), (404.0,))
         for errors in invalid:
-            with self.subTest(errors=errors):
-                with self.assertRaises(ValueError):
-                    TypedEndpoint.declare(["GET"], **args, errors=errors)
+            with self.subTest(errors=errors), self.assertRaises(ValueError):
+                TypedEndpoint.declare(["GET"], **args, errors=errors)
 
         self.assertEqual(TypedEndpoint.declare(["GET"], **args, errors=[409, 404]).errors, (404, 409))
 
@@ -110,7 +109,7 @@ class ErrorStatusRulesTest(unittest.TestCase):
 class DeclaredErrorsMatchHandlersTest(AppTest):
     """Each listed endpoint answers every error status its spec declares, and no other."""
 
-    declared: Dict[str, Set[int]]
+    declared: dict[str, set[int]]
 
     @classmethod
     def setUpClass(cls):

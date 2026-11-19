@@ -12,3 +12,21 @@ from .raclotto_session import RaclottoSession
 from .rating import Rating
 from .user import User
 from .user_achievement_progress import UserAchievementProgress
+
+__all__ = [
+    "Achievement",
+    "Event",
+    "EventConfig",
+    "Ingredient",
+    "IngredientType",
+    "Insult",
+    "InviteToken",
+    "Level",
+    "Pan",
+    "PreparationType",
+    "ProfilePictureHistory",
+    "RaclottoSession",
+    "Rating",
+    "User",
+    "UserAchievementProgress",
+]

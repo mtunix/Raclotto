@@ -21,5 +21,5 @@ class UserAchievementProgress(Base):
     progress_value: Mapped[float] = mapped_column(Float, default=0.0)  # Value between 0.0 and 1.0
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
 
-    user: Mapped["User"] = relationship("User", backref="achievement_progress")
-    achievement: Mapped["Achievement"] = relationship("Achievement", backref="user_progress")
+    user: Mapped[User] = relationship("User", backref="achievement_progress")
+    achievement: Mapped[Achievement] = relationship("Achievement", backref="user_progress")

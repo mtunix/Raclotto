@@ -78,8 +78,8 @@ class RatingApi(BaseApi):
         """Change the stars of a rating the signed-in user gave."""
         try:
             rating = PanRatings().change(get_current_user(), rating_id, body.rating)
-        except RatingNotFound:
-            raise self._not_found()
+        except RatingNotFound as e:
+            raise self._not_found() from e
         dto = RatingDto.model_validate(rating)
         db.session.commit()
         return dto
@@ -90,6 +90,6 @@ class RatingApi(BaseApi):
         """Withdraw a rating the signed-in user gave."""
         try:
             PanRatings().withdraw(get_current_user(), rating_id)
-        except RatingNotFound:
-            raise self._not_found()
+        except RatingNotFound as e:
+            raise self._not_found() from e
         db.session.commit()

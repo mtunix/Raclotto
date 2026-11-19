@@ -1,12 +1,11 @@
-from typing import Optional, Set
-from back.src.entity.pan import Pan
-from back.src.entity.user import User
 from back.src.entity.achievement import Achievement
 from back.src.entity.ingredient import IngredientType
+from back.src.entity.pan import Pan
+from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 from back.src.repository.ingredient_repository import IngredientRepository
-from back.src.repository.session_repository import SessionRepository
 from back.src.repository.pan_repository import PanRepository
+from back.src.repository.session_repository import SessionRepository
 
 
 class GottaEatEmAllEvaluator(AchievementEvaluator):
@@ -21,7 +20,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         self.session_repository = SessionRepository()
         self.pan_repository = PanRepository()
 
-    def _get_all_fill_ingredients_in_session(self, session_id: int) -> Set[int]:
+    def _get_all_fill_ingredients_in_session(self, session_id: int) -> set[int]:
         """
         Get all FILL ingredient IDs from the current session.
 
@@ -35,7 +34,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         fills = self.ingredient_repository.by_type(session.key, IngredientType.FILL)
         return {fill.id for fill in fills}
 
-    def _get_fill_ingredients_used_by_user(self, user: User, session_id: int) -> Set[int]:
+    def _get_fill_ingredients_used_by_user(self, user: User, session_id: int) -> set[int]:
         """
         Get all FILL ingredient IDs that the user has used in their pans in the current session.
 
@@ -92,7 +91,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress based on the ratio of FILL ingredients eaten to total FILL ingredients.
         Progress is a ratio of used_fills / total_fills.

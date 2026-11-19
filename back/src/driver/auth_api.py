@@ -68,7 +68,7 @@ class AuthApi(BaseApi):
         try:
             user = Accounts().register(body.token, body.name, body.email, body.password, body.profile_picture)
         except AccountError as e:
-            raise _registration_error(e)
+            raise _registration_error(e) from e
         dto = AuthResultDto(token=_token(user), user=_me(user))
         db.session.commit()
         return dto
@@ -99,13 +99,13 @@ class AuthApi(BaseApi):
         """Look up an unused invite for the registration page."""
         try:
             invite = Accounts().usable_invite(token)
-        except AccountError:
+        except AccountError as e:
             raise ApiError(
                 ApiErrorCode.invalid_token,
                 status=400,
                 title="Invalid invite token",
                 detail="The invite token does not exist, has been used, or has expired",
-            )
+            ) from e
         return InviteLookupDto.model_validate(invite)
 
     @BaseApi.endpoint("/me", ["PATCH"], body=UpdateMeBody, response=MeDto, operation_id="updateMe", errors=(409,))
@@ -168,11 +168,11 @@ class InviteApi(BaseApi):
                     status=400,
                     title="Cannot revoke used token",
                     detail="This invite token has already been used",
-                )
+                ) from e
             raise ApiError(
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Invite token not found",
                 detail="The specified invite token does not exist or you don't have permission to revoke it",
-            )
+            ) from e
         db.session.commit()

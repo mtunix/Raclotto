@@ -1,15 +1,12 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, ParamSpec, TypeVar
 
-from flask import request, g
-from back.src.auth.jwt import decode_token
+from flask import g, request
+
 from back.src.api.base_api import AUTH_GUARD, ApiError, ApiErrorCode
+from back.src.auth.jwt import decode_token
 from back.src.entity.user import User
 from back.src.repository.user_repository import UserRepository
-from back.src.driver.database import db
-
-P = ParamSpec("P")
-R = TypeVar("R")
 
 
 def get_current_user() -> User:
@@ -33,13 +30,13 @@ def authenticate() -> User:
     # Extract token from "Bearer <token>" format
     try:
         token = auth_header.split(" ")[1] if " " in auth_header else auth_header
-    except IndexError:
+    except IndexError as e:
         raise ApiError(
             ApiErrorCode.invalid_token,
             status=401,
             title="Invalid token format",
             detail="Authorization header must be in format 'Bearer <token>'",
-        )
+        ) from e
 
     # Get secret key from app config
     from flask import current_app
@@ -88,7 +85,7 @@ def authenticate() -> User:
     return user
 
 
-def require_auth(func: Callable[P, R]) -> Callable[P, R]:
+def require_auth[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     """Decorator to require authentication for an endpoint."""
 
     @wraps(func)

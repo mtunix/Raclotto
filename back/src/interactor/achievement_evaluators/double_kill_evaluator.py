@@ -1,8 +1,8 @@
-from typing import Optional, List, Set
 from datetime import datetime
+
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -16,7 +16,7 @@ class DoubleKillEvaluator(AchievementEvaluator):
     two consecutive pans with identical ingredients in the current session.
     """
 
-    def _get_ingredient_ids(self, pan: Pan) -> Set[int]:
+    def _get_ingredient_ids(self, pan: Pan) -> set[int]:
         """
         Get the set of ingredient IDs for a pan.
 
@@ -41,7 +41,7 @@ class DoubleKillEvaluator(AchievementEvaluator):
 
         return ingredients1 == ingredients2
 
-    def _get_previous_pan_in_session(self, user: User, current_pan: Pan, session_pans: List[Pan]) -> Optional[Pan]:
+    def _get_previous_pan_in_session(self, user: User, current_pan: Pan, session_pans: list[Pan]) -> Pan | None:
         """
         Get the user's previous pan in the session (excluding the current pan).
         Returns the most recent pan created by the user before the current pan.
@@ -87,7 +87,7 @@ class DoubleKillEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress - binary achievement, either unlocked or not.
 

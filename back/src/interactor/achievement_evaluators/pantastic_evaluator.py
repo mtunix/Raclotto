@@ -1,7 +1,6 @@
-from typing import Optional, Set, List
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     Audience,
@@ -29,7 +28,7 @@ class PantasticEvaluator(AchievementEvaluator):
     def audience(self, fact: Fact) -> Audience:
         return "pan_owner"
 
-    def _get_unique_rating_users(self, pan: Pan) -> Set[int]:
+    def _get_unique_rating_users(self, pan: Pan) -> set[int]:
         """
         Get the set of unique user IDs who have rated this pan.
 
@@ -40,7 +39,7 @@ class PantasticEvaluator(AchievementEvaluator):
             return set()
         return {rating.user_id for rating in pan.ratings}
 
-    def _is_best_rated_pan(self, pan: Pan, session_pans: List[Pan]) -> bool:
+    def _is_best_rated_pan(self, pan: Pan, session_pans: list[Pan]) -> bool:
         """
         Check if this pan is the best rated pan in the session.
         Only considers pans that have at least MINIMUM_RATINGS_COUNT ratings.
@@ -103,7 +102,7 @@ class PantasticEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress - binary achievement, either unlocked or not.
 

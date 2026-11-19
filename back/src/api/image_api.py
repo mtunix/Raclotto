@@ -77,18 +77,18 @@ class ImageApi(BaseApi):
             picture = self.pictures.generate_from_prompt(get_current_user(), body.prompt)
         except PictureError as e:
             if e.kind == PictureError.UNAVAILABLE:
-                raise _unavailable(e)
+                raise _unavailable(e) from e
             if e.kind == PictureError.NO_IMAGE:
                 raise ApiError(
                     ApiErrorCode.incorrect_parameters, status=500, title="No image generated", detail=e.detail
-                )
+                ) from e
             # The generator's exception is logged; its text stays out of the response.
             raise ApiError(
                 ApiErrorCode.incorrect_parameters,
                 status=500,
                 title="Image generation failed",
                 detail="Image generation failed. Please try again.",
-            )
+            ) from e
         dto = _generated(picture)
         db.session.commit()
         return dto
@@ -108,14 +108,14 @@ class ImageApi(BaseApi):
             picture = self.pictures.generate_for_level(get_current_user(), body.level_id)
         except PictureError as e:
             if e.kind == PictureError.UNAVAILABLE:
-                raise _unavailable(e)
+                raise _unavailable(e) from e
             logger.error("Profile picture generation failed: %s", e.detail)
             raise ApiError(
                 ApiErrorCode.incorrect_parameters,
                 status=500,
                 title="Profile picture generation failed",
                 detail="Failed to generate profile picture. Please try again.",
-            )
+            ) from e
         dto = _generated(picture)
         db.session.commit()
         return dto
@@ -134,6 +134,8 @@ class ImageApi(BaseApi):
             self.pictures.choose_candidate(get_current_user(), picture_id)
         except PictureError as e:
             if e.kind == PictureError.NOT_FOUND:
-                raise ApiError(ApiErrorCode.resource_not_found, status=404, title="Picture not found", detail=e.detail)
-            raise ApiError(ApiErrorCode.incorrect_parameters, status=403, title="Forbidden", detail=e.detail)
+                raise ApiError(
+                    ApiErrorCode.resource_not_found, status=404, title="Picture not found", detail=e.detail
+                ) from e
+            raise ApiError(ApiErrorCode.incorrect_parameters, status=403, title="Forbidden", detail=e.detail) from e
         db.session.commit()

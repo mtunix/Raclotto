@@ -1,5 +1,5 @@
 import unittest
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, TypeAdapter
 
@@ -169,7 +169,7 @@ class TypedEndpointDeclarationTest(unittest.TestCase):
             (["GET"], {"response": list[dict]}),
         ):
             with self.subTest(methods=methods, **{k: repr(v) for k, v in kwargs.items()}):
-                args: Dict[str, Any] = {
+                args: dict[str, Any] = {
                     "query": None,
                     "body": None,
                     "response": None,

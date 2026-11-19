@@ -13,7 +13,7 @@ class SessionMixin:
         return mapped_column(ForeignKey("session.id"))
 
     @declared_attr
-    def session(cls) -> Mapped["RaclottoSession"]:
+    def session(cls) -> Mapped[RaclottoSession]:
         return relationship("RaclottoSession", uselist=False, lazy="selectin")
 
 

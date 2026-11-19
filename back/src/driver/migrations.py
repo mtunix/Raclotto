@@ -1,7 +1,6 @@
 """Brings the app's database to the models' schema at startup, through Alembic revisions."""
 
 from pathlib import Path
-from typing import List
 
 from alembic import command
 from alembic.config import Config as AlembicConfig
@@ -34,7 +33,7 @@ def migrate(db: SQLAlchemy) -> None:
         )
 
 
-def missing_columns(db: SQLAlchemy, connection: Connection) -> List[str]:
+def missing_columns(db: SQLAlchemy, connection: Connection) -> list[str]:
     inspector = inspect(connection)
     missing = []
     for table in db.metadata.sorted_tables:

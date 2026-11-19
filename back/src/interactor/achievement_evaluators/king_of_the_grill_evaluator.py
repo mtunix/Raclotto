@@ -1,8 +1,8 @@
-from typing import Optional, Dict, List
 from collections import Counter
+
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
     Audience,
@@ -29,7 +29,7 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
     def audience(self, fact: Fact) -> Audience:
         return "session_members"
 
-    def _count_pans_per_user(self, session_pans: List[Pan]) -> Dict[int, int]:
+    def _count_pans_per_user(self, session_pans: list[Pan]) -> dict[int, int]:
         """
         Count the number of pans per user in the session.
 
@@ -72,14 +72,11 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
 
         # Calculate progress based on how close the user is to the max
         # Progress is 1.0 if they're at the max, otherwise it's their count / max_count
-        if max_count > 0:
-            progress = min(1.0, user_count / max_count)
-        else:
-            progress = 0.0
+        progress = min(1.0, user_count / max_count) if max_count > 0 else 0.0
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress based on the user's pan count relative to the max in the session.
         Progress is 1.0 if the user has the most pans, otherwise it's their count / max_count.

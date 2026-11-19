@@ -1,5 +1,3 @@
-from typing import Optional
-
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
@@ -18,7 +16,7 @@ class PreparationTypeApi(BaseApi):
         self.repository = PreparationTypeRepository()
         self.session_repository = SessionRepository()
 
-    def _session_id(self, session_key: Optional[str]) -> Optional[int]:
+    def _session_id(self, session_key: str | None) -> int | None:
         if session_key is None:
             return None
         session = self.session_repository.by_key(session_key)
@@ -69,7 +67,7 @@ class PreparationTypeApi(BaseApi):
     @require_auth
     def delete_preparation_type(self, prep_type_id: int) -> None:
         """Delete a session's preparation type; the default types stay."""
-        prep_type: Optional[PreparationType] = self.repository.by_id(prep_type_id)
+        prep_type: PreparationType | None = self.repository.by_id(prep_type_id)
         if not prep_type:
             raise ApiError(
                 ApiErrorCode.resource_not_found,

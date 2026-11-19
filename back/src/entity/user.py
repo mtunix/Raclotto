@@ -70,17 +70,13 @@ class User(Base):
     experience_points: Mapped[int] = mapped_column(default=0)
     level_id: Mapped[int | None] = mapped_column(ForeignKey("level.id"))
 
-    sessions: Mapped[list["RaclottoSession"]] = relationship(
-        "RaclottoSession", secondary=user_sessions, lazy="selectin"
-    )
+    sessions: Mapped[list[RaclottoSession]] = relationship("RaclottoSession", secondary=user_sessions, lazy="selectin")
 
-    achievements: Mapped[list["Achievement"]] = relationship(
-        "Achievement", secondary=user_achievements, lazy="selectin"
-    )
+    achievements: Mapped[list[Achievement]] = relationship("Achievement", secondary=user_achievements, lazy="selectin")
 
-    level: Mapped["Level | None"] = relationship("Level", lazy="selectin")
+    level: Mapped[Level | None] = relationship("Level", lazy="selectin")
 
-    profile_picture_history: Mapped[list["ProfilePictureHistory"]] = relationship(
+    profile_picture_history: Mapped[list[ProfilePictureHistory]] = relationship(
         "ProfilePictureHistory",
         back_populates="user",
         cascade="all, delete-orphan",

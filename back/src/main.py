@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Callable, Mapping
+from collections.abc import Callable, Mapping
 
 import waitress
 from dotenv import load_dotenv

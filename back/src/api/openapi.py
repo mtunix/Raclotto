@@ -7,10 +7,11 @@ input of the frontend's generated client.
 import inspect
 import json
 import re
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple, Type
+from typing import Any
 
 from flask import Flask
 from pydantic import BaseModel
@@ -38,7 +39,7 @@ _PATH_ARG_SCHEMAS = {
 _SCHEMA_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
 # models_json_schema's result, keyed by (DTO class, mode); pydantic types the class with a private dataclass type.
-_Refs = Dict[Tuple[Type[Any], JsonSchemaMode], JsonSchemaValue]
+_Refs = dict[tuple[type[Any], JsonSchemaMode], JsonSchemaValue]
 
 
 class _SchemaGenerator(GenerateJsonSchema):
@@ -57,7 +58,7 @@ class _Operation:
     operation_id: str
     func: Callable[..., Any]
     typed: TypedEndpoint
-    path_args: List[Tuple[str, str]]
+    path_args: list[tuple[str, str]]
 
     @property
     def requires_auth(self) -> bool:
@@ -68,16 +69,16 @@ class _Operation:
         return (inspect.getdoc(self.func) or "").split("\n")[0]
 
 
-def build_openapi(app: Flask) -> Dict[str, Any]:
+def build_openapi(app: Flask) -> dict[str, Any]:
     operations = sorted(_operations(app), key=lambda op: (op.path, op.method))
     _check_unique_operation_ids(operations)
 
     schema_inputs = _schema_inputs(operations)
     refs, defs = models_json_schema(schema_inputs, ref_template=REF_TEMPLATE, schema_generator=_SchemaGenerator)
-    schemas: Dict[str, Any] = defs.get("$defs", {})
+    schemas: dict[str, Any] = defs.get("$defs", {})
     _check_schema_names(schemas)
 
-    paths: Dict[str, Dict[str, Any]] = {}
+    paths: dict[str, dict[str, Any]] = {}
     for op in operations:
         paths.setdefault(op.path, {})[op.method] = _operation(op, refs, schemas)
 
@@ -101,7 +102,7 @@ def build_openapi(app: Flask) -> Dict[str, Any]:
     return spec
 
 
-def render_openapi(spec: Dict[str, Any]) -> str:
+def render_openapi(spec: dict[str, Any]) -> str:
     return json.dumps(spec, indent=2, sort_keys=True) + "\n"
 
 
@@ -129,8 +130,8 @@ def _operations(app: Flask) -> Iterator[_Operation]:
         )
 
 
-def _check_unique_operation_ids(operations: List[_Operation]) -> None:
-    seen: Dict[str, _Operation] = {}
+def _check_unique_operation_ids(operations: list[_Operation]) -> None:
+    seen: dict[str, _Operation] = {}
     for op in operations:
         other = seen.setdefault(op.operation_id, op)
         if other is not op:
@@ -140,10 +141,10 @@ def _check_unique_operation_ids(operations: List[_Operation]) -> None:
             )
 
 
-def _schema_inputs(operations: List[_Operation]) -> List[Tuple[Type[BaseModel], JsonSchemaMode]]:
-    inputs: List[Tuple[Type[BaseModel], JsonSchemaMode]] = [(ErrorResponseDto, "serialization")]
+def _schema_inputs(operations: list[_Operation]) -> list[tuple[type[BaseModel], JsonSchemaMode]]:
+    inputs: list[tuple[type[BaseModel], JsonSchemaMode]] = [(ErrorResponseDto, "serialization")]
     for op in operations:
-        candidates: Tuple[Tuple[Optional[Type[BaseModel]], JsonSchemaMode], ...] = (
+        candidates: tuple[tuple[type[BaseModel] | None, JsonSchemaMode], ...] = (
             (op.typed.query, "validation"),
             (op.typed.body, "validation"),
             (op.typed.response_model, "serialization"),
@@ -154,7 +155,7 @@ def _schema_inputs(operations: List[_Operation]) -> List[Tuple[Type[BaseModel], 
     return inputs
 
 
-def _check_schema_names(schemas: Dict[str, Any]) -> None:
+def _check_schema_names(schemas: dict[str, Any]) -> None:
     for name in schemas:
         if name.endswith(("-Input", "-Output")):
             raise ValueError(
@@ -165,9 +166,9 @@ def _check_schema_names(schemas: Dict[str, Any]) -> None:
             raise ValueError(f"schema name {name!r} is ambiguous; give the DTO classes unique names")
 
 
-def _operation(op: _Operation, refs: _Refs, schemas: Dict[str, Any]) -> Dict[str, Any]:
+def _operation(op: _Operation, refs: _Refs, schemas: dict[str, Any]) -> dict[str, Any]:
     typed = op.typed
-    operation: Dict[str, Any] = {
+    operation: dict[str, Any] = {
         "operationId": op.operation_id,
         "tags": [op.tag],
         "responses": _responses(op, refs),
@@ -199,9 +200,9 @@ def _operation(op: _Operation, refs: _Refs, schemas: Dict[str, Any]) -> Dict[str
     return operation
 
 
-def _responses(op: _Operation, refs: _Refs) -> Dict[str, Any]:
+def _responses(op: _Operation, refs: _Refs) -> dict[str, Any]:
     typed = op.typed
-    success: Dict[str, Any] = {"description": HTTPStatus(typed.status).phrase}
+    success: dict[str, Any] = {"description": HTTPStatus(typed.status).phrase}
     model = typed.response_model
     if model is not None:
         schema = refs[(model, "serialization")]
@@ -219,7 +220,7 @@ def _responses(op: _Operation, refs: _Refs) -> Dict[str, Any]:
     return responses
 
 
-def error_statuses(typed: TypedEndpoint, requires_auth: bool) -> List[int]:
+def error_statuses(typed: TypedEndpoint, requires_auth: bool) -> list[int]:
     """The declared error statuses plus 400 for request DTOs and 401 for the auth guard."""
     statuses = set(typed.errors)
     if typed.query is not None or typed.body is not None:
@@ -229,17 +230,17 @@ def error_statuses(typed: TypedEndpoint, requires_auth: bool) -> List[int]:
     return sorted(statuses)
 
 
-def _path_arg_schema(converter: str, op: _Operation) -> Dict[str, Any]:
+def _path_arg_schema(converter: str, op: _Operation) -> dict[str, Any]:
     if converter not in _PATH_ARG_SCHEMAS:
         raise ValueError(f"{op.method.upper()} {op.path}: no schema for path converter {converter!r}")
     return dict(_PATH_ARG_SCHEMAS[converter])
 
 
-def _ref_name(ref: Dict[str, str]) -> str:
+def _ref_name(ref: dict[str, str]) -> str:
     return ref["$ref"].rsplit("/", 1)[1]
 
 
-def _refs(node: Any) -> Set[str]:
+def _refs(node: Any) -> set[str]:
     if isinstance(node, dict):
         found = {node["$ref"]} if isinstance(node.get("$ref"), str) else set()
         return found.union(*(_refs(value) for value in node.values()))
@@ -248,7 +249,7 @@ def _refs(node: Any) -> Set[str]:
     return set()
 
 
-def _check_refs_resolve(spec: Dict[str, Any]) -> None:
+def _check_refs_resolve(spec: dict[str, Any]) -> None:
     known = {REF_TEMPLATE.format(model=name) for name in spec["components"]["schemas"]}
     dangling = _refs(spec) - known
     if dangling:

@@ -1,7 +1,6 @@
-from typing import Optional
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -21,7 +20,7 @@ class PlaceholderEvaluator(AchievementEvaluator):
         """
         return EvaluationResult(unlocked=False)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Placeholder progress calculation - returns None (progress not applicable).
 

@@ -48,7 +48,7 @@ class UpdateEventConfigBody(RequestDto):
     frequency_minutes: int | None = None
 
     @model_validator(mode="after")
-    def _changes_something(self) -> "UpdateEventConfigBody":
+    def _changes_something(self) -> UpdateEventConfigBody:
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         return self

@@ -12,8 +12,6 @@ first picture is the one generation starts from. Callers own the transaction: no
 commits.
 """
 
-from typing import Optional
-
 from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.entity.invite_token import InviteToken
@@ -41,7 +39,7 @@ class AccountError(Exception):
 
 
 class Accounts:
-    def __init__(self, pictures: Optional[ProfilePictures] = None):
+    def __init__(self, pictures: ProfilePictures | None = None):
         self._pictures = pictures or ProfilePictures()
         self._invites = InviteTokenRepository()
         self._users = UserRepository()
@@ -65,7 +63,7 @@ class Accounts:
             raise AccountError(AccountError.SPENT_INVITE)
         return invite
 
-    def register(self, token: str, name: str, email: str, password: str, picture: Optional[str]) -> User:
+    def register(self, token: str, name: str, email: str, password: str, picture: str | None) -> User:
         """A new user with ``picture``, if any; the invite is used up."""
         invite = self.usable_invite(token)
         if invite.email.lower() != email.lower():

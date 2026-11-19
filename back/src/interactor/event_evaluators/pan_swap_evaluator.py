@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from back.src.interactor.event_evaluator import EventEvaluator, Triggered
 from back.src.interactor.facts import Fact, PanRolled
@@ -13,7 +12,7 @@ class PanSwapEvaluator(EventEvaluator):
     event_type = "pan_swap"
     window = timedelta(minutes=10)
 
-    def evaluate(self, fact: Fact) -> Optional[Triggered]:
+    def evaluate(self, fact: Fact) -> Triggered | None:
         if not isinstance(fact, PanRolled):
             return None
         pan = fact.pan
@@ -35,7 +34,9 @@ class PanSwapEvaluator(EventEvaluator):
             return None
         minutes = int(self.window.total_seconds() // 60)
         return Triggered(
-            message=f"Swap your pans! {roller.name} and {partner.name} created pans within {minutes} minutes of each other.",
+            message=(
+                f"Swap your pans! {roller.name} and {partner.name} created pans within {minutes} minutes of each other."
+            ),
             data={
                 "pan1_id": pan.id,
                 "pan1_user_id": roller.id,

@@ -1,5 +1,5 @@
-from back.src.repository.base_repository import BaseRepository
 from back.src.entity.insult import Insult
+from back.src.repository.base_repository import BaseRepository
 
 
 class InsultRepository(BaseRepository[Insult]):

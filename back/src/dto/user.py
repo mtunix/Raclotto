@@ -1,6 +1,6 @@
-from typing import Any, Dict, Literal, TypeIs, get_args
+from typing import Any, Literal, TypeIs, get_args
 
-from pydantic import Field, model_validator
+from pydantic import model_validator
 
 from back.src.dto.achievement import AchievementDto
 from back.src.dto.base import RequestDto, ResponseDto, omittable
@@ -39,37 +39,37 @@ class _UserCard(ResponseDto):
     glow_effect: bool
 
 
-def _card(user: User) -> Dict[str, Any]:
+def _card(user: User) -> dict[str, Any]:
     # Rows store styles that are no longer offered (the removed 3D borders); they fall back
     # to the defaults instead of failing the response.
-    return dict(
-        id=user.id,
-        name=user.name,
-        color=user.color or DEFAULT_COLOR,
-        profile_picture=user.get_profile_picture(),
-        border_style=user.border_style if user.border_style in BORDER_STYLES else DEFAULT_BORDER_STYLE,
-        border_texture=user.border_texture if user.border_texture in BORDER_TEXTURES else None,
-        glow_effect=bool(user.glow_effect),
-    )
+    return {
+        "id": user.id,
+        "name": user.name,
+        "color": user.color or DEFAULT_COLOR,
+        "profile_picture": user.get_profile_picture(),
+        "border_style": user.border_style if user.border_style in BORDER_STYLES else DEFAULT_BORDER_STYLE,
+        "border_texture": user.border_texture if user.border_texture in BORDER_TEXTURES else None,
+        "glow_effect": bool(user.glow_effect),
+    }
 
 
 def _level(level: Level | None) -> LevelDto | None:
     return LevelDto.model_validate(level) if level is not None else None
 
 
-def _progress(user: User, progress: LevelProgress) -> Dict[str, Any]:
-    return dict(
-        experience_points=user.experience_points,
-        level=_level(progress.level),
-        next_level=_level(progress.next_level),
-    )
+def _progress(user: User, progress: LevelProgress) -> dict[str, Any]:
+    return {
+        "experience_points": user.experience_points,
+        "level": _level(progress.level),
+        "next_level": _level(progress.next_level),
+    }
 
 
 class UserSummaryDto(_UserCard):
     """A user as shown next to their content: name, avatar and card decoration."""
 
     @classmethod
-    def of(cls, user: User) -> "UserSummaryDto":
+    def of(cls, user: User) -> UserSummaryDto:
         return cls(**_card(user))
 
 
@@ -84,7 +84,7 @@ class UserProfileDto(_UserCard):
     achievements: list[AchievementDto]
 
     @classmethod
-    def of(cls, user: User, progress: LevelProgress) -> "UserProfileDto":
+    def of(cls, user: User, progress: LevelProgress) -> UserProfileDto:
         return cls(
             **_card(user),
             **_progress(user, progress),
@@ -113,7 +113,7 @@ class MeDto(_UserCard):
     next_level: LevelDto | None
 
     @classmethod
-    def of(cls, user: User, progress: LevelProgress) -> "MeDto":
+    def of(cls, user: User, progress: LevelProgress) -> MeDto:
         return cls(
             **_card(user),
             **_progress(user, progress),
@@ -152,7 +152,7 @@ class UpdateMeBody(RequestDto):
     glow_effect: bool = omittable()
 
     @model_validator(mode="after")
-    def _changes_something(self) -> "UpdateMeBody":
+    def _changes_something(self) -> UpdateMeBody:
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         return self

@@ -12,16 +12,16 @@ from .user_achievement_progress_repository import UserAchievementProgressReposit
 from .user_repository import UserRepository
 
 __all__ = [
-    "BaseRepository",
-    "SessionRepository",
-    "IngredientRepository",
-    "PanRepository",
-    "RatingRepository",
     "AchievementRepository",
+    "BaseRepository",
+    "IngredientRepository",
     "InsultRepository",
-    "UserRepository",
     "InviteTokenRepository",
+    "PanRepository",
     "PreparationTypeRepository",
-    "UserAchievementProgressRepository",
     "ProfilePictureHistoryRepository",
+    "RatingRepository",
+    "SessionRepository",
+    "UserAchievementProgressRepository",
+    "UserRepository",
 ]

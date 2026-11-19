@@ -3376,7 +3376,7 @@
             "description": "OK"
           }
         },
-        "summary": "Liveness for container and load-balancer checks (the app is up, its database answers), and the running release.",
+        "summary": "Liveness for container and load-balancer checks (app up, database answering), and the running release.",
         "tags": [
           "health"
         ]

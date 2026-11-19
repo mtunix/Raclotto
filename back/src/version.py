@@ -9,13 +9,15 @@ the CI runner's system Python too, so it stays on the standard library.
 """
 
 import argparse
+import contextlib
 import datetime
 import re
 import sys
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Iterable, Optional, Sequence, TextIO
+from typing import TextIO
 
 VERSION_FILE = Path(__file__).resolve().parents[2] / "VERSION"
 PATTERN = re.compile(r"(\d{4})\.(\d{2,})([a-z]?)")
@@ -32,7 +34,7 @@ class Version:
     patch: str = ""
 
     @classmethod
-    def parse(cls, text: str) -> "Version":
+    def parse(cls, text: str) -> Version:
         match = PATTERN.fullmatch(text)
         if match is None:
             raise VersionError(f"{text!r} is not a version like 2026.01 or 2026.01a")
@@ -50,10 +52,8 @@ def releases(tags: Iterable[str]) -> list[Version]:
     """The tags that are versions, oldest first; other tags are ignored."""
     versions = []
     for tag in tags:
-        try:
+        with contextlib.suppress(VersionError):
             versions.append(Version.parse(tag.strip()))
-        except VersionError:
-            pass
     return sorted(versions)
 
 
@@ -87,7 +87,7 @@ def current() -> str:
     return running()
 
 
-def main(argv: Sequence[str], stdin: TextIO, stdout: TextIO, today: Optional[datetime.date] = None) -> int:
+def main(argv: Sequence[str], stdin: TextIO, stdout: TextIO, today: datetime.date | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m back.src.version")
     commands = parser.add_subparsers(dest="command", required=True)
     next_command = commands.add_parser("next", help="the version to tag next; reads tags from stdin")

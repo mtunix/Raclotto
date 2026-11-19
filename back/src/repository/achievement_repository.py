@@ -1,11 +1,9 @@
-from typing import List, Optional, Tuple
-
 from sqlalchemy import func
 
-from back.src.repository.base_repository import BaseRepository
+from back.src.driver.database import db
 from back.src.entity.achievement import Achievement
 from back.src.entity.user import User, user_achievements
-from back.src.driver.database import db
+from back.src.repository.base_repository import BaseRepository
 
 
 class AchievementRepository(BaseRepository[Achievement]):
@@ -14,7 +12,7 @@ class AchievementRepository(BaseRepository[Achievement]):
     def __init__(self) -> None:
         super().__init__(Achievement)
 
-    def by_title(self, title: Optional[str]) -> Optional[Achievement]:
+    def by_title(self, title: str | None) -> Achievement | None:
         """
         Find achievement by title.
 
@@ -23,7 +21,7 @@ class AchievementRepository(BaseRepository[Achievement]):
         """
         return db.session.query(Achievement).filter_by(title=title).first()
 
-    def standings(self) -> List[Tuple[int, str, int, int]]:
+    def standings(self) -> list[tuple[int, str, int, int]]:
         """(user_id, name, total_points, achievement_count) of every user, most points first, then by name."""
         points = (
             db.session.query(

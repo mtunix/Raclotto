@@ -1,8 +1,8 @@
-from typing import Optional, List
 from datetime import datetime, timedelta
+
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -18,7 +18,7 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
 
     REQUIRED_HOURS = 3
 
-    def _get_previous_pan_in_session(self, user: User, current_pan: Pan, session_pans: List[Pan]) -> Optional[Pan]:
+    def _get_previous_pan_in_session(self, user: User, current_pan: Pan, session_pans: list[Pan]) -> Pan | None:
         """
         Get the user's previous pan in the session (excluding the current pan).
 
@@ -74,7 +74,7 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress based on the time since the user's last pan in the session.
         Progress is 1.0 if 3+ hours have passed, otherwise it's the ratio of elapsed time to 3 hours.

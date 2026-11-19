@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Tuple
+from typing import Literal
 
 from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User
 from back.src.interactor.facts import Fact, PanRated, PanRolled
-
 
 Audience = Literal["actor", "pan_owner", "session_members", "last_pan_owner"]
 """Whom an evaluator judges when a fact arrives:
@@ -24,8 +23,8 @@ class EvaluationContext:
     """Context information for evaluating achievements."""
 
     session: RaclottoSession
-    user_pans: List[Pan]  # All pans created by the user
-    session_pans: List[Pan]  # All pans in the current session
+    user_pans: list[Pan]  # All pans created by the user
+    session_pans: list[Pan]  # All pans in the current session
     user_ratings_count: int  # Total number of ratings given by user
     user_sessions_created: int  # Total number of sessions created by user
 
@@ -35,7 +34,7 @@ class EvaluationResult:
     """Result of an achievement evaluation."""
 
     unlocked: bool
-    progress: Optional[float] = None  # 0.0-1.0, None if not applicable
+    progress: float | None = None  # 0.0-1.0, None if not applicable
 
 
 class AchievementEvaluator(ABC):
@@ -47,7 +46,7 @@ class AchievementEvaluator(ABC):
     named by the fact; evaluators for other facts override ``judge``.
     """
 
-    reacts_to: Tuple[type[Fact], ...] = (PanRolled,)
+    reacts_to: tuple[type[Fact], ...] = (PanRolled,)
     revocable: bool = False
 
     def audience(self, fact: Fact) -> Audience:
@@ -70,5 +69,5 @@ class AchievementEvaluator(ABC):
         raise NotImplementedError(f"{type(self).__name__} must implement evaluate() or judge()")
 
     @abstractmethod
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """Current progress (0.0-1.0) without any new fact, or None if untracked."""

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from back.src.entity.achievement import Achievement
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.pan import Pan
@@ -59,7 +57,7 @@ class JapanEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress - binary achievement, either unlocked or not.
         Checks if user has created any pan with only fish fill ingredients.

@@ -1,7 +1,6 @@
-from typing import Optional
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -50,7 +49,7 @@ class FirstBloodEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=is_first)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress - binary achievement, either unlocked or not.
 

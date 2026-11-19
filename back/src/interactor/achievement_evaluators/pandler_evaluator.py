@@ -1,8 +1,8 @@
-from typing import Optional, List, Tuple
 from datetime import datetime, timedelta
+
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 from back.src.repository.pan_repository import PanRepository
 
@@ -23,7 +23,7 @@ class PandlerEvaluator(AchievementEvaluator):
     def __init__(self) -> None:
         self.pan_repository = PanRepository()
 
-    def _get_user_pans_by_session(self, user: User) -> List[Tuple[int, datetime]]:
+    def _get_user_pans_by_session(self, user: User) -> list[tuple[int, datetime]]:
         """
         Get the session IDs and timestamps of the earliest pan in each session for the user.
 
@@ -44,7 +44,7 @@ class PandlerEvaluator(AchievementEvaluator):
                 session_earliest_pan[session_id] = pan_timestamp
 
         # Convert to list of tuples and sort by timestamp
-        result = [(session_id, timestamp) for session_id, timestamp in session_earliest_pan.items()]
+        result = list(session_earliest_pan.items())
         result.sort(key=lambda x: x[1])
         return result
 
@@ -92,7 +92,7 @@ class PandlerEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress - binary achievement, either unlocked or not.
 

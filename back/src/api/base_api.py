@@ -3,34 +3,30 @@ from __future__ import annotations
 import logging
 import types
 import uuid
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import wraps
 from http import HTTPStatus
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    ParamSpec,
-    Sequence,
-    Tuple,
+    ClassVar,
     TypeVar,
     Union,
     get_args,
     get_origin,
 )
-from flask import Blueprint, Response, current_app, typing as ft, request, jsonify
+
+from flask import Blueprint, Response, current_app, jsonify, request
+from flask import typing as ft
 from flask.views import View
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import scoped_session
 from werkzeug.datastructures import MultiDict
 
-from ..utils import str_code_from_enum, un_camel_case
 from ..driver.database import db
+from ..utils import str_code_from_enum, un_camel_case
 
 
 class ApiErrorCode(Enum):
@@ -53,13 +49,13 @@ class ApiError(Exception):
     def __init__(
         self,
         code: Enum,
-        id_: Optional[uuid.UUID] = None,
+        id_: uuid.UUID | None = None,
         status: int = 400,
-        title: Optional[str] = None,
-        detail: Optional[str] = None,
-        source: Optional[Dict[str, str]] = None,
+        title: str | None = None,
+        detail: str | None = None,
+        source: dict[str, str] | None = None,
     ):
-        super(ApiError, self).__init__()
+        super().__init__()
         self.code = str_code_from_enum(code)
         self.id_ = id_ if id_ is not None else uuid.uuid4()
         self.status = status
@@ -67,10 +63,10 @@ class ApiError(Exception):
         self.detail = detail
         self.source = source
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {key: getattr(self, key) for key in ERROR_FIELDS}
 
-    def to_dicts(self) -> List[Dict[str, Any]]:
+    def to_dicts(self) -> list[dict[str, Any]]:
         """The entries of the response's `errors` list."""
         return [self.to_dict()]
 
@@ -78,15 +74,15 @@ class ApiError(Exception):
 class ApiValidationError(ApiError):
     """A 400 carrying one error per invalid request field."""
 
-    def __init__(self, errors: List[ApiError]):
+    def __init__(self, errors: list[ApiError]):
         super().__init__(ApiErrorCode.incorrect_parameters, status=400, title="Invalid request")
         self.errors = errors
 
-    def to_dicts(self) -> List[Dict[str, Any]]:
+    def to_dicts(self) -> list[dict[str, Any]]:
         return [error.to_dict() for error in self.errors]
 
 
-def serialize_error(error: ApiError) -> Dict[str, List[Dict[str, Any]]]:
+def serialize_error(error: ApiError) -> dict[str, list[dict[str, Any]]]:
     return {"errors": error.to_dicts()}
 
 
@@ -97,8 +93,6 @@ JSON_MIMETYPE = "application/json"
 AUTH_GUARD = "auth_guard"
 TYPED_MARKER = "_typed_endpoint"
 
-P = ParamSpec("P")
-R = TypeVar("R")
 Handler = TypeVar("Handler", bound=Callable[..., Any])
 
 
@@ -106,25 +100,25 @@ Handler = TypeVar("Handler", bound=Callable[..., Any])
 class TypedEndpoint:
     """What an endpoint declares: request DTOs, the response DTO, its status and its error statuses."""
 
-    query: Optional[type[BaseModel]]
-    body: Optional[type[BaseModel]]
+    query: type[BaseModel] | None
+    body: type[BaseModel] | None
     response: Any
     status: int
-    operation_id: Optional[str]
+    operation_id: str | None
     # The error statuses the handler itself raises; 400 for invalid DTOs and 401 for a missing
     # token are implied by `query`/`body` and the auth guard.
-    errors: Tuple[int, ...] = ()
-    adapter: Optional[TypeAdapter[Any]] = field(default=None, compare=False, repr=False)
+    errors: tuple[int, ...] = ()
+    adapter: TypeAdapter[Any] | None = field(default=None, compare=False, repr=False)
 
     @classmethod
     def declare(
         cls,
-        methods: List[str],
-        query: Optional[type[BaseModel]],
-        body: Optional[type[BaseModel]],
+        methods: list[str],
+        query: type[BaseModel] | None,
+        body: type[BaseModel] | None,
         response: Any,
         status: int,
-        operation_id: Optional[str],
+        operation_id: str | None,
         errors: Sequence[int] = (),
     ) -> TypedEndpoint:
         if len(methods) != 1:
@@ -149,9 +143,9 @@ class TypedEndpoint:
         return cls(query, body, response, status, operation_id, tuple(sorted(errors)), adapter)
 
     @property
-    def response_model(self) -> Optional[type[BaseModel]]:
+    def response_model(self) -> type[BaseModel] | None:
         """The DTO class behind `response`, unwrapping `list[...]`."""
-        model: Optional[type[BaseModel]] = (
+        model: type[BaseModel] | None = (
             get_args(self.response)[0] if get_origin(self.response) is list else self.response
         )
         return model
@@ -174,10 +168,10 @@ class TypedEndpoint:
                 detail="Accept header must allow application/json",
             )
 
-    def parse_request(self) -> Dict[str, BaseModel]:
+    def parse_request(self) -> dict[str, BaseModel]:
         """The `query=` / `body=` kwargs for the handler; raises ApiValidationError."""
-        parsed: Dict[str, BaseModel] = {}
-        issues: List[ApiError] = []
+        parsed: dict[str, BaseModel] = {}
+        issues: list[ApiError] = []
         if self.query is not None:
             try:
                 parsed["query"] = self.query.model_validate(_query_input(self.query, request.args))
@@ -246,23 +240,23 @@ def _accepts_many(annotation: Any) -> bool:
     return False
 
 
-def _query_input(model: type[BaseModel], args: MultiDict[str, str]) -> Dict[str, Any]:
+def _query_input(model: type[BaseModel], args: MultiDict[str, str]) -> dict[str, Any]:
     """Query args as a dict, keeping repeated values only for fields that take a collection."""
     fields = {field.alias or name: field for name, field in model.model_fields.items()}
-    result: Dict[str, Any] = {}
-    for key in args.keys():
+    result: dict[str, Any] = {}
+    for key in args:
         field = fields.get(key)
         values = args.getlist(key)
         result[key] = values if field is not None and _accepts_many(field.annotation) else values[0]
     return result
 
 
-def _json_pointer(location: str, loc: Tuple[int | str, ...]) -> str:
+def _json_pointer(location: str, loc: tuple[int | str, ...]) -> str:
     parts = [location] + [str(part).replace("~", "~0").replace("/", "~1") for part in loc]
     return "/" + "/".join(parts)
 
 
-def _validation_issues(error: ValidationError, location: str, title: str) -> List[ApiError]:
+def _validation_issues(error: ValidationError, location: str, title: str) -> list[ApiError]:
     return [
         ApiError(
             ApiErrorCode.incorrect_parameters,
@@ -282,7 +276,7 @@ def _routed_endpoint() -> Callable[..., Any]:
     return BaseApi.endpoints[f"{blueprint_name}.{endpoint}"]
 
 
-def catch_integrity_errors(session: scoped_session[Any]) -> Callable[[Callable[P, R]], Callable[P, R]]:
+def catch_integrity_errors[**P, R](session: scoped_session[Any]) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Answer 409 when a write breaks a database constraint (a taken name, a duplicate)."""
 
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
@@ -307,7 +301,7 @@ def catch_integrity_errors(session: scoped_session[Any]) -> Callable[[Callable[P
     return decorator
 
 
-def catch_processing_exceptions(func: Callable[P, R]) -> Callable[P, R]:
+def catch_processing_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     """Decorator to catch processing exceptions."""
 
     @wraps(func)
@@ -337,7 +331,7 @@ class BaseApi(View):
 
     method_marker = "_method"
     route_marker = "_route"
-    endpoints: Dict[str, Callable[..., Any]] = {}
+    endpoints: ClassVar[dict[str, Callable[..., Any]]] = {}
 
     url_prefix = ""
     blueprint_name = ""
@@ -403,13 +397,13 @@ class BaseApi(View):
     def endpoint(
         cls,
         route: str,
-        methods: List[str],
+        methods: list[str],
         *,
-        query: Optional[type[BaseModel]] = None,
-        body: Optional[type[BaseModel]] = None,
+        query: type[BaseModel] | None = None,
+        body: type[BaseModel] | None = None,
         response: Any = None,
         status: int = 200,
-        operation_id: Optional[str] = None,
+        operation_id: str | None = None,
         errors: Sequence[int] = (),
     ) -> Callable[[Handler], Handler]:
         """Decorator to mark a method as endpoint; it must declare `response=` or `status=204`.

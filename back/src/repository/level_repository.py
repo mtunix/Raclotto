@@ -1,7 +1,6 @@
-from typing import Optional, List
-from back.src.repository.base_repository import BaseRepository
-from back.src.entity.level import Level
 from back.src.driver.database import db
+from back.src.entity.level import Level
+from back.src.repository.base_repository import BaseRepository
 
 
 class LevelRepository(BaseRepository[Level]):
@@ -10,7 +9,7 @@ class LevelRepository(BaseRepository[Level]):
     def __init__(self) -> None:
         super().__init__(Level)
 
-    def by_experience(self, experience_points: int) -> Optional[Level]:
+    def by_experience(self, experience_points: int) -> Level | None:
         """
         Get the highest level that the user has achieved based on experience points.
 
@@ -25,7 +24,7 @@ class LevelRepository(BaseRepository[Level]):
             .first()
         )
 
-    def all_ordered(self) -> List[Level]:
+    def all_ordered(self) -> list[Level]:
         """
         Get all levels ordered by required_experience ascending.
 
@@ -33,7 +32,7 @@ class LevelRepository(BaseRepository[Level]):
         """
         return db.session.query(Level).order_by(Level.required_experience.asc()).all()
 
-    def next_level(self, current_level: Level) -> Optional[Level]:
+    def next_level(self, current_level: Level) -> Level | None:
         """
         Get the next level after the current level.
 

@@ -2,7 +2,6 @@
 
 from collections import Counter
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 from back.src.entity.ingredient import Ingredient
 from back.src.entity.pan import Pan
@@ -19,13 +18,13 @@ class UserStats:
     total_pans: int
     total_ratings_given: int
     average_rating_received: float
-    favorite_ingredient: Optional[Ingredient]
-    best_rated_ingredient: Optional[Tuple[Ingredient, float]]
+    favorite_ingredient: Ingredient | None
+    best_rated_ingredient: tuple[Ingredient, float] | None
     total_achievement_points: int
     average_ingredients_per_pan: float
-    most_pans_session: Optional[Tuple[RaclottoSession, int]]
+    most_pans_session: tuple[RaclottoSession, int] | None
     sessions_participated: int
-    most_ingredients_pan: Optional[Pan]
+    most_ingredients_pan: Pan | None
 
 
 def user_stats(user: User) -> UserStats:

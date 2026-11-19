@@ -33,9 +33,7 @@ class InviteToken(Base):
         """Check if the token is valid (not used and not expired)."""
         if self.is_used:
             return False
-        if datetime.now() > self.expires_at:
-            return False
-        return True
+        return datetime.now() <= self.expires_at
 
     def mark_as_used(self) -> None:
         """Mark the token as used."""

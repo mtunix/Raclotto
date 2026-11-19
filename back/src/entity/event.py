@@ -20,4 +20,4 @@ class Event(Base):
     data: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # Additional event data (pan IDs, user names, etc.)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    session: Mapped["RaclottoSession"] = relationship("RaclottoSession", lazy="selectin")
+    session: Mapped[RaclottoSession] = relationship("RaclottoSession", lazy="selectin")

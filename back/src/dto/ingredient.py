@@ -35,7 +35,7 @@ class IngredientForUserDto(IngredientDto):
     applicable: bool
 
     @classmethod
-    def of(cls, ingredient: Ingredient, diet: Diet) -> "IngredientForUserDto":
+    def of(cls, ingredient: Ingredient, diet: Diet) -> IngredientForUserDto:
         return cls(**IngredientDto.model_validate(ingredient).model_dump(), applicable=diet.allows(ingredient))
 
 
@@ -136,7 +136,7 @@ class UpdateIngredientBody(RequestDto):
     sweet: bool = omittable()
 
     @model_validator(mode="after")
-    def _changes_something(self) -> "UpdateIngredientBody":
+    def _changes_something(self) -> UpdateIngredientBody:
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         categories = self.model_fields_set & set(CATEGORIES)

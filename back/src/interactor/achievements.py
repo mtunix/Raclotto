@@ -9,8 +9,8 @@ context is built all live behind ``record``. Callers own the transaction:
 ``record`` flushes but never commits.
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Dict, List, Mapping, Optional, Tuple
 
 from back.src.driver.database import db
 from back.src.entity.achievement import Achievement
@@ -40,26 +40,26 @@ from back.src.repository.user_achievement_progress_repository import (
 from back.src.repository.user_repository import UserRepository
 
 __all__ = [
-    "Achievements",
     "AchievementChanges",
     "AchievementStatus",
-    "PanRolled",
-    "PanRated",
-    "IngredientAdded",
+    "Achievements",
     "CatalogChanged",
+    "IngredientAdded",
+    "PanRated",
+    "PanRolled",
     "SessionClosed",
 ]
 
 
 @dataclass
 class AchievementChanges:
-    unlocked: List[Tuple[int, Achievement]] = field(default_factory=list)
-    revoked: List[Tuple[int, Achievement]] = field(default_factory=list)
+    unlocked: list[tuple[int, Achievement]] = field(default_factory=list)
+    revoked: list[tuple[int, Achievement]] = field(default_factory=list)
 
-    def unlocked_for(self, user_id: int) -> List[Achievement]:
+    def unlocked_for(self, user_id: int) -> list[Achievement]:
         return [a for uid, a in self.unlocked if uid == user_id]
 
-    def revoked_for(self, user_id: int) -> List[Achievement]:
+    def revoked_for(self, user_id: int) -> list[Achievement]:
         return [a for uid, a in self.revoked if uid == user_id]
 
 
@@ -67,11 +67,11 @@ class AchievementChanges:
 class AchievementStatus:
     achievement: Achievement
     unlocked: bool
-    progress: Optional[float]
+    progress: float | None
 
 
 class Achievements:
-    def __init__(self, evaluators: Optional[Mapping[str, AchievementEvaluator]] = None):
+    def __init__(self, evaluators: Mapping[str, AchievementEvaluator] | None = None):
         """``evaluators`` maps achievement title to evaluator; defaults to the app registry."""
         self._evaluators = evaluators if evaluators is not None else get_registry().evaluators
         self._achievements = AchievementRepository()
@@ -89,7 +89,7 @@ class Achievements:
         db.session.expire_all()
 
         changes = AchievementChanges()
-        contexts: Dict[int, EvaluationContext] = {}
+        contexts: dict[int, EvaluationContext] = {}
 
         for achievement in self._achievements.all():
             evaluator = self._evaluator(achievement)
@@ -119,7 +119,7 @@ class Achievements:
         db.session.flush()
         return changes
 
-    def statuses(self, user: User) -> List[AchievementStatus]:
+    def statuses(self, user: User) -> list[AchievementStatus]:
         """Every achievement with the user's unlocked flag and progress. Read-only."""
         held = {a.id for a in user.achievements}
         session = self._latest_session(user)
@@ -136,12 +136,12 @@ class Achievements:
             statuses.append(AchievementStatus(achievement, achievement.id in held, progress))
         return statuses
 
-    def _evaluator(self, achievement: Achievement) -> Optional[AchievementEvaluator]:
+    def _evaluator(self, achievement: Achievement) -> AchievementEvaluator | None:
         if achievement.title is None:
             return None
         return self._evaluators.get(achievement.title)
 
-    def _audience(self, audience: Audience, fact: Fact) -> List[User]:
+    def _audience(self, audience: Audience, fact: Fact) -> list[User]:
         if audience == "actor":
             return [fact.actor] if fact.actor is not None else []
         if audience == "pan_owner":
@@ -171,7 +171,7 @@ class Achievements:
             user_sessions_created=len(self._sessions.by_creator(user.id)),
         )
 
-    def _latest_session(self, user: User) -> Optional[RaclottoSession]:
+    def _latest_session(self, user: User) -> RaclottoSession | None:
         latest = self._pans.by_user(user.id, limit=1)
         if latest:
             return self._sessions.by_id(latest[0].session_id)

@@ -1,5 +1,3 @@
-from typing import Optional, Set
-
 from back.src.entity.achievement import Achievement
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.user import User
@@ -43,7 +41,7 @@ class KingOfTheSauceEvaluator(AchievementEvaluator):
         progress = self._progress(subject, achievement, context)
         return EvaluationResult(unlocked=progress >= 1.0, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         return self._progress(user, achievement, context)
 
     def _progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float:
@@ -54,11 +52,11 @@ class KingOfTheSauceEvaluator(AchievementEvaluator):
         used = self._sauces_used(user, session_ids)
         return len(used & all_sauces) / len(all_sauces)
 
-    def _available_sauces(self, session_ids: Set[int]) -> Set[int]:
+    def _available_sauces(self, session_ids: set[int]) -> set[int]:
         sauces = self.ingredient_repository.by_session_ids(list(session_ids), IngredientType.SAUCE)
         return {s.id for s in sauces if s.available}
 
-    def _sauces_used(self, user: User, session_ids: Set[int]) -> Set[int]:
+    def _sauces_used(self, user: User, session_ids: set[int]) -> set[int]:
         return {
             ingredient.id
             for pan in self.pan_repository.by_user(user.id)

@@ -4,10 +4,8 @@ The ingredient table's CheckConstraints enforce the same rule; `category_problem
 of it a set of flags breaks, so requests are rejected before they reach the database.
 """
 
-from typing import Optional
 
-
-def category_problem(meat: bool, vegetarian: bool, vegan: bool, fish: bool) -> Optional[str]:
+def category_problem(meat: bool, vegetarian: bool, vegan: bool, fish: bool) -> str | None:
     """Why the flags are not exactly one category, or None when they are."""
     if not (meat or vegetarian or vegan or fish):
         return "must have at least one of meat, vegetarian, vegan, or fish set to true"

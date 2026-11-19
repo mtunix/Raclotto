@@ -21,6 +21,6 @@ class ProfilePictureHistory(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     is_candidate: Mapped[bool] = mapped_column(default=False)
 
-    user: Mapped["User"] = relationship("User", lazy="selectin", foreign_keys=[user_id])
+    user: Mapped[User] = relationship("User", lazy="selectin", foreign_keys=[user_id])
 
-    level: Mapped["Level | None"] = relationship("Level", lazy="selectin", foreign_keys=[level_id])
+    level: Mapped[Level | None] = relationship("Level", lazy="selectin", foreign_keys=[level_id])

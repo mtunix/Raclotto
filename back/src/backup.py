@@ -9,9 +9,10 @@ import shutil
 import sqlite3
 import sys
 import tempfile
+from collections.abc import Mapping, Sequence
 from contextlib import closing
 from pathlib import Path
-from typing import BinaryIO, Mapping, Sequence
+from typing import BinaryIO
 
 from dotenv import load_dotenv
 from sqlalchemy.engine import make_url
@@ -43,9 +44,11 @@ def back_up(source: Path, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     try:
         # Read-only, so a mistyped URL can't create an empty database instead.
-        with closing(sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True)) as live:
-            with closing(sqlite3.connect(destination)) as copy:
-                live.backup(copy)
+        with (
+            closing(sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True)) as live,
+            closing(sqlite3.connect(destination)) as copy,
+        ):
+            live.backup(copy)
     except BaseException:
         destination.unlink(missing_ok=True)
         raise

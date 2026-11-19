@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from back.src.interactor.facts import Fact, PanRolled
 
@@ -26,5 +26,5 @@ class EventEvaluator(ABC):
     cooldown: ClassVar[timedelta] = timedelta(hours=1)
 
     @abstractmethod
-    def evaluate(self, fact: Fact) -> Optional[Triggered]:
+    def evaluate(self, fact: Fact) -> Triggered | None:
         """The event to announce for ``fact``, or None."""

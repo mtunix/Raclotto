@@ -1,4 +1,4 @@
-from typing import Iterable, Tuple
+from collections.abc import Iterable
 
 from back.src.dto.base import ResponseDto
 from back.src.interactor.achievements import AchievementStatus
@@ -22,7 +22,7 @@ class AchievementStatusDto(AchievementDto):
     progress: float | None
 
     @classmethod
-    def of(cls, status: AchievementStatus) -> "AchievementStatusDto":
+    def of(cls, status: AchievementStatus) -> AchievementStatusDto:
         return cls(
             **AchievementDto.model_validate(status.achievement).model_dump(),
             unlocked=status.unlocked,
@@ -40,7 +40,7 @@ class LeaderboardEntryDto(ResponseDto):
     achievement_count: int
 
     @classmethod
-    def ranking(cls, standings: Iterable[Tuple[int, str, int, int]]) -> list["LeaderboardEntryDto"]:
+    def ranking(cls, standings: Iterable[tuple[int, str, int, int]]) -> list[LeaderboardEntryDto]:
         """Entries for (user_id, name, total_points, achievement_count) rows, best first."""
         return [
             cls(rank=rank, user_id=user_id, name=name, total_points=points, achievement_count=count)

@@ -1,7 +1,6 @@
-from typing import List, Optional
-from back.src.repository.base_repository import BaseRepository
-from back.src.entity.invite_token import InviteToken
 from back.src.driver.database import db
+from back.src.entity.invite_token import InviteToken
+from back.src.repository.base_repository import BaseRepository
 
 
 class InviteTokenRepository(BaseRepository[InviteToken]):
@@ -10,7 +9,7 @@ class InviteTokenRepository(BaseRepository[InviteToken]):
     def __init__(self) -> None:
         super().__init__(InviteToken)
 
-    def by_token(self, token: str) -> Optional[InviteToken]:
+    def by_token(self, token: str) -> InviteToken | None:
         """
         Get invite token by token string.
 
@@ -19,7 +18,7 @@ class InviteTokenRepository(BaseRepository[InviteToken]):
         """
         return db.session.query(InviteToken).filter_by(token=token).first()
 
-    def by_creator(self, user_id: int) -> List[InviteToken]:
+    def by_creator(self, user_id: int) -> list[InviteToken]:
         """
         Get all invite tokens created by a user.
 

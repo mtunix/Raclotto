@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import Field, model_validator
 
@@ -39,7 +38,7 @@ class PanDto(ResponseDto):
     author: UserSummaryDto | None
 
     @classmethod
-    def of(cls, pan: Pan, author: Optional[User]) -> "PanDto":
+    def of(cls, pan: Pan, author: User | None) -> PanDto:
         return cls(
             id=pan.id,
             name=pan.name,
@@ -68,7 +67,7 @@ class PanPageDto(ResponseDto):
     has_more: bool
 
 
-def _level(level: Optional[Level]) -> Optional[LevelDto]:
+def _level(level: Level | None) -> LevelDto | None:
     return LevelDto.model_validate(level) if level is not None else None
 
 
@@ -82,7 +81,7 @@ class RewardDto(ResponseDto):
     leveled_up: bool
 
     @classmethod
-    def of(cls, reward: Reward) -> "RewardDto":
+    def of(cls, reward: Reward) -> RewardDto:
         return cls(
             xp_gained=reward.xp_gained,
             xp_before=reward.xp_before,
@@ -103,7 +102,7 @@ class RollOutcomeDto(ResponseDto):
     events: list[EventDto]
 
     @classmethod
-    def of(cls, outcome: RollOutcome, roller: User) -> "RollOutcomeDto":
+    def of(cls, outcome: RollOutcome, roller: User) -> RollOutcomeDto:
         return cls(
             pan=PanDto.of(outcome.pan, roller),
             reward=RewardDto.of(outcome.reward),
@@ -152,7 +151,7 @@ class UpdatePanBody(RequestDto):
     snacked: bool = omittable()
 
     @model_validator(mode="after")
-    def _changes_something(self) -> "UpdatePanBody":
+    def _changes_something(self) -> UpdatePanBody:
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         return self

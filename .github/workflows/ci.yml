@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend tests
+    name: Backend lint, types and tests
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -32,6 +32,8 @@ jobs:
             requirements.txt
             requirements-dev.txt
       - run: python -m venv venv && venv/bin/pip install -r requirements-dev.txt
+      - run: venv/bin/ruff check --output-format github
+      - run: venv/bin/ruff format --check
       - run: venv/bin/python -m unittest discover -s back/test -t .
       - run: venv/bin/mypy
 

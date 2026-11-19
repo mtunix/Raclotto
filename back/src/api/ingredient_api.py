@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.auth.middleware import get_current_user, require_auth
@@ -19,8 +19,8 @@ from back.src.dto.ingredient import (
 from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
 from back.src.entity.ingredient import Ingredient, IngredientType
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.interactor.ingredient_catalog import CatalogError, CatalogItem, IngredientCatalog
 from back.src.interactor.diet import Diet
+from back.src.interactor.ingredient_catalog import CatalogError, CatalogItem, IngredientCatalog
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.session_repository import SessionRepository
 
@@ -249,14 +249,14 @@ class IngredientApi(BaseApi):
                     title="Mixed sessions",
                     detail=e.detail,
                     source={"pointer": f"/body/ingredients/{e.index}/session_id"},
-                )
+                ) from e
             raise ApiError(
                 ApiErrorCode.resource_not_found,
                 status=404,
                 title="Ingredient not found",
                 detail=e.detail,
                 source={"pointer": f"/body/ingredients/{e.index}/id"},
-            )
+            ) from e
         dto = IngredientReimportDto(
             created=result.created,
             updated=result.updated,

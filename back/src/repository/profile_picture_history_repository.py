@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from back.src.driver.database import db
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.user import User
@@ -12,7 +10,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
     def __init__(self) -> None:
         super().__init__(ProfilePictureHistory)
 
-    def by_user_id(self, user_id: int) -> List[ProfilePictureHistory]:
+    def by_user_id(self, user_id: int) -> list[ProfilePictureHistory]:
         """
         Get all profile picture history entries for a user, ordered by created_at descending.
 
@@ -26,7 +24,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
             .all()
         )
 
-    def get_latest_by_user_id(self, user_id: int) -> Optional[ProfilePictureHistory]:
+    def get_latest_by_user_id(self, user_id: int) -> ProfilePictureHistory | None:
         """
         Get the most recent profile picture for a user.
 
@@ -44,7 +42,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
         return db.session.query(ProfilePictureHistory).filter_by(user_id=user_id, is_candidate=True).first() is not None
 
     def add_profile_picture(
-        self, user_id: int, profile_picture_url: Optional[str], level_id: Optional[int], is_candidate: bool
+        self, user_id: int, profile_picture_url: str | None, level_id: int | None, is_candidate: bool
     ) -> ProfilePictureHistory:
         """Add a picture to the user's history. The caller commits."""
         history_entry = ProfilePictureHistory(
@@ -61,7 +59,7 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
             db.session.expire(user, ["profile_picture_history"])
         return history_entry
 
-    def get_candidate_by_user_id(self, user_id: int) -> Optional[ProfilePictureHistory]:
+    def get_candidate_by_user_id(self, user_id: int) -> ProfilePictureHistory | None:
         """
         Get the candidate profile picture (marked for generation context) for a user.
         Falls back to the first/oldest picture if no candidate is marked.

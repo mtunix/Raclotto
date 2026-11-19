@@ -405,7 +405,7 @@ class TestExportAndImport(IngredientApiTest):
             "/ingredients/reimport",
             self.ana,
             query={"session_key": "old-export"},
-            body={"ingredients": changed + [new]},
+            body={"ingredients": [*changed, new]},
         )
 
         self.assertEqual(response.status_code, 200, response.json)

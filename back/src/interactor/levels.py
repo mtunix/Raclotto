@@ -10,7 +10,6 @@ transaction: nothing here commits.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 from back.src.driver.database import db
 from back.src.entity.level import Level
@@ -22,18 +21,18 @@ from back.src.repository.level_repository import LevelRepository
 @dataclass(frozen=True)
 class LevelProgress:
     # None only while no levels exist.
-    level: Optional[Level]
+    level: Level | None
     # None at the highest level.
-    next_level: Optional[Level]
+    next_level: Level | None
 
 
 @dataclass(frozen=True)
 class Reward:
     xp_before: int
     xp_after: int
-    previous_level: Optional[Level]
-    level: Optional[Level]
-    next_level: Optional[Level]
+    previous_level: Level | None
+    level: Level | None
+    next_level: Level | None
 
     @property
     def xp_gained(self) -> int:
@@ -48,7 +47,7 @@ class Levels:
     def __init__(self) -> None:
         self._levels = LevelRepository()
 
-    def starting(self) -> Optional[Level]:
+    def starting(self) -> Level | None:
         """The lowest level; None while no levels exist."""
         return next(iter(self._levels.all_ordered()), None)
 
@@ -77,7 +76,7 @@ class Levels:
             next_level=self._next(level),
         )
 
-    def _next(self, level: Optional[Level]) -> Optional[Level]:
+    def _next(self, level: Level | None) -> Level | None:
         return self._levels.next_level(level) if level is not None else None
 
 

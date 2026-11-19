@@ -1,10 +1,10 @@
-from typing import List, Optional
 from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
-from back.src.repository.base_repository import BaseRepository
-from back.src.entity.rating import Rating
-from back.src.entity.raclotto_session import RaclottoSession
+
 from back.src.driver.database import db
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.entity.rating import Rating
+from back.src.repository.base_repository import BaseRepository
 
 
 class RatingRepository(BaseRepository[Rating]):
@@ -13,7 +13,7 @@ class RatingRepository(BaseRepository[Rating]):
     def __init__(self) -> None:
         super().__init__(Rating)
 
-    def by_session(self, session_key: str) -> List[Rating]:
+    def by_session(self, session_key: str) -> list[Rating]:
         """
         Get all ratings for a session.
 
@@ -26,7 +26,7 @@ class RatingRepository(BaseRepository[Rating]):
         except NoResultFound:
             return []
 
-    def by_user_and_pan(self, user_id: int, pan_id: int) -> Optional[Rating]:
+    def by_user_and_pan(self, user_id: int, pan_id: int) -> Rating | None:
         """
         Get a rating by user and pan.
 
@@ -45,7 +45,7 @@ class RatingRepository(BaseRepository[Rating]):
         """
         return db.session.query(Rating).filter_by(user_id=user_id).count()
 
-    def average_for_pans(self, pan_ids: List[int]) -> Optional[float]:
+    def average_for_pans(self, pan_ids: list[int]) -> float | None:
         """The average of every rating the pans received; None without ratings."""
         if not pan_ids:
             return None

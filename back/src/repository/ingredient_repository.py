@@ -1,11 +1,13 @@
-from typing import Any, Dict, List, Optional
-from sqlalchemy import Row, or_, not_
+from typing import Any
+
+from sqlalchemy import Row
 from sqlalchemy.exc import NoResultFound
-from back.src.repository.base_repository import BaseRepository
-from back.src.entity.ingredient import Ingredient, IngredientType
-from back.src.interactor.diet import Diet
-from back.src.entity.raclotto_session import RaclottoSession
+
 from back.src.driver.database import db
+from back.src.entity.ingredient import Ingredient, IngredientType
+from back.src.entity.raclotto_session import RaclottoSession
+from back.src.interactor.diet import Diet
+from back.src.repository.base_repository import BaseRepository
 
 
 class IngredientRepository(BaseRepository[Ingredient]):
@@ -14,7 +16,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
     def __init__(self) -> None:
         super().__init__(Ingredient)
 
-    def by_session(self, session_key: str) -> List[Ingredient]:
+    def by_session(self, session_key: str) -> list[Ingredient]:
         """
         Get all ingredients for a session.
 
@@ -27,7 +29,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         except NoResultFound:
             return []
 
-    def by_type(self, session_key: str, ingredient_type: IngredientType) -> List[Ingredient]:
+    def by_type(self, session_key: str, ingredient_type: IngredientType) -> list[Ingredient]:
         """
         Get ingredients by type for a session.
 
@@ -41,7 +43,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         except NoResultFound:
             return []
 
-    def filter_by_preferences(self, session_key: str, diet: Diet, ingredient_type: IngredientType) -> List[Ingredient]:
+    def filter_by_preferences(self, session_key: str, diet: Diet, ingredient_type: IngredientType) -> list[Ingredient]:
         """
         Available, named ingredients of one type in a session that the diet allows.
 
@@ -60,8 +62,8 @@ class IngredientRepository(BaseRepository[Ingredient]):
             .filter(
                 Ingredient.session_id == session.id,
                 Ingredient.type == ingredient_type,
-                Ingredient.available == True,
-                Ingredient.name != None,
+                Ingredient.available.is_(True),
+                Ingredient.name.is_not(None),
                 Ingredient.name != "",
                 diet.ingredient_filter(),
             )
@@ -69,7 +71,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
             .all()
         )
 
-    def mark_unavailable(self, id: int) -> Optional[Ingredient]:
+    def mark_unavailable(self, id: int) -> Ingredient | None:
         """
         Mark an ingredient as unavailable.
 
@@ -84,7 +86,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         db.session.flush()
         return ingredient
 
-    def mark_available(self, id: int) -> Optional[Ingredient]:
+    def mark_available(self, id: int) -> Ingredient | None:
         """
         Mark an ingredient as available.
 
@@ -99,9 +101,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         db.session.flush()
         return ingredient
 
-    def by_session_ids(
-        self, session_ids: List[int], ingredient_type: Optional[IngredientType] = None
-    ) -> List[Ingredient]:
+    def by_session_ids(self, session_ids: list[int], ingredient_type: IngredientType | None = None) -> list[Ingredient]:
         """
         Get ingredients from multiple sessions.
 
@@ -119,7 +119,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
 
         return query.all()
 
-    def get_top_rated(self, session_id: Optional[int] = None, limit: int = 10) -> List[Row[Ingredient, float]]:
+    def get_top_rated(self, session_id: int | None = None, limit: int = 10) -> list[Row[Ingredient, float]]:
         """
         Get top-rated ingredients by average rating.
 
@@ -128,6 +128,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         :return: List of tuples (Ingredient, avg_rating)
         """
         from sqlalchemy import func
+
         from back.src.entity.pan import Pan, pan_ingredients
         from back.src.entity.rating import Rating
 
@@ -141,20 +142,21 @@ class IngredientRepository(BaseRepository[Ingredient]):
         if session_id:
             query = query.filter(Ingredient.session_id == session_id)
 
-        rows: List[Row[Ingredient, float]] = (
+        rows: list[Row[Ingredient, float]] = (
             query.group_by(Ingredient.id).order_by(func.avg(Rating.rating).desc()).limit(limit).all()
         )
         return rows
 
-    def best_rated_in_pans(self, pan_ids: List[int]) -> Optional[Row[Ingredient, float]]:
+    def best_rated_in_pans(self, pan_ids: list[int]) -> Row[Ingredient, float] | None:
         """The ingredient with the highest average rating over the given pans it was in, and that average."""
         from sqlalchemy import func
+
         from back.src.entity.pan import pan_ingredients
         from back.src.entity.rating import Rating
 
         if not pan_ids:
             return None
-        row: Optional[Row[Ingredient, float]] = (
+        row: Row[Ingredient, float] | None = (
             db.session.query(Ingredient, func.avg(Rating.rating))
             .join(pan_ingredients, pan_ingredients.c.ingredient_id == Ingredient.id)
             .join(Rating, Rating.pan_id == pan_ingredients.c.pan_id)
@@ -165,7 +167,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         )
         return row
 
-    def get_most_used(self, session_id: Optional[int] = None, limit: int = 10) -> List[Row[Ingredient, int]]:
+    def get_most_used(self, session_id: int | None = None, limit: int = 10) -> list[Row[Ingredient, int]]:
         """
         Get most-used ingredients by pan count.
 
@@ -174,6 +176,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         :return: List of tuples (Ingredient, pan_count)
         """
         from sqlalchemy import func
+
         from back.src.entity.pan import Pan, pan_ingredients
 
         query = (
@@ -187,7 +190,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
 
         return query.group_by(Ingredient.id).order_by(func.count(Pan.id).desc()).limit(limit).all()
 
-    def bulk_create(self, ingredients_data: List[Dict[str, Any]], session_id: int) -> List[Ingredient]:
+    def bulk_create(self, ingredients_data: list[dict[str, Any]], session_id: int) -> list[Ingredient]:
         """
         Create multiple ingredients in bulk.
 
@@ -218,7 +221,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         db.session.flush()
         return created_ingredients
 
-    def bulk_update(self, ingredients_data: List[Dict[str, Any]]) -> List[Ingredient]:
+    def bulk_update(self, ingredients_data: list[dict[str, Any]]) -> list[Ingredient]:
         """
         Update multiple ingredients in bulk.
 
@@ -255,7 +258,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         db.session.flush()
         return updated_ingredients
 
-    def mark_unavailable_by_ids(self, ingredient_ids: List[int]) -> int:
+    def mark_unavailable_by_ids(self, ingredient_ids: list[int]) -> int:
         """
         Mark multiple ingredients as unavailable by their IDs.
 

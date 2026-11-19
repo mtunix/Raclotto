@@ -35,7 +35,7 @@ class UserStatsDto(ResponseDto):
     most_ingredients_pan: PanDto | None
 
     @classmethod
-    def of(cls, stats: UserStats, user: User) -> "UserStatsDto":
+    def of(cls, stats: UserStats, user: User) -> UserStatsDto:
         best = stats.best_rated_ingredient
         most = stats.most_pans_session
         return cls(

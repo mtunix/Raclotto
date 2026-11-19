@@ -1,9 +1,9 @@
 """Shared base for tests that need the real app on an in-memory database."""
 
 import unittest
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Type
 
 from sqlalchemy import event
 
@@ -26,10 +26,10 @@ class ConfigTest(ConfigInMemory):
     DEBUG = False
 
 
-_apps: Dict[Tuple[Type[BaseApi], ...], App] = {}
+_apps: dict[tuple[type[BaseApi], ...], App] = {}
 
 
-def get_app(extra_apis: Sequence[Type[BaseApi]] = ()) -> App:
+def get_app(extra_apis: Sequence[type[BaseApi]] = ()) -> App:
     """The test app, built once per set of extra API classes mounted next to the real ones."""
     key = tuple(extra_apis)
     if key not in _apps:
@@ -40,7 +40,7 @@ def get_app(extra_apis: Sequence[Type[BaseApi]] = ()) -> App:
 class AppTest(unittest.TestCase):
     """Fresh schema + default data (levels, achievements, preparation types) per test."""
 
-    extra_apis: Sequence[Type[BaseApi]] = ()
+    extra_apis: Sequence[type[BaseApi]] = ()
 
     def setUp(self):
         self.app = get_app(self.extra_apis)
@@ -72,7 +72,7 @@ class AppTest(unittest.TestCase):
         db.session.commit()
         return user
 
-    def make_session(self, key: str = "s1", creator: Optional[User] = None) -> RaclottoSession:
+    def make_session(self, key: str = "s1", creator: User | None = None) -> RaclottoSession:
         session = RaclottoSession(key=key, name=key, created_by_user_id=creator.id if creator else None)
         db.session.add(session)
         db.session.commit()
@@ -113,9 +113,9 @@ class AppTest(unittest.TestCase):
         return invite
 
     @contextmanager
-    def recorded_writes(self) -> Iterator[List[str]]:
+    def recorded_writes(self) -> Iterator[list[str]]:
         """The INSERT, UPDATE and DELETE statements sent to the database inside the block."""
-        statements: List[str] = []
+        statements: list[str] = []
 
         def record(conn, cursor, statement, *args):
             if statement.lstrip().upper().startswith(("INSERT", "UPDATE", "DELETE")):
@@ -135,9 +135,9 @@ class AppTest(unittest.TestCase):
         self,
         method: str,
         path: str,
-        user: Optional[User] = None,
-        body: Optional[dict] = None,
-        query: Optional[dict] = None,
+        user: User | None = None,
+        body: dict | None = None,
+        query: dict | None = None,
     ):
         """Call an endpoint with plain JSON, as the generated client does."""
         return self.client.open(

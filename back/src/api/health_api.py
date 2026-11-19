@@ -11,6 +11,6 @@ class HealthApi(BaseApi):
 
     @BaseApi.endpoint("", ["GET"], response=HealthDto, operation_id="getHealth")
     def get_health(self) -> HealthDto:
-        """Liveness for container and load-balancer checks (the app is up, its database answers), and the running release."""
+        """Liveness for container and load-balancer checks (app up, database answering), and the running release."""
         db.session.execute(text("SELECT 1"))
         return HealthDto(status="ok", version=current())

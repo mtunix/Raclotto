@@ -9,8 +9,8 @@ transaction: ``record`` flushes but never commits.
 """
 
 import logging
+from collections.abc import Callable, Sequence
 from datetime import datetime, timedelta
-from typing import Callable, List, Optional, Sequence
 
 from back.src.driver.database import db
 from back.src.entity.event import Event
@@ -33,7 +33,7 @@ def default_evaluators() -> tuple[EventEvaluator, ...]:
 class Events:
     def __init__(
         self,
-        evaluators: Optional[Sequence[EventEvaluator]] = None,
+        evaluators: Sequence[EventEvaluator] | None = None,
         clock: Callable[[], datetime] = datetime.now,
     ):
         self._evaluators = tuple(evaluators) if evaluators is not None else default_evaluators()
@@ -41,7 +41,7 @@ class Events:
         self._events = EventRepository()
         self._configs = EventConfigRepository()
 
-    def record(self, fact: Fact) -> List[Event]:
+    def record(self, fact: Fact) -> list[Event]:
         """Ask every enabled evaluator that reacts to ``fact`` and is off cooldown; store what fires."""
         session = fact.session
         now = self._clock()
@@ -74,7 +74,7 @@ class Events:
         db.session.flush()
         return announced
 
-    def pending(self, session: RaclottoSession, user: User) -> List[Event]:
+    def pending(self, session: RaclottoSession, user: User) -> list[Event]:
         """The session's events ``user`` has not dismissed, newest first."""
         return self._events.pending(session.id, user.id)
 
@@ -82,7 +82,7 @@ class Events:
         """Hide an event from ``user``; False when it does not exist or is hidden already."""
         return self._events.dismiss_for_user(event_id, user.id)
 
-    def configs(self, session: Optional[RaclottoSession]) -> List[EventConfig]:
+    def configs(self, session: RaclottoSession | None) -> list[EventConfig]:
         """The global configs and the session's own; without a session, every config."""
         return self._configs.visible_to(session.id if session else None)
 
@@ -90,14 +90,14 @@ class Events:
         self,
         event_type: str,
         enabled: bool,
-        frequency_minutes: Optional[int],
-        session: Optional[RaclottoSession],
+        frequency_minutes: int | None,
+        session: RaclottoSession | None,
     ) -> EventConfig:
         """Save the session's own config, or the global one without a session. A None frequency keeps the stored one."""
         return self._configs.save(event_type, enabled, frequency_minutes, session.id if session else None)
 
     @staticmethod
-    def _cooldown(evaluator: EventEvaluator, config: Optional[EventConfig]) -> timedelta:
+    def _cooldown(evaluator: EventEvaluator, config: EventConfig | None) -> timedelta:
         if config is not None and config.frequency_minutes is not None:
             return timedelta(minutes=config.frequency_minutes)
         return evaluator.cooldown

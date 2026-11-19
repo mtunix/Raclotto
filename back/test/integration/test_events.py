@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, get_args
+from typing import get_args
 
 from back.src.driver.database import db
 from back.src.dto.event import EventType
@@ -14,14 +14,14 @@ from back.test.support import AppTest
 class Always(EventEvaluator):
     event_type = "always"
 
-    def evaluate(self, fact: Fact) -> Optional[Triggered]:
+    def evaluate(self, fact: Fact) -> Triggered | None:
         return Triggered("It happened", {"n": 1})
 
 
 class Broken(EventEvaluator):
     event_type = "broken"
 
-    def evaluate(self, fact: Fact) -> Optional[Triggered]:
+    def evaluate(self, fact: Fact) -> Triggered | None:
         raise RuntimeError("boom")
 
 

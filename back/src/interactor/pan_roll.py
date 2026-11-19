@@ -13,9 +13,10 @@ rolls the roll back too. Randomness comes from an injectable
 """
 
 import random
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
+from typing import TypeVar
 
 from wonderwords import RandomWord
 
@@ -46,12 +47,12 @@ class RollOptions:
     * ``ingredient_ids``: a hand-picked pan
     """
 
-    num_fill: Optional[int] = None
-    num_sauce: Optional[int] = None
-    total_columns: Optional[int] = None
-    ingredient_ids: Optional[Sequence[int]] = None
-    name: Optional[str] = None
-    preparation_type_id: Optional[int] = None
+    num_fill: int | None = None
+    num_sauce: int | None = None
+    total_columns: int | None = None
+    ingredient_ids: Sequence[int] | None = None
+    name: str | None = None
+    preparation_type_id: int | None = None
     roll_preparation_type: bool = False
     roll_cheese: bool = False
 
@@ -75,11 +76,11 @@ class RollError(Exception):
 class RollOutcome:
     pan: Pan
     reward: Reward
-    achievements: List[Achievement] = field(default_factory=list)
-    events: List[Event] = field(default_factory=list)
+    achievements: list[Achievement] = field(default_factory=list)
+    events: list[Event] = field(default_factory=list)
 
 
-def split_columns(total: int, fills_available: int, sauces_available: int, rng: random.Random) -> Tuple[int, int]:
+def split_columns(total: int, fills_available: int, sauces_available: int, rng: random.Random) -> tuple[int, int]:
     """Randomly split ``total`` columns into (fills, sauces).
 
     Never exceeds what is available, never exceeds ``total``, and gives at
@@ -112,10 +113,10 @@ def _random_pan_name() -> str:
 class PanRoll:
     def __init__(
         self,
-        rng: Optional[random.Random] = None,
+        rng: random.Random | None = None,
         name_pan: Callable[[], str] = _random_pan_name,
-        achievements: Optional[Achievements] = None,
-        events: Optional[Events] = None,
+        achievements: Achievements | None = None,
+        events: Events | None = None,
     ):
         self._rng = rng or random.Random()
         self._name_pan = name_pan
@@ -174,7 +175,7 @@ class PanRoll:
             events=events,
         )
 
-    def _choose_ingredients(self, user: User, session: RaclottoSession, options: RollOptions) -> List[Ingredient]:
+    def _choose_ingredients(self, user: User, session: RaclottoSession, options: RollOptions) -> list[Ingredient]:
         if options.ingredient_ids is not None:
             return self._picked(session, options.ingredient_ids)
 
@@ -203,7 +204,7 @@ class PanRoll:
         return self._rng.sample(fills, num_fill) + self._rng.sample(sauces, num_sauce)
 
     @staticmethod
-    def _picked(session: RaclottoSession, ids: Sequence[int]) -> List[Ingredient]:
+    def _picked(session: RaclottoSession, ids: Sequence[int]) -> list[Ingredient]:
         if not ids:
             raise RollError(RollError.INVALID_OPTIONS, "ingredients must be a non-empty list")
         found = (
@@ -213,7 +214,7 @@ class PanRoll:
             raise RollError(RollError.NO_INGREDIENTS, "None of the given ingredients exist in this session")
         return found
 
-    def _preparation_type(self, session: RaclottoSession, options: RollOptions) -> Tuple[Optional[int], bool]:
+    def _preparation_type(self, session: RaclottoSession, options: RollOptions) -> tuple[int | None, bool]:
         if options.roll_preparation_type:
             available = self._prep_types.by_session(session.id)
             if available:

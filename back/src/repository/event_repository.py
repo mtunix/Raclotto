@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import select
 
@@ -13,7 +12,7 @@ class EventRepository(BaseRepository[Event]):
     def __init__(self) -> None:
         super().__init__(Event)
 
-    def pending(self, session_id: int, user_id: int) -> List[Event]:
+    def pending(self, session_id: int, user_id: int) -> list[Event]:
         """The session's events the user has not dismissed, newest first."""
         dismissed = select(user_event_dismissals.c.event_id).where(user_event_dismissals.c.user_id == user_id)
         return (

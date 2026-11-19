@@ -1,7 +1,6 @@
 """What happened in a session. Routes and the roll report facts to achievements and events."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 from back.src.entity.ingredient import Ingredient
 from back.src.entity.pan import Pan
@@ -17,7 +16,7 @@ class PanRolled:
     session: RaclottoSession
 
     @property
-    def actor(self) -> Optional[User]:
+    def actor(self) -> User | None:
         return self.user
 
 
@@ -29,7 +28,7 @@ class PanRated:
     session: RaclottoSession
 
     @property
-    def actor(self) -> Optional[User]:
+    def actor(self) -> User | None:
         return self.rater
 
 
@@ -40,7 +39,7 @@ class IngredientAdded:
     session: RaclottoSession
 
     @property
-    def actor(self) -> Optional[User]:
+    def actor(self) -> User | None:
         return self.user
 
 
@@ -49,13 +48,13 @@ class CatalogChanged:
     """A session's ingredient catalog was replaced or merged."""
 
     session: RaclottoSession
-    actor: Optional[User] = None
+    actor: User | None = None
 
 
 @dataclass(frozen=True)
 class SessionClosed:
     session: RaclottoSession
-    actor: Optional[User] = None
+    actor: User | None = None
 
 
 Fact = PanRolled | PanRated | IngredientAdded | CatalogChanged | SessionClosed

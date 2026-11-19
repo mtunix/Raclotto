@@ -4,13 +4,14 @@ import logging
 import secrets
 import tempfile
 import unittest
+from collections.abc import Callable
 from contextlib import redirect_stdout
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 import waitress
-from waitress.adjustments import Adjustments
 from flask.globals import app_ctx
+from waitress.adjustments import Adjustments
 
 from back.src import dev, main
 from back.src.auth.jwt import decode_token, generate_token
@@ -45,7 +46,7 @@ class ServerTest(unittest.TestCase):
             "RACLOTTO_LOG_FILE": str(self.log_file),
         }
 
-    def build(self, create: Callable[[Dict[str, str]], App] = main.create_app, **environ: str) -> App:
+    def build(self, create: Callable[[dict[str, str]], App] = main.create_app, **environ: str) -> App:
         app = create({**self.environ, **environ})
         # App() leaves its startup context pushed; later tests must not run inside it.
         app_ctx.pop()
@@ -72,7 +73,7 @@ class ServerTest(unittest.TestCase):
         )
 
     @staticmethod
-    def log_files(app: App) -> List[Path]:
+    def log_files(app: App) -> list[Path]:
         return [Path(h.baseFilename) for h in app.logger.handlers if isinstance(h, logging.FileHandler)]
 
     def me(self, app: App, token: str):
@@ -82,7 +83,7 @@ class ServerTest(unittest.TestCase):
 
 
 class TestJwtSecret(ServerTest):
-    def assertRefused(self, environ: Dict[str, str], message: str) -> None:
+    def assertRefused(self, environ: dict[str, str], message: str) -> None:
         with self.assertRaises(ConfigurationError) as raised:
             main.create_app(environ)
         self.assertIn(message, str(raised.exception))
@@ -200,7 +201,7 @@ class TestLogFile(ServerTest):
 
         for config in (ConfigInMemory, Bare):
             with self.subTest(config=config.__name__):
-                app = self.build(lambda _: App(f"raclotto-test-{config.__name__}", db, config))
+                app = self.build(lambda _: App(f"raclotto-test-{config.__name__}", db, config))  # noqa: B023  # called at once
 
                 self.assertEqual(self.log_files(app), [])
 
@@ -239,7 +240,7 @@ class TestAdminBootstrap(ServerTest):
 
 
 class TestServe(ServerTest):
-    def serve(self, module, **environ: str) -> List[Dict[str, Any]]:
+    def serve(self, module, **environ: str) -> list[dict[str, Any]]:
         app = self.build(module.create_app, **environ)
         calls = []
         module.serve(app, serve_with=lambda *args, **kwargs: calls.append((args, kwargs)))

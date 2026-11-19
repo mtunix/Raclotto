@@ -34,11 +34,11 @@ class Diet:
     gluten: bool = True
 
     @classmethod
-    def of(cls, user: object) -> "Diet":
+    def of(cls, user: object) -> Diet:
         """The normalized diet stored on a user (or any object with the same flags)."""
         return cls(**{f.name: bool(getattr(user, f.name)) for f in fields(cls)}).normalized()
 
-    def normalized(self) -> "Diet":
+    def normalized(self) -> Diet:
         """Apply the hierarchy: meat ⇒ vegetarian ⇒ vegan; an empty diet becomes vegetarian."""
         if self.meat:
             return replace(self, vegetarian=True, vegan=True)
@@ -55,10 +55,7 @@ class Diet:
 
     def allows(self, ingredient: object) -> bool:
         diet = self.normalized()
-        for flag in CATEGORIES + SUBSTANCES:
-            if getattr(ingredient, flag) and not getattr(diet, flag):
-                return False
-        return True
+        return not any(getattr(ingredient, flag) and not getattr(diet, flag) for flag in CATEGORIES + SUBSTANCES)
 
     def ingredient_filter(self) -> ColumnElement[bool]:
         """SQLAlchemy clause over ``Ingredient`` equivalent to ``allows``."""

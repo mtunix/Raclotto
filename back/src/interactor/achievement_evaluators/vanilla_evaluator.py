@@ -1,8 +1,7 @@
-from typing import Optional
-from back.src.entity.pan import Pan
-from back.src.entity.user import User
 from back.src.entity.achievement import Achievement
 from back.src.entity.ingredient import IngredientType
+from back.src.entity.pan import Pan
+from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -39,7 +38,7 @@ class VanillaEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress - binary achievement, either unlocked or not.
         Only counts fill ingredients, sauces are excluded.

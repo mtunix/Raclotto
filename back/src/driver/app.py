@@ -1,16 +1,14 @@
 import logging
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Type
 
-from flask import Config, Flask, Response, jsonify, request, send_from_directory
+from flask import Config, Flask, Response, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import NotFound
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules, serialize_error
 from back.src.driver.api_custom import apis_custom
 from back.src.driver.migrations import migrate
-from back.src.utils import str_code_from_enum
 
 
 class _LazyFileHandler(logging.FileHandler):
@@ -29,9 +27,9 @@ class App(Flask):
         self,
         name: str,
         db: SQLAlchemy,
-        config: Type[Config],
-        apis: Optional[List[Type[BaseApi]]] = None,
-        frontend_folder: Optional[Path] = None,
+        config: type[Config],
+        apis: list[type[BaseApi]] | None = None,
+        frontend_folder: Path | None = None,
     ) -> None:
         # No Flask static route: it would answer every path before `serve` can fall back to index.html.
         super().__init__(name, static_folder=None)
@@ -206,13 +204,11 @@ class App(Flask):
             existing = level_repository.by_id(level_data.id) if hasattr(level_data, "id") else None
             if not existing:
                 # Try to find by name
-                existing = next((l for l in existing_levels if l.name == level_data.name), None)
-            if existing:
-                # Update required_experience if it differs
-                if existing.required_experience != level_data.required_experience:
-                    existing.required_experience = level_data.required_experience
-                    self.db.session.commit()
-                    logging.info(f"Updated level: {level_data.name}")
+                existing = next((level for level in existing_levels if level.name == level_data.name), None)
+            if existing and existing.required_experience != level_data.required_experience:
+                existing.required_experience = level_data.required_experience
+                self.db.session.commit()
+                logging.info(f"Updated level: {level_data.name}")
 
     def init_logging(self) -> None:
         log_file = self.config.get("LOG_FILE")
@@ -226,7 +222,7 @@ class App(Flask):
         self.after_request(self.log_on_error)
 
     @staticmethod
-    def page_not_found(_: object) -> Tuple[Response, int]:
+    def page_not_found(_: object) -> tuple[Response, int]:
         code = ApiErrorCode.endpoint_not_found
         error = ApiError(
             code,
@@ -236,5 +232,5 @@ class App(Flask):
         )
         return jsonify(serialize_error(error)), 404
 
-    def invalid_api_usage(self, e: ApiError) -> Tuple[Response, int]:
+    def invalid_api_usage(self, e: ApiError) -> tuple[Response, int]:
         return jsonify(serialize_error(e)), e.status

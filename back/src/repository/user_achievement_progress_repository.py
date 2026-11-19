@@ -1,7 +1,6 @@
-from typing import Optional
-from back.src.repository.base_repository import BaseRepository
-from back.src.entity.user_achievement_progress import UserAchievementProgress
 from back.src.driver.database import db
+from back.src.entity.user_achievement_progress import UserAchievementProgress
+from back.src.repository.base_repository import BaseRepository
 
 
 class UserAchievementProgressRepository(BaseRepository[UserAchievementProgress]):
@@ -10,7 +9,7 @@ class UserAchievementProgressRepository(BaseRepository[UserAchievementProgress])
     def __init__(self) -> None:
         super().__init__(UserAchievementProgress)
 
-    def by_user_and_achievement(self, user_id: int, achievement_id: int) -> Optional[UserAchievementProgress]:
+    def by_user_and_achievement(self, user_id: int, achievement_id: int) -> UserAchievementProgress | None:
         """
         Get progress record for a user and achievement.
 

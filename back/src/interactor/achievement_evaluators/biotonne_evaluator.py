@@ -1,7 +1,6 @@
-from typing import Optional, List
+from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.entity.achievement import Achievement
 from back.src.interactor.achievement_evaluator import AchievementEvaluator, EvaluationContext, EvaluationResult
 
 
@@ -31,7 +30,7 @@ class BiotonneEvaluator(AchievementEvaluator):
         # A pan is vegan if all ingredients are vegan
         return all(ingredient.vegan for ingredient in pan.ingredients)
 
-    def _count_vegan_pans_in_session(self, user: User, session_pans: List[Pan]) -> int:
+    def _count_vegan_pans_in_session(self, user: User, session_pans: list[Pan]) -> int:
         """
         Count how many vegan pans the user has created in the session.
 
@@ -68,7 +67,7 @@ class BiotonneEvaluator(AchievementEvaluator):
 
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
-    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> Optional[float]:
+    def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         """
         Calculate progress based on the number of vegan pans eaten.
         Progress is a ratio of vegan_pan_count / REQUIRED_PANS_COUNT.
