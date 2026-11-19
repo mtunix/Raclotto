@@ -79,13 +79,14 @@ package settings, or run `docker login ghcr.io` on the server with a token that 
 - **Logs:** `docker compose logs -f app`; the app log is also in the volume (`raclotto-api.log`).
 
 All data (the database, generated images included, and the app log) lives in the `data` volume at
-`/app/instance`.
+`/app/instance`. The database is `raclotto.db` together with its `raclotto.db-wal` file, which can
+hold the latest changes: copy it only with the backup command below, never the file alone.
 
 - **Back up:** `docker compose exec -T app python -m back.src.backup - > raclotto-$(date +%F).db`
   takes a consistent copy while the app runs. Run it from cron and keep the copies off the server.
 - **Restore, or bring an existing database:** with the app stopped (`docker compose stop app`),
-  `docker compose run --rm -T app sh -c 'cat > /app/instance/raclotto.db' < raclotto.db`, then
-  `docker compose up -d`.
+  `docker compose run --rm -T app sh -c 'cd /app/instance && rm -f raclotto.db-wal raclotto.db-shm && cat > raclotto.db' < raclotto.db`,
+  then `docker compose up -d`. A `-wal` file left from the old database would be applied to the restored one.
 
 Already running a reverse proxy? Leave Caddy out: publish the app on the loopback interface in a
 `compose.override.yaml`, start only the app with `docker compose up -d app`, and proxy to
@@ -128,7 +129,8 @@ raclotto.example.com {
 
 - **Logs:** `journalctl -u raclotto -f`, and `instance/raclotto-api.log`.
 - **Back up:** `sudo -u raclotto venv/bin/python -m back.src.backup - > ~/raclotto-$(date +%F).db`.
-- **Restore:** `sudo systemctl stop raclotto && sudo install -o raclotto -g raclotto -m 600 raclotto-<date>.db instance/raclotto.db && sudo systemctl start raclotto`.
+- **Restore:** `sudo systemctl stop raclotto && sudo rm -f instance/raclotto.db-wal instance/raclotto.db-shm && sudo install -o raclotto -g raclotto -m 600 raclotto-<date>.db instance/raclotto.db && sudo systemctl start raclotto`.
+  Copy the database only with the backup command: recent changes can be in `instance/raclotto.db-wal`.
 
 ## Releasing
 

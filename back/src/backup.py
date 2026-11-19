@@ -1,7 +1,8 @@
 """Copy the SQLite database while the server runs: `python -m back.src.backup DEST`, or `-` for stdout.
 
 Reads the database URL like the servers do (environment, then `.env`). The copy is taken through
-SQLite's backup API, so it is consistent even mid-write, unlike copying the file.
+SQLite's backup API, so it is consistent even mid-write and includes what is still in the WAL
+file, unlike copying `raclotto.db`.
 """
 
 import os

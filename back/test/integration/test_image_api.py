@@ -31,6 +31,18 @@ class FakeImageGenerator:
         return self.image
 
 
+class TransactionProbe(FakeImageGenerator):
+    """Records whether the request's session was in a transaction when the image was drawn."""
+
+    def __init__(self):
+        super().__init__()
+        self.in_transaction: list[bool] = []
+
+    def generate(self, contents: list) -> str | None:
+        self.in_transaction.append(db.session().in_transaction())
+        return super().generate(contents)
+
+
 class RaisingImageGenerator(FakeImageGenerator):
     def generate(self, contents: list) -> str | None:
         raise RuntimeError("quota exceeded for key sk-secret")
@@ -128,6 +140,18 @@ class ImageApiTest(AppTest):
                 created_at=newest.created_at,
             ),
         )
+
+    def test_the_generator_draws_outside_a_transaction(self):
+        probe = TransactionProbe()
+        set_image_generator(probe)
+        self.add_picture(self.ana, "data:image/png;base64,chosen", 5, candidate=True)
+
+        for path, body in (("/images/generate-profile-picture", {}), ("/images/generate-banana", {"prompt": "x"})):
+            with self.subTest(path=path):
+                self.assertEqual(self.call("POST", path, self.ana, body=body).status_code, 200)
+
+        # A transaction holds the database's write lock (ADR 0007); the image model takes seconds.
+        self.assertEqual(probe.in_transaction, [False, False])
 
     def test_without_a_level_the_picture_is_for_the_users_level(self):
         response = self.call("POST", "/images/generate-profile-picture", self.ana, body={})

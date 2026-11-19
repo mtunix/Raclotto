@@ -48,6 +48,20 @@ class BackUpTest(unittest.TestCase):
 
         self.assertEqual(_pans(destination), [(1, "Käse Knauserer")])
 
+    def test_the_copy_includes_what_is_still_in_the_wal_of_a_running_server(self):
+        with closing(sqlite3.connect(self.database, isolation_level=None)) as server:
+            server.execute("PRAGMA journal_mode = WAL")
+            server.execute("PRAGMA wal_autocheckpoint = 0")
+            server.execute("INSERT INTO pan (name) VALUES ('Fondue Fiasko')")
+            server.execute("BEGIN IMMEDIATE")
+            server.execute("INSERT INTO pan (name) VALUES ('uncommitted')")
+            destination = self.dir / "copy.db"
+
+            back_up(self.database, destination)
+
+            server.execute("ROLLBACK")
+        self.assertEqual(_pans(destination), [(1, "Käse Knauserer"), (2, "Fondue Fiasko")])
+
     def test_never_overwrites_an_existing_file(self):
         destination = self.dir / "copy.db"
         destination.write_bytes(b"keep me")

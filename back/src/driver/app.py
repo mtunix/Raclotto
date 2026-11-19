@@ -50,6 +50,8 @@ class App(Flask):
             from back.src.interactor.achievement_registry import initialize_registry
 
             initialize_registry()
+            # The context stays pushed; a transaction left open in it would keep the database locked.
+            self.db.session.remove()
             app_context.push()
 
         self.init_mikado_api()
