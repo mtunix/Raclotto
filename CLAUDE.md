@@ -6,7 +6,7 @@ XP, levels and achievements. Two apps in one repo:
 | Path     | Stack                                                        |
 |----------|--------------------------------------------------------------|
 | `back/`  | Python 3.14 (`.python-version`), Flask 3.1, SQLAlchemy 2, SQLite |
-| `front/` | React 19, TypeScript 6, Zustand + SWR, antd, Vite 8 (`vite.config.ts`, also configures Vitest 5) |
+| `front/` | React 19, TypeScript 6, Zustand + SWR, antd, Vite 8 (`vite.config.ts`, also configures Vitest 5), React Compiler via Babel 7 (Babel 8 silently skips components) |
 
 The code map below and the module docstrings are the reference, with the domain's terms in
 `GLOSSARY.md` and past decisions in `docs/adr/`; read the module you are changing before inferring
