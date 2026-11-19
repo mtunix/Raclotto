@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from "react";
-import {createPan, getPan} from "../../../api/generated/endpoints/pans/pans";
-import {createRating} from "../../../api/generated/endpoints/ratings/ratings";
+import {createPan} from "../../../api/generated/endpoints/pans/pans";
 import type {PanDto} from "../../../api/generated/model";
-import {mutatePanLists} from "../../../lib/api/swrHooks";
 import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar} from "antd";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
@@ -15,6 +13,7 @@ import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
 import { PanResultModal } from "../../generation/PanResultModal";
 import { applyRollOutcome, LevelUp } from "../../generation/applyRollOutcome";
 import { usePanPages } from "../usePanPages";
+import { ratePan } from "../../rating/ratePan";
 import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
 import {getUniqueUsers, getUniqueRatings, getIngredientCountRanges, filterPans, sortPans} from "./historyUtils";
@@ -55,11 +54,7 @@ export function HistoryView() {
 
     function onRating(id: number, rating: number) {
         if (!sessionKey) return;
-        createRating({ pan_id: id, rating })
-            .then(() => {
-                mutatePanLists();
-                return getPan(id);
-            })
+        ratePan(id, rating)
             .then(replacePan)
             .catch((error) => {
                 console.error("Failed to submit rating:", error);

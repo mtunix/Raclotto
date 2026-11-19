@@ -8,7 +8,6 @@ import React, {
 import { Spin, Tabs } from "antd";
 import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";
-import { createRating } from "../../../api/generated/endpoints/ratings/ratings";
 import type { PanDto } from "../../../api/generated/model";
 import { useListIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
 import { useListPreparationTypes } from "../../../api/generated/endpoints/preparation-type/preparation-type";
@@ -19,6 +18,7 @@ import { useAppStore } from "../../../AppSlice";
 import { useIngredientStore, getLocalStorageNumber } from "./ingredientStore";
 import { GenerationAnimation } from "../animations/GenerationAnimation";
 import { applyRollOutcome } from "../applyRollOutcome";
+import { ratePan } from "../../rating/ratePan";
 // Import CSS module with type assertion
 import styles from "./GenerateView.module.css";
 import { PanResultModal } from "../PanResultModal";
@@ -166,13 +166,9 @@ export function GenerateView() {
 
   function onRating(rating: number) {
     if (generated && sessionKey) {
-      createRating({ pan_id: generated.id, rating })
-        .then(() => {
-          // Rating successfully submitted
-        })
-        .catch((error) => {
-          console.error("Failed to submit rating:", error);
-        });
+      ratePan(generated.id, rating).catch((error) => {
+        console.error("Failed to submit rating:", error);
+      });
     }
   }
 
@@ -266,15 +262,10 @@ export function GenerateView() {
   }
 
   function handleBanditRating(rating: number, panId: number) {
-    // Handle rating for bandit-generated pan
     if (!sessionKey) return;
-    createRating({ pan_id: panId, rating })
-      .then(() => {
-        // Rating successfully submitted
-      })
-      .catch((error) => {
-        console.error("Failed to rate pan:", error);
-      });
+    ratePan(panId, rating).catch((error) => {
+      console.error("Failed to rate pan:", error);
+    });
   }
 
   // Effect to check when both API and animation are complete

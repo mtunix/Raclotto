@@ -117,7 +117,7 @@ it('rolls a preparation type and cheese level when asked to', async () => {
 });
 
 it('rates the rolled pan and returns to the controls on close', async () => {
-    fake.on('POST', '/ratings', rating);
+    fake.on('POST', '/ratings', rating).on('GET', `/pans/${pan.id}`, pan);
     localStorage.setItem('numFill', '1');
     await renderView();
     await generate();
