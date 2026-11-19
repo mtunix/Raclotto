@@ -21,19 +21,19 @@ export function AdminsSection() {
     });
     const [changing, setChanging] = useState<number | null>(null);
 
-    async function onChange(user: UserAccountDto, isAdmin: boolean) {
+    function onChange(user: UserAccountDto, isAdmin: boolean) {
         setChanging(user.id);
-        try {
-            const changed = await updateUser(user.id, { is_admin: isAdmin });
-            await mutate(users.map((u) => (u.id === changed.id ? changed : u)), { revalidate: false });
-            void message.success(
-                isAdmin ? t("settings.adminGranted", { name: user.name }) : t("settings.adminRevoked", { name: user.name }),
-            );
-        } catch {
-            void message.error(t("settings.adminChangeFailed"));
-        } finally {
-            setChanging(null);
-        }
+        void updateUser(user.id, { is_admin: isAdmin })
+            .then(async (changed) => {
+                await mutate(users.map((u) => (u.id === changed.id ? changed : u)), { revalidate: false });
+                void message.success(
+                    isAdmin ? t("settings.adminGranted", { name: user.name }) : t("settings.adminRevoked", { name: user.name }),
+                );
+            })
+            .catch(() => {
+                void message.error(t("settings.adminChangeFailed"));
+            })
+            .finally(() => setChanging(null));
     }
 
     return (

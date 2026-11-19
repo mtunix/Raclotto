@@ -20,19 +20,19 @@ export function ChangePasswordSection() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function onFinish({ current_password, new_password }: PasswordForm) {
+    function onFinish({ current_password, new_password }: PasswordForm) {
         setSaving(true);
         setError(null);
-        try {
-            const { token } = await changePassword({ current_password, new_password });
-            setToken(token);
-            form.resetFields();
-            message.success(t("settings.passwordChanged"));
-        } catch (e) {
-            setError(failedStatus(e) === 400 ? t("settings.wrongPassword") : t("common.saveFailed"));
-        } finally {
-            setSaving(false);
-        }
+        void changePassword({ current_password, new_password })
+            .then(({ token }) => {
+                setToken(token);
+                form.resetFields();
+                message.success(t("settings.passwordChanged"));
+            })
+            .catch((e: unknown) => {
+                setError(failedStatus(e) === 400 ? t("settings.wrongPassword") : t("common.saveFailed"));
+            })
+            .finally(() => setSaving(false));
     }
 
     return (

@@ -14,27 +14,24 @@ export function LoginView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onFinish = async (values: { email: string; password: string }) => {
+  const onFinish = (values: { email: string; password: string }) => {
     setLoading(true);
     setError(null);
-    try {
-      const { token, user } = await login({
-        name_or_email: values.email,
-        password: values.password,
-      });
-      signIn(token, user);
-      void navigate("/");
-    } catch (err: unknown) {
-      setError(
-        err instanceof UnauthorizedError
-          ? t("auth.invalidCredentials")
-          : failedStatus(err) === 429
-            ? t("auth.tooManyAttempts")
-            : failureMessage(err, t, t("auth.loginFailed")),
-      );
-    } finally {
-      setLoading(false);
-    }
+    void login({ name_or_email: values.email, password: values.password })
+      .then(({ token, user }) => {
+        signIn(token, user);
+        void navigate("/");
+      })
+      .catch((err: unknown) => {
+        setError(
+          err instanceof UnauthorizedError
+            ? t("auth.invalidCredentials")
+            : failedStatus(err) === 429
+              ? t("auth.tooManyAttempts")
+              : failureMessage(err, t, t("auth.loginFailed")),
+        );
+      })
+      .finally(() => setLoading(false));
   };
 
   return (

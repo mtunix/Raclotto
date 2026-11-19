@@ -14,18 +14,18 @@ export function usePictureHistory(userId: number | undefined, active: boolean) {
   // The picture being made the candidate, while the request runs.
   const [choosing, setChoosing] = useState<number | null>(null);
 
-  async function choose(pictureId: number) {
+  function choose(pictureId: number) {
     if (!userId) return;
     setChoosing(pictureId);
-    try {
-      await chooseCandidatePicture(userId, pictureId);
-      message.success(t("image.candidatePictureSet"));
-    } catch (error) {
-      console.error("Failed to set candidate picture:", error);
-      message.error(t("image.candidatePictureSetFailed"));
-    } finally {
-      setChoosing(null);
-    }
+    void chooseCandidatePicture(userId, pictureId)
+      .then(() => {
+        message.success(t("image.candidatePictureSet"));
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to set candidate picture:", error);
+        message.error(t("image.candidatePictureSetFailed"));
+      })
+      .finally(() => setChoosing(null));
   }
 
   return { history, loading, choosing, choose };

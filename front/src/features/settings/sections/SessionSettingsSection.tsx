@@ -46,20 +46,20 @@ export function SessionSettingsSection() {
         setName(stored.name);
     }
 
-    async function saveName() {
+    function saveName() {
         if (!session || !name.trim()) return;
         setSavingName(true);
-        try {
-            const renamed = await updateSession(session.id, { name: name.trim() });
-            setSession(renamed);
-            void mutateSession(sessionKey);
-            message.success(t("common.saved"));
-        } catch (e) {
-            console.error("Failed to update session:", e);
-            message.error(t("common.saveFailed"));
-        } finally {
-            setSavingName(false);
-        }
+        void updateSession(session.id, { name: name.trim() })
+            .then((renamed) => {
+                setSession(renamed);
+                void mutateSession(sessionKey);
+                message.success(t("common.saved"));
+            })
+            .catch((e: unknown) => {
+                console.error("Failed to update session:", e);
+                message.error(t("common.saveFailed"));
+            })
+            .finally(() => setSavingName(false));
     }
 
     async function endSession() {

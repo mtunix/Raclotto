@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { message } from "antd";
 import { useTranslation } from "react-i18next";
 import { updateMe, useGetMe } from "../../../api/generated/endpoints/auth/auth";
@@ -58,31 +58,31 @@ export function useUserSettingsForm() {
 
     const dirty = saved !== null && profile !== null && (!same(profile, saved.profile) || !same(diet, saved.diet));
 
-    const change = useCallback(<K extends keyof Profile>(field: K, value: Profile[K]) => {
+    function change<K extends keyof Profile>(field: K, value: Profile[K]) {
         setProfile((current) => (current ? { ...current, [field]: value } : current));
-    }, []);
+    }
 
-    async function save() {
+    function save() {
         if (!dirty || saving || !profile) return;
         setSaving(true);
-        try {
-            // The backend stores the diet with its hierarchy applied; send what it will keep.
-            const normalized = normalizeDiet(diet);
-            const updated = await updateMe({ ...profile, ...normalized });
-            setSaved({ profile, diet: normalized });
-            setDiet(normalized);
-            void mutateMe();
-            // Pan cards show their author's border.
-            void mutatePanLists();
-            setUser(updated);
-            message.success(t("common.saved"));
-        } catch (e) {
-            console.error("Failed to save user settings:", e);
-            message.error(t("settings.saveFailed"));
-            void mutateMe();
-        } finally {
-            setSaving(false);
-        }
+        // The backend stores the diet with its hierarchy applied; send what it will keep.
+        const normalized = normalizeDiet(diet);
+        void updateMe({ ...profile, ...normalized })
+            .then((updated) => {
+                setSaved({ profile, diet: normalized });
+                setDiet(normalized);
+                void mutateMe();
+                // Pan cards show their author's border.
+                void mutatePanLists();
+                setUser(updated);
+                message.success(t("common.saved"));
+            })
+            .catch((e: unknown) => {
+                console.error("Failed to save user settings:", e);
+                message.error(t("settings.saveFailed"));
+                void mutateMe();
+            })
+            .finally(() => setSaving(false));
     }
 
     return { me, loading: isLoading, saving, profile, diet, dirty, change, setChecked, save };

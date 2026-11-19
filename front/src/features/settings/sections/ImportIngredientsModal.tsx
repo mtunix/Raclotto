@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ChangeEvent } from "react";
+import { useState, type CSSProperties, type ChangeEvent } from "react";
 import { Button, Card, Input, message, Modal, Radio, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ImportedIngredient } from "../../../api/generated/model";
@@ -47,26 +47,23 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
     const [staged, setStaged] = useState<StagedIngredient[]>([]);
     const [submitting, setSubmitting] = useState(false);
 
-    const errors = useMemo(() => {
-        const found: Record<number, Record<string, string>> = {};
-        staged.forEach((ingredient, index) => {
-            const problems: Record<string, string> = {};
-            if (!ingredient.name.trim()) {
-                problems.name = t("settings.validationError.nameRequired");
-            }
-            if (!isIngredientType(ingredient.type)) {
-                problems.type = t("settings.validationError.typeRequired");
-            }
-            const problem = categoryProblem(ingredient);
-            if (problem === "none") {
-                problems.dietary = t("settings.validationError.dietaryRequired");
-            } else if (problem === "several") {
-                problems.dietary = t("settings.validationError.categoryConflict");
-            }
-            if (Object.keys(problems).length > 0) found[index] = problems;
-        });
-        return found;
-    }, [staged, t]);
+    const errors: Record<number, Record<string, string>> = {};
+    staged.forEach((ingredient, index) => {
+        const problems: Record<string, string> = {};
+        if (!ingredient.name.trim()) {
+            problems.name = t("settings.validationError.nameRequired");
+        }
+        if (!isIngredientType(ingredient.type)) {
+            problems.type = t("settings.validationError.typeRequired");
+        }
+        const problem = categoryProblem(ingredient);
+        if (problem === "none") {
+            problems.dietary = t("settings.validationError.dietaryRequired");
+        } else if (problem === "several") {
+            problems.dietary = t("settings.validationError.categoryConflict");
+        }
+        if (Object.keys(problems).length > 0) errors[index] = problems;
+    });
     const valid = Object.keys(errors).length === 0;
 
     const changeField: StagedFieldChange = (index, field, value) => {
@@ -92,7 +89,7 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
         onClose();
     }
 
-    async function submit() {
+    function submit() {
         const ingredients: ImportedIngredient[] = [];
         for (const item of staged) {
             const ingredient = toImported(item, mode === "reimport");
@@ -101,27 +98,27 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
             ingredients.push(ingredient);
         }
         setSubmitting(true);
-        try {
-            if (mode === "import") {
-                const result = await ingredientCatalog.import(sessionKey, ingredients);
-                message.success(t("settings.importSuccess", { count: result.created }));
-            } else {
-                const result = await ingredientCatalog.reimport(sessionKey, ingredients);
-                message.success(
-                    t("settings.reimportSuccess", { created: result.created, updated: result.updated, unavailable: result.deleted }),
+        const sent =
+            mode === "import"
+                ? ingredientCatalog.import(sessionKey, ingredients).then((result) => {
+                      message.success(t("settings.importSuccess", { count: result.created }));
+                  })
+                : ingredientCatalog.reimport(sessionKey, ingredients).then((result) => {
+                      message.success(
+                          t("settings.reimportSuccess", { created: result.created, updated: result.updated, unavailable: result.deleted }),
+                      );
+                  });
+        void sent
+            .then(close)
+            .catch((e: unknown) => {
+                console.error(`Failed to ${mode} ingredients:`, e);
+                message.error(
+                    mode === "import"
+                        ? t("settings.importFailed")
+                        : t("settings.reimportFailed"),
                 );
-            }
-            close();
-        } catch (e) {
-            console.error(`Failed to ${mode} ingredients:`, e);
-            message.error(
-                mode === "import"
-                    ? t("settings.importFailed")
-                    : t("settings.reimportFailed"),
-            );
-        } finally {
-            setSubmitting(false);
-        }
+            })
+            .finally(() => setSubmitting(false));
     }
 
     return (

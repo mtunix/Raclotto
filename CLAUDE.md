@@ -292,6 +292,9 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
 - **Nothing slow inside a transaction.** File-backed SQLite runs every transaction as `BEGIN IMMEDIATE`
   (ADR 0007), so a request holds the database's one write lock from its first query to its commit:
   commit before calling out (image model, network) or doing slow work.
+- **React Compiler 1.x skips** a component or hook with `try/finally`, or a conditional, `&&`/`||`
+  or `?.` inside `try/catch`: write the request as a promise chain (`.then/.catch/.finally`).
+  Memoize by hand only where identity matters (an effect's dependency, a value compared by identity).
 - **Domain behaviour goes in `interactor/`,** not in route handlers. A route that grows
   business logic is a module waiting to be extracted.
 - **Ingredient categories** (meat/vegetarian/vegan/fish) are mutually exclusive on an

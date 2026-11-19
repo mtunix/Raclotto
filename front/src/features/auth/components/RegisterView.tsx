@@ -43,28 +43,30 @@ export function RegisterView() {
     let cancelled = false;
 
     const fetchInvite = async () => {
-      try {
-        setLoading(true);
-        // The generated client puts path parameters into the URL as they are.
-        const invite = await lookupInvite(encodeURIComponent(token));
-        if (!cancelled && invite.email) {
-          form.setFieldsValue({
-            token,
-            email: invite.email,
-          });
-          setInvitePrefilled(true);
-          setError(null);
-        }
-      } catch (err: unknown) {
-        console.error("Failed to load invite by token:", err);
-        if (!cancelled) {
-          setError(t("auth.inviteTokenInvalid"));
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+      setLoading(true);
+      // The generated client puts path parameters into the URL as they are.
+      await lookupInvite(encodeURIComponent(token))
+        .then((invite) => {
+          if (!cancelled && invite.email) {
+            form.setFieldsValue({
+              token,
+              email: invite.email,
+            });
+            setInvitePrefilled(true);
+            setError(null);
+          }
+        })
+        .catch((err: unknown) => {
+          console.error("Failed to load invite by token:", err);
+          if (!cancelled) {
+            setError(t("auth.inviteTokenInvalid"));
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
     };
 
     void fetchInvite();
@@ -85,7 +87,7 @@ export function RegisterView() {
     { name: "lactose", key: "tags.lactose" },
   ];
 
-  const onFinish = async (values: {
+  const onFinish = (values: {
     token: string;
     email: string;
     name: string;
@@ -99,30 +101,31 @@ export function RegisterView() {
 
     setLoading(true);
     setError(null);
-    try {
-      const { token, user } = await register({
-        token: values.token,
-        email: values.email,
-        name: values.name,
-        password: values.password,
-        ...(profilePicture ? { profile_picture: profilePicture } : {}),
-      });
-      signIn(token, user);
-
-      // Registration takes no diet; the new user's preferences are saved right after
-      try {
-        setUser(await updateMe(normalizeDiet(tagValues)));
-        void mutateMe();
-      } catch (e) {
-        console.error("Failed to save dietary preferences:", e);
-      }
-      void navigate("/");
-    } catch (err: unknown) {
-      console.error("Failed to register:", err);
-      setError(t("auth.registrationFailed"));
-    } finally {
-      setLoading(false);
-    }
+    void register({
+      token: values.token,
+      email: values.email,
+      name: values.name,
+      password: values.password,
+      ...(profilePicture ? { profile_picture: profilePicture } : {}),
+    })
+      .then(async ({ token, user }) => {
+        signIn(token, user);
+        // Registration takes no diet; the new user's preferences are saved right after
+        await updateMe(normalizeDiet(tagValues))
+          .then((updated) => {
+            setUser(updated);
+            void mutateMe();
+          })
+          .catch((e: unknown) => {
+            console.error("Failed to save dietary preferences:", e);
+          });
+        void navigate("/");
+      })
+      .catch((err: unknown) => {
+        console.error("Failed to register:", err);
+        setError(t("auth.registrationFailed"));
+      })
+      .finally(() => setLoading(false));
   };
 
   return (

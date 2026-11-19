@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
 import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
 import { useTranslation } from "react-i18next";
@@ -61,7 +61,7 @@ export function EventSettingsSection() {
         setLocalConfigs(loaded);
     }
 
-    const handleToggle = useCallback((eventType: string, enabled: boolean) => {
+    const handleToggle = (eventType: string, enabled: boolean) => {
         setLocalConfigs(prev => ({
             ...prev,
             [eventType]: {
@@ -69,9 +69,9 @@ export function EventSettingsSection() {
                 enabled
             }
         }));
-    }, []);
+    };
 
-    const handleFrequencyChange = useCallback((eventType: string, frequency: number | null) => {
+    const handleFrequencyChange = (eventType: string, frequency: number | null) => {
         setLocalConfigs(prev => ({
             ...prev,
             [eventType]: {
@@ -79,7 +79,7 @@ export function EventSettingsSection() {
                 frequency_minutes: frequency
             }
         }));
-    }, []);
+    };
 
     const isDirty = () => {
         const initial = initialConfigs;
@@ -125,9 +125,8 @@ export function EventSettingsSection() {
         } catch (error) {
             console.error("Failed to save event configs:", error);
             message.error(t("common.saveFailed"));
-        } finally {
-            setSaving(false);
         }
+        setSaving(false);
     };
 
     // Create config entries for all known event types

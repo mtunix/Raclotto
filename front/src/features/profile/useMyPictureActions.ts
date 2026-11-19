@@ -13,36 +13,36 @@ export function useMyPictureActions(isOwnProfile: boolean, levelId: number | und
   const [generating, setGenerating] = useState(false);
   const allowed = isOwnProfile && signedIn;
 
-  async function change(picture: string | null) {
-    if (!allowed) return;
+  function change(picture: string | null) {
+    if (!allowed) return Promise.resolve();
     setChanging(true);
-    try {
-      await changeMyPicture(picture);
-      message.success(t("profile.pictureUpdated"));
-    } catch (error) {
-      console.error("Failed to update profile picture:", error);
-      message.error(failureMessage(error, t, t("profile.pictureUpdateFailed")));
-    } finally {
-      setChanging(false);
-    }
+    return changeMyPicture(picture)
+      .then(() => {
+        message.success(t("profile.pictureUpdated"));
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to update profile picture:", error);
+        message.error(failureMessage(error, t, t("profile.pictureUpdateFailed")));
+      })
+      .finally(() => setChanging(false));
   }
 
-  async function regenerate() {
+  function regenerate() {
     if (!allowed) return;
     setGenerating(true);
-    try {
-      const { image_base64 } = await generateMyPicture(levelId);
-      if (!image_base64) {
-        message.error(t("profile.regenerateFailed"));
-        return;
-      }
-      message.success(t("profile.pictureUpdated"));
-    } catch (error) {
-      console.error("Failed to regenerate profile picture:", error);
-      message.error(failureMessage(error, t, t("profile.regenerateFailed")));
-    } finally {
-      setGenerating(false);
-    }
+    void generateMyPicture(levelId)
+      .then(({ image_base64 }) => {
+        if (!image_base64) {
+          message.error(t("profile.regenerateFailed"));
+          return;
+        }
+        message.success(t("profile.pictureUpdated"));
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to regenerate profile picture:", error);
+        message.error(failureMessage(error, t, t("profile.regenerateFailed")));
+      })
+      .finally(() => setGenerating(false));
   }
 
   return { changing, generating, change, regenerate };

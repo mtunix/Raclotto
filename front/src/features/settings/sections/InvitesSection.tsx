@@ -34,18 +34,18 @@ export function InvitesSection() {
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function onCreate(values: { email: string }) {
+    function onCreate(values: { email: string }) {
         setCreating(true);
         setError(null);
-        try {
-            await createInvite({ email: values.email });
-            void mutate();
-            message.success(t("invite.tokenCreated"));
-        } catch (e) {
-            setError(failureMessage(e, t, t("invite.creationFailed")));
-        } finally {
-            setCreating(false);
-        }
+        void createInvite({ email: values.email })
+            .then(() => {
+                void mutate();
+                message.success(t("invite.tokenCreated"));
+            })
+            .catch((e: unknown) => {
+                setError(failureMessage(e, t, t("invite.creationFailed")));
+            })
+            .finally(() => setCreating(false));
     }
 
     async function onRevoke(inviteId: number) {

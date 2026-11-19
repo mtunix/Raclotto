@@ -12,18 +12,19 @@ export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) 
     const [exporting, setExporting] = useState(false);
     const [json, setJson] = useState<string | null>(null);
 
-    async function onExport() {
+    function onExport() {
         setExporting(true);
-        try {
-            const text = JSON.stringify(await exportIngredients({ session_key: sessionKey }), null, 2);
-            setJson(text);
-            void copyToClipboard(text, t);
-        } catch (e) {
-            console.error("Failed to export ingredients:", e);
-            message.error(t("settings.exportFailed"));
-        } finally {
-            setExporting(false);
-        }
+        void exportIngredients({ session_key: sessionKey })
+            .then((file) => {
+                const text = JSON.stringify(file, null, 2);
+                setJson(text);
+                void copyToClipboard(text, t);
+            })
+            .catch((e: unknown) => {
+                console.error("Failed to export ingredients:", e);
+                message.error(t("settings.exportFailed"));
+            })
+            .finally(() => setExporting(false));
     }
 
     return (

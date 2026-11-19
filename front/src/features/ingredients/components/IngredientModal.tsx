@@ -164,62 +164,61 @@ export function IngredientModal(props: IngredientModalProps) {
     // The chips allow at most one, so the only problem left is none.
     const categoryMissing = categoryProblem(categoryFlags) !== null;
 
-    const handleSave = async () => {
-        try {
-            const values = await form.validateFields();
+    const handleSave = () => {
+        void form.validateFields()
+            .then(async (values) => {
+                // Combine all data
+                const ingredientData: CreateIngredientBody = {
+                    name: values.name, // Ensure name is included
+                    // The form's own value is the radio's string, from the change event bubbling up to the Form.Item.
+                    type: selectedType,
+                    spicy: spicyLevel, // Use local state for spicy level
+                    wildcard: values.wildcard || false,
+                    sweet: values.sweet || false,
+                    ...categoryFlags,
+                    // Ensure all allergen properties are included with defaults
+                    gluten: allergenValues.gluten || false,
+                    histamine: allergenValues.histamine || false,
+                    fructose: allergenValues.fructose || false,
+                    lactose: allergenValues.lactose || false,
+                };
             
-            // Combine all data
-            const ingredientData: CreateIngredientBody = {
-                name: values.name, // Ensure name is included
-                // The form's own value is the radio's string, from the change event bubbling up to the Form.Item.
-                type: selectedType,
-                spicy: spicyLevel, // Use local state for spicy level
-                wildcard: values.wildcard || false,
-                sweet: values.sweet || false,
-                ...categoryFlags,
-                // Ensure all allergen properties are included with defaults
-                gluten: allergenValues.gluten || false,
-                histamine: allergenValues.histamine || false,
-                fructose: allergenValues.fructose || false,
-                lactose: allergenValues.lactose || false,
-            };
+                setLoading(true);
             
-            setLoading(true);
-            
-            if (props.mode === 'edit' && props.ingredient && props.onSave) {
-                // Edit mode: update existing ingredient
-                await props.onSave(props.ingredient.id, ingredientData);
-                message.success(t("ingredient.updated"));
-            } else if (props.mode === 'add') {
-                // Add mode: create new ingredient
-                if (!sessionKey) return;
+                if (props.mode === 'edit' && props.ingredient && props.onSave) {
+                    // Edit mode: update existing ingredient
+                    await props.onSave(props.ingredient.id, ingredientData);
+                    message.success(t("ingredient.updated"));
+                } else if (props.mode === 'add') {
+                    // Add mode: create new ingredient
+                    if (!sessionKey) return;
                 
-                await ingredientCatalog.create(sessionKey, ingredientData);
-                message.success(t("ingredient.added"));
+                    await ingredientCatalog.create(sessionKey, ingredientData);
+                    message.success(t("ingredient.added"));
                 
-                if (props.onSuccess) {
-                    props.onSuccess();
+                    if (props.onSuccess) {
+                        props.onSuccess();
+                    }
                 }
-            }
             
-            form.resetFields();
-            setSelectedCategory("vegetarian");
-            setAllergenValues({});
-            props.onCancel();
-        } catch (error: unknown) {
-            if (typeof error === "object" && error !== null && "errorFields" in error) {
-                // Form validation errors
-                return;
-            }
-            console.error(`Failed to ${props.mode} ingredient:`, error);
+                form.resetFields();
+                setSelectedCategory("vegetarian");
+                setAllergenValues({});
+                props.onCancel();
+            })
+            .catch((error: unknown) => {
+                if (typeof error === "object" && error !== null && "errorFields" in error) {
+                    // Form validation errors
+                    return;
+                }
+                console.error(`Failed to ${props.mode} ingredient:`, error);
             
-            const errorMessage = props.mode === 'edit' 
-                ? t("ingredient.updateFailed")
-                : t("ingredient.addFailed");
-            message.error(errorMessage);
-        } finally {
-            setLoading(false);
-        }
+                const errorMessage = props.mode === 'edit' 
+                    ? t("ingredient.updateFailed")
+                    : t("ingredient.addFailed");
+                message.error(errorMessage);
+            })
+            .finally(() => setLoading(false));
     };
 
     const handleCancel = () => {
