@@ -8,6 +8,11 @@ function CurrentPath() {
     return <p data-testid="current-path">{useLocation().pathname}</p>;
 }
 
+// Messages render outside the tree under test, and with motion `message.destroy()` would leave them in the DOM.
+ConfigProvider.config({
+    holderRender: (children) => <ConfigProvider theme={{ token: { motion: false } }}>{children}</ConfigProvider>,
+});
+
 /** Where the app navigated to, once it left the routes under test. */
 export const currentPath = () => screen.getByTestId("current-path").textContent;
 

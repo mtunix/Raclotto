@@ -284,6 +284,7 @@
     "inviteToken": "Einladungstoken",
     "inviteTokenRequired": "Bitte geben Sie Ihren Einladungstoken ein",
     "inviteTokenPlaceholder": "Einladungstoken eingeben",
+    "inviteTokenInvalid": "Dieser Einladungslink ist ungültig, bereits benutzt oder abgelaufen.",
     "noAccount": "Noch kein Konto?",
     "haveAccount": "Bereits ein Konto?",
     "invalidCredentials": "E-Mail/Name oder Passwort ist falsch",

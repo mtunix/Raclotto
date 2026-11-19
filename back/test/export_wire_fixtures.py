@@ -13,6 +13,7 @@ from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.profile_picture_history import ProfilePictureHistory
+from back.src.entity.user import User
 from back.src.interactor.profile_pictures import set_image_generator
 from back.test.support import AppTest
 
@@ -76,6 +77,7 @@ class _Recorder(AppTest):
         profile = self.ok(self.call("GET", f"/users/{ana.id}", ben))
         stats = self.ok(self.call("GET", f"/users/{ana.id}/stats", ben))
         invite = self.ok(self.call("POST", "/invites", ana, body={"email": "carl@example.com"}))
+        invite_lookup = self.ok(self.call("GET", f"/auth/invite/{invite['token']}"))
 
         session_dto = self.ok(self.call("GET", "/sessions/by-key", ana, query=query))
         sessions = self.ok(self.call("GET", "/sessions", ana))
@@ -138,6 +140,19 @@ class _Recorder(AppTest):
         dora = self.make_user("Dora", is_admin=True)
         users = self.ok(self.call("GET", "/users", dora))
         granted = self.ok(self.call("PATCH", f"/users/{ben.id}", dora, body={"is_admin": True}))
+        prep_type = self.ok(self.call("POST", "/preparation_type", ana, body={"name": "Grill"}, query=query))
+        # Last, so Carl shows up in none of the lists above.
+        registration = self.ok(
+            self.call(
+                "POST",
+                "/auth/register",
+                body={"token": invite["token"], "email": "carl@example.com", "name": "Carl", "password": "carl-secret"},
+            )
+        )
+        carl = db.session.get(User, registration["user"]["id"])
+        # The diet the registration page saves right after, with fish ticked.
+        diet = dict.fromkeys(["vegetarian", "vegan", "fish", "gluten", "histamine", "fructose", "lactose"], True)
+        registered_me = self.ok(self.call("PATCH", "/auth/me", carl, body={"meat": False, **diet}))
 
         assert roll["reward"]["leveled_up"] and roll["events"] and roll["achievements"], roll
         assert {a["unlocked"] for a in achievements} == {True, False}, achievements
@@ -152,6 +167,8 @@ class _Recorder(AppTest):
         assert profile["achievements"] and "email" not in profile, profile
         assert stats["best_rated_ingredient"] and stats["most_ingredients_pan"], stats
         assert {p["session_id"] for p in prep_types} == {None}, prep_types
+        assert prep_type["session_id"] == session.id, prep_type
+        assert registered_me["fish"] and not registration["user"]["fish"], registered_me
         assert {i["applicable"] for i in ingredients} == {True, False}, ingredients
         assert counts["fill_count"] < counts["total_fill_count"], counts
         assert (reimported["created"], reimported["deleted"]) == (1, 2), reimported
@@ -165,9 +182,13 @@ class _Recorder(AppTest):
             "userProfile": ("UserProfileDto", profile),
             "userStats": ("UserStatsDto", stats),
             "invite": ("InviteDto", invite),
+            "inviteLookup": ("InviteLookupDto", invite_lookup),
+            "registration": ("AuthResultDto", registration),
+            "registeredMe": ("MeDto", registered_me),
             "session": ("SessionDto", session_dto),
             "sessions": ("SessionDto[]", sessions),
             "prepTypes": ("PrepTypeDto[]", prep_types),
+            "prepType": ("PrepTypeDto", prep_type),
             "ingredient": ("IngredientDto", ingredient),
             "ingredientsForUser": ("IngredientForUserDto[]", ingredients),
             "availableCounts": ("AvailableCountsDto", counts),

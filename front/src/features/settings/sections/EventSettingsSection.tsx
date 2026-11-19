@@ -56,7 +56,7 @@ export function EventSettingsSection() {
     }, [error, sessionKey, t]);
 
     const [loadedFrom, setLoadedFrom] = useState<typeof data>(undefined);
-    if (data && data.length > 0 && data !== loadedFrom) {
+    if (data && data !== loadedFrom) {
         setLoadedFrom(data);
         const loaded = configStates(data);
         setInitialConfigs(loaded);

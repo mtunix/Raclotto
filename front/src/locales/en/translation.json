@@ -284,6 +284,7 @@
     "inviteToken": "Invite Token",
     "inviteTokenRequired": "Please enter your invite token",
     "inviteTokenPlaceholder": "Enter invite token",
+    "inviteTokenInvalid": "This invite link is invalid, used or expired.",
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "invalidCredentials": "Invalid email/name or password",

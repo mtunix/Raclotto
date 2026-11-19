@@ -58,7 +58,7 @@ export function RegisterView() {
       } catch (err: unknown) {
         console.error("Failed to load invite by token:", err);
         if (!cancelled) {
-          setError((err instanceof Error && err.message) || t("auth.inviteTokenInvalid"));
+          setError(t("auth.inviteTokenInvalid"));
         }
       } finally {
         if (!cancelled) {
@@ -118,7 +118,8 @@ export function RegisterView() {
       }
       void navigate("/");
     } catch (err: unknown) {
-      setError((err instanceof Error && err.message) || t("auth.registrationFailed"));
+      console.error("Failed to register:", err);
+      setError(t("auth.registrationFailed"));
     } finally {
       setLoading(false);
     }

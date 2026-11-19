@@ -170,7 +170,8 @@ export function IngredientModal(props: IngredientModalProps) {
             // Combine all data
             const ingredientData: CreateIngredientBody = {
                 name: values.name, // Ensure name is included
-                type: values.type, // Ensure type is included
+                // The form's own value is the radio's string, from the change event bubbling up to the Form.Item.
+                type: selectedType,
                 spicy: spicyLevel, // Use local state for spicy level
                 wildcard: values.wildcard || false,
                 sweet: values.sweet || false,
