@@ -23,16 +23,14 @@ from back.src.driver.database import db
 from back.src.entity.achievement import Achievement
 from back.src.entity.event import Event
 from back.src.entity.ingredient import Ingredient, IngredientType
-from back.src.entity.level import Level
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.src.interactor.achievements import Achievements, PanRolled
 from back.src.interactor.diet import Diet
 from back.src.interactor.events import Events
-from back.src.interactor.level_service import LevelService
+from back.src.interactor.levels import Levels, Reward
 from back.src.repository.ingredient_repository import IngredientRepository
-from back.src.repository.level_repository import LevelRepository
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.src.repository.session_repository import SessionRepository
 
@@ -71,27 +69,6 @@ class RollError(Exception):
         super().__init__(detail)
         self.kind = kind
         self.detail = detail
-
-
-@dataclass
-class Reward:
-    xp_before: int
-    xp_after: int
-    previous_level: Optional[Level]
-    level: Optional[Level]
-    next_level: Optional[Level]
-
-    @property
-    def xp_gained(self) -> int:
-        return self.xp_after - self.xp_before
-
-    @property
-    def leveled_up(self) -> bool:
-        return (
-            self.previous_level is not None
-            and self.level is not None
-            and self.level.id != self.previous_level.id
-        )
 
 
 @dataclass
@@ -149,7 +126,7 @@ class PanRoll:
         self._sessions = SessionRepository()
         self._ingredients = IngredientRepository()
         self._prep_types = PreparationTypeRepository()
-        self._levels = LevelRepository()
+        self._levels = Levels()
 
     def roll(self, user: User, session_key: str, options: RollOptions) -> RollOutcome:
         return self.roll_into(user, session_key, options, lambda outcome: outcome)
@@ -188,19 +165,7 @@ class PanRoll:
         db.session.add(pan)
         db.session.flush()
 
-        xp_before = int(user.experience_points or 0)
-        levels = LevelService()
-        # As the profile shows it, so a user without a stored level still sees their first level-up.
-        previous_level = levels.progress_of(user).level
-        levels.award_xp_for_pan(user, pan)
-        level = self._levels.by_id(user.level_id) if user.level_id else None
-        reward = Reward(
-            xp_before=xp_before,
-            xp_after=int(user.experience_points),
-            previous_level=previous_level,
-            level=level,
-            next_level=self._levels.next_level(level) if level else None,
-        )
+        reward = self._levels.award(user, pan)
 
         rolled = PanRolled(pan=pan, user=user, session=session)
         events = self._events.record(rolled)

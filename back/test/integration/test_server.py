@@ -25,6 +25,7 @@ from back.src.driver.config import (
 )
 from back.src.driver.database import db
 from back.src.entity.user import User
+from back.src.repository.level_repository import LevelRepository
 from back.src.repository.user_repository import UserRepository
 
 SECRET = secrets.token_urlsafe(48)
@@ -212,6 +213,14 @@ class TestAdminBootstrap(ServerTest):
         admin = self.admin(app)
         assert admin is not None
         self.assertEqual(admin.email, "admin@raclotto.local")
+
+    def test_the_admin_starts_at_the_lowest_level(self):
+        app = self.build(RACLOTTO_ADMIN_PASSWORD="first-boot")
+
+        with app.app_context():
+            admin = UserRepository().by_name("admin")
+            assert admin is not None
+            self.assertEqual(admin.level_id, LevelRepository().all_ordered()[0].id)
 
     def test_without_a_password_no_admin_is_created(self):
         with self.assertLogs(level="WARNING") as logs:

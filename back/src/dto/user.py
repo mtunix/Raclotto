@@ -7,7 +7,7 @@ from back.src.dto.base import RequestDto, ResponseDto, omittable
 from back.src.dto.level import LevelDto
 from back.src.entity.level import Level
 from back.src.entity.user import User
-from back.src.interactor.level_service import LevelProgress
+from back.src.interactor.levels import LevelProgress
 
 BorderStyle = Literal["solid", "dashed", "dotted", "double"]
 BorderTexture = Literal["cheese", "bread", "sauce-01", "sauce-02", "herbs-01", "herbs-02"]

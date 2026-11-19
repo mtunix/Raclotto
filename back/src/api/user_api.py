@@ -3,7 +3,7 @@ from back.src.auth.middleware import require_auth
 from back.src.dto.user import UserProfileDto
 from back.src.dto.user_stats import UserStatsDto
 from back.src.entity.user import User
-from back.src.interactor.level_service import LevelService
+from back.src.interactor.levels import Levels
 from back.src.interactor.user_stats import user_stats
 from back.src.repository.user_repository import UserRepository
 
@@ -32,7 +32,7 @@ class UserApi(BaseApi):
     def get_user_profile(self, user_id: int) -> UserProfileDto:
         """Get a user's public profile: card, level and achievements."""
         user = self._user(user_id)
-        return UserProfileDto.of(user, LevelService().progress_of(user))
+        return UserProfileDto.of(user, Levels().progress_of(user))
 
     @BaseApi.endpoint("/<int:user_id>/stats", ["GET"], response=UserStatsDto, operation_id="getUserStats",
                       errors=(404,))

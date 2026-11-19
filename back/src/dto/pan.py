@@ -14,7 +14,8 @@ from back.src.dto.user import UserSummaryDto
 from back.src.entity.level import Level
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
-from back.src.interactor.pan_roll import Reward, RollOutcome
+from back.src.interactor.levels import Reward
+from back.src.interactor.pan_roll import RollOutcome
 
 
 class PanDto(ResponseDto):

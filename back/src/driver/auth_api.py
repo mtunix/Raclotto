@@ -11,9 +11,8 @@ from back.src.dto.user import MeDto, UpdateMeBody
 from back.src.entity.invite_token import InviteToken
 from back.src.entity.user import User
 from back.src.interactor.diet import Diet
-from back.src.interactor.level_service import LevelService
+from back.src.interactor.levels import Levels
 from back.src.repository.invite_token_repository import InviteTokenRepository
-from back.src.repository.level_repository import LevelRepository
 from back.src.repository.profile_picture_history_repository import (
     ProfilePictureHistoryRepository,
 )
@@ -25,7 +24,7 @@ def _token(user: User) -> str:
 
 
 def _me(user: User) -> MeDto:
-    return MeDto.of(user, LevelService().progress_of(user))
+    return MeDto.of(user, Levels().progress_of(user))
 
 
 class AuthApi(BaseApi):
@@ -72,7 +71,7 @@ class AuthApi(BaseApi):
                 detail="A user with this email or name already exists",
             )
 
-        first_level = next(iter(LevelRepository().all_ordered()), None)
+        first_level = Levels().starting()
         user = User(
             name=body.name,
             email=body.email,

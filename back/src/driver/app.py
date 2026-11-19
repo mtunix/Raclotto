@@ -43,9 +43,10 @@ class App(Flask):
 
         with self.app_context() as app_context:
             migrate(self.db)
-            self.init_admin_user()
-            self.init_achievements()
             self.init_levels()
+            self.init_achievements()
+            # After the levels: the admin starts at the lowest.
+            self.init_admin_user()
             self.init_preparation_types()
             # Initialize achievement registry with evaluators
             from back.src.interactor.achievement_registry import initialize_registry
@@ -103,15 +104,9 @@ class App(Flask):
             logging.warning("No admin user exists and RACLOTTO_ADMIN_PASSWORD is not set; none was created")
             return
 
-        # Get the first level (Novice) for new users
-        from back.src.repository.level_repository import LevelRepository
+        from back.src.interactor.levels import Levels
 
-        level_repository = LevelRepository()
-        first_level = (
-            level_repository.all_ordered()[0]
-            if level_repository.all_ordered()
-            else None
-        )
+        first_level = Levels().starting()
 
         admin_user = User(
             name="admin",
