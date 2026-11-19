@@ -1,10 +1,11 @@
-import {List, Button} from "antd";
+import {Button} from "antd";
 import {EditOutlined} from "@ant-design/icons";
 import {IngredientType} from "../../../api/generated/model";
 import type {IngredientForUserDto} from "../../../api/generated/model";
 import {useTranslation} from "react-i18next";
 import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDisplay";
 import {ConfirmDeleteButton} from "../../../shared/ConfirmDeleteButton";
+import {ItemRow} from "../../../shared/ItemList/ItemList";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
 
 interface IngredientListGroupItemProps {
@@ -26,7 +27,7 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
     const opacity = isApplicable ? 1 : 0.6;
 
     return (
-        <List.Item
+        <ItemRow
             className="ingredient-list-item"
             style={{
                 backgroundColor: backgroundColor,
@@ -104,7 +105,7 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                     )}
                 </div>
             </div>
-        </List.Item>
+        </ItemRow>
     );
 }
 

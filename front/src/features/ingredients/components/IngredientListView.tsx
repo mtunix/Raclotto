@@ -1,7 +1,8 @@
-import {Collapse, List, Space, Empty, Badge, Spin} from "antd";
+import {Collapse, Space, Empty, Badge, Spin} from "antd";
 import {IngredientType} from "../../../api/generated/model";
 import type {IngredientForUserDto} from "../../../api/generated/model";
 import {useTranslation} from "react-i18next";
+import {ItemList} from "../../../shared/ItemList/ItemList";
 import {IngredientListGroupItem} from "./IngredientListGroupItem";
 
 interface IngredientListViewProps {
@@ -44,8 +45,9 @@ export function IngredientListView(props: IngredientListViewProps) {
                     </Space>
                 ),
                 children: (
-                    <List
-                        dataSource={availableNonApplicable}
+                    <ItemList
+                        items={availableNonApplicable}
+                        rowKey={(ingredient) => ingredient.id}
                         renderItem={(ingredient: IngredientForUserDto) => (
                             <IngredientListGroupItem
                                 ingredient={ingredient}
@@ -72,8 +74,9 @@ export function IngredientListView(props: IngredientListViewProps) {
                     </Space>
                 ),
                 children: (
-                    <List
-                        dataSource={unavailableIngredients}
+                    <ItemList
+                        items={unavailableIngredients}
+                        rowKey={(ingredient) => ingredient.id}
                         renderItem={(ingredient: IngredientForUserDto) => (
                             <IngredientListGroupItem
                                 ingredient={ingredient}
@@ -105,8 +108,9 @@ export function IngredientListView(props: IngredientListViewProps) {
                 ) : (
                     <>
                         {availableApplicable.length > 0 && (
-                            <List
-                                dataSource={availableApplicable}
+                            <ItemList
+                                items={availableApplicable}
+                                rowKey={(ingredient) => ingredient.id}
                                 renderItem={(ingredient: IngredientForUserDto) => (
                                     <IngredientListGroupItem
                                         ingredient={ingredient}

@@ -14,7 +14,7 @@ interface SlotMachineProps {
     onSpin: () => void;
 }
 
-/** The machine at rest: `columns` covered reels and the lever, the whole of it clickable when it can spin. */
+/** The machine at rest: `columns` covered reels and the lever, a button; the whole of it clickable when it can spin. */
 export function SlotMachine({ columns, canSpin, onSpin }: SlotMachineProps) {
     const { t } = useTranslation();
     const span = columnSpan(columns);
@@ -115,7 +115,11 @@ export function SlotMachine({ columns, canSpin, onSpin }: SlotMachineProps) {
             </Row>
 
             <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <div style={{
+                {/* No handler of its own: its click, by mouse, key or screen reader, bubbles to the machine's. */}
+                <button type="button" disabled={!canSpin} style={{
+                    font: "inherit",
+                    color: "inherit",
+                    margin: 0,
                     display: "inline-block",
                     padding: "16px 32px",
                     background: canSpin
@@ -140,7 +144,7 @@ export function SlotMachine({ columns, canSpin, onSpin }: SlotMachineProps) {
                             ? t("generate.banditSpin")
                             : t("generate.banditCannotSpin")}
                     </Text>
-                </div>
+                </button>
             </div>
         </Card>
     );

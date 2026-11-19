@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Avatar, Card, List, Space, Switch, Tag, Typography, message } from "antd";
+import { Avatar, Card, Space, Switch, Tag, Typography, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { updateUser, useListUsers } from "../../../api/generated/endpoints/users/users";
 import type { UserAccountDto } from "../../../api/generated/model";
 import { useAuthStore } from "../../../AuthSlice";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { getProfilePictureUrl } from "../../../lib/utils/profilePictureUrl";
+import { ItemList, ItemMeta, ItemRow } from "../../../shared/ItemList/ItemList";
 import { canChangeAdmin } from "../../../model/permissions";
 import "../SettingsView.css";
 
@@ -43,24 +44,23 @@ export function AdminsSection() {
                 styles={{ body: { padding: '24px' } }}
             >
                 <Text type="secondary" className="settings-help-text">{t("settings.adminsDescription")}</Text>
-                <List
+                <ItemList
                     loading={isLoading}
-                    dataSource={users}
-                    rowKey="id"
+                    items={users}
+                    rowKey={(user) => user.id}
                     renderItem={(user: UserAccountDto) => (
-                        <List.Item
-                            actions={[
+                        <ItemRow
+                            actions={
                                 <Switch
-                                    key="admin"
                                     aria-label={user.name}
                                     checked={user.is_admin}
                                     disabled={!canChangeAdmin(me, user)}
                                     loading={changing === user.id}
                                     onChange={(checked) => void onChange(user, checked)}
-                                />,
-                            ]}
+                                />
+                            }
                         >
-                            <List.Item.Meta
+                            <ItemMeta
                                 avatar={
                                     <Avatar src={getProfilePictureUrl(user.profile_picture)} style={{ backgroundColor: user.color }}>
                                         {user.name.charAt(0).toUpperCase()}
@@ -75,7 +75,7 @@ export function AdminsSection() {
                                 }
                                 description={user.id === me?.id ? t("settings.ownAdminLocked") : undefined}
                             />
-                        </List.Item>
+                        </ItemRow>
                     )}
                 />
             </Card>

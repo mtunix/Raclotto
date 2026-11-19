@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useAuthStore } from "../../AuthSlice";
 import {
     availableCounts,
@@ -56,7 +57,7 @@ async function spin() {
     renderBandit();
     fireEvent.click(await screen.findByText("−"));
     vi.useFakeTimers();
-    fireEvent.click(screen.getByText("generate.banditSpin"));
+    fireEvent.click(screen.getByRole("button", { name: "generate.banditSpin" }));
     await act(async () => {
         await vi.advanceTimersByTimeAsync(20000);
     });
@@ -89,6 +90,19 @@ it("rates the result, and offers the level-up picture once it closes", async () 
         .toEqual({ level_id: rollOutcome.reward.level?.id }));
 });
 
+it("pulls the lever from the keyboard", async () => {
+    const user = userEvent.setup();
+    renderBandit();
+    await user.click(await screen.findByText("−"));
+
+    const lever = screen.getByRole("button", { name: "generate.banditSpin" });
+    act(() => lever.focus());
+    expect(lever).toHaveFocus();
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => expect(fake.last("POST", "/pans/generate/bandit")).toBeDefined());
+});
+
 it("stops every column on the pan's ingredients", async () => {
     const dialog = await spin();
 
@@ -112,7 +126,7 @@ it("reports a failed roll and offers the lever again", async () => {
     });
     renderBandit();
     fireEvent.click(await screen.findByText("−"));
-    fireEvent.click(screen.getByText("generate.banditSpin"));
+    fireEvent.click(screen.getByRole("button", { name: "generate.banditSpin" }));
 
     expect(await screen.findByText("generate.banditError")).toBeInTheDocument();
     expect(screen.getByText("generate.banditSpin")).toBeInTheDocument();

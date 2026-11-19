@@ -1,0 +1,103 @@
+/* antd's List styles with its default theme tokens, so the rows look as they did. */
+.item-list {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    list-style: none;
+}
+
+.item-list-loading .ant-spin-nested-loading {
+    min-height: 32px;
+}
+
+.item-list-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Two classes, as antd's selector had: a row's own class doesn't override the padding. */
+.item-list .item-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    color: rgba(0, 0, 0, 0.88);
+    border-block-end: 1px solid rgba(5, 5, 5, 0.06);
+}
+
+.item-list .item-list-row:last-child {
+    border-block-end: none;
+}
+
+.item-list-empty {
+    padding: 16px;
+    color: rgba(0, 0, 0, 0.25);
+    font-size: 14px;
+    text-align: center;
+}
+
+.item-list .item-list-row .item-list-row-actions {
+    flex: 0 0 auto;
+    margin: 0;
+    margin-inline-start: 48px;
+    padding: 0;
+    font-size: 0;
+    list-style: none;
+}
+
+.item-list .item-list-row .item-list-row-actions > li {
+    position: relative;
+    display: inline-block;
+    padding: 0 8px 0 0;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+    text-align: center;
+}
+
+.item-list-meta {
+    display: flex;
+    flex: 1;
+    align-items: flex-start;
+    max-width: 100%;
+}
+
+.item-list-meta-avatar {
+    margin-inline-end: 16px;
+}
+
+.item-list-meta-content {
+    flex: 1 0;
+    width: 0;
+    color: rgba(0, 0, 0, 0.88);
+}
+
+.item-list .item-list-meta-title {
+    margin: 0 0 4px 0;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+}
+
+.item-list-meta-description {
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 14px;
+    line-height: 1.5714285714285714;
+}
+
+@media screen and (max-width: 768px) {
+    .item-list .item-list-row .item-list-row-actions {
+        margin-inline-start: 24px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .item-list .item-list-row {
+        flex-wrap: wrap;
+    }
+}

@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Rate,
-  List,
   Space,
   Tag,
 } from "antd";
@@ -28,6 +27,7 @@ import type {
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
 import { displayName } from "../../../shared/displayName";
+import { ItemList, ItemRow } from "../../../shared/ItemList/ItemList";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 import "./Dashboard.css";
 
@@ -65,7 +65,7 @@ function IngredientListGroupItemRating(
       : VectorGraphics.SAUCE;
 
   return (
-    <List.Item
+    <ItemRow
       className="dashboard-ingredient-item"
       style={{ backgroundColor: backgroundColor }}
     >
@@ -76,7 +76,7 @@ function IngredientListGroupItemRating(
         </span>
         <RatingViewer rating={props.entry.avg_rating} />
       </div>
-    </List.Item>
+    </ItemRow>
   );
 }
 
@@ -97,7 +97,7 @@ function IngredientListGroupItemCount(
       : VectorGraphics.SAUCE;
 
   return (
-    <List.Item
+    <ItemRow
       className="dashboard-ingredient-item"
       style={{ backgroundColor: backgroundColor }}
     >
@@ -110,7 +110,7 @@ function IngredientListGroupItemCount(
           {props.entry.pan_count}
         </span>
       </div>
-    </List.Item>
+    </ItemRow>
   );
 }
 
@@ -122,7 +122,7 @@ function PanListItem(props: PanListItemProps) {
   const { t } = useTranslation();
 
   return (
-    <List.Item className="dashboard-pan-item">
+    <ItemRow className="dashboard-pan-item">
       <div style={{ width: "100%" }}>
         <div className="dashboard-pan-header">
           <div style={{ flex: 1 }}>
@@ -162,7 +162,7 @@ function PanListItem(props: PanListItemProps) {
           </Space>
         </div>
       </div>
-    </List.Item>
+    </ItemRow>
   );
 }
 
@@ -196,7 +196,7 @@ function LeaderboardListItem(props: LeaderboardListItemProps) {
   const fontSize = isTopThree ? "0.95rem" : "0.9rem";
 
   return (
-    <List.Item
+    <ItemRow
       style={{
         backgroundColor: backgroundColor,
         marginBottom: "4px",
@@ -274,7 +274,7 @@ function LeaderboardListItem(props: LeaderboardListItemProps) {
           </Text>
         </div>
       </div>
-    </List.Item>
+    </ItemRow>
   );
 }
 
@@ -372,11 +372,10 @@ export function Dashboard() {
             >
               {t("dashboard.pans")}
             </Title>
-            <List
-              dataSource={pans}
-              renderItem={(pan: PanDto) => (
-                <PanListItem key={`pan-${pan.id}`} pan={pan} />
-              )}
+            <ItemList
+              items={pans}
+              rowKey={(pan) => pan.id}
+              renderItem={(pan: PanDto) => <PanListItem pan={pan} />}
             />
           </Card>
         </Col>
@@ -410,14 +409,10 @@ export function Dashboard() {
                 ({t("dashboard.rating")})
               </Text>
             </Title>
-            <List
-              dataSource={limitedIngredientsRating}
-              renderItem={(entry) => (
-                <IngredientListGroupItemRating
-                  key={`ingredient-${entry.ingredient.id}`}
-                  entry={entry}
-                />
-              )}
+            <ItemList
+              items={limitedIngredientsRating}
+              rowKey={(entry) => entry.ingredient.id}
+              renderItem={(entry) => <IngredientListGroupItemRating entry={entry} />}
             />
           </Card>
         </Col>
@@ -451,14 +446,10 @@ export function Dashboard() {
                 ({t("dashboard.usage")})
               </Text>
             </Title>
-            <List
-              dataSource={limitedIngredientsUsage}
-              renderItem={(entry) => (
-                <IngredientListGroupItemCount
-                  key={`ingredient-${entry.ingredient.id}`}
-                  entry={entry}
-                />
-              )}
+            <ItemList
+              items={limitedIngredientsUsage}
+              rowKey={(entry) => entry.ingredient.id}
+              renderItem={(entry) => <IngredientListGroupItemCount entry={entry} />}
             />
           </Card>
         </Col>
@@ -486,14 +477,11 @@ export function Dashboard() {
             >
               {t("dashboard.leaderboard")}
             </Title>
-            <List
-              dataSource={limitedLeaderboard}
+            <ItemList
+              items={limitedLeaderboard}
+              rowKey={(entry) => entry.user_id}
               renderItem={(entry) => (
-                <LeaderboardListItem
-                  key={`leaderboard-${entry.user_id}`}
-                  entry={entry}
-                  currentUserId={currentUser?.id}
-                />
+                <LeaderboardListItem entry={entry} currentUserId={currentUser?.id} />
               )}
             />
           </Card>

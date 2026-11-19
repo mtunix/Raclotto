@@ -32,7 +32,7 @@ afterEach(() => {
 const fetches = (path: string) => fake.requests.filter((r) => r.method === 'GET' && r.path === path).length;
 const buttonWith = (label: string, scope: HTMLElement = document.body) =>
     within(scope).getByText(label).closest('button') as HTMLElement;
-const itemOf = (name: string) => screen.getByText(name).closest('.ant-list-item') as HTMLElement;
+const itemOf = (name: string) => screen.getByText(name).closest('.item-list-row') as HTMLElement;
 const deleteButtonOf = (name: string) => itemOf(name).querySelector('.confirm-delete-button') as HTMLElement;
 
 // Changes refetch through SWR's global cache, so every test gets a session key of its own.

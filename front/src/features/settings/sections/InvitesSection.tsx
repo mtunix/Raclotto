@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { Card, Alert, Form, Input, Button, List, Space, Tag, message } from "antd";
+import { Card, Alert, Form, Input, Button, Space, Tag, message } from "antd";
 import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { createInvite, revokeInvite, useListInvites } from "../../../api/generated/endpoints/invites/invites";
@@ -7,6 +7,7 @@ import type { InviteDto } from "../../../api/generated/model";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { formatDateTime, useLanguage } from "../../../lib/language";
 import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
+import { ItemList, ItemMeta, ItemRow } from "../../../shared/ItemList/ItemList";
 import { copyToClipboard } from "../copyToClipboard";
 import "../SettingsView.css";
 
@@ -109,16 +110,18 @@ export function InvitesSection() {
                 className="settings-card"
                 styles={{ body: { padding: '24px' } }}
             >
-                <List
+                <ItemList
                     loading={isLoading}
-                    dataSource={invites}
+                    items={invites}
+                    rowKey={(invite) => invite.id}
                     renderItem={(invite: InviteDto) => (
-                        <List.Item
-                            actions={[
-                                <Space key="actions" size="small">
+                        <ItemRow
+                            actions={
+                                <Space size="small">
                                     <Button
                                         type="text"
                                         icon={<CopyOutlined />}
+                                        aria-label={t("settings.copyToClipboard")}
                                         onClick={() =>
                                             copyToClipboard(
                                                 `${window.location.origin}/register?token=${encodeURIComponent(invite.token)}`,
@@ -138,9 +141,9 @@ export function InvitesSection() {
                                         />
                                     )}
                                 </Space>
-                            ]}
+                            }
                         >
-                            <List.Item.Meta
+                            <ItemMeta
                                 title={
                                     <Space>
                                         <span>{invite.email}</span>
@@ -169,7 +172,7 @@ export function InvitesSection() {
                                     </div>
                                 }
                             />
-                        </List.Item>
+                        </ItemRow>
                     )}
                 />
             </Card>

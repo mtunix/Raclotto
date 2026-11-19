@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import {Segmented, Card, Row, Col, message, List, Button, Input, Space, Empty, Spin, Typography} from "antd";
+import {Segmented, Card, Row, Col, message, Button, Input, Space, Empty, Spin, Typography} from "antd";
 import {useTranslation} from "react-i18next";
 import axios from "axios";
 import {mutatePrepTypes, onErrorRetry} from "../../../lib/api/swrHooks";
@@ -22,6 +22,7 @@ import {IngredientListView} from "./IngredientListView";
 import {AddIngredientModal} from "./AddIngredientModal";
 import {EditIngredientModal} from "./EditIngredientModal";
 import {ConfirmDeleteButton} from "../../../shared/ConfirmDeleteButton";
+import {ItemList, ItemRow} from "../../../shared/ItemList/ItemList";
 import "../../../shared/MainScreen/MainScreen.css";
 
 const {Text} = Typography;
@@ -143,10 +144,11 @@ export function KitchenManagement() {
                     />
                 ) : (
                     <>
-                        <List
-                            dataSource={prepTypes}
+                        <ItemList
+                            items={prepTypes}
+                            rowKey={(prepType) => prepType.id}
                             renderItem={(prepType: PrepTypeDto) => (
-                                <List.Item
+                                <ItemRow
                                     style={{
                                         backgroundColor: prepType.session_id === null || prepType.session_id === undefined 
                                             ? 'rgba(142, 142, 147, 0.08)' 
@@ -183,7 +185,7 @@ export function KitchenManagement() {
                                             />
                                         )}
                                     </div>
-                                </List.Item>
+                                </ItemRow>
                             )}
                         />
                         {isAddingPrepType && (

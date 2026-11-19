@@ -198,13 +198,12 @@ h6 {
     letter-spacing: -0.022em;
 }
 
-.ant-list-item {
-    padding: 16px 20px;
+.item-list-row {
     border-radius: 12px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ant-list-item:hover {
+.item-list-row:hover {
     background-color: #f5f5f7;
 }
 

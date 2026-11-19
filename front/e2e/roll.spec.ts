@@ -32,8 +32,7 @@ test("spins the bandit onto a pan", async ({ page }) => {
   await page.goto(`/${session.id}/generate`);
 
   await page.getByRole("tab", { name: t("generate.banditMode") }).click();
-  // The lever is a clickable panel, not a button.
-  await page.getByText(t("generate.banditSpin")).click();
+  await page.getByRole("button", { name: t("generate.banditSpin") }).click();
 
   const result = page.getByRole("dialog").filter({ hasText: t("generate.rollAnotherDice") });
   await expect(result).toBeVisible({ timeout: 20_000 });

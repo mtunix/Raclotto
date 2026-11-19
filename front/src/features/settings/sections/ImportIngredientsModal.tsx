@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties, type ChangeEvent } from "react";
-import { Button, Card, Input, List, message, Modal, Radio, Space } from "antd";
+import { Button, Card, Input, message, Modal, Radio, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ImportedIngredient } from "../../../api/generated/model";
 import { ingredientCatalog } from "../../ingredients/ingredientCatalog";
@@ -177,18 +177,16 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
                         {t("settings.stagingArea")} ({staged.length} {t("settings.ingredients")})
                     </div>
                     <div style={{ maxHeight: "500px", overflowY: "auto", padding: "8px" }}>
-                        <List
-                            dataSource={staged}
-                            renderItem={(ingredient, index) => (
-                                <StagedIngredientCard
-                                    key={index}
-                                    ingredient={ingredient}
-                                    index={index}
-                                    onChange={changeField}
-                                    errors={errors[index]}
-                                />
-                            )}
-                        />
+                        {staged.map((ingredient, index) => (
+                            <StagedIngredientCard
+                                // eslint-disable-next-line @eslint-react/no-array-index-key -- staged rows have no id until imported, and are never reordered
+                                key={index}
+                                ingredient={ingredient}
+                                index={index}
+                                onChange={changeField}
+                                errors={errors[index]}
+                            />
+                        ))}
                     </div>
                 </div>
             )}
