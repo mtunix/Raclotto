@@ -1,0 +1,46 @@
+# Weekly updates against dev, where development happens; master gets them with the next release.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Patch and digest bumps only: a new Node or Python line also changes front/.nvmrc and .python-version.
+  - package-ecosystem: docker
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major, version-update:semver-minor]
+    groups:
+      images:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /front
+    target-branch: dev
+    schedule:
+      interval: weekly
+    ignore:
+      # TS 7's native compiler has no JS API yet (see CLAUDE.md).
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+    groups:
+      npm:
+        update-types: [minor, patch]

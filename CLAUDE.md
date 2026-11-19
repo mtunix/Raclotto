@@ -191,6 +191,9 @@ is a version on `master`, pushes `ghcr.io/mtunix/raclotto:<version>` and `:lates
 GitHub release; a manual run (`gh workflow run ci.yml --ref dev`) only builds and tests a `dev`
 image, the check to run after changing the `Dockerfile`, `.dockerignore` or `requirements.txt`.
 
+Dependabot (`.github/dependabot.yml`) opens weekly update PRs against `dev` for actions, base
+images (patch and digest only), pip and npm; Node, Python and TypeScript major lines move by hand.
+
 ## Verify what you changed, not the whole repo
 
 | Changed only | Loop with |
