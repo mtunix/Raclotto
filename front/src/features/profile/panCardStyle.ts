@@ -1,12 +1,12 @@
-import type React from "react";
+import type { CSSProperties } from "react";
 import type { UserSummaryDto } from "../../api/generated/model";
 import { getTextureBorderImage } from "../../lib/borderTextures";
 
 export interface PanCardStyle {
-  card: React.CSSProperties;
+  card: CSSProperties;
   cardClassName: string;
   /** Set for a textured border: border-image can't round corners, so a padded wrapper draws it. */
-  wrapper?: React.CSSProperties;
+  wrapper?: CSSProperties;
   wrapperClassName: string;
 }
 

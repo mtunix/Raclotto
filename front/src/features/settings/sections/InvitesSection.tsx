@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Card, Alert, Form, Input, Button, List, Space, Tag, message } from "antd";
 import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -9,7 +9,7 @@ import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
 import { copyToClipboard } from "../copyToClipboard";
 import "../SettingsView.css";
 
-const iconButtonStyle: React.CSSProperties = {
+const iconButtonStyle: CSSProperties = {
     height: '44px',
     width: '44px',
     padding: '0',
@@ -64,16 +64,15 @@ export function InvitesSection() {
             <Card 
                 title={<span className="settings-section-title" style={{ fontSize: '20px' }}>{t("invite.generateToken")}</span>} 
                 className="settings-card"
-                bodyStyle={{ padding: '24px' }}
+                styles={{ body: { padding: '24px' } }}
                 style={{ marginBottom: '24px' }}
             >
                 {error && (
                     <Alert
-                        message={error}
+                        title={error}
                         type="error"
                         showIcon
-                        closable
-                        onClose={() => setError(null)}
+                        closable={{ onClose: () => setError(null) }}
                         style={{ marginBottom: 16, borderRadius: '12px' }}
                     />
                 )}
@@ -111,7 +110,7 @@ export function InvitesSection() {
             <Card 
                 title={<span className="settings-section-title" style={{ fontSize: '20px' }}>{t("invite.myInvites")}</span>}
                 className="settings-card"
-                bodyStyle={{ padding: '24px' }}
+                styles={{ body: { padding: '24px' } }}
             >
                 <List
                     loading={isLoading}

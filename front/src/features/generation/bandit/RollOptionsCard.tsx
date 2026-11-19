@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Checkbox, Col, Row } from "antd";
 import { useTranslation } from "react-i18next";
 
@@ -19,7 +18,7 @@ export function RollOptionsCard(props: RollOptionsCardProps) {
             <Col span={24}>
                 <Card
                     style={{ borderRadius: "18px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", border: "none" }}
-                    bodyStyle={{ padding: "20px 24px" }}
+                    styles={{ body: { padding: "20px 24px" } }}
                 >
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                         <Checkbox

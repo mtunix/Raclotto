@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
 import { ChaoticGenerationAnimation } from "./ChaoticGenerationAnimation";
 import { BlenderSpinAnimation } from "./BlenderSpinAnimation";

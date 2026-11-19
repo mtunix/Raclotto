@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { Card, Progress, Tag, Typography } from "antd";
 import { useAppStore } from "../../AppSlice";
@@ -57,7 +57,7 @@ export function XpNotification() {
             level: typeof level === "string" ? level : t(level.name, { defaultValue: level.name }),
         });
 
-    const progress = (label: string, bar: LevelProgress, style?: React.CSSProperties) => (
+    const progress = (label: string, bar: LevelProgress, style?: CSSProperties) => (
         <div className="xp-progress-container" style={{ marginTop: '12px', ...style }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <Text type="secondary" style={{ fontSize: '12px' }}>

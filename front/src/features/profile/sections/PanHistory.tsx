@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Button, Card, Col, Empty, Row, Spin } from "antd";
 import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
@@ -15,7 +15,7 @@ interface PanHistoryProps {
 export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps) {
   const { t } = useTranslation();
 
-  let content: React.ReactNode;
+  let content: ReactNode;
   if (loading && pans.length === 0) {
     content = (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}>

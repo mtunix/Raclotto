@@ -1,4 +1,3 @@
-import React from "react";
 import { Alert, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { type Availability, isRestricted } from "./banditLimits";
@@ -20,7 +19,7 @@ export function RestrictionsAlert({ fills, sauces }: { fills: Availability; sauc
     return (
         <Alert
             type="info"
-            message={t("generate.restrictionsApplied") || "Dietary restrictions applied"}
+            title={t("generate.restrictionsApplied") || "Dietary restrictions applied"}
             description={
                 <div>
                     {isRestricted(fills) && line(t("generate.availableIngredients") || "Available ingredients", fills)}

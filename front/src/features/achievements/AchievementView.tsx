@@ -1,4 +1,3 @@
-import React from "react";
 import {Spin, Card, Row, Col, Tag, Typography, Space, Progress} from "antd";
 import {useListAchievements} from "../../api/generated/endpoints/achievements/achievements";
 import type {AchievementStatusDto} from "../../api/generated/model";
@@ -49,9 +48,9 @@ export function AchievementView() {
                                 ? '#fafafa' 
                                 : '#ffffff'
                     }}
-                    bodyStyle={{ padding: '16px' }}
+                    styles={{ body: { padding: '16px' } }}
                 >
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <Space>
                                 <span style={{ fontSize: '1.5rem' }}>{VectorGraphics.ACHIEVEMENTS}</span>

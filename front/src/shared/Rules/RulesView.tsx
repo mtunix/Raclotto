@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Card } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";

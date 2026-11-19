@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Form, Input, Button, Card, Alert } from "antd";
 import { useLocation, useNavigate } from "react-router";
 import {
@@ -138,11 +138,10 @@ export function RegisterView() {
       <Card title={t("auth.register")} style={{ width: "100%", maxWidth: 420 }}>
         {error && (
           <Alert
-            message={error}
+            title={error}
             type="error"
             showIcon
-            closable
-            onClose={() => setError(null)}
+            closable={{ onClose: () => setError(null) }}
             style={{ marginBottom: 24 }}
           />
         )}

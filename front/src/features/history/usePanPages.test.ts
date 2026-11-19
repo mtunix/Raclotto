@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import type { PanDto, PanPageDto } from "../../api/generated/model";
@@ -39,8 +39,8 @@ afterEach(() => {
 
 // The default cache, which `mutatePanLists` reaches; every test uses filters of its own.
 function render(initial: PanFilter) {
-  const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
   return renderHook((filter: PanFilter) => usePanPages(filter, 2), { wrapper, initialProps: initial });
 }
 

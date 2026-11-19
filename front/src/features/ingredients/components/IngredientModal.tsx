@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
 import { Modal, Form, Input, Radio, Button, message, Checkbox, Slider, Card, Row, Col } from 'antd';
 import { useTranslation } from "react-i18next";
 import { IngredientType } from "../../../api/generated/model";
@@ -142,7 +142,7 @@ export function IngredientModal(props: IngredientModalProps) {
         form.setFieldsValue({ type });
     };
 
-    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         const name = e.target.value;
         setIngredientName(name);
         form.setFieldsValue({ name });
@@ -182,8 +182,6 @@ export function IngredientModal(props: IngredientModalProps) {
                 fructose: allergenValues.fructose || false,
                 lactose: allergenValues.lactose || false,
             };
-            
-            console.log('Saving ingredient data:', ingredientData); // Debug log
             
             setLoading(true);
             
@@ -264,7 +262,7 @@ export function IngredientModal(props: IngredientModalProps) {
                 </Button>,
             ]}
             width={600}
-            destroyOnClose={true}
+            destroyOnHidden={true}
         >
             <Form 
                 key={`${props.mode}-${props.ingredient?.id}-${props.context}`}
@@ -281,7 +279,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                 border: 'none'
                             }}
-                            bodyStyle={{ padding: '24px' }}
+                            styles={{ body: { padding: '24px' } }}
                         >
                             <Form.Item 
                                 style={{ marginBottom: 0 }}
@@ -316,7 +314,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                 border: 'none'
                             }}
-                            bodyStyle={{ padding: '24px' }}
+                            styles={{ body: { padding: '24px' } }}
                         >
                             <Form.Item 
                                 style={{ marginBottom: 0 }}
@@ -368,7 +366,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                 border: 'none'
                             }}
-                            bodyStyle={{ padding: '24px' }}
+                            styles={{ body: { padding: '24px' } }}
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
@@ -392,7 +390,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                 border: 'none'
                             }}
-                            bodyStyle={{ padding: '24px' }}
+                            styles={{ body: { padding: '24px' } }}
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
@@ -416,7 +414,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                                 border: 'none'
                             }}
-                            bodyStyle={{ padding: '24px' }}
+                            styles={{ body: { padding: '24px' } }}
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>

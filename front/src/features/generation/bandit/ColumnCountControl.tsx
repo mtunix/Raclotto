@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, Card, Col, Form, Input, InputNumber, Row, Typography } from "antd";
+import type { MouseEvent } from "react";
+import { Button, Card, Col, Form, InputNumber, Row, Space, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import styles from "../GenerateView/GenerateView.module.css";
 
@@ -7,12 +7,12 @@ const { Text } = Typography;
 
 function hoverHighlight(enabled: boolean) {
     return {
-        onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+        onMouseEnter: (e: MouseEvent<HTMLElement>) => {
             if (!enabled) return;
             e.currentTarget.style.background = "#f5f5f7";
             e.currentTarget.style.borderColor = "#0071e3";
         },
-        onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+        onMouseLeave: (e: MouseEvent<HTMLElement>) => {
             if (!enabled) return;
             e.currentTarget.style.background = "#ffffff";
             e.currentTarget.style.borderColor = "#d2d2d7";
@@ -38,7 +38,7 @@ export function ColumnCountControl({ value, max, onChange, disabled }: ColumnCou
             <Col span={24}>
                 <Card
                     style={{ borderRadius: "18px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", border: "none" }}
-                    bodyStyle={{ padding: "24px" }}
+                    styles={{ body: { padding: "24px" } }}
                 >
                     <Form.Item style={{ marginBottom: 0 }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -52,7 +52,7 @@ export function ColumnCountControl({ value, max, onChange, disabled }: ColumnCou
                                     </Text>
                                 )}
                             </div>
-                            <Input.Group compact style={{ display: "flex", gap: "8px" }}>
+                            <Space.Compact style={{ display: "flex", gap: "8px" }}>
                                 <Button
                                     onClick={() => onChange(Math.max(1, value - 1))}
                                     disabled={!canDecrease}
@@ -79,7 +79,7 @@ export function ColumnCountControl({ value, max, onChange, disabled }: ColumnCou
                                 >
                                     +
                                 </Button>
-                            </Input.Group>
+                            </Space.Compact>
                         </div>
                     </Form.Item>
                 </Card>

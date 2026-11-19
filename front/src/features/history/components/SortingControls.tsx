@@ -1,4 +1,3 @@
-import React from 'react';
 import {Select, Space, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
 import type {ListPansDirection, ListPansSort} from "../../../api/generated/model";
@@ -30,20 +29,22 @@ export function SortingControls({
                 onChange={onSortFieldChange}
                 style={{flex: 2, minWidth: 150}}
                 size="large"
-            >
-                <Select.Option value="time">{t("history.time") || "Time"}</Select.Option>
-                <Select.Option value="rating">{t("history.rating") || "Rating"}</Select.Option>
-                <Select.Option value="counts">{t("history.ingredientCounts") || "Ingredient + Sauce counts"}</Select.Option>
-            </Select>
+                options={[
+                    { value: "time", label: t("history.time") || "Time" },
+                    { value: "rating", label: t("history.rating") || "Rating" },
+                    { value: "counts", label: t("history.ingredientCounts") || "Ingredient + Sauce counts" },
+                ]}
+            />
             <Select
                 value={sortDirection}
                 onChange={onSortDirectionChange}
                 style={{flex: 1, minWidth: 80}}
                 size="large"
-            >
-                <Select.Option value="desc">{t("history.descending") || "Descending"}</Select.Option>
-                <Select.Option value="asc">{t("history.ascending") || "Ascending"}</Select.Option>
-            </Select>
+                options={[
+                    { value: "desc", label: t("history.descending") || "Descending" },
+                    { value: "asc", label: t("history.ascending") || "Ascending" },
+                ]}
+            />
         </Space>
     );
 }

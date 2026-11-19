@@ -1,11 +1,11 @@
-import React, { useRef } from "react";
+import { useRef, type CSSProperties, type ChangeEvent } from "react";
 import { Button, Space, message } from "antd";
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { Camera } from "./useCamera";
 import { pictureFileProblem, readAsDataUrl } from "./pictureFile";
 
-const columnStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: "8px", width: "100%" };
+const columnStyle: CSSProperties = { display: "flex", flexDirection: "column", gap: "8px", width: "100%" };
 
 interface PictureSourceProps {
   camera: Camera;
@@ -24,7 +24,7 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
     onPicked(picture);
   }
 
-  function onFile(event: React.ChangeEvent<HTMLInputElement>) {
+  function onFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     const problem = pictureFileProblem(file);
@@ -55,7 +55,7 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
             muted
             style={{ width: "100%", height: "auto", borderRadius: "8px", backgroundColor: "#000" }}
           />
-          <Space direction="vertical" style={{ width: "100%" }}>
+          <Space orientation="vertical" style={{ width: "100%" }}>
             <Button onClick={capture} type="primary" size="large" disabled={disabled} block>
               {t("auth.capture") || "Capture"}
             </Button>

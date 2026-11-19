@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Card, Col, Modal, Rate, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
@@ -36,7 +35,7 @@ export function BanditResultModal(props: BanditResultModalProps) {
             style={{ maxWidth: "1200px" }}
             centered
             closable={!spinning}
-            maskClosable={!spinning}
+            mask={{ closable: !spinning }}
         >
             <div style={{ padding: "20px 0" }}>
                 {pan ? (
@@ -47,7 +46,7 @@ export function BanditResultModal(props: BanditResultModalProps) {
                                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                                 border: "none",
                             }}
-                            bodyStyle={{ padding: "20px" }}
+                            styles={{ body: { padding: "20px" } }}
                         >
                             <Row align="middle" justify="space-between">
                                 <Col flex="auto">

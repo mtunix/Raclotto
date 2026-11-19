@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Alert, Button, Card, Form, Input, message, Modal, Spin } from "antd";
 import { BarChartOutlined, BgColorsOutlined, CopyOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -88,12 +88,12 @@ export function SessionSettingsSection() {
                 <Alert
                     type="info"
                     showIcon
-                    message={t("settings.onlyCreatorManages")}
+                    title={t("settings.onlyCreatorManages")}
                     style={{ marginBottom: 24 }}
                 />
             )}
 
-            <Card className="settings-card" bodyStyle={{ padding: "24px" }} style={{ marginBottom: "24px" }}>
+            <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
                 <Form.Item
                     label={<span className="settings-section-title">{t("session.sessionName")}</span>}
                     className="settings-form-item-spacing"
@@ -125,7 +125,7 @@ export function SessionSettingsSection() {
                 )}
             </Card>
 
-            <Card className="settings-card" bodyStyle={{ padding: "24px" }} style={{ marginBottom: "24px" }}>
+            <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
                 <div style={{ marginBottom: "32px" }}>
                     <div className="settings-section-title" style={{ marginBottom: "8px" }}>
                         {t("settings.prompt") || "LLM Prompt"}
@@ -169,7 +169,7 @@ export function SessionSettingsSection() {
                 </div>
             </Card>
 
-            <Card className="settings-card" bodyStyle={{ padding: "24px" }} style={{ marginBottom: "24px" }}>
+            <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
                 <div className="settings-section-title" style={{ marginBottom: "8px" }}>
                     {t("recap.title")}
                 </div>
@@ -187,7 +187,7 @@ export function SessionSettingsSection() {
             </Card>
 
             {canManage && (
-                <Card className="settings-card" bodyStyle={{ padding: "24px" }}>
+                <Card className="settings-card" styles={{ body: { padding: "24px" } }}>
                     <div className="settings-section-title" style={{ marginBottom: "16px" }}>
                         {t("session.eveningOver")}
                     </div>

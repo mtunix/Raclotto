@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Col, Rate, Row, Space, Statistic, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { UserStatsDto } from "../../../api/generated/model";

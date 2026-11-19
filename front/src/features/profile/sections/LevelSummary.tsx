@@ -1,4 +1,3 @@
-import React from "react";
 import { Progress, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { LevelDto } from "../../../api/generated/model";

@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { message } from "antd";
 import { useTranslation } from "react-i18next";
 import { cameraErrorKey } from "./cameraError";
 
 export interface Camera {
   /** The video the stream plays in while the camera is active. */
-  videoRef: React.RefObject<HTMLVideoElement | null>;
+  videoRef: RefObject<HTMLVideoElement | null>;
   active: boolean;
   start: () => Promise<void>;
   stop: () => void;

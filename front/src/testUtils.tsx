@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { createMemoryRouter, type RouteObject, RouterProvider, useLocation } from "react-router";
 import { SWRConfig } from "swr";
@@ -42,6 +42,6 @@ export function renderRoutes(routes: RouteObject[], path: string, options: Rende
 }
 
 /** Renders `element` alone at `/`. */
-export function renderRoute(element: React.ReactNode, options: RenderOptions = {}) {
+export function renderRoute(element: ReactNode, options: RenderOptions = {}) {
     return renderRoutes([{ path: "/", element }], "/", options);
 }

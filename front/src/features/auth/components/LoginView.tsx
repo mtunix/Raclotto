@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Form, Input, Button, Card, Alert } from "antd";
 import { useNavigate } from "react-router";
 import { login } from "../../../api/generated/endpoints/auth/auth";
@@ -52,11 +52,10 @@ export function LoginView() {
       <Card title={t("auth.login")} style={{ width: "100%", maxWidth: 420 }}>
         {error && (
           <Alert
-            message={error}
+            title={error}
             type="error"
             showIcon
-            closable
-            onClose={() => setError(null)}
+            closable={{ onClose: () => setError(null) }}
             style={{ marginBottom: 24 }}
           />
         )}

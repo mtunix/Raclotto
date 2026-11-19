@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Empty, Spin } from "antd";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";

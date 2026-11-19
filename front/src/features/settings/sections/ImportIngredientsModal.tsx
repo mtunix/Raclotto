@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties, type ChangeEvent } from "react";
 import { Button, Card, Input, List, message, Modal, Radio, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ImportedIngredient } from "../../../api/generated/model";
@@ -9,20 +9,20 @@ import "../SettingsView.css";
 
 type ImportMode = "import" | "reimport";
 
-const cardStyle: React.CSSProperties = {
+const cardStyle: CSSProperties = {
     borderRadius: "12px",
     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
     border: "none",
     marginBottom: "24px",
 };
-const cardTitleStyle: React.CSSProperties = {
+const cardTitleStyle: CSSProperties = {
     fontSize: "17px",
     fontWeight: 600,
     letterSpacing: "-0.022em",
     color: "#1d1d1f",
     marginBottom: "16px",
 };
-const modeButtonStyle: React.CSSProperties = {
+const modeButtonStyle: CSSProperties = {
     width: "100%",
     height: "44px",
     lineHeight: "44px",
@@ -73,7 +73,7 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
         setStaged((current) => current.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
     };
 
-    function onJsonChanged(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    function onJsonChanged(e: ChangeEvent<HTMLTextAreaElement>) {
         const text = e.target.value;
         setJson(text);
         // Invalid JSON while typing clears the staging without an error.
@@ -146,10 +146,10 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
             width="90%"
             style={{ maxWidth: "1200px" }}
         >
-            <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
+            <Card style={cardStyle} styles={{ body: { padding: "20px" } }}>
                 <div style={cardTitleStyle}>{t("settings.selectImportMode") || "Select Import Mode"}</div>
                 <Radio.Group value={mode} onChange={(e) => setMode(e.target.value as ImportMode)} style={{ width: "100%" }}>
-                    <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                    <Space orientation="vertical" style={{ width: "100%" }} size="middle">
                         <Radio.Button value="import" style={modeButtonStyle}>
                             {t("settings.importModeAdd") || "Import (Add new only)"}
                         </Radio.Button>
@@ -160,7 +160,7 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
                 </Radio.Group>
             </Card>
 
-            <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
+            <Card style={cardStyle} styles={{ body: { padding: "20px" } }}>
                 <div style={cardTitleStyle}>{t("settings.pasteJson") || "Paste JSON"}</div>
                 <Input.TextArea
                     placeholder={t("settings.pasteJsonHere") || "Paste JSON here..."}

@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import type { SessionDto } from "../api/generated/model";
@@ -24,8 +24,8 @@ afterEach(() => {
 });
 
 function render(sessionId: string) {
-  const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(
       SWRConfig,
       { value: { provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false } },
       children,

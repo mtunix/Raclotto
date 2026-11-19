@@ -1,10 +1,10 @@
-import React from "react";
+import type { ComponentProps } from "react";
 import { Card, Col, Row, Statistic } from "antd";
 import { useTranslation } from "react-i18next";
 import type { UserStatsDto } from "../../../api/generated/model";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 
-function StatisticCard(props: React.ComponentProps<typeof Statistic>) {
+function StatisticCard(props: ComponentProps<typeof Statistic>) {
   return (
     <Col xs={24} sm={12} md={8} lg={6}>
       <Card>

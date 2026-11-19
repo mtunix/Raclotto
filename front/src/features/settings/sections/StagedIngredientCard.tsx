@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Checkbox, Col, Form, Input, Row, Select, Slider, Space, Switch } from "antd";
 import { useTranslation } from "react-i18next";
 import { IngredientType } from "../../../api/generated/model";
@@ -62,10 +61,11 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                                 value={ingredient.type}
                                 onChange={(value) => onChange(index, "type", value)}
                                 style={{ width: "100%" }}
-                            >
-                                <Select.Option value={IngredientType.FILL}>{t("ingredient.fill") || "FILL"}</Select.Option>
-                                <Select.Option value={IngredientType.SAUCE}>{t("ingredient.sauce") || "SAUCE"}</Select.Option>
-                            </Select>
+                                options={[
+                                    { value: IngredientType.FILL, label: t("ingredient.fill") || "FILL" },
+                                    { value: IngredientType.SAUCE, label: t("ingredient.sauce") || "SAUCE" },
+                                ]}
+                            />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12} md={8}>
@@ -106,7 +106,7 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                     </Col>
                     <Col xs={24}>
                         <Form.Item label={t("ingredient.additionalProperties") || "Additional Properties"}>
-                            <Space direction="vertical" style={{ width: "100%" }}>
+                            <Space orientation="vertical" style={{ width: "100%" }}>
                                 <div>
                                     <div style={{ marginBottom: "8px" }}>
                                         {t("ingredient.spicy") || "Spicy"} ({ingredient.spicy || 0}/3)

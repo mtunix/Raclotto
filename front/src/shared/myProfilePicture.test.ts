@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { useGetMe } from "../api/generated/endpoints/auth/auth";
@@ -35,8 +35,8 @@ afterEach(() => {
   setTransport(previous);
 });
 
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+const wrapper = ({ children }: { children: ReactNode }) =>
+  createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
 
 const historyFetches = (userId: number) =>
   fake.requests.filter((r) => r.method === "GET" && r.path === `/images/profile-picture-history/${userId}`).length;

@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { events } from "../../lib/api/__fixtures__/backendResponses";
@@ -20,8 +20,8 @@ afterEach(() => {
     setTransport(previous);
 });
 
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
 
 const listed = (sessionKey: string) =>
     fake.requests.filter((r) => r.method === "GET" && r.path === "/events" && r.query?.session_key === sessionKey);

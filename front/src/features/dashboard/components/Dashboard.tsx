@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   Row,
@@ -352,10 +352,12 @@ export function Dashboard() {
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} md={12} lg={6}>
           <Card
-            bodyStyle={{
-              padding: "20px",
-              display: "flex",
-              flexDirection: "column",
+            styles={{
+              body: {
+                padding: "20px",
+                display: "flex",
+                flexDirection: "column",
+              },
             }}
           >
             <Title
@@ -380,12 +382,14 @@ export function Dashboard() {
         </Col>
         <Col xs={24} sm={12} md={12} lg={6}>
           <Card
-            bodyStyle={{
-              padding: "20px",
-              maxHeight: "600px",
-              overflow: "auto",
-              display: "flex",
-              flexDirection: "column",
+            styles={{
+              body: {
+                padding: "20px",
+                maxHeight: "600px",
+                overflow: "auto",
+                display: "flex",
+                flexDirection: "column",
+              },
             }}
           >
             <Title
@@ -419,12 +423,14 @@ export function Dashboard() {
         </Col>
         <Col xs={24} sm={12} md={12} lg={6}>
           <Card
-            bodyStyle={{
-              padding: "20px",
-              maxHeight: "600px",
-              overflow: "auto",
-              display: "flex",
-              flexDirection: "column",
+            styles={{
+              body: {
+                padding: "20px",
+                maxHeight: "600px",
+                overflow: "auto",
+                display: "flex",
+                flexDirection: "column",
+              },
             }}
           >
             <Title
@@ -458,12 +464,14 @@ export function Dashboard() {
         </Col>
         <Col xs={24} sm={12} md={12} lg={6}>
           <Card
-            bodyStyle={{
-              padding: "20px",
-              maxHeight: "600px",
-              overflow: "auto",
-              display: "flex",
-              flexDirection: "column",
+            styles={{
+              body: {
+                padding: "20px",
+                maxHeight: "600px",
+                overflow: "auto",
+                display: "flex",
+                flexDirection: "column",
+              },
             }}
           >
             <Title

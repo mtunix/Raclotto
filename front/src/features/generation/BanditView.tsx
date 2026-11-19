@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { IngredientForUserDto } from "../../api/generated/model";
 import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
 import { LevelUpPictureModal } from "./LevelUpPictureModal";

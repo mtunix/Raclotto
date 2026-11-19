@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Space, Row, Col, Flex, Typography, Avatar } from "antd";
 import {
   DashboardOutlined,
@@ -118,7 +117,7 @@ export function Toolbar(props: ToolbarProps) {
 
   return (
     <Space
-      direction="vertical"
+      orientation="vertical"
       size="small"
       style={{ width: "100%", marginBottom: 0 }}
     >

@@ -1,4 +1,3 @@
-import React from "react";
 import { Avatar, Button } from "antd";
 import { useTranslation } from "react-i18next";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";

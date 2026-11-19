@@ -1,4 +1,3 @@
-import React from "react";
 import { IngredientModal } from "./IngredientModal";
 import type { IngredientForUserDto, UpdateIngredientBody } from "../../../api/generated/model";
 

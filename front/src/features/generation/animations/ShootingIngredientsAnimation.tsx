@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, Fragment } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 import { Util } from "../../../lib/util";
@@ -205,7 +205,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                 const ingredientDeltaY = ingredientEndY - rocketY;
 
                 return (
-                    <React.Fragment key={ejection.id}>
+                    <Fragment key={ejection.id}>
                         {/* Ingredient smoke trail */}
                         {Array.from({ length: 8 }).map((_, smokeIdx) => {
                             const smokeDelay = ejectionDelay + (smokeIdx * 30);
@@ -291,7 +291,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                             `}</style>
                             {ejection.ingredient}
                         </div>
-                    </React.Fragment>
+                    </Fragment>
                 );
             })}
         </div>

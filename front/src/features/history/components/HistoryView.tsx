@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import { useState, type CSSProperties } from "react";
 import {createPan, useGetPanFilterOptions} from "../../../api/generated/endpoints/pans/pans";
 import type {ListPansDirection, ListPansIngredientCountItem, ListPansSort, PanDto} from "../../../api/generated/model";
 import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar, Grid} from "antd";
@@ -168,14 +168,14 @@ export function HistoryView() {
 
         // Build border style object
         // Note: We need to explicitly override the global .ant-card { border: none; } rule
-        const cssBorderStyle = borderStyle as React.CSSProperties['borderStyle'];
-        const borderStyleObj: React.CSSProperties = {
+        const cssBorderStyle = borderStyle as CSSProperties['borderStyle'];
+        const borderStyleObj: CSSProperties = {
             height: '100%',
             marginBottom: '16px',
         };
         
         // Wrapper style for textured borders (needed for border-radius with border-image)
-        let wrapperStyle: React.CSSProperties | undefined = undefined;
+        let wrapperStyle: CSSProperties | undefined = undefined;
         
         // Apply texture if available (border-image takes precedence over individual border properties)
         if (textureBorderImage) {
@@ -239,10 +239,10 @@ export function HistoryView() {
         }
         
         const cardContent = (
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                         {/* Header with name and rating */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <Space direction="vertical" size={0} style={{ flex: 1 }}>
+                            <Space orientation="vertical" size={0} style={{ flex: 1 }}>
                                 <Title level={4} style={{ margin: 0, fontSize: '1rem', marginBottom: '4px' }}>
                                     {displayName(pan.name, t)}
                                 </Title>
@@ -338,7 +338,7 @@ export function HistoryView() {
                     <div style={wrapperStyle}>
                         <Card
                             style={borderStyleObj}
-                            bodyStyle={{ padding: '12px' }}
+                            styles={{ body: { padding: '12px' } }}
                         >
                             {cardContent}
                         </Card>
@@ -346,7 +346,7 @@ export function HistoryView() {
                 ) : (
                     <Card
                         style={borderStyleObj}
-                        bodyStyle={{ padding: '12px' }}
+                        styles={{ body: { padding: '12px' } }}
                     >
                         {cardContent}
                     </Card>

@@ -8,7 +8,7 @@ import {
 } from "../../api/generated/endpoints/sessions/sessions";
 import type {SessionDto} from "../../api/generated/model";
 import {onErrorRetry} from "../../lib/api/swrHooks";
-import React, {useState} from "react";
+import { useState, useMemo, type ChangeEvent, useEffect } from "react";
 import {useAppStore} from "../../AppSlice";
 import {useNavigate} from "react-router";
 import {useTranslation} from "react-i18next";
@@ -20,12 +20,12 @@ export function JoinSession() {
     const setSession = useAppStore((state) => state.setSession);
     const navigate = useNavigate();
     const {data, isLoading, error, mutate} = useListSessions({include_inactive: true}, {swr: {onErrorRetry}});
-    const [selectedIndex, setSelectedIndex] = React.useState(0);
+    const [selectedIndex, setSelectedIndex] = useState(0);
     const [reactivating, setReactivating] = useState(false);
     const user = useAuthStore((state) => state.user);
 
     // Sort sessions: active first, then inactive
-    const sortedSessions = React.useMemo(() => {
+    const sortedSessions = useMemo(() => {
         if (!data) return [];
         return [...data].sort((a, b) => {
             // Active sessions first (true comes before false)
@@ -96,18 +96,13 @@ export function JoinSession() {
                         onChange={onSessionSelected}
                         style={{ width: '100%' }}
                         size="large"
-                    >
-                        {sortedSessions.map((session: SessionDto, i: number) => {
-                            const displayName = session.active 
-                                ? session.name 
-                                : `${session.name} ${t("session.inactive") || "(Inactive)"}`;
-                            return (
-                                <Select.Option key={session.id} value={i}>
-                                    {displayName}
-                                </Select.Option>
-                            );
-                        })}
-                    </Select>
+                        options={sortedSessions.map((session: SessionDto, i: number) => ({
+                            value: i,
+                            label: session.active
+                                ? session.name
+                                : `${session.name} ${t("session.inactive") || "(Inactive)"}`,
+                        }))}
+                    />
                 </Form.Item>
                 <Form.Item style={{ marginBottom: 0 }}>
                     {selected && !selected.active && (
@@ -161,7 +156,7 @@ export function SessionSelector() {
     const [sessionName, setSessionName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
 
-    function onNameChanged(e: React.ChangeEvent<HTMLInputElement>) {
+    function onNameChanged(e: ChangeEvent<HTMLInputElement>) {
         setSessionName(e.target.value);
     }
 
@@ -232,7 +227,7 @@ export function StartScreen() {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (session) {
             void navigate(`/${session.id}`);
         }

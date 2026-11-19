@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
 import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
 import { useTranslation } from "react-i18next";
@@ -49,7 +49,7 @@ export function EventSettingsSection() {
     const configs = data ?? [];
     
     // Show error message if loading fails
-    React.useEffect(() => {
+    useEffect(() => {
         if (error && sessionKey) {
             message.error(t("settings.loadFailed") || "Failed to load event configurations");
         }
@@ -170,7 +170,7 @@ export function EventSettingsSection() {
 
                                 return (
                                     <div key={event_type} style={{ marginBottom: "32px" }}>
-                                        <Space direction="vertical" style={{ width: "100%" }}>
+                                        <Space orientation="vertical" style={{ width: "100%" }}>
                                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                 <Text strong style={{ fontSize: '17px' }}>{displayName}</Text>
                                                 <Switch
@@ -206,7 +206,7 @@ export function EventSettingsSection() {
                             <Divider />
 
                             {readOnly ? (
-                                <Alert type="info" showIcon message={t("settings.onlyCreatorManages")} />
+                                <Alert type="info" showIcon title={t("settings.onlyCreatorManages")} />
                             ) : (
                             <Button
                                 type="primary"
@@ -230,9 +230,9 @@ export function EventSettingsSection() {
                     )}
                 </Card>
             ) : (
-                <Card className="settings-card" bodyStyle={{ padding: '24px' }}>
+                <Card className="settings-card" styles={{ body: { padding: '24px' } }}>
                     <Alert
-                        message={t("settings.noSession") || "No active session"}
+                        title={t("settings.noSession") || "No active session"}
                         type="warning"
                         showIcon
                         style={{ borderRadius: '12px' }}

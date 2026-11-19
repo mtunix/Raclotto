@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Card,
@@ -92,7 +92,7 @@ export function LevelUpPictureModal({
         <div style={{ textAlign: "center", width: "100%" }}>
           <div style={{ marginBottom: "24px", fontSize: "48px" }}>✨🎨✨</div>
           <Spin
-            tip={
+            description={
               t("image.generatingProfilePicture") ||
               "Generating your new profile picture..."
             }
@@ -177,7 +177,7 @@ export function LevelUpPictureModal({
           <div style={{ textAlign: "center" }}>
             <Card
               className={styles.gradientCard}
-              bodyStyle={{ padding: "28px" }}
+              styles={{ body: { padding: "28px" } }}
             >
               <Title level={2} className={styles.whiteTitle}>
                 {t("image.yourNewProfilePicture") || "Your New Profile Picture"}

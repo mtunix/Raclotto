@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { message } from "antd";
 import { pictureHistory } from "../lib/api/__fixtures__/backendResponses";

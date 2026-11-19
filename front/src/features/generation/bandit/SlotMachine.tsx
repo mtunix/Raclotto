@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Col, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { columnSpan } from "./reelSpin";
@@ -32,13 +31,15 @@ export function SlotMachine({ columns, canSpin, onSpin }: SlotMachineProps) {
                 position: "relative",
                 overflow: "hidden",
             }}
-            bodyStyle={{
-                padding: "40px",
-                minHeight: "400px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
+            styles={{
+                body: {
+                    padding: "40px",
+                    minHeight: "400px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                },
             }}
             onClick={canSpin ? onSpin : undefined}
             onMouseEnter={(e) => {

@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Card, Col, Row, Space, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -26,7 +25,7 @@ export function ProfileHeader({ profile, userId, isOwnProfile, email }: ProfileH
     <Card style={{ marginBottom: "24px" }}>
       <Row gutter={[24, 24]} align="middle">
         <Col xs={24} sm={12} md="auto" style={{ width: "100%" }}>
-          <Space direction="vertical" align="center" size="middle" style={{ width: "100%" }}>
+          <Space orientation="vertical" align="center" size="middle" style={{ width: "100%" }}>
             <div style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
               <div style={{ maxWidth: "180px", width: "100%", aspectRatio: "1" }}>
                 <ProfilePictureManager

@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Tabs } from "antd";
 import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";

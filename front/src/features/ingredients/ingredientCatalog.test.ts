@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import {
@@ -49,8 +49,8 @@ const fetches = (path: string, sessionKey: string) =>
  * catalog's invalidation reaches; each test uses a session key of its own.
  */
 async function renderCatalog(sessionKey: string) {
-  const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+  const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
   const { result } = renderHook(
     () => ({
       ingredients: useListIngredients({ session_key: sessionKey }),

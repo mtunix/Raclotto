@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import {
@@ -28,7 +28,7 @@ afterEach(() => {
   setTransport(previous);
 });
 
-function freshCache({ children }: { children: React.ReactNode }) {
+function freshCache({ children }: { children: ReactNode }) {
   return <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>{children}</SWRConfig>;
 }
 

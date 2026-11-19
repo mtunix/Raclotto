@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ComponentProps } from 'react';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { message } from 'antd';
 import { create } from 'zustand';
@@ -10,7 +10,7 @@ import { setTransport, type Transport } from '../../../lib/api/transport';
 import { renderRoute } from '../../../testUtils';
 import { IngredientModal } from './IngredientModal';
 
-type ModalProps = React.ComponentProps<typeof IngredientModal>;
+type ModalProps = ComponentProps<typeof IngredientModal>;
 
 const [, pork, aioli] = ingredientsForUser;
 

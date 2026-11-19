@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Avatar, Button, Card, Col, Empty, Flex, Rate, Row, Statistic, Table, Tag, Typography } from "antd";
 import { ArrowLeftOutlined, FireOutlined, FrownOutlined, StarOutlined, TrophyOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -28,10 +28,10 @@ function UserBadge({ user }: { user: ParticipantRecapDto["user"] }) {
 }
 
 interface HighlightProps {
-    icon: React.ReactNode;
+    icon: ReactNode;
     title: string;
     pan: PanDto;
-    extra?: React.ReactNode;
+    extra?: ReactNode;
 }
 
 function PanHighlight({ icon, title, pan, extra }: HighlightProps) {

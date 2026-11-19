@@ -1,4 +1,3 @@
-import React from "react";
 import { Row, Col, Card, Checkbox, Button } from "antd";
 import { IngredientCountControl } from "./IngredientCountControl";
 import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
@@ -28,7 +27,7 @@ interface LegacyViewProps {
   onSauceChange: (value: number) => void;
 }
 
-export const LegacyView: React.FC<LegacyViewProps> = ({
+export function LegacyView({
   t,
   numFill,
   numSauce,
@@ -46,7 +45,7 @@ export const LegacyView: React.FC<LegacyViewProps> = ({
   setRollPreparationType,
   rollCheese,
   setRollCheese,
-}) => {
+}: LegacyViewProps) {
   const sessionKey = useAppStore((state) => state.session?.key) ?? "";
   const { data: counts } = useGetAvailableCounts(
     { session_key: sessionKey },
@@ -123,4 +122,4 @@ export const LegacyView: React.FC<LegacyViewProps> = ({
       </Row>
     </div>
   );
-};
+}

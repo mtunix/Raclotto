@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Alert, Button, Card, Form, Input, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { changePassword } from "../../../api/generated/endpoints/auth/auth";
@@ -42,7 +42,7 @@ export function ChangePasswordSection() {
             style={{ marginTop: 24 }}
         >
             {error && (
-                <Alert message={error} type="error" showIcon closable onClose={() => setError(null)} style={{ marginBottom: 16 }} />
+                <Alert title={error} type="error" showIcon closable={{ onClose: () => setError(null) }} style={{ marginBottom: 16 }} />
             )}
             <Form form={form} layout="vertical" onFinish={onFinish} disabled={saving}>
                 <Form.Item

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
 

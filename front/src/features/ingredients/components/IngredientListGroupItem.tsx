@@ -1,4 +1,3 @@
-import React from "react";
 import {List, Button} from "antd";
 import {EditOutlined} from "@ant-design/icons";
 import {IngredientType} from "../../../api/generated/model";

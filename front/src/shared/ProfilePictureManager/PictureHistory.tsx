@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode, CSSProperties } from "react";
 import { Avatar, Button, Collapse, Spin } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ProfilePictureDto } from "../../api/generated/model";
@@ -23,8 +23,8 @@ interface PictureHistoryProps {
   /** The picture being made the candidate; every choice waits for it. */
   choosing?: number | null;
   /** Shown instead of the list when there are no pictures. */
-  whenEmpty?: React.ReactNode;
-  style?: React.CSSProperties;
+  whenEmpty?: ReactNode;
+  style?: CSSProperties;
 }
 
 /** A user's pictures, newest first, in a collapsed panel. */

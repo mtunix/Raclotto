@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Slider, Typography, Card } from 'antd';
 import styles from './GenerateView/GenerateView.module.css';
 
@@ -80,7 +80,7 @@ export function CheeseSlider({ cheeseLevel }: CheeseSliderProps) {
     return (
         <Card
             className={styles.card}
-            bodyStyle={{ padding: '24px' }}
+            styles={{ body: { padding: '24px' } }}
         >
             <div className={styles.flexColumn}>
                 <Text strong className={styles.subtitle}>

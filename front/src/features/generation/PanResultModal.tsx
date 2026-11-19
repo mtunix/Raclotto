@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Card,
@@ -30,14 +30,14 @@ interface PanResultModalProps {
   hasLeveledUp?: boolean;
 }
 
-export const PanResultModal: React.FC<PanResultModalProps> = ({
+export function PanResultModal({
   open,
   pan,
   rollCheese,
   onClose,
   onRating,
   hasLeveledUp = false,
-}) => {
+}: PanResultModalProps) {
   const { t } = useTranslation();
   const [visibleIngredients, setVisibleIngredients] = useState<Set<number>>(
     () => new Set(),
@@ -109,7 +109,7 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
         }}
       >
         <div>
-          <Card className={styles.gradientCard} bodyStyle={{ padding: "28px" }}>
+          <Card className={styles.gradientCard} styles={{ body: { padding: "28px" } }}>
             <Row align="middle" justify="space-between" gutter={[16, 16]}>
               <Col flex="auto" xs={24} sm={24} md={16}>
                 <Title level={2} className={styles.whiteTitle}>
@@ -219,4 +219,4 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
       </Modal>
     </>
   );
-};
+}

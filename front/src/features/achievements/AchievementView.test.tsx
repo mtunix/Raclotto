@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
 import type { AchievementStatusDto } from '../../api/generated/model';

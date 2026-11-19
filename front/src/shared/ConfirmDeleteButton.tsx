@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { Button } from "antd";
 import { VectorGraphics } from "../lib/vectorGraphics";
 
@@ -6,9 +6,9 @@ interface ConfirmDeleteButtonProps {
     onConfirm: () => void;
     danger?: boolean;
     className?: string;
-    style?: React.CSSProperties;
+    style?: CSSProperties;
     confirmationTimeout?: number; // in milliseconds, default 5000
-    icon?: string | React.ReactNode; // Icon to display, defaults to REMOVE
+    icon?: string | ReactNode; // Icon to display, defaults to REMOVE
 }
 
 export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from "react";
+import { useCallback, useEffect } from "react";
 import {Row, Col, Card} from "antd";
 import {onErrorRetry} from "../../lib/api/swrHooks";
 import {useListIngredients} from "../../api/generated/endpoints/ingredients/ingredients";

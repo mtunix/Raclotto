@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Col, Empty, Row, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { AchievementDto } from "../../../api/generated/model";

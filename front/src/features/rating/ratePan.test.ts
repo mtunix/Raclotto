@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { useListAchievements } from "../../api/generated/endpoints/achievements/achievements";
@@ -23,8 +23,8 @@ const pan: PanDto = { ...panPage.items[0], user_id: author };
 let fake: FakeTransport;
 let previous: Transport;
 
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+const wrapper = ({ children }: { children: ReactNode }) =>
+    createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
 
 beforeEach(() => {
     fake = new FakeTransport()

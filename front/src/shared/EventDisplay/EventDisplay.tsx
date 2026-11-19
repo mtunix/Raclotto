@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "antd";
 import { CloseOutlined, BellOutlined } from "@ant-design/icons";
 import type { EventDto } from "../../api/generated/model";

@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Form, Input, Alert, Button, ColorPicker, Divider, Select, Switch, Typography } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -46,7 +45,7 @@ export function UserSettingsSection() {
             ) : (
                 <Card 
                     className="settings-card"
-                    bodyStyle={{ padding: '24px' }}
+                    styles={{ body: { padding: '24px' } }}
                 >
                     <Form.Item 
                         label={<span className="settings-section-title">{t("settings.iAm")}</span>} 
@@ -73,7 +72,7 @@ export function UserSettingsSection() {
                     </div>
 
                     <Alert
-                        message={t("settings.borderCustomizationInfo") || "Customize your pan borders with colors, styles, and textures."}
+                        title={t("settings.borderCustomizationInfo") || "Customize your pan borders with colors, styles, and textures."}
                         type="info"
                         showIcon
                         className="settings-alert-spacing"
@@ -124,12 +123,13 @@ export function UserSettingsSection() {
                                 disabled={saving || !styleUnlocked || !!profile.border_texture}
                                 size="large"
                                 style={{ width: '100%' }}
-                            >
-                                <Select.Option value="solid">{t("borderStyle.solid") || "Solid"}</Select.Option>
-                                <Select.Option value="dashed">{t("borderStyle.dashed") || "Dashed"}</Select.Option>
-                                <Select.Option value="dotted">{t("borderStyle.dotted") || "Dotted"}</Select.Option>
-                                <Select.Option value="double">{t("borderStyle.double") || "Double"}</Select.Option>
-                            </Select>
+                                options={[
+                                    { value: "solid", label: t("borderStyle.solid") || "Solid" },
+                                    { value: "dashed", label: t("borderStyle.dashed") || "Dashed" },
+                                    { value: "dotted", label: t("borderStyle.dotted") || "Dotted" },
+                                    { value: "double", label: t("borderStyle.double") || "Double" },
+                                ]}
+                            />
                         </div>
                         <div style={{ marginTop: '8px' }}>
                             {profile.border_texture ? (
@@ -168,15 +168,16 @@ export function UserSettingsSection() {
                             style={{ width: '100%' }}
                             allowClear
                             placeholder={t("settings.noTexture") || "No texture"}
-                        >
-                            <Select.Option value={null}>{t("settings.noTexture") || "No texture"}</Select.Option>
-                            <Select.Option value="cheese">{t("texture.cheese") || "Cheese"}</Select.Option>
-                            <Select.Option value="bread">{t("texture.bread") || "Bread"}</Select.Option>
-                            <Select.Option value="sauce-01">{t("texture.sauce01") || "Sauce 1"}</Select.Option>
-                            <Select.Option value="sauce-02">{t("texture.sauce02") || "Sauce 2"}</Select.Option>
-                            <Select.Option value="herbs-01">{t("texture.herbs01") || "Herbs 1"}</Select.Option>
-                            <Select.Option value="herbs-02">{t("texture.herbs02") || "Herbs 2"}</Select.Option>
-                        </Select>
+                            options={[
+                                { value: "", label: t("settings.noTexture") || "No texture" },
+                                { value: "cheese", label: t("texture.cheese") || "Cheese" },
+                                { value: "bread", label: t("texture.bread") || "Bread" },
+                                { value: "sauce-01", label: t("texture.sauce01") || "Sauce 1" },
+                                { value: "sauce-02", label: t("texture.sauce02") || "Sauce 2" },
+                                { value: "herbs-01", label: t("texture.herbs01") || "Herbs 1" },
+                                { value: "herbs-02", label: t("texture.herbs02") || "Herbs 2" },
+                            ]}
+                        />
                         <div style={{ marginTop: '8px' }}>
                             {textureUnlocked ? (
                                 <Text type="secondary" style={{ fontSize: '14px' }}>
@@ -207,7 +208,7 @@ export function UserSettingsSection() {
                                 checked={profile.glow_effect}
                                 onChange={(checked) => change("glow_effect", checked)}
                                 disabled={saving || !glowUnlocked}
-                                size="default"
+                                size="medium"
                             />
                         </div>
                         <div style={{ marginTop: '8px' }}>
@@ -235,10 +236,11 @@ export function UserSettingsSection() {
                             disabled={saving}
                             size="large"
                             style={{ width: '100%' }}
-                        >
-                            <Select.Option value="en">English</Select.Option>
-                            <Select.Option value="de">Deutsch</Select.Option>
-                        </Select>
+                            options={[
+                                { value: "en", label: "English" },
+                                { value: "de", label: "Deutsch" },
+                            ]}
+                        />
                         <div className="settings-help-text">
                             <Text type="secondary" className="settings-help-text-small">
                                 {t("settings.languageDescription") || "Select your preferred language"}

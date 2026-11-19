@@ -1,4 +1,3 @@
-import React from "react";
 import { Modal, Typography } from "antd";
 
 const { Text } = Typography;
@@ -11,13 +10,13 @@ interface HistoryCloneConfirmModalProps {
     message: string;
 }
 
-export const HistoryCloneConfirmModal: React.FC<HistoryCloneConfirmModalProps> = ({
+export function HistoryCloneConfirmModal({
     visible,
     onConfirm,
     onCancel,
     title,
     message,
-}) => {
+}: HistoryCloneConfirmModalProps) {
     return (
         <Modal
             open={visible}
@@ -28,4 +27,4 @@ export const HistoryCloneConfirmModal: React.FC<HistoryCloneConfirmModalProps> =
             <Text>{message}</Text>
         </Modal>
     );
-};
+}

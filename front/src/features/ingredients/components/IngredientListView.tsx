@@ -1,4 +1,4 @@
-import React, {useCallback} from "react";
+import { useCallback } from "react";
 import {Collapse, List, Space, Empty, Badge, Spin} from "antd";
 import {IngredientType} from "../../../api/generated/model";
 import type {IngredientForUserDto} from "../../../api/generated/model";

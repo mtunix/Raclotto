@@ -1,4 +1,3 @@
-import React from 'react';
 import {Button, Checkbox, Popover, Space, Tag, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
 import type {ListPansIngredientCountItem} from "../../../api/generated/model";
@@ -42,13 +41,13 @@ export function FilterControls({
                 trigger="click"
                 content={
                     <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
-                        <Space direction="vertical" style={{width: '100%'}}>
+                        <Space orientation="vertical" style={{width: '100%'}}>
                             <Checkbox.Group
                                 value={selectedUsers}
                                 onChange={(values) => onUsersChange(values)}
                                 style={{width: '100%'}}
                             >
-                                <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                <Space orientation="vertical" size="small" style={{width: '100%'}}>
                                     {uniqueUsers.map(user => (
                                         <Checkbox key={user.id} value={user.id}>
                                             {user.name}
@@ -79,13 +78,13 @@ export function FilterControls({
                 trigger="click"
                 content={
                     <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
-                        <Space direction="vertical" style={{width: '100%'}}>
+                        <Space orientation="vertical" style={{width: '100%'}}>
                             <Checkbox.Group
                                 value={selectedRatings}
                                 onChange={(values) => onRatingsChange(values)}
                                 style={{width: '100%'}}
                             >
-                                <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                <Space orientation="vertical" size="small" style={{width: '100%'}}>
                                     {uniqueRatings.map(rating => (
                                         <Checkbox key={rating} value={rating}>
                                             {rating} {t("history.stars") || "stars"}
@@ -116,13 +115,13 @@ export function FilterControls({
                 trigger="click"
                 content={
                     <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
-                        <Space direction="vertical" style={{width: '100%'}}>
+                        <Space orientation="vertical" style={{width: '100%'}}>
                             <Checkbox.Group
                                 value={selectedIngredientCounts}
                                 onChange={(values) => onIngredientCountsChange(values)}
                                 style={{width: '100%'}}
                             >
-                                <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                <Space orientation="vertical" size="small" style={{width: '100%'}}>
                                     {uniqueIngredientRanges.map(range => (
                                         <Checkbox key={range} value={range}>
                                             {range} {t("history.ingredients") || "ingredients"}

@@ -1,5 +1,4 @@
-import React from "react";
-import { Card, Typography, InputNumber, Button, Form, Input } from "antd";
+import { Card, Typography, InputNumber, Button, Form, Space } from "antd";
 import styles from "./GenerateView/GenerateView.module.css";
 
 const { Text } = Typography;
@@ -56,7 +55,7 @@ export function IngredientCountControl({
               Available: {availableCount} / {totalCount}
             </Text>
           </div>
-          <Input.Group compact style={{ display: "flex", gap: "8px" }}>
+          <Space.Compact style={{ display: "flex", gap: "8px" }}>
             <Button
               onClick={onDecrement}
               disabled={count <= 0}
@@ -108,7 +107,7 @@ export function IngredientCountControl({
             >
               +
             </Button>
-          </Input.Group>
+          </Space.Compact>
         </div>
       </Form.Item>
     </Card>

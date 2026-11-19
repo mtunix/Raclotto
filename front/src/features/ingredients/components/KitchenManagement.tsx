@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from "react";
+import { useState, useCallback, useEffect } from "react";
 import {Segmented, Card, Row, Col, message, List, Button, Input, Space, Empty, Spin, Typography} from "antd";
 import {useTranslation} from "react-i18next";
 import axios from "axios";
@@ -44,7 +44,7 @@ export function KitchenManagement() {
     const { data: prepTypes = [], isLoading: loadingPrepTypes } =
         useListPreparationTypes({session_key: sessionKey}, {swr});
     
-    React.useEffect(() => {
+    useEffect(() => {
         if (ingredientsError && sessionKey) {
             message.error(t("ingredient.loadFailed") || "Failed to load ingredients");
         }
@@ -231,8 +231,8 @@ export function KitchenManagement() {
             <Row gutter={[0, 24]}>
                 <Col span={24}>
                     <Card 
-                        bordered={false}
-                        bodyStyle={{ padding: '24px' }}
+                        variant="borderless"
+                        styles={{ body: { padding: '24px' } }}
                     >
                         <div style={{ 
                             display: 'flex', 

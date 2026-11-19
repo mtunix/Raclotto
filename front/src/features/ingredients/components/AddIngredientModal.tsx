@@ -1,4 +1,3 @@
-import React from "react";
 import { IngredientModal } from "./IngredientModal";
 import type { IngredientType } from "../../../api/generated/model";
 

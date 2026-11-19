@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Col, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
@@ -62,14 +61,16 @@ function ReelCard({ reel }: { reel: Reel }) {
                 transition: "all 0.3s ease",
                 backgroundColor: look.cardBackground,
             }}
-            bodyStyle={{
-                padding: "16px",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "250px",
+            styles={{
+                body: {
+                    padding: "16px",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "250px",
+                },
             }}
         >
             <div style={{

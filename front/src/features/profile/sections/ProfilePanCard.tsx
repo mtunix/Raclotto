@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, Space, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
@@ -15,9 +14,9 @@ export function ProfilePanCard({ pan }: { pan: PanDto }) {
 
   const card = (
     <Card style={style.card} className={style.cardClassName} styles={{ body: { padding: "12px" } }}>
-      <Space direction="vertical" size="small" style={{ width: "100%" }}>
+      <Space orientation="vertical" size="small" style={{ width: "100%" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <Space direction="vertical" size={0} style={{ flex: 1 }}>
+          <Space orientation="vertical" size={0} style={{ flex: 1 }}>
             <Title level={4} style={{ margin: 0, fontSize: "1rem", marginBottom: "4px" }}>
               {displayName(pan.name, t)}
             </Title>

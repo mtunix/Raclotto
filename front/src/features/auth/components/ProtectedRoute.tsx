@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import { useEffect, type ReactElement } from "react";
 import { Navigate } from "react-router";
 import { useAuthStore } from "../../../AuthSlice";
 
 interface ProtectedRouteProps {
-  children: React.ReactElement;
+  children: ReactElement;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {

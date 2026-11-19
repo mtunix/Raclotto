@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Avatar, Card, List, Space, Switch, Tag, Typography, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { updateUser, useListUsers } from "../../../api/generated/endpoints/users/users";

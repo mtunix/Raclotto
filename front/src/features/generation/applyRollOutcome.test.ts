@@ -1,4 +1,4 @@
-import React from "react";
+import { type ReactNode, createElement } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { useGetMe } from "../../api/generated/endpoints/auth/auth";
@@ -95,8 +95,8 @@ it("does not notify when no XP was gained", () => {
 
 it("refetches every cached pan list", async () => {
     fake.on("GET", "/pans", panPage);
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-        React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+    const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
     const session = renderHook(() => useListPans({ session_key: "s1", limit: 1, offset: 0 }), { wrapper });
     const author = renderHook(() => useListPans({ user_id: [user.id], limit: 1, offset: 0 }), { wrapper });
     await waitFor(() => expect(session.result.current.data).toEqual(panPage));
@@ -119,8 +119,8 @@ it("refetches every cached pan list", async () => {
 it("refetches the signed-in user and their profile", async () => {
     fake.on("GET", "/auth/me", me);
     fake.on("GET", `/users/${user.id}`, userProfile);
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-        React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+    const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
     const signedIn = renderHook(() => useGetMe(), { wrapper });
     const profile = renderHook(() => useGetUserProfile(user.id), { wrapper });
     await waitFor(() => expect(signedIn.result.current.data).toEqual(me));

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Typography } from 'antd';
 import styles from '../GenerateView/GenerateView.module.css';
 import './PreparationTypeCard.css';
