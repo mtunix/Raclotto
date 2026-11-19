@@ -11,7 +11,8 @@ import {useNavigate, useParams} from "react-router";
 import {getTextureBorderImage} from "../../../lib/borderTextures";
 import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
 import { PanResultModal } from "../../generation/PanResultModal";
-import { applyRollOutcome, LevelUp } from "../../generation/applyRollOutcome";
+import { LevelUpPictureModal } from "../../generation/LevelUpPictureModal";
+import { useRollSession } from "../../generation/rollSession";
 import { usePanPages } from "../usePanPages";
 import { ratePan } from "../../rating/ratePan";
 import {SortingControls} from "./SortingControls";
@@ -33,8 +34,8 @@ export function HistoryView() {
     let [cloningPanId, setCloningPanId] = useState<number | null>(null);
     const [cloneConfirmVisible, setCloneConfirmVisible] = useState(false);
     const [selectedPan, setSelectedPan] = useState<PanDto | null>(null);
-    const [clonedPan, setClonedPan] = useState<PanDto | null>(null);
-    const [cloneLevelUp, setCloneLevelUp] = useState<LevelUp>({ leveledUp: false });
+    const cloneRoll = useRollSession(sessionKey);
+    const clone = cloneRoll.state.phase === "result" ? cloneRoll.state : null;
     const [sortField, setSortField] = useState<'time' | 'rating' | 'counts'>('time');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -64,11 +65,13 @@ export function HistoryView() {
     function onClonePan(pan: PanDto) {
         if (!sessionKey) return;
         setCloningPanId(pan.id);
-        createPan({ name: pan.name, ingredients: pan.ingredients.map((ing) => ing.id) }, { session_key: sessionKey })
-            .then((outcome) => {
+        cloneRoll
+            .roll(
+                () => createPan({ name: pan.name, ingredients: pan.ingredients.map((ing) => ing.id) }, { session_key: sessionKey }),
+                { animated: false },
+            )
+            .then(() => {
                 message.success(t("history.panCloned") || "Pan cloned successfully");
-                setCloneLevelUp(applyRollOutcome(outcome, sessionKey));
-                setClonedPan(outcome.pan);
             })
             .catch((error) => {
                 console.error("Failed to clone pan:", error);
@@ -99,8 +102,7 @@ export function HistoryView() {
     }
 
     function handleCloneResultClose() {
-        setClonedPan(null);
-        setCloneLevelUp({ leveledUp: false });
+        cloneRoll.close();
         setSelectedPan(null);
     }
 
@@ -372,17 +374,23 @@ export function HistoryView() {
             />
 
             <PanResultModal
-                open={clonedPan !== null}
-                pan={clonedPan}
-                isBanditResult={false}
-                rollCheese={clonedPan?.rolled_cheese ?? false}
+                open={clone !== null}
+                pan={clone?.pan ?? null}
+                rollCheese={clone?.pan.rolled_cheese ?? false}
                 onClose={handleCloneResultClose}
                 onRating={(rating) => {
-                    if (!clonedPan) return;
-                    onRating(clonedPan.id, rating);
+                    cloneRoll.rate(rating)
+                        .then(replacePan)
+                        .catch((error) => {
+                            console.error("Failed to submit rating:", error);
+                        });
                 }}
-                hasLeveledUp={cloneLevelUp.leveledUp}
-                newLevelId={cloneLevelUp.newLevelId}
+                hasLeveledUp={clone?.leveledUp}
+            />
+            <LevelUpPictureModal
+                open={cloneRoll.state.phase === "picture"}
+                levelId={cloneRoll.state.phase === "picture" ? cloneRoll.state.levelUpId : undefined}
+                onClose={cloneRoll.pictureClosed}
             />
             {pans.length > 0 && (
                 <>

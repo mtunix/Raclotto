@@ -8,8 +8,8 @@ import {IngredientDisplay} from "../../shared/IngredientDisplay/IngredientDispla
 import {displayName} from "../../shared/displayName";
 import {rollBanditPan} from "../../api/generated/endpoints/pans/pans";
 import type {PanDto} from "../../api/generated/model";
-import {applyRollOutcome} from "./applyRollOutcome";
 import {LevelUpPictureModal} from "./LevelUpPictureModal";
+import {useRollSession} from "./rollSession";
 import {useGetAvailableCounts} from "../../api/generated/endpoints/ingredients/ingredients";
 import {countOr} from "./countOr";
 
@@ -40,8 +40,6 @@ interface BanditViewProps {
     onRollPreparationTypeChange: (checked: boolean) => void;
     rollCheese: boolean;
     onRollCheeseChange: (checked: boolean) => void;
-    onGenerate: (pan: PanDto) => Promise<void>;
-    onRating?: (rating: number, panId: number) => void;
 }
 
 interface ColumnState {
@@ -63,21 +61,19 @@ export function BanditView(props: BanditViewProps) {
         onRollPreparationTypeChange,
         rollCheese,
         onRollCheeseChange,
-        onGenerate,
     } = props;
 
     const { data: counts } = useGetAvailableCounts({session_key: sessionKey}, {swr: {enabled: !!sessionKey}});
 
     const [numColumns, setNumColumns] = useState(3);
-    const [isSpinning, setIsSpinning] = useState(false);
+    const panRoll = useRollSession(sessionKey);
+    const {state} = panRoll;
+    const isSpinning = state.phase === "rolling" || state.phase === "revealing";
+    const result = state.phase === "result" ? state : null;
+    const showBanditModal = isSpinning || result !== null;
     const [columnStates, setColumnStates] = useState<ColumnState[]>([]);
-    const [apiResultPan, setApiResultPan] = useState<PanDto | null>(null);
     const [lockedColumns, setLockedColumns] = useState<Set<number>>(new Set());
-    const [showBanditModal, setShowBanditModal] = useState(false);
-    const [showResult, setShowResult] = useState(false);
     const [currentRating, setCurrentRating] = useState<number>(0);
-    const [pendingLevelUpId, setPendingLevelUpId] = useState<number | undefined>(undefined);
-    const [showLevelUpPicture, setShowLevelUpPicture] = useState(false);
     const animationRefs = useRef<number[]>([]);
     const stopTimeouts = useRef<NodeJS.Timeout[]>([]);
     const stoppedColumnsRef = useRef<Set<number>>(new Set());
@@ -128,7 +124,6 @@ export function BanditView(props: BanditViewProps) {
             });
         }
         setColumnStates(newColumnStates);
-        setApiResultPan(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps -- allAvailableItems is a new array every render; reshuffle only when the column or item count changes
     }, [numColumns, allAvailableItems.length]);
 
@@ -143,11 +138,6 @@ export function BanditView(props: BanditViewProps) {
     async function handleSpin() {
         if (isSpinning || allAvailableItems.length === 0) return;
 
-        // Open modal first
-        setShowBanditModal(true);
-        setIsSpinning(true);
-        setShowResult(false);
-        setApiResultPan(null);
         setCurrentRating(0);
         stoppedColumnsRef.current.clear();
         setLockedColumns(new Set());
@@ -158,21 +148,23 @@ export function BanditView(props: BanditViewProps) {
         animationRefs.current.forEach(ref => cancelAnimationFrame(ref));
         animationRefs.current = [];
 
+        let pan: PanDto;
         try {
-            // Call API first to get the result
-            const outcome = await rollBanditPan(
-                {total_columns: numColumns, roll_prep_type: rollPreparationType, roll_cheese: rollCheese},
-                {session_key: sessionKey},
+            // The modal opens with the roll; the columns spin once the pan is known.
+            pan = await panRoll.roll(
+                () => rollBanditPan(
+                    {total_columns: numColumns, roll_prep_type: rollPreparationType, roll_cheese: rollCheese},
+                    {session_key: sessionKey},
+                ),
+                {animated: true},
             );
-            const pan = outcome.pan;
-            setApiResultPan(pan);
+        } catch (error) {
+            console.error("Failed to generate bandit pan:", error);
+            message.error(t("generate.banditError") || "Failed to spin the bandit. Please try again.");
+            return;
+        }
 
-            // Remember a level-up so closing the result offers the new profile picture
-            const levelUp = applyRollOutcome(outcome, sessionKey);
-            if (levelUp.leveledUp) {
-                setPendingLevelUpId(levelUp.newLevelId);
-            }
-
+        try {
             // Extract ingredients from the pan result
             const resultIngredients = pan.ingredients || [];
             
@@ -299,13 +291,8 @@ export function BanditView(props: BanditViewProps) {
                     lastBatchUpdate = now;
                 }
 
-                if (allStopped && stoppedColumnsRef.current.size === numColumns && pan) {
-                    // All columns stopped - show result
-                    setIsSpinning(false);
-                    setShowResult(true);
-                    onGenerate(pan).catch(err => {
-                        console.error("Failed to process pan:", err);
-                    });
+                if (allStopped && stoppedColumnsRef.current.size === numColumns) {
+                    panRoll.animationDone();
                 } else {
                     const frameId = requestAnimationFrame(animate);
                     // Store frame ID for cleanup (use first slot)
@@ -315,10 +302,9 @@ export function BanditView(props: BanditViewProps) {
 
             animate();
         } catch (error) {
-            console.error("Failed to generate bandit pan:", error);
-            message.error(t("generate.banditError") || "Failed to spin the bandit. Please try again.");
-            setIsSpinning(false);
-            setShowBanditModal(false);
+            // The pan is rolled; show it without the spin.
+            console.error("Failed to spin the bandit's columns:", error);
+            panRoll.animationDone();
         }
     }
 
@@ -846,13 +832,7 @@ export function BanditView(props: BanditViewProps) {
                 open={showBanditModal}
                 onCancel={() => {
                     if (!isSpinning) {
-                        setShowBanditModal(false);
-                        setShowResult(false);
-                        setApiResultPan(null);
-                        setCurrentRating(0);
-                        if (pendingLevelUpId) {
-                            setShowLevelUpPicture(true);
-                        }
+                        panRoll.close();
                     }
                 }}
                 footer={null}
@@ -863,7 +843,7 @@ export function BanditView(props: BanditViewProps) {
                 maskClosable={!isSpinning}
             >
                 <div style={{ padding: '20px 0' }}>
-                    {showResult && apiResultPan ? (
+                    {result ? (
                         <>
                             {/* Pan name and rating banner */}
                             <Card 
@@ -877,11 +857,11 @@ export function BanditView(props: BanditViewProps) {
                                 <Row align="middle" justify="space-between">
                                     <Col flex="auto">
                                         <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
-                                            {displayName(apiResultPan.name, t)}
+                                            {displayName(result.pan.name, t)}
                                         </Title>
-                                        {apiResultPan.preparation_type && (
+                                        {result.pan.preparation_type && (
                                             <Text style={{ color: 'white', opacity: 0.9, fontSize: '0.9rem', display: 'block', marginTop: '4px' }}>
-                                                {t("generate.preparationType") || "Preparation Type"}: {apiResultPan.preparation_type.name}
+                                                {t("generate.preparationType") || "Preparation Type"}: {result.pan.preparation_type.name}
                                             </Text>
                                         )}
                                     </Col>
@@ -899,9 +879,9 @@ export function BanditView(props: BanditViewProps) {
                                                 value={currentRating}
                                                 onChange={(value) => {
                                                     setCurrentRating(value);
-                                                    if (props.onRating) {
-                                                        props.onRating(value, apiResultPan.id);
-                                                    }
+                                                    panRoll.rate(value).catch((error) => {
+                                                        console.error("Failed to rate pan:", error);
+                                                    });
                                                 }}
                                                 style={{ fontSize: '1.2rem' }}
                                             />
@@ -921,9 +901,6 @@ export function BanditView(props: BanditViewProps) {
                                         size="large"
                                         block 
                                         onClick={() => {
-                                            setShowResult(false);
-                                            setApiResultPan(null);
-                                            setCurrentRating(0);
                                             handleSpin();
                                         }}
                                         style={{ 
@@ -956,12 +933,9 @@ export function BanditView(props: BanditViewProps) {
             </Modal>
 
             <LevelUpPictureModal
-                open={showLevelUpPicture}
-                levelId={pendingLevelUpId}
-                onClose={() => {
-                    setShowLevelUpPicture(false);
-                    setPendingLevelUpId(undefined);
-                }}
+                open={state.phase === "picture"}
+                levelId={state.phase === "picture" ? state.levelUpId : undefined}
+                onClose={panRoll.pictureClosed}
             />
 
             <style>{`

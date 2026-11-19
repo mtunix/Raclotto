@@ -1,0 +1,84 @@
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { useAuthStore } from "../../AuthSlice";
+import {
+    availableCounts,
+    generatedPicture,
+    ingredientsForUser,
+    me,
+    rating,
+    rollOutcome,
+    session,
+} from "../../lib/api/__fixtures__/backendResponses";
+import { FakeTransport } from "../../lib/api/fakeTransport";
+import { setTransport, Transport } from "../../lib/api/transport";
+import { renderRoute } from "../../testUtils";
+import { BanditView } from "./BanditView";
+
+const { pan } = rollOutcome;
+
+let fake: FakeTransport;
+let previous: Transport;
+
+beforeEach(() => {
+    fake = new FakeTransport()
+        .on("GET", "/ingredients/available-counts", availableCounts)
+        .on("POST", "/pans/generate/bandit", rollOutcome)
+        .on("POST", "/ratings", rating)
+        .on("GET", `/pans/${pan.id}`, pan)
+        .on("POST", "/images/generate-profile-picture", generatedPicture)
+        .on("GET", "/auth/me", me);
+    previous = setTransport(fake);
+    useAuthStore.setState({ user: me });
+});
+
+afterEach(() => {
+    setTransport(previous);
+    jest.useRealTimers();
+});
+
+/** Spins two columns, the most the fixture's applicable ingredients allow, and lets them stop. */
+async function spin() {
+    renderRoute(
+        <BanditView
+            ingredients={ingredientsForUser}
+            sessionKey={session.key}
+            rollPreparationType={false}
+            onRollPreparationTypeChange={() => {}}
+            rollCheese={true}
+            onRollCheeseChange={() => {}}
+        />,
+    );
+    fireEvent.click(await screen.findByText("−"));
+    jest.useFakeTimers();
+    fireEvent.click(screen.getByText("generate.banditSpin"));
+    await act(async () => {
+        await jest.advanceTimersByTimeAsync(20000);
+    });
+    jest.useRealTimers();
+    return screen.findByRole("dialog");
+}
+
+it("rolls the pan for the columns, then shows it once they stop", async () => {
+    const dialog = await spin();
+
+    expect(fake.last("POST", "/pans/generate/bandit")).toMatchObject({
+        query: { session_key: session.key },
+        body: { total_columns: 2, roll_prep_type: false, roll_cheese: true },
+    });
+    expect(within(dialog).getByText(pan.name as string)).toBeInTheDocument();
+    expect(useAuthStore.getState().user?.experience_points).toBe(rollOutcome.reward.xp_after);
+});
+
+it("rates the result, and offers the level-up picture once it closes", async () => {
+    const dialog = await spin();
+
+    const fourthStar = within(dialog).getAllByRole("radio")[3];
+    fireEvent.click(fourthStar.querySelector(".ant-rate-star-second") as HTMLElement);
+    await waitFor(() => expect(fake.last("POST", "/ratings")?.body).toEqual({ pan_id: pan.id, rating: 4 }));
+    expect(fake.last("POST", "/images/generate-profile-picture")).toBeUndefined();
+
+    fireEvent.click(within(dialog.closest(".ant-modal") as HTMLElement).getByRole("button", { name: "Close" }));
+
+    await waitFor(() => expect(fake.last("POST", "/images/generate-profile-picture")?.body)
+        .toEqual({ level_id: rollOutcome.reward.level?.id }));
+});

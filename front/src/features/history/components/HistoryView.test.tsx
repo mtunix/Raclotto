@@ -3,7 +3,7 @@ import { RouteObject } from 'react-router';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
 import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/model';
-import { me, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
+import { generatedPicture, me, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport, RecordedRequest } from '../../../lib/api/fakeTransport';
 import { setTransport, Transport } from '../../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../../testUtils';
@@ -126,6 +126,26 @@ it('rolls a copy of a pan after asking, and applies the reward', async () => {
     expect(request?.body).toEqual({ name: newest.name, ingredients: newest.ingredients.map((i) => i.id) });
     await waitFor(() => expect(useAuthStore.getState().user?.experience_points).toBe(rollOutcome.reward.xp_after));
     expect(useAppStore.getState().xpNotification).toMatchObject({ visible: true, reward: rollOutcome.reward });
+});
+
+it("shows the copy, and offers the level-up picture once it closes", async () => {
+    fake.on('GET', '/pans', { ...panPage, has_more: false })
+        .on('POST', '/pans', rollOutcome)
+        .on('POST', '/images/generate-profile-picture', generatedPicture)
+        .on('GET', '/auth/me', me);
+    renderHistory();
+    const card = await screen.findByText(newest.name as string).then(() => cardOf(newest.name as string));
+    fireEvent.click(within(card).getByText('history.iWantThisToo'));
+    const confirm = await screen.findByRole('dialog');
+    await act(async () => {
+        fireEvent.click(within(confirm).getByText('OK'));
+    });
+
+    const result = await screen.findByText(/level.leveledUp/);
+    fireEvent.click(within(result.closest('.ant-modal') as HTMLElement).getByText('common.close'));
+
+    await waitFor(() => expect(fake.last('POST', '/images/generate-profile-picture')?.body)
+        .toEqual({ level_id: rollOutcome.reward.level?.id }));
 });
 
 it("opens the author's profile from their avatar", async () => {

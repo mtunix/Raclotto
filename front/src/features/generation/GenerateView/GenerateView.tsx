@@ -5,10 +5,9 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Spin, Tabs } from "antd";
+import { Tabs } from "antd";
 import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";
-import type { PanDto } from "../../../api/generated/model";
 import { useListIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientType } from "../../../api/generated/model";
@@ -16,8 +15,8 @@ import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../../AppSlice";
 import { useIngredientStore, getLocalStorageNumber } from "./ingredientStore";
 import { GenerationAnimation } from "../animations/GenerationAnimation";
-import { applyRollOutcome } from "../applyRollOutcome";
-import { ratePan } from "../../rating/ratePan";
+import { LevelUpPictureModal } from "../LevelUpPictureModal";
+import { useRollSession } from "../rollSession";
 // Import CSS module with type assertion
 import styles from "./GenerateView.module.css";
 import { PanResultModal } from "../PanResultModal";
@@ -26,7 +25,6 @@ import { getTotalIngredientTypeCount } from "./generateViewUtils";
 
 // Type assertion for CSS module classes
 const typedStyles = styles as {
-  loadingContainer: string;
   paddingVertical8: string;
   tabLabel: string;
   [key: string]: string;
@@ -52,7 +50,6 @@ export function GenerateView() {
 
   const [rollPreparationType, setRollPreparationType] = useState(false);
   const [rollCheese, setRollCheese] = useState(false);
-  const [isBanditResult, setIsBanditResult] = useState(false);
   const sessionKey = session?.key || "";
 
   // Use SWR hooks for data fetching
@@ -124,172 +121,82 @@ export function GenerateView() {
 
   // These functions are now defined above with the other handler functions
 
-  // State for generated pan and UI
-  const [generated, setGenerated] = useState<PanDto | null>(null);
-  const [waiting, setWaiting] = useState(false);
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [animationFading, setAnimationFading] = useState(false);
-  const [apiComplete, setApiComplete] = useState(false);
-  const [animationComplete, setAnimationComplete] = useState(false);
-  const [animationDuration, setAnimationDuration] = useState(3000); // Default duration
-  const [hasLeveledUp, setHasLeveledUp] = useState(false);
-  const [newLevelId, setNewLevelId] = useState<number | undefined>(undefined);
+  const panRoll = useRollSession(sessionKey);
+  const { state } = panRoll;
+  const result = state.phase === "result" ? state : null;
+  const rolling = state.phase === "rolling" || state.phase === "revealing";
+  const [animationDuration, setAnimationDuration] = useState(3000);
+  const animationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Refs for animation and API state
-  const animationStartTimeRef = useRef<number | null>(null);
-  const apiCompleteRef = useRef<boolean>(false);
-  const animationCompleteRef = useRef<boolean>(false);
-  const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // The animation stays up for a 250 ms fade-out once the result is shown.
+  const [fading, setFading] = useState(false);
+  const [previousPhase, setPreviousPhase] = useState(state.phase);
+  if (previousPhase !== state.phase) {
+    setPreviousPhase(state.phase);
+    setFading(state.phase === "result" && (previousPhase === "rolling" || previousPhase === "revealing"));
+  }
+  useEffect(() => {
+    if (!fading) return;
+    const fadeTimer = setTimeout(() => setFading(false), 250);
+    return () => clearTimeout(fadeTimer);
+  }, [fading]);
+
+  const { animationDone } = panRoll;
+  const startAnimationTimer = useCallback((duration: number) => {
+    if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+    animationTimerRef.current = setTimeout(animationDone, duration);
+  }, [animationDone]);
+  useEffect(() => () => {
+    if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+  }, []);
 
   // Get available ingredients for animation
   const availableIngredients = ingredients.filter(
     (i) => i.available && i.applicable !== false,
   );
 
-  function closeModal() {
-    setShowResultModal(false);
-    setShowAnimation(false);
-    setGenerated(null);
-    setIsBanditResult(false);
-    apiCompleteRef.current = false;
-    animationCompleteRef.current = false;
-    setApiComplete(false);
-    setAnimationComplete(false);
-    setAnimationFading(false);
-    animationStartTimeRef.current = null;
-    setHasLeveledUp(false);
-    setNewLevelId(undefined);
-  }
-
   function onRating(rating: number) {
-    if (generated && sessionKey) {
-      ratePan(generated.id, rating).catch((error) => {
-        console.error("Failed to submit rating:", error);
-      });
-    }
-  }
-
-  function onGenerateClicked() {
-    handleGenerate(numFill, numSauce, rollPreparationType, rollCheese);
-  }
-
-  async function handleGenerate(
-    numFill: number,
-    numSauce: number,
-    rollPrepType: boolean,
-    rollCheese?: boolean,
-  ) {
-    if (!sessionKey) return;
-
-    // Reset state
-    apiCompleteRef.current = false;
-    animationCompleteRef.current = false;
-    setApiComplete(false);
-    setAnimationComplete(false);
-    setAnimationFading(false);
-    setGenerated(null);
-    setIsBanditResult(false);
-    setShowResultModal(false);
-    setShowAnimation(false);
-
-    // Start animation
-    setShowAnimation(true);
-    setWaiting(true);
-    animationStartTimeRef.current = Date.now();
-    localStorage.setItem("numFill", String(numFill));
-    localStorage.setItem("numSauce", String(numSauce));
-
-    // Update counts in the store
-    updateCount("fill", numFill);
-    updateCount("sauce", numSauce);
-
-    // Start animation timer - will be updated when animation reports its duration
-    animationTimerRef.current = setTimeout(() => {
-      animationCompleteRef.current = true;
-      setAnimationComplete(true);
-    }, animationDuration);
-
-    try {
-      const outcome = await rollPan(
-        {
-          num_fill: numFill,
-          num_sauce: numSauce,
-          ...(rollPrepType ? { roll_prep_type: true } : {}),
-          ...(rollCheese !== undefined ? { roll_cheese: rollCheese } : {}),
-        },
-        { session_key: sessionKey },
-      );
-      setGenerated(outcome.pan);
-      apiCompleteRef.current = true;
-      setApiComplete(true);
-
-      // Track level-up for profile picture generation
-      const levelUp = applyRollOutcome(outcome, sessionKey);
-      if (levelUp.leveledUp) {
-        setHasLeveledUp(true);
-        setNewLevelId(levelUp.newLevelId);
-      }
-    } catch (error) {
-      console.error("Failed to generate pan:", error);
-      apiCompleteRef.current = true;
-      setApiComplete(true);
-      if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
-      setWaiting(false);
-      setShowAnimation(false);
-    }
-  }
-
-  async function handleBanditGenerate(pan: PanDto): Promise<void> {
-    // For bandit mode, the pan is already generated by the API
-    // The result is shown in the bandit modal itself, not a separate modal
-    if (!sessionKey) return;
-
-    // Just track that generation is complete (for any background processing)
-    apiCompleteRef.current = true;
-    animationCompleteRef.current = true;
-    setApiComplete(true);
-    setAnimationComplete(true);
-  }
-
-  function handleBanditRating(rating: number, panId: number) {
-    if (!sessionKey) return;
-    ratePan(panId, rating).catch((error) => {
-      console.error("Failed to rate pan:", error);
+    panRoll.rate(rating).catch((error) => {
+      console.error("Failed to submit rating:", error);
     });
   }
 
-  // Effect to check when both API and animation are complete
+  function onGenerateClicked() {
+    if (!sessionKey) return;
+    localStorage.setItem("numFill", String(numFill));
+    localStorage.setItem("numSauce", String(numSauce));
+    updateCount("fill", numFill);
+    updateCount("sauce", numSauce);
+
+    startAnimationTimer(animationDuration);
+    panRoll
+      .roll(
+        () =>
+          rollPan(
+            {
+              num_fill: numFill,
+              num_sauce: numSauce,
+              ...(rollPreparationType ? { roll_prep_type: true } : {}),
+              roll_cheese: rollCheese,
+            },
+            { session_key: sessionKey },
+          ),
+        { animated: true },
+      )
+      .catch((error) => {
+        console.error("Failed to generate pan:", error);
+        if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+      });
+  }
+
+  // The counts follow what the pan actually got.
+  const resultPan = result?.pan;
   useEffect(() => {
-    if (apiComplete && animationComplete && generated && !showResultModal) {
-      // Show modal immediately, but keep animation visible for 250ms more
-      setWaiting(false);
-      setShowResultModal(true);
-      setAnimationFading(true);
-
-      // Hide animation after 250ms fade-out
-      const fadeTimer = setTimeout(() => {
-        setShowAnimation(false);
-        setAnimationFading(false);
-      }, 250);
-
-      return () => clearTimeout(fadeTimer);
+    if (resultPan) {
+      updateCount("fill", resultPan.ingredients.filter((i) => i.type === IngredientType.FILL).length);
+      updateCount("sauce", resultPan.ingredients.filter((i) => i.type === IngredientType.SAUCE).length);
     }
-  }, [apiComplete, animationComplete, generated, showResultModal]);
-
-  // Effect to store generated ingredients in the ingredient store
-  useEffect(() => {
-    if (generated && showResultModal && !isBanditResult) {
-      const fillIngredients = generated.ingredients.filter(
-        (i) => i.type === IngredientType.FILL,
-      );
-      const sauceIngredients = generated.ingredients.filter(
-        (i) => i.type === IngredientType.SAUCE,
-      );
-      updateCount("fill", fillIngredients.length);
-      updateCount("sauce", sauceIngredients.length);
-    }
-  }, [generated, showResultModal, isBanditResult, updateCount]);
+  }, [resultPan, updateCount]);
 
   // CheeseSlider component (moved to separate file)
   // CheeseSlider is now imported from CheeseSlider.tsx
@@ -304,42 +211,35 @@ export function GenerateView() {
 
   return (
     <>
-      {showAnimation && (
+      {(rolling || fading) && (
         <GenerationAnimation
           ingredients={availableIngredients}
-          fading={animationFading}
+          fading={fading}
           onDurationChange={(duration) => {
             setAnimationDuration(duration);
-            // Update the timer if animation hasn't completed yet
-            if (!animationCompleteRef.current && animationTimerRef.current) {
-              clearTimeout(animationTimerRef.current);
-              animationTimerRef.current = setTimeout(() => {
-                animationCompleteRef.current = true;
-                setAnimationComplete(true);
-              }, duration);
+            if (state.phase === "rolling" ? !state.animationDone : state.phase === "revealing") {
+              startAnimationTimer(duration);
             }
           }}
         />
       )}
 
       <PanResultModal
-        open={showResultModal}
-        pan={generated}
-        isBanditResult={isBanditResult}
+        open={result !== null}
+        pan={result?.pan ?? null}
         rollCheese={rollCheese}
-        onClose={closeModal}
+        onClose={panRoll.close}
         onRating={onRating}
-        hasLeveledUp={hasLeveledUp}
-        newLevelId={newLevelId}
+        hasLeveledUp={result?.leveledUp}
       />
 
-      {waiting && !showAnimation && (
-        <div className={typedStyles.loadingContainer}>
-          <Spin size="large" />
-        </div>
-      )}
+      <LevelUpPictureModal
+        open={state.phase === "picture"}
+        levelId={state.phase === "picture" ? state.levelUpId : undefined}
+        onClose={panRoll.pictureClosed}
+      />
 
-      {!waiting && !showResultModal && (
+      {(state.phase === "idle" || state.phase === "picture") && (
         <div className={typedStyles.paddingVertical8}>
           <Tabs
             defaultActiveKey="legacy"
@@ -390,8 +290,6 @@ export function GenerateView() {
                     onRollPreparationTypeChange={setRollPreparationType}
                     rollCheese={rollCheese}
                     onRollCheeseChange={setRollCheese}
-                    onGenerate={handleBanditGenerate}
-                    onRating={handleBanditRating}
                   />
                 ),
               },

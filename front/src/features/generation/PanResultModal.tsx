@@ -17,41 +17,34 @@ import type { PanDto } from "../../api/generated/model";
 import { IngredientType } from "../../api/generated/model";
 import { useTranslation } from "react-i18next";
 import styles from "./GenerateView/GenerateView.module.css";
-import { LevelUpPictureModal } from "./LevelUpPictureModal";
 
 const { Title, Text } = Typography;
 
 interface PanResultModalProps {
   open: boolean;
   pan: PanDto | null;
-  isBanditResult: boolean;
   rollCheese: boolean;
   onClose: () => void;
   onRating: (rating: number) => void;
+  /** Says so in the banner. */
   hasLeveledUp?: boolean;
-  newLevelId?: number;
-  previousLevelId?: number;
 }
 
 export const PanResultModal: React.FC<PanResultModalProps> = ({
   open,
   pan,
-  isBanditResult,
   rollCheese,
   onClose,
   onRating,
   hasLeveledUp = false,
-  newLevelId,
 }) => {
   const { t } = useTranslation();
   const [visibleIngredients, setVisibleIngredients] = useState<Set<number>>(
     new Set(),
   );
-  const [showProfilePictureModal, setShowProfilePictureModal] = useState(false);
-  const [hasGenerationStarted, setHasGenerationStarted] = useState(false);
   // Slot-machine style animation for standard view
   useEffect(() => {
-    if (open && pan && !isBanditResult) {
+    if (open && pan) {
       setVisibleIngredients(new Set());
 
       const fillIngredients = pan.ingredients.filter(
@@ -78,164 +71,15 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
         timeoutIds.forEach((id) => clearTimeout(id));
       };
     }
-  }, [open, pan, isBanditResult]);
+  }, [open, pan]);
 
   const handleModalClose = () => {
-    // If user leveled up, start generating profile picture and show spinner modal
-    if (hasLeveledUp && newLevelId && !hasGenerationStarted) {
-      setHasGenerationStarted(true);
-      setShowProfilePictureModal(true);
-    } else {
-      // Otherwise, just close normally
-      resetState();
-      onClose();
-    }
-  };
-
-  const handleProfilePictureModalClose = () => {
-    setShowProfilePictureModal(false);
-    resetState();
-    onClose();
-  };
-
-  const resetState = () => {
     setVisibleIngredients(new Set());
-    setHasGenerationStarted(false);
+    onClose();
   };
 
   if (!pan) return null;
 
-  // Bandit-style view from GenerateView
-  if (isBanditResult) {
-    const ingredients = pan.ingredients || [];
-    const numColumns = ingredients.length;
-
-    return (
-      <>
-        <Modal
-          open={open}
-          onCancel={handleModalClose}
-          footer={null}
-          width="90%"
-          className={`${styles.modalContainer} generate-result-modal`}
-          centered
-          closable
-          styles={{
-            body: {
-              padding: "32px",
-            },
-          }}
-        >
-          <div>
-            <Card
-              className={styles.gradientCard}
-              bodyStyle={{ padding: "28px" }}
-            >
-              <Row align="middle" justify="space-between" gutter={[16, 16]}>
-                <Col flex="auto" xs={24} sm={24} md={16}>
-                  <Title level={2} className={styles.whiteTitle}>
-                    {displayName(pan.name, t)}
-                  </Title>
-                  {hasLeveledUp && (
-                    <Text
-                      style={{
-                        color: "#fff",
-                        fontSize: "16px",
-                        display: "block",
-                        marginTop: "8px",
-                      }}
-                    >
-                      🎉 {t("level.leveledUp") || "Level Up!"}
-                    </Text>
-                  )}
-                </Col>
-                <Col xs={24} sm={24} md={8}>
-                  <div className={styles.ratingContainer}>
-                    <Text strong className={styles.whiteText}>
-                      {t("common.rate") || "Rate this pan"}
-                    </Text>
-                    <Rate onChange={onRating} className={styles.ratingStars} />
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-
-            {pan.preparation_type && (
-              <PreparationTypeCard preparationType={pan.preparation_type} />
-            )}
-
-            {rollCheese &&
-              pan.cheese_level !== undefined &&
-              pan.cheese_level !== null && (
-                <CheeseSlider cheeseLevel={pan.cheese_level} />
-              )}
-
-            <Row
-              gutter={[16, 16]}
-              className={`${styles.marginBottom24} ${styles.minHeight300}`}
-            >
-              {ingredients.map((ingredient, index) => {
-                return (
-                  <Col
-                    key={ingredient.id || index}
-                    xs={numColumns <= 2 ? 24 : 12}
-                    sm={numColumns <= 3 ? 12 : 8}
-                    md={numColumns <= 4 ? 6 : 4}
-                    lg={24 / Math.min(numColumns, 6)}
-                    className={styles.minWidth120}
-                  >
-                    <Card
-                      className={styles.banditCard}
-                      bodyStyle={{
-                        padding: "20px",
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        minHeight: "250px",
-                      }}
-                    >
-                      <IngredientDisplay
-                        ingredient={ingredient}
-                        variant="compact"
-                        showIcon={true}
-                        showTags={true}
-                      />
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
-
-            <Divider className={styles.customDivider} />
-
-            <Row>
-              <Col span={24}>
-                <Button
-                  type="primary"
-                  size="large"
-                  block
-                  onClick={handleModalClose}
-                  className={styles.closeButton}
-                >
-                  {t("common.close") || "Close"}
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        </Modal>
-
-        <LevelUpPictureModal
-          open={showProfilePictureModal}
-          levelId={newLevelId}
-          onClose={handleProfilePictureModalClose}
-        />
-      </>
-    );
-  }
-
-  // Standard view from GenerateView.renderResultContent
   const fillIngredients = pan.ingredients.filter(
     (i) => i.type === IngredientType.FILL,
   );
@@ -368,12 +212,6 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
           </Row>
         </div>
       </Modal>
-
-      <LevelUpPictureModal
-        open={showProfilePictureModal}
-        levelId={newLevelId}
-        onClose={handleProfilePictureModalClose}
-      />
     </>
   );
 };

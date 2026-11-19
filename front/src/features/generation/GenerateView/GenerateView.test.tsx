@@ -4,6 +4,7 @@ import { useAuthStore } from '../../../AuthSlice';
 import type { RollOutcomeDto } from '../../../api/generated/model';
 import {
     availableCounts,
+    generatedPicture,
     ingredientsForUser,
     me,
     rating,
@@ -128,6 +129,23 @@ it('rates the rolled pan and returns to the controls on close', async () => {
     fireEvent.click(within(dialog).getByText('common.close'));
 
     expect(await screen.findByText('generate.generateButton')).toBeInTheDocument();
+});
+
+it('offers the level-up picture once the result of a level-up closes', async () => {
+    fake.on('POST', '/pans/generate', rollOutcome)
+        .on('POST', '/images/generate-profile-picture', generatedPicture)
+        .on('GET', '/auth/me', me);
+    localStorage.setItem('numFill', '1');
+    await renderView();
+    await generate();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/level.leveledUp/)).toBeInTheDocument();
+    expect(fake.last('POST', '/images/generate-profile-picture')).toBeUndefined();
+
+    fireEvent.click(within(dialog).getByText('common.close'));
+
+    await waitFor(() => expect(fake.last('POST', '/images/generate-profile-picture')?.body)
+        .toEqual({ level_id: rollOutcome.reward.level?.id }));
 });
 
 it('returns to the controls when the roll fails', async () => {
