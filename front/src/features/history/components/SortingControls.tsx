@@ -1,14 +1,15 @@
 import React from 'react';
 import {Select, Space, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
+import type {ListPansDirection, ListPansSort} from "../../../api/generated/model";
 
 const {Text} = Typography;
 
 interface SortingControlsProps {
-    sortField: 'time' | 'rating' | 'counts';
-    sortDirection: 'asc' | 'desc';
-    onSortFieldChange: (field: 'time' | 'rating' | 'counts') => void;
-    onSortDirectionChange: (direction: 'asc' | 'desc') => void;
+    sortField: ListPansSort;
+    sortDirection: ListPansDirection;
+    onSortFieldChange: (field: ListPansSort) => void;
+    onSortDirectionChange: (direction: ListPansDirection) => void;
 }
 
 export function SortingControls({

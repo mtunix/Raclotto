@@ -4,10 +4,17 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { ListPansDirection } from './listPansDirection';
+import type { ListPansIngredientCountItem } from './listPansIngredientCountItem';
+import type { ListPansSort } from './listPansSort';
 
 export type ListPansParams = {
   session_key?: string | null;
-  user_id?: number | null;
+  user_id?: number[];
+  rating?: number[];
+  ingredient_count?: ListPansIngredientCountItem[];
+  sort?: ListPansSort;
+  direction?: ListPansDirection;
   limit?: number | null;
   /** @minimum 0 */
   offset?: number;

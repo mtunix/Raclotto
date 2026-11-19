@@ -1,19 +1,20 @@
 import React from 'react';
 import {Button, Checkbox, Popover, Space, Tag, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
+import type {ListPansIngredientCountItem} from "../../../api/generated/model";
 
 const {Text} = Typography;
 
 interface FilterControlsProps {
     selectedUsers: number[];
     selectedRatings: number[];
-    selectedIngredientCounts: string[];
+    selectedIngredientCounts: ListPansIngredientCountItem[];
     uniqueUsers: Array<{ id: number; name: string }>;
     uniqueRatings: number[];
-    uniqueIngredientRanges: string[];
+    uniqueIngredientRanges: ListPansIngredientCountItem[];
     onUsersChange: (users: number[]) => void;
     onRatingsChange: (ratings: number[]) => void;
-    onIngredientCountsChange: (counts: string[]) => void;
+    onIngredientCountsChange: (counts: ListPansIngredientCountItem[]) => void;
     onClearFilters: () => void;
 }
 

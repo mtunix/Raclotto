@@ -63,7 +63,7 @@ it("shows the signed-in user's own profile with their email, statistics and pans
     expect(screen.getByText("Gotta eat'em all!")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { level: 4, name: panPage.items[0].name ?? "" })).toBeInTheDocument();
     expect(screen.queryByText("history.loadMore")).not.toBeInTheDocument();
-    expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: me.id });
+    expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: [me.id] });
 });
 
 it("shows someone else's profile without their email or picture actions", async () => {
@@ -75,7 +75,7 @@ it("shows someone else's profile without their email or picture actions", async 
     expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
     expect(screen.queryByText("Regenerate Picture")).not.toBeInTheDocument();
     expect(screen.queryByText("profile.clickToChange")).not.toBeInTheDocument();
-    expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: 5 });
+    expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: [5] });
 });
 
 it("says so for a user that does not exist", async () => {

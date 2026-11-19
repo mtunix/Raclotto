@@ -20,8 +20,10 @@ import type {
   CreatePanBody,
   CreatePanParams,
   ErrorResponseDto,
+  GetPanFilterOptionsParams,
   ListPansParams,
   PanDto,
+  PanFilterOptionsDto,
   PanPageDto,
   RollBanditPanBody,
   RollBanditPanParams,
@@ -39,7 +41,7 @@ import type { ErrorType } from '../../../../lib/api/orvalMutator';
 
 
  /**
- * @summary List pans newest first, filtered by session and/or user, one page at a time.
+ * @summary List the filtered pans in the requested order, newest first by default, one page at a time.
  */
 export const listPans = (
     params?: ListPansParams,
@@ -58,7 +60,7 @@ export const getListPansKey = (params?: ListPansParams,) => [`/pans`, ...(params
 export type ListPansQueryResult = NonNullable<Awaited<ReturnType<typeof listPans>>>
 
 /**
- * @summary List pans newest first, filtered by session and/or user, one page at a time.
+ * @summary List the filtered pans in the requested order, newest first by default, one page at a time.
  */
 export const useListPans = <TError = ErrorType<ErrorResponseDto>>(
   params?: ListPansParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof listPans>>, TError> & { swrKey?: Key, enabled?: boolean },  }
@@ -116,6 +118,44 @@ export const useCreatePan = <TError = ErrorType<ErrorResponseDto>>(
   const swrFn = getCreatePanMutationFetcher(params);
 
   const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary The authors, ratings and ingredient count ranges of all the session's pans, to filter the list by.
+ */
+export const getPanFilterOptions = (
+    params: GetPanFilterOptionsParams,
+ ) => {
+    return orvalMutator<PanFilterOptionsDto>(
+    {url: `/pans/filters`, method: 'GET',
+        params
+    },
+    );
+  }
+
+
+
+export const getGetPanFilterOptionsKey = (params: GetPanFilterOptionsParams,) => [`/pans/filters`, ...(params ? [params]: [])] as const;
+
+export type GetPanFilterOptionsQueryResult = NonNullable<Awaited<ReturnType<typeof getPanFilterOptions>>>
+
+/**
+ * @summary The authors, ratings and ingredient count ranges of all the session's pans, to filter the list by.
+ */
+export const useGetPanFilterOptions = <TError = ErrorType<ErrorResponseDto>>(
+  params: GetPanFilterOptionsParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getPanFilterOptions>>, TError> & { swrKey?: Key, enabled?: boolean },  }
+) => {
+  const {swr: swrOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetPanFilterOptionsKey(params) : null);
+  const swrFn = () => getPanFilterOptions(params)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
   return {
     swrKey,

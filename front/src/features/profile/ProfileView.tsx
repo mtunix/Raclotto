@@ -19,7 +19,7 @@ export function ProfileView() {
   const { userId, isOwnProfile } = profileTarget(userIdParam, currentUser?.id);
   const { profile, stats, loading, error } = useProfile(userId);
   // Asked for alongside the profile rather than once it has loaded.
-  const { pans, hasMore, loadMore, isLoading: loadingPans } = usePanPages({ user_id: userId });
+  const { pans, hasMore, loadMore, isLoading: loadingPans } = usePanPages({ user_id: userId ? [userId] : [] });
 
   if (loading) {
     return (

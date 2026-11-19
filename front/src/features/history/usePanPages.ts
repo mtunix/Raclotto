@@ -3,19 +3,28 @@ import { useListPans } from "../../api/generated/endpoints/pans/pans";
 import type { ListPansParams, PanDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
 
-export interface PanFilter {
-  session_key?: string;
-  user_id?: number;
-}
+/** Whose pans (a session's, a user's or both), which of them and in what order; the server sorts and filters. */
+export type PanFilter = Omit<ListPansParams, "session_key" | "limit" | "offset"> & { session_key?: string };
 
 /**
- * The pans matching `filter`, newest first, fetched a page at a time.
+ * The pans matching `filter`, in its order (newest first by default), fetched a page at a time.
  *
  * `loadMore` appends the next page. Only the newest page is refetched when the pan lists are
  * invalidated, so `replacePan` swaps in a fresh copy of a pan on an earlier page.
  */
-export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) {
-  const filter = JSON.stringify([session_key, user_id]);
+export function usePanPages(
+  { session_key, user_id = [], rating = [], ingredient_count = [], sort, direction }: PanFilter,
+  pageSize = 12,
+) {
+  const filtered: ListPansParams = {
+    ...(session_key ? { session_key } : {}),
+    ...(user_id.length ? { user_id } : {}),
+    ...(rating.length ? { rating } : {}),
+    ...(ingredient_count.length ? { ingredient_count } : {}),
+    ...(sort ? { sort } : {}),
+    ...(direction ? { direction } : {}),
+  };
+  const filter = JSON.stringify(filtered);
   const [stored, setStored] = useState<Pages>(() => startOver(filter));
   // Reset while rendering, not in an effect, so the old offset is never asked for with the new filter.
   let pages = stored;
@@ -25,15 +34,9 @@ export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) 
   }
   const { offset, loaded } = pages;
 
-  const params: ListPansParams = {
-    ...(session_key ? { session_key } : {}),
-    ...(user_id ? { user_id } : {}),
-    limit: pageSize,
-    offset,
-  };
-  const { data: page, isLoading } = useListPans(params, {
+  const { data: page, isLoading } = useListPans({ ...filtered, limit: pageSize, offset }, {
     swr: {
-      enabled: Boolean(session_key || user_id),
+      enabled: Boolean(session_key || user_id.length),
       onErrorRetry,
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -70,7 +73,7 @@ export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) 
   if (page) shown.set(page.offset, page.items);
 
   return {
-    pans: newestFirst(shown),
+    pans: inPageOrder(shown),
     hasMore: page?.has_more ?? false,
     loadMore,
     replacePan,
@@ -88,7 +91,7 @@ function startOver(filter: string): Pages {
   return { filter, offset: 0, loaded: new Map() };
 }
 
-function newestFirst(pages: ReadonlyMap<number, PanDto[]>): PanDto[] {
+function inPageOrder(pages: ReadonlyMap<number, PanDto[]>): PanDto[] {
   const seen = new Set<number>();
   const pans: PanDto[] = [];
   Array.from(pages.keys())

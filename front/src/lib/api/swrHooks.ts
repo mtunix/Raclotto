@@ -7,7 +7,7 @@ import {
     getGetAvailableCountsKey,
     getListIngredientsKey,
 } from "../../api/generated/endpoints/ingredients/ingredients";
-import { getListPansKey } from "../../api/generated/endpoints/pans/pans";
+import { getGetPanFilterOptionsKey, getListPansKey } from "../../api/generated/endpoints/pans/pans";
 import { getListPreparationTypesKey } from "../../api/generated/endpoints/preparation-type/preparation-type";
 import { getGetSessionByKeyKey } from "../../api/generated/endpoints/sessions/sessions";
 import { getGetUserProfileKey } from "../../api/generated/endpoints/users/users";
@@ -68,10 +68,10 @@ export function mutateEvents(sessionKey: string) {
     return swrMutate(getListEventsKey({ session_key: sessionKey }));
 }
 
-/** Every cached page of `listPans`, whatever its filter. */
+/** Every cached page of `listPans`, whatever its filter, and the filter options of every session's pans. */
 export function mutatePanLists() {
-    const [path] = getListPansKey();
-    return swrMutate((key) => Array.isArray(key) && key[0] === path);
+    const paths: unknown[] = [getListPansKey()[0], getGetPanFilterOptionsKey({ session_key: "" })[0]];
+    return swrMutate((key) => Array.isArray(key) && paths.includes(key[0]));
 }
 
 export function mutateUserProfile(userId?: number) {

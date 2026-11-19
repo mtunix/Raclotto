@@ -148,7 +148,7 @@ class TestPanApi(AppTest):
         for query, pointer in (
             ({"limit": 0}, "/query/limit"),
             ({"offset": -1}, "/query/offset"),
-            ({"user_id": "ana"}, "/query/user_id"),
+            ({"user_id": "ana"}, "/query/user_id/0"),
             ({"session_key": ""}, "/query/session_key"),
             ({"page": 2}, "/query/page"),
         ):

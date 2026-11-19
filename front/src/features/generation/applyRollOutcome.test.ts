@@ -98,7 +98,7 @@ it("refetches every cached pan list", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
         React.createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
     const session = renderHook(() => useListPans({ session_key: "s1", limit: 1, offset: 0 }), { wrapper });
-    const author = renderHook(() => useListPans({ user_id: user.id, limit: 1, offset: 0 }), { wrapper });
+    const author = renderHook(() => useListPans({ user_id: [user.id], limit: 1, offset: 0 }), { wrapper });
     await waitFor(() => expect(session.result.current.data).toEqual(panPage));
     await waitFor(() => expect(author.result.current.data).toEqual(panPage));
     const fetched = fake.requests.length;
@@ -111,7 +111,7 @@ it("refetches every cached pan list", async () => {
     expect(fake.requests.slice(fetched).map((r) => r.query)).toEqual(
         expect.arrayContaining([
             { session_key: "s1", limit: 1, offset: 0 },
-            { user_id: user.id, limit: 1, offset: 0 },
+            { user_id: [user.id], limit: 1, offset: 0 },
         ]),
     );
 });

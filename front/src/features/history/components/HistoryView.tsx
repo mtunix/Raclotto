@@ -1,6 +1,6 @@
 import React, {useState} from "react";
-import {createPan} from "../../../api/generated/endpoints/pans/pans";
-import type {PanDto} from "../../../api/generated/model";
+import {createPan, useGetPanFilterOptions} from "../../../api/generated/endpoints/pans/pans";
+import type {ListPansDirection, ListPansIngredientCountItem, ListPansSort, PanDto} from "../../../api/generated/model";
 import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar, Grid} from "antd";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
@@ -17,8 +17,8 @@ import { usePanPages } from "../usePanPages";
 import { ratePan } from "../../rating/ratePan";
 import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
-import {getUniqueUsers, getUniqueRatings, getIngredientCountRanges, filterPans, sortPans} from "./historyUtils";
 import {displayName} from "../../../shared/displayName";
+import {onErrorRetry} from "../../../lib/api/swrHooks";
 
 const {Title, Text} = Typography;
 
@@ -35,15 +35,29 @@ export function HistoryView() {
     const [selectedPan, setSelectedPan] = useState<PanDto | null>(null);
     const cloneRoll = useRollSession(sessionKey);
     const clone = cloneRoll.state.phase === "result" ? cloneRoll.state : null;
-    const [sortField, setSortField] = useState<'time' | 'rating' | 'counts'>('time');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [sortField, setSortField] = useState<ListPansSort>('time');
+    const [sortDirection, setSortDirection] = useState<ListPansDirection>('desc');
     const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
     const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-    const [selectedIngredientCounts, setSelectedIngredientCounts] = useState<string[]>([]);
+    const [selectedIngredientCounts, setSelectedIngredientCounts] = useState<ListPansIngredientCountItem[]>([]);
     const [filtersExpanded, setFiltersExpanded] = useState(false);
     const screens = Grid.useBreakpoint();
     const isMobile = screens.xs || screens.sm;
-    const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({ session_key: sessionKey });
+    const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({
+        session_key: sessionKey,
+        user_id: selectedUsers,
+        rating: selectedRatings,
+        ingredient_count: selectedIngredientCounts,
+        sort: sortField,
+        direction: sortDirection,
+    });
+    const { data: filterOptions } = useGetPanFilterOptions(
+        { session_key: sessionKey },
+        { swr: { enabled: Boolean(sessionKey), onErrorRetry, revalidateOnFocus: false } },
+    );
+    const filterCount = selectedUsers.length + selectedRatings.length + selectedIngredientCounts.length;
+    // A filter that matches nothing leaves its controls in place to clear it.
+    const showControls = pans.length > 0 || filterCount > 0 || Boolean(filterOptions?.users.length);
 
     const [filteredSession, setFilteredSession] = useState(sessionKey);
     if (filteredSession !== sessionKey) {
@@ -138,26 +152,9 @@ export function HistoryView() {
         }
     }
 
-    // Get unique values for filters
-    const uniqueUsers = getUniqueUsers(pans);
-    const uniqueRatings = getUniqueRatings(pans);
-    const uniqueIngredientRanges = getIngredientCountRanges(pans);
-
-    // Apply filters and sorting
-    const filteredPans = filterPans(pans, {
-        selectedUsers,
-        selectedRatings,
-        selectedIngredientCounts
-    });
-    const finalPans = sortPans(filteredPans, sortField, sortDirection);
-
-    if (waiting) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
+    const uniqueUsers = filterOptions?.users ?? [];
+    const uniqueRatings = filterOptions?.ratings ?? [];
+    const uniqueIngredientRanges = filterOptions?.ingredient_counts ?? [];
 
     const renderPanCard = (pan: PanDto) => {
         const author = pan.author;
@@ -392,7 +389,7 @@ export function HistoryView() {
                 levelId={cloneRoll.state.phase === "picture" ? cloneRoll.state.levelUpId : undefined}
                 onClose={cloneRoll.pictureClosed}
             />
-            {pans.length > 0 && (
+            {showControls && (
                 <>
                     {isMobile ? (
                         // Mobile view - collapsible
@@ -406,9 +403,9 @@ export function HistoryView() {
                                 <span style={{ float: 'right' }}>
                                     {filtersExpanded ? '▲' : '▼'}
                                 </span>
-                                {(selectedUsers.length > 0 || selectedRatings.length > 0 || selectedIngredientCounts.length > 0) && (
+                                {filterCount > 0 && (
                                     <Tag style={{ marginLeft: '8px' }}>
-                                        {selectedUsers.length + selectedRatings.length + selectedIngredientCounts.length}
+                                        {filterCount}
                                     </Tag>
                                 )}
                             </Button>
@@ -476,10 +473,14 @@ export function HistoryView() {
                 </>
             )}
 
-                    {pans.length > 0 ? (
+            {waiting && pans.length === 0 ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                    <Spin size="large" />
+                </div>
+            ) : pans.length > 0 ? (
                 <>
                     <Row gutter={[16, 16]}>
-                        {finalPans.map(renderPanCard)}
+                        {pans.map(renderPanCard)}
                     </Row>
                     {hasMore && (
                         <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '24px' }}>

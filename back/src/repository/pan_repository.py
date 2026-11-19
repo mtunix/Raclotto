@@ -1,9 +1,22 @@
+from collections.abc import Collection
+from typing import Any, Literal
+
+from sqlalchemy import ColumnElement, Integer, SQLColumnExpression, and_, cast, func, or_, select, true
 from sqlalchemy.exc import NoResultFound
 
 from back.src.driver.database import db
-from back.src.entity.pan import Pan
+from back.src.entity.pan import Pan, pan_ingredients
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.repository.base_repository import BaseRepository
+
+PanOrder = Literal["timestamp", "rating", "ingredient_count"]
+
+
+def _between(value: ColumnElement[int], low: int | None, high: int | None) -> ColumnElement[bool]:
+    bounds = [value >= low] if low is not None else []
+    if high is not None:
+        bounds.append(value <= high)
+    return and_(true(), *bounds)
 
 
 class PanRepository(BaseRepository[Pan]):
@@ -38,21 +51,44 @@ class PanRepository(BaseRepository[Pan]):
     def page(
         self,
         session_key: str | None = None,
-        user_id: int | None = None,
+        user_ids: Collection[int] = (),
+        rating_tenths: Collection[int] = (),
+        ingredient_counts: Collection[tuple[int | None, int | None]] = (),
+        order: PanOrder = "timestamp",
+        descending: bool = True,
         limit: int | None = None,
         offset: int = 0,
     ) -> tuple[list[Pan], int]:
-        """Pans matching every given filter, newest first, and how many match in total.
+        """Pans matching every given filter in `order`, ties newest first, and how many match in total.
 
-        An unknown session key matches nothing. Without a limit every pan from `offset` on is returned.
+        A collection filter matches any of its values and is skipped when empty: `rating_tenths` are average
+        ratings (0 when unrated) times ten, rounded half up; `ingredient_counts` are inclusive bounds, `None`
+        open. An unknown session key matches nothing. Without a limit every pan from `offset` on is returned.
         """
+        rating = func.coalesce(Pan.rating, 0)
+        ingredient_count = (
+            select(func.count()).where(pan_ingredients.c.pan_id == Pan.id).correlate(Pan).scalar_subquery()
+        )
         query = db.session.query(Pan)
         if session_key is not None:
             query = query.join(Pan.session).filter(RaclottoSession.key == session_key)
-        if user_id is not None:
-            query = query.filter(Pan.user_id == user_id)
+        if user_ids:
+            query = query.filter(Pan.user_id.in_(user_ids))
+        if rating_tenths:
+            # CAST truncates, so adding a half rounds a positive value half up.
+            query = query.filter(cast(rating * 10 + 0.5, Integer).in_(rating_tenths))
+        if ingredient_counts:
+            query = query.filter(or_(*(_between(ingredient_count, low, high) for low, high in ingredient_counts)))
         total = query.count()
-        query = query.order_by(Pan.timestamp.desc(), Pan.id.desc()).offset(offset)
+
+        columns: dict[PanOrder, SQLColumnExpression[Any]] = {
+            "timestamp": Pan.timestamp,
+            "rating": rating,
+            "ingredient_count": ingredient_count,
+        }
+        primary = columns[order]
+        query = query.order_by(primary.desc() if descending else primary.asc(), Pan.timestamp.desc(), Pan.id.desc())
+        query = query.offset(offset)
         if limit is not None:
             query = query.limit(limit)
         return query.all(), total

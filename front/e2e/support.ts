@@ -73,9 +73,9 @@ export interface NewIngredient {
   meat?: boolean;
 }
 
-/** Calls the API as the signed-in user, for setup a test doesn't exercise through the UI. */
-export async function api(page: Page) {
-  const token = await page.evaluate(() => localStorage.getItem("auth_token"));
+/** Calls the API as the signed-in user, or as the one `token` is for, for setup a test doesn't exercise through the UI. */
+export async function api(page: Page, token?: string) {
+  token ??= (await page.evaluate(() => localStorage.getItem("auth_token"))) ?? undefined;
   const headers = { Authorization: `Bearer ${token}`, Accept: "application/json" };
   return {
     async get<T>(path: string, params?: Record<string, string>): Promise<T> {

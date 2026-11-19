@@ -3,7 +3,7 @@ import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
 import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/model';
-import { generatedPicture, me, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
+import { generatedPicture, me, panFilterOptions, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport, type RecordedRequest } from '../../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../../testUtils';
@@ -26,6 +26,7 @@ let previous: Transport;
 
 beforeEach(() => {
     fake = new FakeTransport();
+    fake.on('GET', '/pans/filters', panFilterOptions);
     previous = setTransport(fake);
     useAuthStore.setState({ user: me });
 });
@@ -67,7 +68,13 @@ it("lists the session's pans with their author, ingredients and average rating",
     const current = renderHistory();
 
     const card = await screen.findByText(newest.name as string).then(() => cardOf(newest.name as string));
-    expect(fake.last('GET', '/pans')?.query).toEqual({ session_key: current.key, limit: 12, offset: 0 });
+    expect(fake.last('GET', '/pans')?.query).toEqual({
+        session_key: current.key,
+        sort: 'time',
+        direction: 'desc',
+        limit: 12,
+        offset: 0,
+    });
     expect(within(card).getByText(newest.author!.name)).toBeInTheDocument();
     for (const ingredient of newest.ingredients) {
         expect(within(card).getByText(ingredient.name as string)).toBeInTheDocument();
@@ -156,4 +163,45 @@ it("opens the author's profile from their avatar", async () => {
     fireEvent.click(card.querySelector('.ant-avatar') as HTMLElement);
 
     await waitFor(() => expect(currentPath()).toBe(`/${session.id}/profile/${newest.author!.id}`));
+});
+
+async function choose(current: string, option: string) {
+    fireEvent.mouseDown(screen.getByText(current).closest('.ant-select') as HTMLElement);
+    const options = await screen.findAllByText(option);
+    fireEvent.click(options[options.length - 1]);
+}
+
+it('asks the server for the best-rated pans first, whatever is loaded', async () => {
+    fake.on('GET', '/pans', (request: RecordedRequest) =>
+        (request.query as { sort: string }).sort === 'rating'
+            ? { ...panPage, has_more: false, items: [pan(1, { rating: 5 }), pan(14)] }
+            : backend(14)(request));
+    renderHistory();
+    await screen.findByText('Pan 14');
+    expect(screen.queryByText('Pan 1')).not.toBeInTheDocument();
+
+    await choose('history.time', 'history.rating');
+
+    expect(await screen.findByText('Pan 1')).toBeInTheDocument();
+    expect(fake.last('GET', '/pans')?.query).toMatchObject({ sort: 'rating', direction: 'desc', offset: 0 });
+    const names = screen.getAllByRole('heading', { level: 4 }).map((heading) => heading.textContent);
+    expect(names).toEqual(['Pan 1', 'Pan 14']);
+});
+
+it("offers every user of the session to filter by, and keeps the filters when nothing matches", async () => {
+    const [ada, ben] = panFilterOptions.users;
+    fake.on('GET', '/pans', (request: RecordedRequest) =>
+        (request.query as { user_id?: number[] }).user_id
+            ? { ...panPage, items: [], total: 0, has_more: false }
+            : { ...panPage, has_more: false, items: [pan(1, { author: ada, user_id: ada.id })] });
+    const current = renderHistory();
+    await screen.findByText('Pan 1');
+
+    fireEvent.click(screen.getByText('history.users'));
+    fireEvent.click(await screen.findByText(ben.name));
+
+    expect(await screen.findByText('history.noPans')).toBeInTheDocument();
+    expect(fake.last('GET', '/pans')?.query).toMatchObject({ session_key: current.key, user_id: [ben.id], offset: 0 });
+    expect(fake.last('GET', '/pans/filters')?.query).toEqual({ session_key: current.key });
+    expect(screen.getByText('history.users')).toBeInTheDocument();
 });

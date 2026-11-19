@@ -72,6 +72,7 @@ class _Recorder(AppTest):
         )
         rating = self.ok(self.call("POST", "/ratings", ben, body={"pan_id": roll["pan"]["id"], "rating": 4.5}))
         page = self.ok(self.call("GET", "/pans", ana, query={**query, "limit": 1}))
+        filter_options = self.ok(self.call("GET", "/pans/filters", ana, query=query))
         login = self.ok(self.call("POST", "/auth/login", body={"name_or_email": "Ada", "password": "secret"}))
         me = self.ok(self.call("GET", "/auth/me", ana))
         profile = self.ok(self.call("GET", f"/users/{ana.id}", ben))
@@ -163,6 +164,7 @@ class _Recorder(AppTest):
         assert recap["best_pan"] and recap["boldest_pan"] and len(recap["participants"]) == 2, recap
         assert picture_history[0]["id"] == generated["id"] and len(picture_history) == 2, picture_history
         assert page["has_more"] and page["items"][0]["ratings"], page
+        assert len(filter_options["users"]) == 2 and filter_options["ratings"], filter_options
         assert me["level"] == roll["reward"]["level"] and me["next_level"], me
         assert profile["achievements"] and "email" not in profile, profile
         assert stats["best_rated_ingredient"] and stats["most_ingredients_pan"], stats
@@ -177,6 +179,7 @@ class _Recorder(AppTest):
             "rollOutcome": ("RollOutcomeDto", roll),
             "rating": ("RatingDto", rating),
             "panPage": ("PanPageDto", page),
+            "panFilterOptions": ("PanFilterOptionsDto", filter_options),
             "loginResult": ("AuthResultDto", login),
             "me": ("MeDto", me),
             "userProfile": ("UserProfileDto", profile),

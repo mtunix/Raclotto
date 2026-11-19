@@ -14,6 +14,7 @@ from back.src.entity.level import Level
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
 from back.src.interactor.levels import Reward
+from back.src.interactor.pan_history import FilterOptions, IngredientCountRange, PanSort, SortDirection
 from back.src.interactor.pan_roll import RollOutcome
 
 
@@ -139,10 +140,34 @@ class CreatePanBody(RequestDto):
 
 class ListPansQuery(RequestDto):
     session_key: str | None = Field(default=None, min_length=1)
-    user_id: int | None = None
+    # Each list filter repeats its key, matches a pan by any of its values, and is skipped when empty.
+    user_id: list[int] = Field(default_factory=list)
+    # A pan's average rating rounded half up to one decimal; 0 is unrated.
+    rating: list[float] = Field(default_factory=list)
+    ingredient_count: list[IngredientCountRange] = Field(default_factory=list)
+    # Ties go to the newer pan.
+    sort: PanSort = "time"
+    direction: SortDirection = "desc"
     # Missing: every matching pan.
     limit: int | None = Field(default=None, ge=1)
     offset: int = Field(default=0, ge=0)
+
+
+class PanFilterOptionsDto(ResponseDto):
+    """The values a session's pans offer to filter its history by."""
+
+    users: list[UserSummaryDto]
+    # Rounded to one decimal, best first; unrated pans offer none.
+    ratings: list[float]
+    ingredient_counts: list[IngredientCountRange]
+
+    @classmethod
+    def of(cls, options: FilterOptions) -> PanFilterOptionsDto:
+        return cls(
+            users=[UserSummaryDto.of(user) for user in options.authors],
+            ratings=options.ratings,
+            ingredient_counts=options.ingredient_counts,
+        )
 
 
 class UpdatePanBody(RequestDto):

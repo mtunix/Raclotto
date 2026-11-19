@@ -6,6 +6,7 @@ from back.src.dto.pan import (
     CreatePanBody,
     ListPansQuery,
     PanDto,
+    PanFilterOptionsDto,
     PanPageDto,
     RollBanditPanBody,
     RollOutcomeDto,
@@ -13,7 +14,9 @@ from back.src.dto.pan import (
     RollQuery,
     UpdatePanBody,
 )
+from back.src.dto.session import SessionKeyQuery
 from back.src.entity.pan import Pan
+from back.src.interactor.pan_history import PanFilter, PanHistory
 from back.src.interactor.pan_roll import PanRoll, RollError, RollOptions
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.user_repository import UserRepository
@@ -126,10 +129,14 @@ class PanApi(BaseApi):
     @BaseApi.endpoint("", ["GET"], query=ListPansQuery, response=PanPageDto, operation_id="listPans")
     @require_auth
     def list_pans(self, query: ListPansQuery) -> PanPageDto:
-        """List pans newest first, filtered by session and/or user, one page at a time."""
-        pans, total = self.repository.page(
-            session_key=query.session_key, user_id=query.user_id, limit=query.limit, offset=query.offset
+        """List the filtered pans in the requested order, newest first by default, one page at a time."""
+        pan_filter = PanFilter(
+            session_key=query.session_key,
+            user_ids=query.user_id,
+            ratings=query.rating,
+            ingredient_counts=query.ingredient_count,
         )
+        pans, total = PanHistory().page(pan_filter, query.sort, query.direction, query.limit, query.offset)
         authors = self.users.by_ids(pan.user_id for pan in pans)
         return PanPageDto(
             items=[PanDto.of(pan, authors.get(pan.user_id)) for pan in pans],
@@ -138,6 +145,14 @@ class PanApi(BaseApi):
             offset=query.offset,
             has_more=query.limit is not None and query.offset + len(pans) < total,
         )
+
+    @BaseApi.endpoint(
+        "/filters", ["GET"], query=SessionKeyQuery, response=PanFilterOptionsDto, operation_id="getPanFilterOptions"
+    )
+    @require_auth
+    def filter_options(self, query: SessionKeyQuery) -> PanFilterOptionsDto:
+        """The authors, ratings and ingredient count ranges of all the session's pans, to filter the list by."""
+        return PanFilterOptionsDto.of(PanHistory().filter_options(query.session_key))
 
     @BaseApi.endpoint("/<int:pan_id>", ["GET"], response=PanDto, operation_id="getPan", errors=(404,))
     @require_auth

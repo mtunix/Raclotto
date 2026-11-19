@@ -61,9 +61,9 @@ describe("pan lists", () => {
   it("asks for one page and returns it as sent", async () => {
     fake.on("GET", "/pans", panPage);
 
-    const page: PanPageDto = await listPans({ user_id: 7, limit: 12, offset: 24 });
+    const page: PanPageDto = await listPans({ user_id: [7, 8], rating: [3.5], sort: "rating", limit: 12, offset: 24 });
 
-    expect(fake.last("GET", "/pans")?.query).toEqual({ user_id: 7, limit: 12, offset: 24 });
+    expect(fake.last("GET", "/pans")?.query).toEqual({ user_id: [7, 8], rating: [3.5], sort: "rating", limit: 12, offset: 24 });
     expect(page).toEqual(panPage);
     expect(page.items[0].author?.border_texture).toBe("cheese");
   });
@@ -71,7 +71,7 @@ describe("pan lists", () => {
   it("keys every filter below the same path", () => {
     const [path] = getListPansKey();
     expect(getListPansKey({ session_key: "s1", limit: 12, offset: 0 })[0]).toBe(path);
-    expect(getListPansKey({ user_id: 7 })[0]).toBe(path);
+    expect(getListPansKey({ user_id: [7], sort: "rating" })[0]).toBe(path);
   });
 });
 

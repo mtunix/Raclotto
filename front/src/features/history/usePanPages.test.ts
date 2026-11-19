@@ -64,7 +64,7 @@ it("appends the next page on loadMore", async () => {
 it("shows refetched pans of the newest page instead of the copies loaded before", async () => {
   const ratings = new Map<number, number>();
   fake.on("GET", "/pans", backend(4, ratings));
-  const { result } = render({ user_id: 7 });
+  const { result } = render({ user_id: [7] });
   await waitFor(() => expect(ids(result.current.pans)).toEqual([4, 3]));
   act(() => result.current.loadMore());
   await waitFor(() => expect(ids(result.current.pans)).toEqual([4, 3, 2, 1]));
@@ -112,6 +112,33 @@ it("starts over when the filter changes", async () => {
 
   await waitFor(() => expect(fake.last("GET", "/pans")?.query).toEqual({ session_key: "after", limit: 2, offset: 0 }));
   await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
+});
+
+it("asks the server to sort and filter, and starts over when the order or a filter changes", async () => {
+  fake.on("GET", "/pans", backend(5));
+  const { result, rerender } = render({ session_key: "sorted", user_id: [], rating: [] });
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
+  act(() => result.current.loadMore());
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4, 3, 2]));
+  expect(fake.last("GET", "/pans")?.query).toEqual({ session_key: "sorted", limit: 2, offset: 2 });
+
+  rerender({ session_key: "sorted", sort: "rating", direction: "desc", rating: [4.5], user_id: [7] });
+
+  await waitFor(() =>
+    expect(fake.last("GET", "/pans")?.query).toEqual({
+      session_key: "sorted",
+      user_id: [7],
+      rating: [4.5],
+      sort: "rating",
+      direction: "desc",
+      limit: 2,
+      offset: 0,
+    }),
+  );
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([5, 4]));
+
+  rerender({ session_key: "sorted", sort: "rating", direction: "desc", rating: [4.5], user_id: [7], ingredient_count: ["4-6"] });
+  await waitFor(() => expect(fake.last("GET", "/pans")?.query).toMatchObject({ ingredient_count: ["4-6"], offset: 0 }));
 });
 
 it("never asks for or shows a page of the previous filter's offset", async () => {

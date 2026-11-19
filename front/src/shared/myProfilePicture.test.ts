@@ -132,7 +132,7 @@ describe("changing the signed-in user's picture", () => {
       renderHook(() => useGetMe(), { wrapper }),
       renderHook(() => useGetUserProfile(me.id), { wrapper }),
       renderHook(() => useGetProfilePictureHistory(me.id), { wrapper }),
-      renderHook(() => useListPans({ user_id: me.id, limit: 1, offset: 0 }), { wrapper }),
+      renderHook(() => useListPans({ user_id: [me.id], limit: 1, offset: 0 }), { wrapper }),
     ];
     for (const hook of hooks) {
       await waitFor(() => expect(hook.result.current.data).toBeDefined());
