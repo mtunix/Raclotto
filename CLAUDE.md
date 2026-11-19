@@ -268,7 +268,7 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
 
 ### Issue tracker
 
-GitHub Issues on `mtardchild/raclotto`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+GitHub Issues on `mtunix/Raclotto`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
