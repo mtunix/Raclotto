@@ -2,16 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [master, dev]
+    # master only gets releases, and each one's tag runs CI on the same commit.
+    branches: [dev]
     # Releases: 2026.01, 2026.01a, … (back/src/version.py checks the exact form).
     tags: ['[0-9][0-9][0-9][0-9].[0-9][0-9]*']
   pull_request:
+  # Builds and smoke-tests a dev image on demand, e.g. after a Dockerfile change.
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -77,6 +80,7 @@ jobs:
   image:
     name: Docker image
     needs: [backend, frontend, contract]
+    if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

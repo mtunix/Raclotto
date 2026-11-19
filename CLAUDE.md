@@ -180,14 +180,16 @@ The README has the operator steps. The pieces:
 
 ## CI
 
-`.github/workflows/ci.yml` runs on pushes to `master` and `dev`, release tags and pull requests: the backend suite,
-`venv/bin/mypy`, `tsc`, `npm run lint`, jest, the production build (with `CI=true`, so build warnings
-fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
-`front/.nvmrc`; actions are pinned to commit SHAs. After those pass, the `image` job builds the
-Docker image and smoke-tests it (healthy, serves the index, `/api/health` reports the version).
-For a release tag it checks the tag is a version on `master`, pushes
-`ghcr.io/mtunix/raclotto:<version>` and `:latest`, and creates the GitHub release; everything else
-only builds and tests the image.
+`.github/workflows/ci.yml` runs on pushes to `dev`, release tags, pull requests and by hand
+(`workflow_dispatch`): the backend suite, `venv/bin/mypy`, `tsc`, `npm run lint`, jest, the
+production build (with `CI=true`, so build warnings fail it), and `npm run gen:api:check`. A push to
+`master` alone runs nothing; its release tag does. Python and Node versions come from
+`.python-version` and `front/.nvmrc`; actions are pinned to commit SHAs. After those pass, for a
+release tag or a manual run only, the `image` job builds the Docker image and smoke-tests it
+(healthy, serves the index, `/api/health` reports the version). For a release tag it checks the tag
+is a version on `master`, pushes `ghcr.io/mtunix/raclotto:<version>` and `:latest`, and creates the
+GitHub release; a manual run (`gh workflow run ci.yml --ref dev`) only builds and tests a `dev`
+image, the check to run after changing the `Dockerfile`, `.dockerignore` or `requirements.txt`.
 
 ## Verify what you changed, not the whole repo
 
