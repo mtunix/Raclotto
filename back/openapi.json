@@ -211,6 +211,23 @@
         "title": "AvailableCountsDto",
         "type": "object"
       },
+      "BoldestPanDto": {
+        "properties": {
+          "pan": {
+            "$ref": "#/components/schemas/PanDto"
+          },
+          "xp": {
+            "title": "Xp",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pan",
+          "xp"
+        ],
+        "title": "BoldestPanDto",
+        "type": "object"
+      },
       "ChangePasswordBody": {
         "additionalProperties": false,
         "properties": {
@@ -1580,6 +1597,45 @@
         "title": "PanPageDto",
         "type": "object"
       },
+      "ParticipantRecapDto": {
+        "properties": {
+          "average_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Rating"
+          },
+          "pan_count": {
+            "title": "Pan Count",
+            "type": "integer"
+          },
+          "ratings_given": {
+            "title": "Ratings Given",
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserSummaryDto"
+          },
+          "xp": {
+            "title": "Xp",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "user",
+          "pan_count",
+          "xp",
+          "average_rating",
+          "ratings_given"
+        ],
+        "title": "ParticipantRecapDto",
+        "type": "object"
+      },
       "PrepTypeDto": {
         "properties": {
           "id": {
@@ -2051,6 +2107,94 @@
           "pan_count"
         ],
         "title": "SessionPanCountDto",
+        "type": "object"
+      },
+      "SessionRecapDto": {
+        "description": "A session summed up; it works while the session is still open, too.",
+        "properties": {
+          "best_pan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PanDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boldest_pan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BoldestPanDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "favorite_ingredient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IngredientUsageDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_pan_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Pan At"
+          },
+          "pan_count": {
+            "title": "Pan Count",
+            "type": "integer"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantRecapDto"
+            },
+            "title": "Participants",
+            "type": "array"
+          },
+          "rating_count": {
+            "title": "Rating Count",
+            "type": "integer"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionDto"
+          },
+          "worst_pan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PanDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "session",
+          "pan_count",
+          "rating_count",
+          "last_pan_at",
+          "best_pan",
+          "worst_pan",
+          "boldest_pan",
+          "favorite_ingredient",
+          "participants"
+        ],
+        "title": "SessionRecapDto",
         "type": "object"
       },
       "StatsDto": {
@@ -6412,6 +6556,74 @@
           }
         ],
         "summary": "Reopen a closed session.",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/recap": {
+      "get": {
+        "operationId": "getSessionRecap",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRecapDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sum up a session: best, worst and boldest pan, favorite ingredient, and each participant.",
         "tags": [
           "sessions"
         ]

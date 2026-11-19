@@ -20,9 +20,11 @@ import type {
   CreateSessionBody,
   ErrorResponseDto,
   GetSessionByKeyParams,
+  GetSessionRecapParams,
   ListSessionsParams,
   SessionDto,
   SessionKeyBody,
+  SessionRecapDto,
   UpdateSessionBody
 } from '../../model';
 
@@ -235,6 +237,44 @@ export const useReactivateSession = <TError = ErrorType<ErrorResponseDto>>(
   const swrFn = getReactivateSessionMutationFetcher();
 
   const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Sum up a session: best, worst and boldest pan, favorite ingredient, and each participant.
+ */
+export const getSessionRecap = (
+    params: GetSessionRecapParams,
+ ) => {
+    return orvalMutator<SessionRecapDto>(
+    {url: `/sessions/recap`, method: 'GET',
+        params
+    },
+    );
+  }
+
+
+
+export const getGetSessionRecapKey = (params: GetSessionRecapParams,) => [`/sessions/recap`, ...(params ? [params]: [])] as const;
+
+export type GetSessionRecapQueryResult = NonNullable<Awaited<ReturnType<typeof getSessionRecap>>>
+
+/**
+ * @summary Sum up a session: best, worst and boldest pan, favorite ingredient, and each participant.
+ */
+export const useGetSessionRecap = <TError = ErrorType<ErrorResponseDto>>(
+  params: GetSessionRecapParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getSessionRecap>>, TError> & { swrKey?: Key, enabled?: boolean },  }
+) => {
+  const {swr: swrOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetSessionRecapKey(params) : null);
+  const swrFn = () => getSessionRecap(params)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
   return {
     swrKey,

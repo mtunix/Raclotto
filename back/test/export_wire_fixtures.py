@@ -128,6 +128,7 @@ class _Recorder(AppTest):
         )
         event_configs = self.ok(self.call("GET", "/events/configs", ana, query=query))
         dashboard = self.ok(self.call("GET", "/stats", ana, query=query))
+        recap = self.ok(self.call("GET", "/sessions/recap", ben, query=query))
         previous = set_image_generator(_FixedImage())
         try:
             generated = self.ok(self.call("POST", "/images/generate-profile-picture", ana, body={}))
@@ -141,6 +142,7 @@ class _Recorder(AppTest):
         assert leaderboard[0]["name"] == "Ada" and leaderboard[0]["total_points"] > 0, leaderboard
         assert events and events[0]["id"] == roll["events"][0]["id"], events
         assert dashboard["pans"][0]["author"] and dashboard["ingredients_top_rated"], dashboard
+        assert recap["best_pan"] and recap["boldest_pan"] and len(recap["participants"]) == 2, recap
         assert picture_history[0]["id"] == generated["id"] and len(picture_history) == 2, picture_history
         assert page["has_more"] and page["items"][0]["ratings"], page
         assert me["level"] == roll["reward"]["level"] and me["next_level"], me
@@ -174,6 +176,7 @@ class _Recorder(AppTest):
             "eventConfig": ("EventConfigDto", event_config),
             "eventConfigs": ("EventConfigDto[]", event_configs),
             "stats": ("StatsDto", dashboard),
+            "sessionRecap": ("SessionRecapDto", recap),
             "generatedPicture": ("GeneratedPictureDto", generated),
             "pictureHistory": ("ProfilePictureDto[]", picture_history),
         }

@@ -12,9 +12,11 @@ from back.src.dto.session import (
     SessionKeyQuery,
     UpdateSessionBody,
 )
+from back.src.dto.session_recap import SessionRecapDto
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import user_sessions
 from back.src.interactor.achievements import Achievements, SessionClosed
+from back.src.interactor.session_recap import SessionRecaps
 from back.src.repository.session_repository import SessionRepository
 
 
@@ -86,6 +88,22 @@ class SessionApi(BaseApi):
         if not session:
             raise _not_found()
         return SessionDto.model_validate(session)
+
+    @BaseApi.endpoint(
+        "/recap",
+        ["GET"],
+        query=SessionKeyQuery,
+        response=SessionRecapDto,
+        operation_id="getSessionRecap",
+        errors=(404,),
+    )
+    @require_auth
+    def get_recap(self, query: SessionKeyQuery) -> SessionRecapDto:
+        """Sum up a session: best, worst and boldest pan, favorite ingredient, and each participant."""
+        session = self.repository.by_key(query.session_key)
+        if not session:
+            raise _not_found()
+        return SessionRecapDto.of(SessionRecaps().of(session))
 
     @BaseApi.endpoint(
         "/<int:session_id>",

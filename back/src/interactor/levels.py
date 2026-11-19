@@ -2,6 +2,7 @@
 
     reward = Levels().award(user, pan)     # XP and levels before and after
     progress = Levels().progress_of(user)  # the level shown and the next one
+    xp = Levels().xp_for(pan)              # what a pan earns, without awarding it
     level = Levels().starting()            # where a new user starts
 
 A user without a stored level is shown the level their XP reaches, else the lowest; ``award``
@@ -75,6 +76,10 @@ class Levels:
             level=level,
             next_level=self._next(level),
         )
+
+    def xp_for(self, pan: Pan) -> int:
+        """The XP ``pan`` earns its author."""
+        return _xp_for(pan)
 
     def _next(self, level: Level | None) -> Level | None:
         return self._levels.next_level(level) if level is not None else None
