@@ -439,7 +439,10 @@
     "candidateSelected": "Ausgewählt",
     "generationCandidate": "Generierungskandidat",
     "candidatePictureSet": "Als Generierungskandidat eingestellt",
-    "candidatePictureSetFailed": "Fehler beim Einstellen als Generierungskandidat"
+    "candidatePictureSetFailed": "Fehler beim Einstellen als Generierungskandidat",
+    "regeneratePicture": "Bild neu generieren",
+    "regenerating": "Generiere...",
+    "generationUnavailable": "Bildgenerierung ist auf diesem Server nicht eingerichtet."
   },
   "error": {
     "no_response": {

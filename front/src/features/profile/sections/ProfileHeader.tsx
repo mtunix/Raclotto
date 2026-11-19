@@ -2,6 +2,7 @@ import { Button, Card, Col, Row, Space, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { UserProfileDto } from "../../../api/generated/model";
+import { useImageGeneration } from "../../../shared/imageGeneration";
 import { ProfilePictureManager } from "../../../shared/ProfilePictureManager";
 import { useMyPictureActions } from "../useMyPictureActions";
 import { LevelSummary } from "./LevelSummary";
@@ -20,6 +21,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ profile, userId, isOwnProfile, email }: ProfileHeaderProps) {
   const { t } = useTranslation();
   const { changing, generating, change, regenerate } = useMyPictureActions(isOwnProfile, profile.level?.id);
+  const canGenerate = useImageGeneration();
 
   return (
     <Card style={{ marginBottom: "24px" }}>
@@ -45,12 +47,17 @@ export function ProfileHeader({ profile, userId, isOwnProfile, email }: ProfileH
                 icon={<ReloadOutlined />}
                 onClick={regenerate}
                 loading={generating}
-                disabled={changing}
+                disabled={changing || !canGenerate}
                 size="small"
                 style={{ width: "100%" }}
               >
-                {generating ? "Generating..." : "Regenerate Picture"}
+                {generating ? t("image.regenerating") : t("image.regeneratePicture")}
               </Button>
+            )}
+            {isOwnProfile && !canGenerate && (
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                {t("image.generationUnavailable")}
+              </Text>
             )}
           </Space>
         </Col>

@@ -3,6 +3,8 @@ import type { ProfilePictureDto } from "../../api/generated/model";
 import { useAuthStore } from "../../AuthSlice";
 import {
     generatedPicture,
+    imageGeneration,
+    imageGenerationUnavailable,
     me,
     panPage,
     pictureHistory,
@@ -21,7 +23,8 @@ beforeEach(() => {
     fake = new FakeTransport()
         .on("GET", `/users/${me.id}`, { ...userProfile, id: me.id })
         .on("GET", `/users/${me.id}/stats`, userStats)
-        .on("GET", "/pans", { ...panPage, items: [], total: 0, has_more: false });
+        .on("GET", "/pans", { ...panPage, items: [], total: 0, has_more: false })
+        .on("GET", "/images/generation", imageGeneration);
     previous = setTransport(fake);
     useAuthStore.setState({ user: me });
 });
@@ -59,7 +62,7 @@ it("shows the signed-in user's own profile with their email, statistics and pans
     renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile");
 
     expect(await screen.findByText("ada@example.com")).toBeInTheDocument();
-    expect(screen.getByText("Regenerate Picture")).toBeInTheDocument();
+    expect(screen.getByText("image.regeneratePicture")).toBeInTheDocument();
     expect(screen.getByText("Gotta eat'em all!")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { level: 4, name: panPage.items[0].name ?? "" })).toBeInTheDocument();
     expect(screen.queryByText("history.loadMore")).not.toBeInTheDocument();
@@ -73,7 +76,7 @@ it("shows someone else's profile without their email or picture actions", async 
 
     expect(await screen.findByText("Bob")).toBeInTheDocument();
     expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
-    expect(screen.queryByText("Regenerate Picture")).not.toBeInTheDocument();
+    expect(screen.queryByText("image.regeneratePicture")).not.toBeInTheDocument();
     expect(screen.queryByText("profile.clickToChange")).not.toBeInTheDocument();
     expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: [5] });
 });
@@ -90,8 +93,19 @@ it("regenerates the picture for the user's level", async () => {
     fake.on("POST", "/images/generate-profile-picture", generatedPicture).on("GET", "/auth/me", me);
     renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile");
 
-    fireEvent.click(await screen.findByText("Regenerate Picture"));
+    const regenerate = (await screen.findByText("image.regeneratePicture")).closest("button") as HTMLElement;
+    await waitFor(() => expect(regenerate).toBeEnabled());
+    fireEvent.click(regenerate);
 
     expect(await screen.findByText("profile.pictureUpdated")).toBeInTheDocument();
     expect(fake.last("POST", "/images/generate-profile-picture")?.body).toEqual({ level_id: userProfile.level?.id });
+});
+
+it("offers no regenerating when the server can't generate pictures, and says why", async () => {
+    fake.on("GET", "/images/generation", imageGenerationUnavailable);
+    renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile");
+
+    expect(await screen.findByText("image.generationUnavailable")).toBeInTheDocument();
+    expect(screen.getByText("image.regeneratePicture").closest("button")).toBeDisabled();
+    expect(fake.last("POST", "/images/generate-profile-picture")).toBeUndefined();
 });

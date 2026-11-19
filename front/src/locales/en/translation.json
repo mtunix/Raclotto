@@ -439,7 +439,10 @@
     "candidateSelected": "Selected",
     "generationCandidate": "Generation Candidate",
     "candidatePictureSet": "Set as generation candidate",
-    "candidatePictureSetFailed": "Failed to set as generation candidate"
+    "candidatePictureSetFailed": "Failed to set as generation candidate",
+    "regeneratePicture": "Regenerate Picture",
+    "regenerating": "Generating...",
+    "generationUnavailable": "Picture generation isn't set up on this server."
   },
   "error": {
     "no_response": {

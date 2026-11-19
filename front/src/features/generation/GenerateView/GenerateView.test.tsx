@@ -5,6 +5,8 @@ import type { RollOutcomeDto } from '../../../api/generated/model';
 import {
     availableCounts,
     generatedPicture,
+    imageGeneration,
+    imageGenerationUnavailable,
     ingredientsForUser,
     me,
     rating,
@@ -29,7 +31,8 @@ beforeEach(() => {
     fake = new FakeTransport()
         .on('GET', '/ingredients', ingredientsForUser)
         .on('GET', '/ingredients/available-counts', availableCounts)
-        .on('POST', '/pans/generate', noLevelUp);
+        .on('POST', '/pans/generate', noLevelUp)
+        .on('GET', '/images/generation', imageGeneration);
     previous = setTransport(fake);
     useAppStore.setState({ session });
     useAuthStore.setState({ user: me });
@@ -146,6 +149,26 @@ it('offers the level-up picture once the result of a level-up closes', async () 
 
     await waitFor(() => expect(fake.last('POST', '/images/generate-profile-picture')?.body)
         .toEqual({ level_id: rollOutcome.reward.level?.id }));
+});
+
+it("levels up without a picture when the server can't generate one", async () => {
+    fake.on('POST', '/pans/generate', rollOutcome).on('GET', '/images/generation', imageGenerationUnavailable);
+    const consoleError = vi.spyOn(console, 'error');
+    localStorage.setItem('numFill', '1');
+    await renderView();
+    await waitFor(() => expect(fake.last('GET', '/images/generation')).toBeDefined());
+    await generate();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/level.leveledUp/)).toBeInTheDocument();
+    expect(useAuthStore.getState().user?.experience_points).toBe(rollOutcome.reward.xp_after);
+
+    fireEvent.click(within(dialog).getByText('common.close'));
+
+    expect(await screen.findByText('generate.generateButton')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(fake.last('POST', '/images/generate-profile-picture')).toBeUndefined();
+    expect(screen.queryByText('image.profilePictureError')).not.toBeInTheDocument();
+    expect(consoleError).not.toHaveBeenCalled();
 });
 
 it('returns to the controls when the roll fails', async () => {

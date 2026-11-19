@@ -3,6 +3,7 @@ import { useAuthStore } from "../../AuthSlice";
 import {
     availableCounts,
     generatedPicture,
+    imageGeneration,
     ingredientsForUser,
     me,
     rating,
@@ -26,7 +27,8 @@ beforeEach(() => {
         .on("POST", "/ratings", rating)
         .on("GET", `/pans/${pan.id}`, pan)
         .on("POST", "/images/generate-profile-picture", generatedPicture)
-        .on("GET", "/auth/me", me);
+        .on("GET", "/auth/me", me)
+        .on("GET", "/images/generation", imageGeneration);
     previous = setTransport(fake);
     useAuthStore.setState({ user: me });
 });

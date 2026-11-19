@@ -41,6 +41,7 @@ class ApiErrorCode(Enum):
     invalid_token = auto()
     forbidden = auto()
     too_many_requests = auto()
+    image_generation_unavailable = auto()
     internal_error = auto()
 
 

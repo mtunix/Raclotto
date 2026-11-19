@@ -175,7 +175,7 @@ _Avoid_: points (those are achievement points)
 **Level**:
 A named rank reached at a required amount of XP; there are 20. New users start at the lowest.
 Higher levels unlock pan card decorations (border style at 3, texture at 5, glow at 7), and each
-level-up offers a new generated profile picture.
+level-up offers a new generated profile picture, where the server can generate one.
 Code: `Level`, `LevelDto` (`name` is a translation key, `label_en` / `label_de`), `Levels`.
 _Avoid_: rank
 
@@ -245,7 +245,8 @@ Code: `ProfilePictureHistory`, `getProfilePictureHistory`. UI: "Profile Picture 
 
 **Generated picture**:
 A picture drawn by the image model, either for a level (from the generation candidate) or from a
-free prompt, and added to the history.
+free prompt, and added to the history. Without an image model (no `GOOGLE_GENAI_API_KEY`) the
+server can't generate any: it says so (`getImageGeneration`) and answers generation with a 503.
 Code: `ProfilePictures.generate_for_level` / `generate_from_prompt`, `ImageGenerator`.
 
 **Generation candidate**:

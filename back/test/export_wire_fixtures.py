@@ -14,7 +14,7 @@ from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.user import User
-from back.src.interactor.profile_pictures import set_image_generator
+from back.src.interactor.profile_pictures import GeminiImageGenerator, set_image_generator
 from back.test.support import AppTest
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "front/src/lib/api/__fixtures__/backendResponses.ts"
@@ -134,7 +134,10 @@ class _Recorder(AppTest):
         recap = self.ok(self.call("GET", "/sessions/recap", ben, query=query))
         previous = set_image_generator(_FixedImage())
         try:
+            image_generation = self.ok(self.call("GET", "/images/generation", ana))
             generated = self.ok(self.call("POST", "/images/generate-profile-picture", ana, body={}))
+            set_image_generator(GeminiImageGenerator(api_key=None))
+            image_generation_unavailable = self.ok(self.call("GET", "/images/generation", ana))
         finally:
             set_image_generator(previous)
         picture_history = self.ok(self.call("GET", f"/images/profile-picture-history/{ana.id}", ben))
@@ -162,6 +165,7 @@ class _Recorder(AppTest):
         assert events and events[0]["id"] == roll["events"][0]["id"], events
         assert dashboard["pans"][0]["author"] and dashboard["ingredients_top_rated"], dashboard
         assert recap["best_pan"] and recap["boldest_pan"] and len(recap["participants"]) == 2, recap
+        assert image_generation["available"] and not image_generation_unavailable["available"]
         assert picture_history[0]["id"] == generated["id"] and len(picture_history) == 2, picture_history
         assert page["has_more"] and page["items"][0]["ratings"], page
         assert len(filter_options["users"]) == 2 and filter_options["ratings"], filter_options
@@ -205,6 +209,8 @@ class _Recorder(AppTest):
             "eventConfigs": ("EventConfigDto[]", event_configs),
             "stats": ("StatsDto", dashboard),
             "sessionRecap": ("SessionRecapDto", recap),
+            "imageGeneration": ("ImageGenerationDto", image_generation),
+            "imageGenerationUnavailable": ("ImageGenerationDto", image_generation_unavailable),
             "generatedPicture": ("GeneratedPictureDto", generated),
             "pictureHistory": ("ProfilePictureDto[]", picture_history),
             "users": ("UserAccountDto[]", users),

@@ -31,6 +31,12 @@ class GeneratedPictureDto(ResponseDto):
     created_at: datetime
 
 
+class ImageGenerationDto(ResponseDto):
+    """Whether the server can generate pictures; without an image model it answers generation with a 503."""
+
+    available: bool
+
+
 class GenerateImageBody(RequestDto):
     prompt: str = Field(min_length=1)
 

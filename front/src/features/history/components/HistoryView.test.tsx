@@ -3,7 +3,7 @@ import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
 import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/model';
-import { generatedPicture, me, panFilterOptions, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
+import { generatedPicture, imageGeneration, me, panFilterOptions, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport, type RecordedRequest } from '../../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../../testUtils';
@@ -26,7 +26,7 @@ let previous: Transport;
 
 beforeEach(() => {
     fake = new FakeTransport();
-    fake.on('GET', '/pans/filters', panFilterOptions);
+    fake.on('GET', '/pans/filters', panFilterOptions).on('GET', '/images/generation', imageGeneration);
     previous = setTransport(fake);
     useAuthStore.setState({ user: me });
 });

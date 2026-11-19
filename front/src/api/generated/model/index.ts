@@ -37,6 +37,7 @@ export * from './getSessionByKeyParams';
 export * from './getSessionRecapParams';
 export * from './getStatsParams';
 export * from './healthDto';
+export * from './imageGenerationDto';
 export * from './importedIngredient';
 export * from './importIngredientsBody';
 export * from './importIngredientsParams';

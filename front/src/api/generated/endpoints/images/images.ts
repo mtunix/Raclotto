@@ -21,6 +21,7 @@ import type {
   GenerateImageBody,
   GenerateProfilePictureBody,
   GeneratedPictureDto,
+  ImageGenerationDto,
   ProfilePictureDto
 } from '../../model';
 
@@ -113,6 +114,43 @@ export const useGenerateProfilePicture = <TError = ErrorType<ErrorResponseDto>>(
   const swrFn = getGenerateProfilePictureMutationFetcher();
 
   const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Whether pictures can be generated, so clients offer generation only then.
+ */
+export const getImageGeneration = (
+
+ ) => {
+    return orvalMutator<ImageGenerationDto>(
+    {url: `/images/generation`, method: 'GET'
+    },
+    );
+  }
+
+
+
+export const getGetImageGenerationKey = () => [`/images/generation`] as const;
+
+export type GetImageGenerationQueryResult = NonNullable<Awaited<ReturnType<typeof getImageGeneration>>>
+
+/**
+ * @summary Whether pictures can be generated, so clients offer generation only then.
+ */
+export const useGetImageGeneration = <TError = ErrorType<ErrorResponseDto>>(
+   options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getImageGeneration>>, TError> & { swrKey?: Key, enabled?: boolean },  }
+) => {
+  const {swr: swrOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetImageGenerationKey() : null);
+  const swrFn = () => getImageGeneration()
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
   return {
     swrKey,

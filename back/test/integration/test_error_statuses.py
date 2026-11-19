@@ -16,6 +16,13 @@ from back.src.repository.preparation_type_repository import PreparationTypeRepos
 from back.test.support import AppTest, get_app
 
 
+class _NoImage:
+    available = True
+
+    def generate(self, contents: list[Any]) -> None:
+        return None
+
+
 class ThingDto(ResponseDto):
     id: int
 
@@ -268,10 +275,13 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
     def test_generate_profile_picture(self):
         previous = set_image_generator(GeminiImageGenerator(api_key=None))
         try:
+            unavailable = self.call("POST", "/images/generate-profile-picture", self.ana, body={})
+            set_image_generator(_NoImage())
             self.assert_answers(
                 "generateProfilePicture",
                 self.call("POST", "/images/generate-profile-picture", body={}),
                 self.call("POST", "/images/generate-profile-picture", self.ana, body={"level_id": "first"}),
+                unavailable,
                 self.call("POST", "/images/generate-profile-picture", self.ana, body={}),
             )
         finally:

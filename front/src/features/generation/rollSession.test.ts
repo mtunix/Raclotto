@@ -7,6 +7,7 @@ const noLevelUp = { leveledUp: false };
 const levelUp = (newLevelId: number) => ({ leveledUp: true, newLevelId });
 
 const run = (...events: RollEvent[]): RollState => events.reduce(rollSession, idle);
+const close: RollEvent = { type: "close", pictures: true };
 
 it("shows the result once both the outcome and the animation are in", () => {
     const outcomeFirst = run({ type: "roll", animated: true }, { type: "rolled", pan, levelUp: noLevelUp });
@@ -27,13 +28,18 @@ it("offers the level-up picture when the result closes", () => {
     const result = run({ type: "roll", animated: false }, { type: "rolled", pan, levelUp: levelUp(3) });
     expect(result).toMatchObject({ phase: "result", leveledUp: true, levelUpId: 3 });
 
-    const picture = rollSession(result, { type: "close" });
+    const picture = rollSession(result, close);
     expect(picture).toEqual({ phase: "picture", levelUpId: 3 });
     expect(rollSession(picture, { type: "pictureClosed" })).toEqual(idle);
 });
 
+it("closes a level-up straight to idle when the server can't generate pictures", () => {
+    const result = run({ type: "roll", animated: false }, { type: "rolled", pan, levelUp: levelUp(3) });
+    expect(rollSession(result, { type: "close", pictures: false })).toEqual(idle);
+});
+
 it("closes straight to idle without a level-up", () => {
-    expect(run({ type: "roll", animated: false }, { type: "rolled", pan, levelUp: noLevelUp }, { type: "close" }))
+    expect(run({ type: "roll", animated: false }, { type: "rolled", pan, levelUp: noLevelUp }, close))
         .toEqual(idle);
 });
 
@@ -45,7 +51,7 @@ it("keeps a level-up to offer when rolling again from the result", () => {
         { type: "rolled", pan: other, levelUp: noLevelUp },
     );
     expect(again).toMatchObject({ phase: "result", pan: other, leveledUp: false, levelUpId: 3 });
-    expect(rollSession(again, { type: "close" })).toEqual({ phase: "picture", levelUpId: 3 });
+    expect(rollSession(again, close)).toEqual({ phase: "picture", levelUpId: 3 });
 });
 
 it("goes back to where it started when the roll fails", () => {
@@ -59,7 +65,7 @@ it("goes back to where it started when the roll fails", () => {
 it("ignores what does not fit the phase", () => {
     const rolling = run({ type: "roll", animated: true });
     expect(rollSession(rolling, { type: "roll", animated: true })).toBe(rolling);
-    expect(rollSession(rolling, { type: "close" })).toBe(rolling);
+    expect(rollSession(rolling, close)).toBe(rolling);
     expect(rollSession(idle, { type: "rolled", pan, levelUp: noLevelUp })).toBe(idle);
     expect(rollSession(idle, { type: "animationDone" })).toBe(idle);
     expect(rollSession(idle, { type: "pictureClosed" })).toBe(idle);

@@ -157,13 +157,26 @@ class ImageApiTest(AppTest):
         for path, body in (("/images/generate-profile-picture", {}), ("/images/generate-banana", {"prompt": "x"})):
             with self.subTest(path=path):
                 response = self.call("POST", path, self.ana, body=body)
-                self.assertEqual(response.status_code, 500)
-                self.assertEqual(response.json["errors"][0]["title"], "Image generation unavailable")
+                self.assertEqual(response.status_code, 503)
+                [error] = response.json["errors"]
+                self.assertEqual(
+                    (error["code"], error["title"]),
+                    ("api_error_code.image_generation_unavailable", "Image generation unavailable"),
+                )
                 self.assertEqual(self.call("POST", path, body=body).status_code, 401)
         with self.assertRaises(PictureError) as raised:
             ProfilePictures().generate_for_level(self.ana)
         self.assertEqual(raised.exception.kind, PictureError.UNAVAILABLE)
         self.assertEqual(self.history(self.ana), [])
+
+    def test_clients_learn_whether_generation_is_available(self):
+        response = self.call("GET", "/images/generation", self.ana)
+        self.assertEqual((response.status_code, response.json), (200, {"available": True}))
+
+        self.without_api_key()
+        response = self.call("GET", "/images/generation", self.ana)
+        self.assertEqual((response.status_code, response.json), (200, {"available": False}))
+        self.assertEqual(self.call("GET", "/images/generation").status_code, 401)
 
     def test_generating_from_a_prompt_saves_the_users_picture(self):
         response = self.call("POST", "/images/generate-banana", self.ana, body={"prompt": "a banana"})

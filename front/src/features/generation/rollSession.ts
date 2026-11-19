@@ -1,11 +1,13 @@
 import { useReducer, useRef } from "react";
 import type { PanDto, RollOutcomeDto } from "../../api/generated/model";
+import { useImageGeneration } from "../../shared/imageGeneration";
 import { ratePan } from "../rating/ratePan";
 import { applyRollOutcome, type LevelUp } from "./applyRollOutcome";
 
 /**
  * A roll from the click to the closed result: the request, its outcome applied, the animation
- * the view plays meanwhile, rating the result, and the level-up picture offered once it closes.
+ * the view plays meanwhile, rating the result, and the level-up picture offered once it closes,
+ * if the server can generate one.
  *
  *   idle → rolling → revealing (outcome in, animation playing) → result → picture → idle
  *
@@ -26,7 +28,7 @@ export type RollEvent =
   | { type: "rolled"; pan: PanDto; levelUp: LevelUp }
   | { type: "failed" }
   | { type: "animationDone" }
-  | { type: "close" }
+  | { type: "close"; pictures: boolean }
   | { type: "pictureClosed" };
 
 export const idle: RollState = { phase: "idle" };
@@ -59,7 +61,7 @@ export function rollSession(state: RollState, event: RollEvent): RollState {
       return state;
     case "close":
       if (state.phase !== "result") return state;
-      return state.levelUpId !== undefined ? { phase: "picture", levelUpId: state.levelUpId } : idle;
+      return state.levelUpId !== undefined && event.pictures ? { phase: "picture", levelUpId: state.levelUpId } : idle;
     case "pictureClosed":
       return state.phase === "picture" ? idle : state;
   }
@@ -78,6 +80,7 @@ export interface RollSession {
 
 export function useRollSession(sessionKey: string): RollSession {
   const [state, dispatch] = useReducer(rollSession, idle);
+  const pictures = useImageGeneration();
   // The same state, for `roll` and `rate`, which may run before the next render.
   const currentRef = useRef(idle);
 
@@ -115,7 +118,7 @@ export function useRollSession(sessionKey: string): RollSession {
     roll,
     rate,
     animationDone: () => send({ type: "animationDone" }),
-    close: () => send({ type: "close" }),
+    close: () => send({ type: "close", pictures }),
     pictureClosed: () => send({ type: "pictureClosed" }),
   };
 }

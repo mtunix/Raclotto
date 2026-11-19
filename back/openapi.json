@@ -629,6 +629,20 @@
         "title": "HealthDto",
         "type": "object"
       },
+      "ImageGenerationDto": {
+        "description": "Whether the server can generate pictures; without an image model it answers generation with a 503.",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "title": "ImageGenerationDto",
+        "type": "object"
+      },
       "ImportIngredientsBody": {
         "additionalProperties": false,
         "properties": {
@@ -3822,6 +3836,16 @@
               }
             },
             "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "security": [
@@ -3888,6 +3912,16 @@
               }
             },
             "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         },
         "security": [
@@ -3896,6 +3930,42 @@
           }
         ],
         "summary": "Generate the signed-in user's next profile picture from their candidate picture and a level.",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/images/generation": {
+      "get": {
+        "operationId": "getImageGeneration",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageGenerationDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Whether pictures can be generated, so clients offer generation only then.",
         "tags": [
           "images"
         ]

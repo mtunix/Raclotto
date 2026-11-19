@@ -7,6 +7,7 @@ from back.src.dto.profile_picture import (
     GeneratedPictureDto,
     GenerateImageBody,
     GenerateProfilePictureBody,
+    ImageGenerationDto,
     ProfilePictureDto,
 )
 from back.src.entity.profile_picture_history import ProfilePictureHistory
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def _unavailable(error: PictureError) -> ApiError:
     return ApiError(
-        ApiErrorCode.incorrect_parameters, status=500, title="Image generation unavailable", detail=error.detail
+        ApiErrorCode.image_generation_unavailable, status=503, title="Image generation unavailable", detail=error.detail
     )
 
 
@@ -41,6 +42,12 @@ class ImageApi(BaseApi):
         self.pictures = ProfilePictures()
         # Asked here so a missing key is logged at startup.
         _ = self.pictures.available
+
+    @BaseApi.endpoint("/generation", ["GET"], response=ImageGenerationDto, operation_id="getImageGeneration")
+    @require_auth
+    def get_image_generation(self) -> ImageGenerationDto:
+        """Whether pictures can be generated, so clients offer generation only then."""
+        return ImageGenerationDto(available=self.pictures.available)
 
     @BaseApi.endpoint(
         "/profile-picture-history/<int:user_id>",
@@ -68,7 +75,7 @@ class ImageApi(BaseApi):
         body=GenerateImageBody,
         response=GeneratedPictureDto,
         operation_id="generateImage",
-        errors=(500,),
+        errors=(500, 503),
     )
     @require_auth
     def generate_banana_image(self, body: GenerateImageBody) -> GeneratedPictureDto:
@@ -99,7 +106,7 @@ class ImageApi(BaseApi):
         body=GenerateProfilePictureBody,
         response=GeneratedPictureDto,
         operation_id="generateProfilePicture",
-        errors=(500,),
+        errors=(500, 503),
     )
     @require_auth
     def generate_profile_picture(self, body: GenerateProfilePictureBody) -> GeneratedPictureDto:
