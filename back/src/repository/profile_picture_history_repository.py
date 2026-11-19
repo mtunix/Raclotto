@@ -40,30 +40,13 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
             .first()
         )
 
+    def has_marked_candidate(self, user_id: int) -> bool:
+        return db.session.query(ProfilePictureHistory).filter_by(user_id=user_id, is_candidate=True).first() is not None
+
     def add_profile_picture(
-        self, user_id: int, profile_picture_url: Optional[str], level_id: Optional[int] = None
+        self, user_id: int, profile_picture_url: Optional[str], level_id: Optional[int], is_candidate: bool
     ) -> ProfilePictureHistory:
-        """
-        Add a new profile picture to the user's history.
-
-        If no candidate picture exists for this user, the new picture is automatically
-        set as the candidate for generation context. The caller commits.
-
-        :param user_id: User ID
-        :param profile_picture_url: URL or path to the profile picture
-        :param level_id: Optional level ID at the time the picture was added
-        :return: Created ProfilePictureHistory instance
-        """
-        # Check if user already has a candidate picture
-        existing_candidate = (
-            db.session.query(ProfilePictureHistory)
-            .filter_by(user_id=user_id, is_candidate=True)
-            .first()
-        )
-
-        # If no candidate exists, mark this new picture as candidate
-        is_candidate = existing_candidate is None
-
+        """Add a picture to the user's history. The caller commits."""
         history_entry = ProfilePictureHistory(
             user_id=user_id,
             profile_picture=profile_picture_url,

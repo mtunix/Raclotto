@@ -92,30 +92,17 @@ class App(Flask):
 
     def init_admin_user(self) -> None:
         """Create the admin user from ADMIN_PASSWORD if there is none; an existing admin is left alone."""
-        from back.src.auth.password import hash_password
-        from back.src.entity.user import User
+        from back.src.interactor.accounts import Accounts
         from back.src.repository.user_repository import UserRepository
 
-        user_repository = UserRepository()
-        if user_repository.by_name("admin"):
+        if UserRepository().by_name("admin"):
             return
         password = self.config.get("ADMIN_PASSWORD")
         if not password:
             logging.warning("No admin user exists and RACLOTTO_ADMIN_PASSWORD is not set; none was created")
             return
 
-        from back.src.interactor.levels import Levels
-
-        first_level = Levels().starting()
-
-        admin_user = User(
-            name="admin",
-            email="admin@raclotto.local",
-            password=hash_password(password),
-            experience_points=0,
-            level_id=first_level.id if first_level else None,
-        )
-        self.db.session.add(admin_user)
+        Accounts().create_user("admin", "admin@raclotto.local", password)
         self.db.session.commit()
         logging.info("Admin user created successfully")
 

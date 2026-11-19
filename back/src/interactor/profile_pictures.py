@@ -1,5 +1,6 @@
-"""Profile pictures: generate a user's next picture and choose the one generation starts from.
+"""Profile pictures: add or generate a user's next picture and choose the one generation starts from.
 
+    picture = ProfilePictures().add(user, uploaded_or_none)
     picture = ProfilePictures().generate_for_level(user, level_id)
 
 Behind it: the image model (Gemini, unless ``set_image_generator`` replaced it),
@@ -122,6 +123,10 @@ class ProfilePictures:
     def available(self) -> bool:
         return self._image_generator().available
 
+    def add(self, user: User, picture: Optional[str]) -> ProfilePictureHistory:
+        """Show ``picture`` from now on; None shows none."""
+        return self._add(user, picture, user.level_id)
+
     def generate_for_level(self, user: User, level_id: Optional[int] = None) -> ProfilePictureHistory:
         """The user's candidate picture redrawn for a level, theirs by default, added to their history."""
         generator = self._available_generator()
@@ -166,9 +171,12 @@ class ProfilePictures:
         return image
 
     def _save(self, user: User, image_base64: str, level_id: Optional[int]) -> ProfilePictureHistory:
-        return self._history.add_profile_picture(
-            user_id=user.id, profile_picture_url=f"data:{MIME_TYPE};base64,{image_base64}", level_id=level_id
-        )
+        return self._add(user, f"data:{MIME_TYPE};base64,{image_base64}", level_id)
+
+    def _add(self, user: User, picture: Optional[str], level_id: Optional[int]) -> ProfilePictureHistory:
+        # Until the user chooses one, their first picture is the one generation starts from.
+        is_candidate = not self._history.has_marked_candidate(user.id)
+        return self._history.add_profile_picture(user.id, picture, level_id, is_candidate)
 
     def _prompt(self, user: User, level_id: Optional[int]) -> str:
         level = self._levels.by_id(level_id) if level_id else None

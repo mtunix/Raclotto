@@ -237,6 +237,17 @@ class TestRegister(AuthTest):
         self.assertEqual(self.me_with(result.token).json["id"], ben.id)
         self.assertEqual(self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw"}).status_code, 200)
 
+    def test_the_first_picture_is_the_one_generation_starts_from(self):
+        invite = self.make_invite(self.ana, "ben@example.com")
+        result = AuthResultDto.model_validate(self.register(invite, profile_picture="/pics/ben.png").json)
+
+        changed = self.call("PATCH", "/auth/me", self.stored(result.user.id), body={"profile_picture": "/pics/new.png"})
+
+        self.assertEqual(changed.status_code, 200, changed.json)
+        history = db.session.query(ProfilePictureHistory).filter_by(user_id=result.user.id)
+        self.assertEqual(sorted((h.profile_picture, h.is_candidate) for h in history),
+                         [("/pics/ben.png", True), ("/pics/new.png", False)])
+
     def test_unusable_invites_are_rejected(self):
         used = self.make_invite(self.ana, "ben@example.com", used=True)
         expired = self.make_invite(self.ana, "ben@example.com", expires_in_days=-1)
