@@ -283,6 +283,9 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
 - **Models** subclass `Base` (`driver/database.py`) and declare columns as
   `name: Mapped[T] = mapped_column(...)`: `Mapped[T | None]` makes the column nullable, so the
   annotation is the schema; relationships are `Mapped[list[X]]` / `Mapped[X | None]`.
+- **Nothing slow inside a transaction.** File-backed SQLite runs every transaction as `BEGIN IMMEDIATE`
+  (ADR 0007), so a request holds the database's one write lock from its first query to its commit:
+  commit before calling out (image model, network) or doing slow work.
 - **Domain behaviour goes in `interactor/`,** not in route handlers. A route that grows
   business logic is a module waiting to be extracted.
 - **Ingredient categories** (meat/vegetarian/vegan/fish) are mutually exclusive on an
