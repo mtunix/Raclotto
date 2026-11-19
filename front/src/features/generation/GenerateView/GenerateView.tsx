@@ -10,7 +10,6 @@ import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";
 import type { PanDto } from "../../../api/generated/model";
 import { useListIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
-import { useListPreparationTypes } from "../../../api/generated/endpoints/preparation-type/preparation-type";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientType } from "../../../api/generated/model";
 import { useTranslation } from "react-i18next";
@@ -59,7 +58,6 @@ export function GenerateView() {
   // Use SWR hooks for data fetching
   const swr = { enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true };
   const { data: ingredients = [] } = useListIngredients({ session_key: sessionKey }, { swr });
-  const { data: prepTypes = [] } = useListPreparationTypes({ session_key: sessionKey }, { swr });
 
   // Calculate total counts from ingredients (all ingredients regardless of availability)
   const totalFillCount = getTotalIngredientTypeCount(
@@ -173,20 +171,13 @@ export function GenerateView() {
   }
 
   function onGenerateClicked() {
-    // If rolling preparation type, randomly select one
-    let preparationTypeId: number | undefined = undefined;
-    if (rollPreparationType && prepTypes.length > 0) {
-      const randomIndex = Math.floor(Math.random() * prepTypes.length);
-      preparationTypeId = prepTypes[randomIndex].id;
-    }
-
-    handleGenerate(numFill, numSauce, preparationTypeId, rollCheese);
+    handleGenerate(numFill, numSauce, rollPreparationType, rollCheese);
   }
 
   async function handleGenerate(
     numFill: number,
     numSauce: number,
-    preparationTypeId?: number,
+    rollPrepType: boolean,
     rollCheese?: boolean,
   ) {
     if (!sessionKey) return;
@@ -224,7 +215,7 @@ export function GenerateView() {
         {
           num_fill: numFill,
           num_sauce: numSauce,
-          ...(preparationTypeId ? { preparation_type_id: preparationTypeId } : {}),
+          ...(rollPrepType ? { roll_prep_type: true } : {}),
           ...(rollCheese !== undefined ? { roll_cheese: rollCheese } : {}),
         },
         { session_key: sessionKey },

@@ -6,7 +6,6 @@ import {
     availableCounts,
     ingredientsForUser,
     me,
-    prepTypes,
     rating,
     rollOutcome,
     session,
@@ -28,7 +27,6 @@ beforeEach(() => {
     useIngredientStore.setState({ ingredientCount: 0, sauceCount: 0 });
     fake = new FakeTransport()
         .on('GET', '/ingredients', ingredientsForUser)
-        .on('GET', '/preparation_type', prepTypes)
         .on('GET', '/ingredients/available-counts', availableCounts)
         .on('POST', '/pans/generate', noLevelUp);
     previous = setTransport(fake);
@@ -108,10 +106,11 @@ it('rolls a preparation type and cheese level when asked to', async () => {
     await generate();
 
     await screen.findByRole('dialog');
+    // The server rolls the preparation type, so the pan counts as rolled and earns the bonus.
     expect(fake.last('POST', '/pans/generate')?.body).toEqual({
         num_fill: 1,
         num_sauce: 0,
-        preparation_type_id: prepTypes[0].id,
+        roll_prep_type: true,
         roll_cheese: true,
     });
 });
