@@ -102,7 +102,7 @@ The deep modules in `interactor/` and what they own:
 | `features/`, `shared/` | Feature views and shared components. `shared/` never imports `features/`. |
 | `AuthSlice.ts`, `AppSlice.ts` | Zustand stores (signed-in user, current session). |
 | `i18n.ts` | Translations; the language last shown is kept in `localStorage`, and `followUserLanguage()` (started in `index.tsx`) switches to the signed-in user's. |
-| `lib/language.ts`, `locales/` | Every user-visible text is a key in both `locales/{de,en}` (no `|| "fallback"`; `locales/translations.test.ts` checks), dates go through `formatDate`/`formatDateTime`, and antd's own texts follow the language via `AntdLocale`. The backend sends identifiers, not text: achievements by `key` (`shared/achievementText.ts`), events by `event_type` and `data` (`eventMessage`), errors by `code` (`failureMessage` in `lib/api/failedRequest.ts`); the test checks every identifier the generated client lists. |
+| `lib/language.ts`, `locales/` | Every user-visible text is a key in both `locales/{de,en}` (no `|| "fallback"`; `locales/translations.test.ts` checks), dates go through `formatDate`/`formatDateTime` and numbers through `formatNumber`/`formatRating` (antd `Statistic`: `numberFormatter`), and antd's own texts follow the language via `AntdLocale`. The backend sends identifiers, not text: achievements by `key` (`shared/achievementText.ts`), events by `event_type` and `data` (`eventMessage`), errors by `code` (`failureMessage` in `lib/api/failedRequest.ts`); the test checks every identifier the generated client lists. |
 
 A roll returns a `RollOutcomeDto` (pan + reward + achievements + events). Views roll through
 `useRollSession` (`features/generation/rollSession.ts`: roll, reveal, rate, level-up picture), which

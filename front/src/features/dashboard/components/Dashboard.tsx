@@ -28,6 +28,7 @@ import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
 import { displayName } from "../../../shared/displayName";
 import { ItemList, ItemRow } from "../../../shared/ItemList/ItemList";
+import { formatNumber, useLanguage } from "../../../lib/language";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 import "./Dashboard.css";
 
@@ -88,6 +89,7 @@ function IngredientListGroupItemCount(
   props: IngredientListGroupItemCountProps,
 ) {
   const { t } = useTranslation();
+  const language = useLanguage();
   const { ingredient } = props.entry;
   const backgroundColor =
     ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
@@ -107,7 +109,7 @@ function IngredientListGroupItemCount(
           {displayName(ingredient.name, t)}
         </span>
         <span className="dashboard-ingredient-count">
-          {props.entry.pan_count}
+          {formatNumber(props.entry.pan_count, language)}
         </span>
       </div>
     </ItemRow>
@@ -173,6 +175,7 @@ interface LeaderboardListItemProps {
 
 function LeaderboardListItem(props: LeaderboardListItemProps) {
   const { t } = useTranslation();
+  const language = useLanguage();
   const isTopThree = props.entry.rank <= 3;
   const isCurrentUser = props.currentUserId === props.entry.user_id;
 
@@ -270,7 +273,7 @@ function LeaderboardListItem(props: LeaderboardListItemProps) {
             type="secondary"
             style={{ fontSize: "0.8rem", fontWeight: 500 }}
           >
-            {props.entry.total_points}
+            {formatNumber(props.entry.total_points, language)}
           </Text>
         </div>
       </div>

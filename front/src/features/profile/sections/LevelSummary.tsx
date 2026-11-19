@@ -1,6 +1,7 @@
 import { Progress, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { LevelDto } from "../../../api/generated/model";
+import { formatNumber, useLanguage } from "../../../lib/language";
 import { levelProgress } from "../../../model/levelProgress";
 
 const { Text } = Typography;
@@ -14,6 +15,7 @@ interface LevelSummaryProps {
 /** The user's level and XP, and how far they are from the next level. */
 export function LevelSummary({ level, nextLevel, experiencePoints }: LevelSummaryProps) {
   const { t } = useTranslation();
+  const language = useLanguage();
   const levelName = ({ name }: LevelDto) => String(t(name, { defaultValue: name }));
   const { xpInLevel, xpNeeded, percent } = levelProgress(experiencePoints, level, nextLevel);
 
@@ -26,7 +28,7 @@ export function LevelSummary({ level, nextLevel, experiencePoints }: LevelSummar
           </strong>
         </Tag>
         <Text type="secondary" style={{ marginLeft: "8px", fontSize: "14px" }}>
-          {experiencePoints} XP
+          {formatNumber(experiencePoints, language)} XP
         </Text>
       </div>
       {nextLevel ? (
@@ -36,7 +38,7 @@ export function LevelSummary({ level, nextLevel, experiencePoints }: LevelSummar
               {t("level.progressTo")} {levelName(nextLevel)}
             </Text>
             <Text type="secondary" style={{ fontSize: "12px" }}>
-              {xpInLevel} / {xpNeeded} XP
+              {formatNumber(xpInLevel, language)} / {formatNumber(xpNeeded, language)} XP
             </Text>
           </div>
           <Progress

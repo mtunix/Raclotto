@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
+import i18n from '../../i18n';
 import type { AchievementStatusDto } from '../../api/generated/model';
 import { achievementStatuses } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
@@ -10,7 +11,8 @@ import { AchievementView } from './AchievementView';
 let fake: FakeTransport;
 let previous: Transport;
 
-beforeEach(() => {
+beforeEach(async () => {
+    await i18n.changeLanguage('de');
     fake = new FakeTransport();
     previous = setTransport(fake);
 });
@@ -48,7 +50,7 @@ it('marks unlocked achievements and shows the progress of the others', async () 
     await waitFor(() => expect(screen.getByText(title(unlocked))).toBeInTheDocument());
     expect(screen.getAllByText('achievement.unlocked')).toHaveLength(1);
     expect(inProgress.progress).toBe(0.5);
-    expect(screen.getAllByText(/% achievement\.complete/).map((n) => n.textContent)).toEqual(['50% achievement.complete']);
+    expect(screen.getAllByText(/% achievement\.complete/).map((n) => n.textContent)).toEqual(['50\u00a0% achievement.complete']);
 });
 
 it('hides the title and description of hidden achievements', async () => {

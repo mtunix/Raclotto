@@ -1,6 +1,7 @@
 import { Card, Col, Empty, Row, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { AchievementDto } from "../../../api/generated/model";
+import { formatNumber, useLanguage } from "../../../lib/language";
 import { achievementDescription, achievementTitle } from "../../../shared/achievementText";
 import { achievementValueColor } from "../../../shared/achievementValueColor";
 
@@ -9,6 +10,7 @@ const { Title, Text } = Typography;
 /** The achievements the user unlocked, with their points. */
 export function AchievementList({ achievements }: { achievements: AchievementDto[] }) {
   const { t } = useTranslation();
+  const language = useLanguage();
   return (
     <Card title={t("profile.achievements")} style={{ marginBottom: "24px" }}>
       {achievements.length > 0 ? (
@@ -26,7 +28,7 @@ export function AchievementList({ achievements }: { achievements: AchievementDto
                     </Text>
                   </div>
                   <Tag color={achievementValueColor(achievement.value || 0)}>
-                    {achievement.value || 0} {t("achievement.points")}
+                    {formatNumber(achievement.value, language)} {t("achievement.points")}
                   </Tag>
                 </div>
               </Card>

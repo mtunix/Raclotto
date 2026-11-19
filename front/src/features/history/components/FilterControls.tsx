@@ -1,6 +1,7 @@
 import {Button, Checkbox, Popover, Space, Tag, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
 import type {ListPansIngredientCountItem} from "../../../api/generated/model";
+import {formatNumber, useLanguage} from "../../../lib/language";
 
 const {Text} = Typography;
 
@@ -30,6 +31,7 @@ export function FilterControls({
     onClearFilters
 }: FilterControlsProps) {
     const {t} = useTranslation();
+    const language = useLanguage();
 
     return (
         <Space size="middle" align="center" wrap>
@@ -87,7 +89,7 @@ export function FilterControls({
                                 <Space orientation="vertical" size="small" style={{width: '100%'}}>
                                     {uniqueRatings.map(rating => (
                                         <Checkbox key={rating} value={rating}>
-                                            {rating} {t("history.stars")}
+                                            {formatNumber(rating, language)} {t("history.stars")}
                                         </Checkbox>
                                     ))}
                                 </Space>

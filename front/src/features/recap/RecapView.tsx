@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router";
 import { useGetSessionRecap } from "../../api/generated/endpoints/sessions/sessions";
 import type { PanDto, ParticipantRecapDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
-import { formatDate, useLanguage } from "../../lib/language";
+import { formatDate, formatNumber, formatRating, numberFormatter, useLanguage } from "../../lib/language";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import { displayName } from "../../shared/displayName";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
@@ -94,11 +94,11 @@ export function RecapView() {
         },
         { title: t("recap.who"), key: "user", render: (p: ParticipantRecapDto) => <UserBadge user={p.user} /> },
         { title: t("recap.pans"), dataIndex: "pan_count", key: "pans" },
-        { title: "XP", dataIndex: "xp", key: "xp" },
+        { title: "XP", key: "xp", render: (p: ParticipantRecapDto) => formatNumber(p.xp, language) },
         {
             title: t("recap.averageRating"),
             key: "average",
-            render: (p: ParticipantRecapDto) => (p.average_rating === null ? "–" : p.average_rating.toFixed(1)),
+            render: (p: ParticipantRecapDto) => (p.average_rating === null ? "–" : formatRating(p.average_rating, language)),
         },
         { title: t("recap.ratingsGiven"), dataIndex: "ratings_given", key: "given" },
     ];
@@ -119,13 +119,13 @@ export function RecapView() {
 
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
                 <Col xs={8}>
-                    <Card><Statistic title={t("recap.pans")} value={recap.pan_count} /></Card>
+                    <Card><Statistic title={t("recap.pans")} value={recap.pan_count} formatter={numberFormatter(language)} /></Card>
                 </Col>
                 <Col xs={8}>
-                    <Card><Statistic title={t("recap.ratings")} value={recap.rating_count} /></Card>
+                    <Card><Statistic title={t("recap.ratings")} value={recap.rating_count} formatter={numberFormatter(language)} /></Card>
                 </Col>
                 <Col xs={8}>
-                    <Card><Statistic title={t("recap.participants")} value={recap.participants.length} /></Card>
+                    <Card><Statistic title={t("recap.participants")} value={recap.participants.length} formatter={numberFormatter(language)} /></Card>
                 </Col>
             </Row>
 
@@ -145,7 +145,7 @@ export function RecapView() {
                                     icon={<FireOutlined />}
                                     title={t("recap.boldestPan")}
                                     pan={recap.boldest_pan.pan}
-                                    extra={<Tag color="orange">{recap.boldest_pan.xp} XP</Tag>}
+                                    extra={<Tag color="orange">{formatNumber(recap.boldest_pan.xp, language)} XP</Tag>}
                                 />
                             </Col>
                         )}

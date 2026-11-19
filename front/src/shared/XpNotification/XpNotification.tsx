@@ -5,6 +5,7 @@ import { useAppStore } from "../../AppSlice";
 import { useTranslation } from "react-i18next";
 import type { AchievementDto, LevelDto } from "../../api/generated/model";
 import type { LevelProgress } from "../../model/levelProgress";
+import { formatNumber, useLanguage } from "../../lib/language";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { achievementDescription, achievementTitle } from "../achievementText";
 import { achievementValueColor } from "../achievementValueColor";
@@ -17,6 +18,7 @@ const STROKE_COLOR = { '0%': '#108ee9', '100%': '#87d068' };
 
 export function XpNotification() {
     const { t } = useTranslation();
+    const language = useLanguage();
     const { xpNotification, hideXpNotification } = useAppStore();
     const { visible, reward, achievements } = xpNotification;
     // The clock belongs to one notification, so a new one never starts at the last one's end.
@@ -67,7 +69,7 @@ export function XpNotification() {
                     {label}
                 </Text>
                 <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {bar.xpInLevel} / {bar.xpNeeded} XP
+                    {formatNumber(bar.xpInLevel, language)} / {formatNumber(bar.xpNeeded, language)} XP
                 </Text>
             </div>
             <Progress percent={bar.percent} strokeColor={STROKE_COLOR} showInfo={false} size="small" />
@@ -77,7 +79,7 @@ export function XpNotification() {
     const earned = (levelTag: boolean) => (
         <div className="xp-gained">
             <Text strong className="xp-gained-text">
-                {t("xpNotification.earned", { amount: shown.xp_gained })}
+                {t("xpNotification.earned", { amount: formatNumber(shown.xp_gained, language) })}
             </Text>
             {levelTag && (
                 <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px', marginTop: '4px' }}>
@@ -150,7 +152,7 @@ export function XpNotification() {
                     {achievementDescription(achievement, t)}
                 </Text>
                 <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '14px', padding: '4px 12px', fontWeight: 600 }}>
-                    {achievement.value} {t("achievement.points")}
+                    {formatNumber(achievement.value, language)} {t("achievement.points")}
                 </Tag>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import { Card, Col, Rate, Row, Space, Statistic, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { UserStatsDto } from "../../../api/generated/model";
+import { formatNumber, numberFormatter, useLanguage } from "../../../lib/language";
 import { displayName } from "../../../shared/displayName";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
 
@@ -9,6 +10,7 @@ const { Text } = Typography;
 /** The user's records: their best session, favourite and best-rated ingredients, and biggest pan. */
 export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
   const { t } = useTranslation();
+  const language = useLanguage();
   const {
     most_pans_session: bestSession,
     favorite_ingredient: favorite,
@@ -25,7 +27,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
               <Statistic title={t("profile.sessionName")} value={bestSession.session_name || t("common.notAvailable")} />
             </Col>
             <Col xs={24} sm={12} md={8}>
-              <Statistic title={t("profile.pansInSession")} value={bestSession.pan_count || 0} />
+              <Statistic title={t("profile.pansInSession")} value={bestSession.pan_count || 0} formatter={numberFormatter(language)} />
             </Col>
           </Row>
         </Card>
@@ -49,7 +51,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
                     <div style={{ marginTop: "8px" }}>
                       <Rate disabled allowHalf value={bestRated.avg_rating} style={{ fontSize: "14px" }} />
                       <Text type="secondary" style={{ marginLeft: "8px" }}>
-                        {bestRated.avg_rating.toFixed(2)}
+                        {formatNumber(bestRated.avg_rating, language, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Text>
                     </div>
                   )}
@@ -70,6 +72,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
               <Statistic
                 title={t("profile.ingredientCount")}
                 value={biggestPan.ingredients.length}
+                formatter={numberFormatter(language)}
               />
             </Col>
           </Row>

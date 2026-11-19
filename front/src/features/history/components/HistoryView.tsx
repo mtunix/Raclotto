@@ -19,7 +19,7 @@ import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
 import {displayName} from "../../../shared/displayName";
 import {onErrorRetry} from "../../../lib/api/swrHooks";
-import {formatDateTime, useLanguage} from "../../../lib/language";
+import {formatDateTime, formatRating, useLanguage} from "../../../lib/language";
 
 const {Title, Text} = Typography;
 
@@ -278,7 +278,7 @@ export function HistoryView() {
                                 {pan.rating > 0 && (
                                     <div style={{ marginTop: '2px' }}>
                                         <Tag color="gold" style={{ fontSize: '0.7rem' }}>
-                                            {pan.rating.toFixed(1)}
+                                            {formatRating(pan.rating, language)}
                                         </Tag>
                                     </div>
                                 )}

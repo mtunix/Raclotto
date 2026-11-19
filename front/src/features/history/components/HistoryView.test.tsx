@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { type RouteObject } from 'react-router';
+import i18n from '../../../i18n';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
 import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/model';
@@ -24,7 +25,8 @@ function backend(total: number) {
 let fake: FakeTransport;
 let previous: Transport;
 
-beforeEach(() => {
+beforeEach(async () => {
+    await i18n.changeLanguage('de');
     fake = new FakeTransport();
     fake.on('GET', '/pans/filters', panFilterOptions).on('GET', '/images/generation', imageGeneration);
     previous = setTransport(fake);
@@ -79,7 +81,8 @@ it("lists the session's pans with their author, ingredients and average rating",
     for (const ingredient of newest.ingredients) {
         expect(within(card).getByText(ingredient.name as string)).toBeInTheDocument();
     }
-    expect(within(card).getByText(newest.rating.toFixed(1))).toBeInTheDocument();
+    expect(newest.rating).toBe(4.5);
+    expect(within(card).getByText('4,5')).toBeInTheDocument();
 });
 
 it('loads the next page on demand', async () => {
@@ -110,7 +113,7 @@ it('rates a pan and shows its fresh average', async () => {
     const thirdStar = within(card).getAllByRole('radio')[2];
     fireEvent.click(thirdStar.querySelector('.ant-rate-star-second') as HTMLElement);
 
-    expect(await within(card).findByText('3.8')).toBeInTheDocument();
+    expect(await within(card).findByText('3,8')).toBeInTheDocument();
     expect(fake.last('POST', '/ratings')?.body).toEqual({ pan_id: newest.id, rating: 3 });
     expect(fake.last('GET', `/pans/${newest.id}`)).toBeDefined();
 });

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
 import { displayName } from "../../../shared/displayName";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
-import { formatDateTime, useLanguage } from "../../../lib/language";
+import { formatDateTime, formatRating, useLanguage } from "../../../lib/language";
 import { panCardStyle } from "../panCardStyle";
 
 const { Title, Text } = Typography;
@@ -29,7 +29,7 @@ export function ProfilePanCard({ pan }: { pan: PanDto }) {
           {pan.rating > 0 && (
             <div style={{ textAlign: "right", marginLeft: "8px" }}>
               <Tag color="gold" style={{ fontSize: "0.7rem" }}>
-                {pan.rating.toFixed(1)}
+                {formatRating(pan.rating, language)}
               </Tag>
             </div>
           )}

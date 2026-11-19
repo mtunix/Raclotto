@@ -2,6 +2,7 @@ import {Spin, Card, Row, Col, Tag, Typography, Space, Progress} from "antd";
 import {useListAchievements} from "../../api/generated/endpoints/achievements/achievements";
 import type {AchievementStatusDto} from "../../api/generated/model";
 import {onErrorRetry} from "../../lib/api/swrHooks";
+import { formatNumber, useLanguage } from "../../lib/language";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { achievementDescription, achievementTitle } from "../../shared/achievementText";
 import { achievementValueColor } from "../../shared/achievementValueColor";
@@ -11,6 +12,7 @@ const {Title, Text} = Typography;
 
 export function AchievementView() {
     const {t} = useTranslation();
+    const language = useLanguage();
     const { data: achievements = [], isLoading: waiting } = useListAchievements({
         swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
     });
@@ -60,7 +62,7 @@ export function AchievementView() {
                                 </Title>
                             </Space>
                             <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                {achievement.value} {t("achievement.points")}
+                                {formatNumber(achievement.value, language)} {t("achievement.points")}
                             </Tag>
                         </div>
                         {displayDescription && (
@@ -76,7 +78,8 @@ export function AchievementView() {
                         {showProgress && !isUnlocked && (
                             <div style={{ marginTop: '8px' }}>
                                 <Progress 
-                                    percent={Math.round(progress * 100)} 
+                                    percent={Math.round(progress * 100)}
+                                    format={(percent = 0) => formatNumber(percent / 100, language, { style: "percent" })}
                                     size="small"
                                     strokeColor={{
                                         '0%': '#108ee9',
@@ -84,7 +87,7 @@ export function AchievementView() {
                                     }}
                                 />
                                 <Text type="secondary" style={{ fontSize: '0.75rem', display: 'block', marginTop: '4px' }}>
-                                    {Math.round(progress * 100)}% {t("achievement.complete")}
+                                    {formatNumber(progress, language, { style: "percent", maximumFractionDigits: 0 })} {t("achievement.complete")}
                                 </Text>
                             </div>
                         )}
