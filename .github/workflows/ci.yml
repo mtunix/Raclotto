@@ -120,7 +120,7 @@ jobs:
         run: |
           docker run --detach --name raclotto --publish 127.0.0.1:8081:8081 \
             --env RACLOTTO_JWT_SECRET="$(openssl rand -base64 48)" raclotto:ci
-          # The first health check runs one interval (30 s) after the start.
+          # Up to 90 s; the Dockerfile checks every 2 s while the container starts.
           for _ in $(seq 45); do
             [ "$(docker inspect --format '{{.State.Health.Status}}' raclotto)" = healthy ] && break
             sleep 2

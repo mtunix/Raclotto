@@ -34,6 +34,6 @@ ENV RACLOTTO_HOST=0.0.0.0 \
     RACLOTTO_PORT=8081 \
     RACLOTTO_DATABASE_URL=sqlite:////app/instance/raclotto.db
 EXPOSE 8081
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s --retries=3 \
     CMD ["python", "-c", "import urllib.request as r; r.urlopen(r.Request('http://127.0.0.1:8081/api/health', headers={'Accept': 'application/json'}), timeout=4)"]
 CMD ["python", "-m", "back.src.main"]
