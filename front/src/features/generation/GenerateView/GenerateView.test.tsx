@@ -49,7 +49,7 @@ const countInputs = () => screen.getAllByRole<HTMLInputElement>('spinbutton');
 
 async function renderView() {
     const result = renderRoute(<GenerateView />);
-    await screen.findByText(`Available: ${availableCounts.fill_count} / ${availableCounts.total_fill_count}`);
+    await screen.findByText(`generate.available: ${availableCounts.fill_count} / ${availableCounts.total_fill_count}`);
     return result;
 }
 
@@ -66,7 +66,7 @@ async function generate() {
 it('shows how many fills and sauces are available in the session', async () => {
     await renderView();
 
-    expect(screen.getByText(`Available: ${availableCounts.sauce_count} / ${availableCounts.total_sauce_count}`)).toBeInTheDocument();
+    expect(screen.getByText(`generate.available: ${availableCounts.sauce_count} / ${availableCounts.total_sauce_count}`)).toBeInTheDocument();
     expect(fake.last('GET', '/ingredients/available-counts')?.query).toEqual({ session_key: session.key });
 });
 

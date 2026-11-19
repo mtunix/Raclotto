@@ -19,10 +19,10 @@ export function usePictureHistory(userId: number | undefined, active: boolean) {
     setChoosing(pictureId);
     try {
       await chooseCandidatePicture(userId, pictureId);
-      message.success(t("image.candidatePictureSet") || "Set as generation candidate");
+      message.success(t("image.candidatePictureSet"));
     } catch (error) {
       console.error("Failed to set candidate picture:", error);
-      message.error(t("image.candidatePictureSetFailed") || "Failed to set as generation candidate");
+      message.error(t("image.candidatePictureSetFailed"));
     } finally {
       setChoosing(null);
     }

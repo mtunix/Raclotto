@@ -19,11 +19,13 @@ import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
 import {displayName} from "../../../shared/displayName";
 import {onErrorRetry} from "../../../lib/api/swrHooks";
+import {formatDateTime, useLanguage} from "../../../lib/language";
 
 const {Title, Text} = Typography;
 
 export function HistoryView() {
     const { t } = useTranslation();
+    const language = useLanguage();
     const navigate = useNavigate();
     const params = useParams<{sessionId: string}>();
     const sessionId = params.sessionId || "";
@@ -85,11 +87,11 @@ export function HistoryView() {
                 { animated: false },
             )
             .then(() => {
-                message.success(t("history.panCloned") || "Pan cloned successfully");
+                message.success(t("history.panCloned"));
             })
             .catch((error) => {
                 console.error("Failed to clone pan:", error);
-                message.error(t("history.panCloneFailed") || "Failed to clone pan");
+                message.error(t("history.panCloneFailed"));
             })
             .finally(() => {
                 setCloningPanId(null);
@@ -119,14 +121,6 @@ export function HistoryView() {
         cloneRoll.close();
         setSelectedPan(null);
     }
-
-    const formatDate = (dateString: string) => {
-        try {
-            return new Date(dateString).toLocaleString();
-        } catch {
-            return dateString;
-        }
-    };
 
     // Function to determine if text should be black or white based on background color
     const getContrastColor = (hexColor: string) => {
@@ -266,11 +260,11 @@ export function HistoryView() {
                                         </Avatar>
                                     )}
                                     <Text type="secondary" style={{ fontSize: '0.8rem' }}>
-                                        {t("history.consumedBy")} <strong>{author?.name ?? "Unknown"}</strong>
+                                        {t("history.consumedBy")} <strong>{author?.name ?? t("profile.unknownUser")}</strong>
                                     </Text>
                                 </Space>
                                 <Text type="secondary" style={{ fontSize: '0.7rem' }}>
-                                    {t("history.consumedAt")} {formatDate(pan.timestamp)}
+                                    {t("history.consumedAt")} {formatDateTime(pan.timestamp, language)}
                                 </Text>
                             </Space>
                             <div style={{ textAlign: 'right', marginLeft: '8px' }}>
@@ -306,7 +300,7 @@ export function HistoryView() {
                                 </Space>
                             ) : (
                                 <Text type="secondary" style={{ fontSize: '0.85rem' }}>
-                                    {t("ingredient.noIngredients") || "No ingredients"}
+                                    {t("ingredient.noIngredients")}
                                 </Text>
                             )}
                         </div>
@@ -361,12 +355,9 @@ export function HistoryView() {
                 visible={cloneConfirmVisible}
                 onConfirm={handleCloneConfirm}
                 onCancel={handleCloneCancel}
-                title={t("history.cloneConfirmTitle") || t("history.iWantThisToo")}
+                title={t("history.cloneConfirmTitle")}
                 message={
-                    t("history.cloneConfirmMessage") ||
-                    t("history.cloneConfirmFallback", {
-                        defaultValue: "Do you really want to clone this pan for yourself?",
-                    })
+                    t("history.cloneConfirmMessage")
                 }
             />
 
@@ -399,7 +390,7 @@ export function HistoryView() {
                                 onClick={() => setFiltersExpanded(!filtersExpanded)}
                                 style={{ width: '100%', textAlign: 'left' }}
                             >
-                                {t("history.sortAndFilters") || "Sort & Filters"}
+                                {t("history.sortAndFilters")}
                                 <span style={{ float: 'right' }}>
                                     {filtersExpanded ? '▲' : '▼'}
                                 </span>
@@ -490,7 +481,7 @@ export function HistoryView() {
                                 onClick={loadMore}
                                 size="large"
                             >
-                                {t("history.loadMore") || "Load More"}
+                                {t("history.loadMore")}
                             </Button>
                         </div>
                     )}
@@ -502,7 +493,7 @@ export function HistoryView() {
                             {VectorGraphics.HISTORY}
                         </span>
                         <Text type="secondary">
-                            {t("history.noPans") || "No pans in history"}
+                            {t("history.noPans")}
                         </Text>
                     </div>
                 </Card>

@@ -180,7 +180,7 @@ describe("on someone else's profile", () => {
 
     expect(within(dialog).getByText("profile.viewProfilePicture")).toBeInTheDocument();
     fireEvent.click(await within(dialog).findByText("profile.pictureHistory (2)"));
-    expect(await within(dialog).findByText("Level: level.kaeseKnauserer (ID: 2)")).toBeInTheDocument();
+    expect(await within(dialog).findByText("profile.level: level.kaeseKnauserer (ID: 2)")).toBeInTheDocument();
     expect(within(dialog).queryByText("image.setAsCandidate")).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/image\.generationCandidate/)).not.toBeInTheDocument();
     expect(within(dialog).queryByText("auth.removePhoto")).not.toBeInTheDocument();

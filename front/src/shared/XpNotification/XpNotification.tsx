@@ -140,7 +140,7 @@ export function XpNotification() {
                     {VectorGraphics.ACHIEVEMENTS}
                 </span>
                 <Text strong className="achievement-unlocked-text">
-                    {t("achievement.unlocked") || "Achievement Unlocked!"}
+                    {t("achievement.unlocked")}
                 </Text>
                 <Title level={4} style={{ margin: '12px 0 8px 0', fontSize: '1.2rem' }}>
                     {achievement.title}
@@ -149,7 +149,7 @@ export function XpNotification() {
                     {achievement.description}
                 </Text>
                 <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '14px', padding: '4px 12px', fontWeight: 600 }}>
-                    {achievement.value} {t("achievement.points") || "pts"}
+                    {achievement.value} {t("achievement.points")}
                 </Tag>
             </div>
         </div>

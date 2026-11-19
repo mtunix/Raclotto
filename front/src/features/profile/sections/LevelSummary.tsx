@@ -22,7 +22,7 @@ export function LevelSummary({ level, nextLevel, experiencePoints }: LevelSummar
       <div style={{ marginBottom: "8px" }}>
         <Tag color="blue" style={{ fontSize: "14px", padding: "4px 12px" }}>
           <strong>
-            {t("profile.level") || "Level"} {level.id}: {levelName(level)}
+            {t("profile.level")} {level.id}: {levelName(level)}
           </strong>
         </Tag>
         <Text type="secondary" style={{ marginLeft: "8px", fontSize: "14px" }}>

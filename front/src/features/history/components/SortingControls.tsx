@@ -22,7 +22,7 @@ export function SortingControls({
     return (
         <Space size="middle" align="center" wrap style={{ width: '100%' }}>
             <Text strong style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-                {t("history.sortBy") || "Sort by"}:
+                {t("history.sortBy")}:
             </Text>
             <Select
                 value={sortField}
@@ -30,9 +30,9 @@ export function SortingControls({
                 style={{flex: 2, minWidth: 150}}
                 size="large"
                 options={[
-                    { value: "time", label: t("history.time") || "Time" },
-                    { value: "rating", label: t("history.rating") || "Rating" },
-                    { value: "counts", label: t("history.ingredientCounts") || "Ingredient + Sauce counts" },
+                    { value: "time", label: t("history.time") },
+                    { value: "rating", label: t("history.rating") },
+                    { value: "counts", label: t("history.ingredientCounts") },
                 ]}
             />
             <Select
@@ -41,8 +41,8 @@ export function SortingControls({
                 style={{flex: 1, minWidth: 80}}
                 size="large"
                 options={[
-                    { value: "desc", label: t("history.descending") || "Descending" },
-                    { value: "asc", label: t("history.ascending") || "Ascending" },
+                    { value: "desc", label: t("history.descending") },
+                    { value: "asc", label: t("history.ascending") },
                 ]}
             />
         </Space>

@@ -20,32 +20,32 @@ export function ProfileStatistics({ stats }: { stats: Partial<UserStatsDto> }) {
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
       <StatisticCard
-        title={t("profile.totalPans") || "Total Pans"}
+        title={t("profile.totalPans")}
         value={stats.total_pans || 0}
         prefix={VectorGraphics.HISTORY}
       />
-      <StatisticCard title={t("profile.totalRatings") || "Ratings Given"} value={stats.total_ratings_given || 0} />
+      <StatisticCard title={t("profile.totalRatings")} value={stats.total_ratings_given || 0} />
       <StatisticCard
-        title={t("profile.averageRating") || "Avg Rating"}
+        title={t("profile.averageRating")}
         value={stats.average_rating_received || 0}
         precision={2}
         suffix="/ 5"
       />
       <StatisticCard
-        title={t("profile.achievementPoints") || "Achievement Points"}
+        title={t("profile.achievementPoints")}
         value={stats.total_achievement_points || 0}
         prefix={VectorGraphics.ACHIEVEMENTS}
       />
       {stats.average_ingredients_per_pan !== undefined && (
         <StatisticCard
-          title={t("profile.avgIngredientsPerPan") || "Avg Ingredients"}
+          title={t("profile.avgIngredientsPerPan")}
           value={stats.average_ingredients_per_pan || 0}
           precision={1}
         />
       )}
       {stats.sessions_participated !== undefined && (
         <StatisticCard
-          title={t("profile.sessionsParticipated") || "Sessions"}
+          title={t("profile.sessionsParticipated")}
           value={stats.sessions_participated || 0}
         />
       )}

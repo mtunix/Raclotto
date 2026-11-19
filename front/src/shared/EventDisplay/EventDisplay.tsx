@@ -1,5 +1,6 @@
 import { Button } from "antd";
 import { CloseOutlined, BellOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import type { EventDto } from "../../api/generated/model";
 import "./EventDisplay.css";
 
@@ -9,6 +10,7 @@ type EventDisplayProps = {
 };
 
 export function EventDisplay(props: EventDisplayProps) {
+    const { t } = useTranslation();
     if (!props.events || props.events.length === 0) {
         return null;
     }
@@ -33,7 +35,7 @@ export function EventDisplay(props: EventDisplayProps) {
                         size="large"
                         className="event-dismiss-button"
                     >
-                        Dismiss
+                        {t("events.dismiss")}
                     </Button>
                 </div>
             </div>

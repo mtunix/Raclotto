@@ -5,10 +5,10 @@ export function copyToClipboard(text: string, t: (key: string) => string): Promi
     return navigator.clipboard
         .writeText(text)
         .then(() => {
-            message.success(t("settings.copiedToClipboard") || "Copied to clipboard");
+            message.success(t("settings.copiedToClipboard"));
         })
         .catch((err) => {
             console.error("Failed to copy to clipboard:", err);
-            message.error(t("settings.copyFailed") || "Failed to copy to clipboard");
+            message.error(t("settings.copyFailed"));
         });
 }

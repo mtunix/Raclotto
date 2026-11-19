@@ -241,7 +241,7 @@ export function GenerateView() {
                 key: "legacy",
                 label: (
                   <span className={typedStyles.tabLabel}>
-                    {t("generate.legacyMode") || "Legacy"}
+                    {t("generate.legacyMode")}
                   </span>
                 ),
                 children: (
@@ -272,7 +272,7 @@ export function GenerateView() {
                 key: "bandit",
                 label: (
                   <span className={typedStyles.tabLabel}>
-                    {t("generate.banditMode") || "Bandit"}
+                    {t("generate.banditMode")}
                   </span>
                 ),
                 children: (

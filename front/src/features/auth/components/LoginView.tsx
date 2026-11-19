@@ -32,7 +32,7 @@ export function LoginView() {
             ? t("auth.tooManyAttempts")
             : err instanceof Error && err.message
             ? err.message
-            : "Login failed. Please check your credentials.",
+            : t("auth.loginFailed"),
       );
     } finally {
       setLoading(false);

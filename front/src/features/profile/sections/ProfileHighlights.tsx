@@ -19,13 +19,13 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
   return (
     <>
       {bestSession && (
-        <Card title={t("profile.bestSession") || "Best Session"} style={{ marginBottom: "24px" }}>
+        <Card title={t("profile.bestSession")} style={{ marginBottom: "24px" }}>
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={8}>
-              <Statistic title={t("profile.sessionName") || "Session"} value={bestSession.session_name || "N/A"} />
+              <Statistic title={t("profile.sessionName")} value={bestSession.session_name || t("common.notAvailable")} />
             </Col>
             <Col xs={24} sm={12} md={8}>
-              <Statistic title={t("profile.pansInSession") || "Pans Created"} value={bestSession.pan_count || 0} />
+              <Statistic title={t("profile.pansInSession")} value={bestSession.pan_count || 0} />
             </Col>
           </Row>
         </Card>
@@ -42,7 +42,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
           )}
           {bestRated && (
             <Col xs={24} md={12}>
-              <Card title={t("profile.bestRatedIngredient") || "Best Rated Ingredient"}>
+              <Card title={t("profile.bestRatedIngredient")}>
                 <div>
                   <IngredientDisplay ingredient={bestRated.ingredient} variant="badge" showTags={false} showIcon={true} />
                   {bestRated.avg_rating > 0 && (
@@ -61,14 +61,14 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
       )}
 
       {biggestPan && (
-        <Card title={t("profile.biggestPan") || "Biggest Pan"} style={{ marginBottom: "24px" }}>
+        <Card title={t("profile.biggestPan")} style={{ marginBottom: "24px" }}>
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12}>
-              <Statistic title={t("profile.panName") || "Pan Name"} value={displayName(biggestPan.name, t)} />
+              <Statistic title={t("profile.panName")} value={displayName(biggestPan.name, t)} />
             </Col>
             <Col xs={24} sm={12}>
               <Statistic
-                title={t("profile.ingredientCount") || "Ingredient Count"}
+                title={t("profile.ingredientCount")}
                 value={biggestPan.ingredients.length}
               />
             </Col>
@@ -76,7 +76,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
           {biggestPan.ingredients.length > 0 && (
             <div style={{ marginTop: "16px" }}>
               <Text strong style={{ display: "block", marginBottom: "12px" }}>
-                {t("profile.ingredients") || "Ingredients"}
+                {t("profile.ingredients")}
               </Text>
               <Space wrap style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {biggestPan.ingredients.map((ingredient) => (

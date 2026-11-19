@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { createInvite, revokeInvite, useListInvites } from "../../../api/generated/endpoints/invites/invites";
 import type { InviteDto } from "../../../api/generated/model";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
+import { formatDateTime, useLanguage } from "../../../lib/language";
 import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
 import { copyToClipboard } from "../copyToClipboard";
 import "../SettingsView.css";
@@ -19,16 +20,12 @@ const iconButtonStyle: CSSProperties = {
     borderRadius: '12px'
 };
 
-function formatDate(value: string): string {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
-}
-
 const isExpired = (invite: InviteDto) => new Date(invite.expires_at) < new Date();
 
 /** Invite someone by email and keep track of the invites you sent. */
 export function InvitesSection() {
     const { t } = useTranslation();
+    const language = useLanguage();
     const { data: invites = [], isLoading, mutate } = useListInvites({
         swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
     });
@@ -162,11 +159,11 @@ export function InvitesSection() {
                                             <strong>{t("invite.token")}:</strong> <code>{invite.token}</code>
                                         </div>
                                         <div>
-                                            <strong>{t("invite.expiresAt")}:</strong> {formatDate(invite.expires_at)}
+                                            <strong>{t("invite.expiresAt")}:</strong> {formatDateTime(invite.expires_at, language)}
                                         </div>
                                         {invite.is_used && invite.used_at && (
                                             <div>
-                                                <strong>{t("invite.usedAt")}:</strong> {formatDate(invite.used_at)}
+                                                <strong>{t("invite.usedAt")}:</strong> {formatDateTime(invite.used_at, language)}
                                             </div>
                                         )}
                                     </div>

@@ -42,7 +42,7 @@ export function useBanditSpin(sessionKey: string, items: IngredientDto[], option
             );
         } catch (error) {
             console.error("Failed to generate bandit pan:", error);
-            message.error(t("generate.banditError") || "Failed to spin the bandit. Please try again.");
+            message.error(t("generate.banditError"));
             return;
         }
 

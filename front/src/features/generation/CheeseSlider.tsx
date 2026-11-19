@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Slider, Typography, Card } from 'antd';
+import { useTranslation } from 'react-i18next';
 import styles from './GenerateView/GenerateView.module.css';
 
 const { Text } = Typography;
@@ -9,6 +10,7 @@ interface CheeseSliderProps {
 }
 
 export function CheeseSlider({ cheeseLevel }: CheeseSliderProps) {
+    const { t } = useTranslation();
     const [animatedValue, setAnimatedValue] = useState(0);
     const [animatedLevel, setAnimatedLevel] = useState(cheeseLevel);
     if (animatedLevel !== cheeseLevel) {
@@ -84,7 +86,7 @@ export function CheeseSlider({ cheeseLevel }: CheeseSliderProps) {
         >
             <div className={styles.flexColumn}>
                 <Text strong className={styles.subtitle}>
-                    Cheese Level
+                    {t("generate.cheeseLevel")}
                 </Text>
                 <div 
                     className="cheese-slider-container"

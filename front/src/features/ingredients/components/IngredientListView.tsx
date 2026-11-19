@@ -38,7 +38,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                 label: (
                     <Space>
                         <span style={{fontWeight: 500, color: '#8e8e93', fontSize: '15px', letterSpacing: '-0.022em'}}>
-                            {t("ingredient.nonApplicable") || "Not applicable for your diet"}
+                            {t("ingredient.nonApplicable")}
                         </span>
                         <Badge count={availableNonApplicable.length} showZero style={{ backgroundColor: '#8e8e93' }} />
                     </Space>
@@ -66,7 +66,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                 label: (
                     <Space>
                         <span style={{fontWeight: 500, color: '#ff3b30', fontSize: '15px', letterSpacing: '-0.022em'}}>
-                            {t("ingredient.unavailable") || "Unavailable"}
+                            {t("ingredient.unavailable")}
                         </span>
                         <Badge count={unavailableIngredients.length} showZero style={{ backgroundColor: '#ff3b30' }} />
                     </Space>
@@ -97,8 +97,8 @@ export function IngredientListView(props: IngredientListViewProps) {
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={type === IngredientType.FILL 
-                            ? (t("ingredient.noIngredients") || "No ingredients")
-                            : (t("ingredient.noSauces") || "No sauces")
+                            ? t("ingredient.noIngredients")
+                            : t("ingredient.noSauces")
                         }
                         style={{ padding: '40px 0' }}
                     />

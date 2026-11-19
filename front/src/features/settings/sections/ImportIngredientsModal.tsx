@@ -52,16 +52,16 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
         staged.forEach((ingredient, index) => {
             const problems: Record<string, string> = {};
             if (!ingredient.name.trim()) {
-                problems.name = t("settings.validationError.nameRequired") || "Name is required";
+                problems.name = t("settings.validationError.nameRequired");
             }
             if (!isIngredientType(ingredient.type)) {
-                problems.type = t("settings.validationError.typeRequired") || "Type must be FILL (1) or SAUCE (2)";
+                problems.type = t("settings.validationError.typeRequired");
             }
             const problem = categoryProblem(ingredient);
             if (problem === "none") {
-                problems.dietary = t("settings.validationError.dietaryRequired") || "One of meat, vegetarian, vegan or fish must be true";
+                problems.dietary = t("settings.validationError.dietaryRequired");
             } else if (problem === "several") {
-                problems.dietary = t("settings.validationError.categoryConflict") || "Only one of meat, vegetarian, vegan or fish can be true";
+                problems.dietary = t("settings.validationError.categoryConflict");
             }
             if (Object.keys(problems).length > 0) found[index] = problems;
         });
@@ -116,8 +116,8 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
             console.error(`Failed to ${mode} ingredients:`, e);
             message.error(
                 mode === "import"
-                    ? t("settings.importFailed") || "Failed to import ingredients"
-                    : t("settings.reimportFailed") || "Failed to reimport ingredients",
+                    ? t("settings.importFailed")
+                    : t("settings.reimportFailed"),
             );
         } finally {
             setSubmitting(false);
@@ -126,12 +126,12 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
 
     return (
         <Modal
-            title={t("settings.importModalTitle") || "Import Ingredients"}
+            title={t("settings.importModalTitle")}
             open={open}
             onCancel={close}
             footer={[
                 <Button key="cancel" onClick={close}>
-                    {t("common.cancel") || "Cancel"}
+                    {t("common.cancel")}
                 </Button>,
                 <Button
                     key="submit"
@@ -140,30 +140,30 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
                     disabled={staged.length === 0 || !valid || submitting}
                     loading={submitting}
                 >
-                    {mode === "import" ? t("settings.import") || "Import" : t("settings.reimport") || "Reimport"}
+                    {mode === "import" ? t("settings.import") : t("settings.reimport")}
                 </Button>,
             ]}
             width="90%"
             style={{ maxWidth: "1200px" }}
         >
             <Card style={cardStyle} styles={{ body: { padding: "20px" } }}>
-                <div style={cardTitleStyle}>{t("settings.selectImportMode") || "Select Import Mode"}</div>
+                <div style={cardTitleStyle}>{t("settings.selectImportMode")}</div>
                 <Radio.Group value={mode} onChange={(e) => setMode(e.target.value as ImportMode)} style={{ width: "100%" }}>
                     <Space orientation="vertical" style={{ width: "100%" }} size="middle">
                         <Radio.Button value="import" style={modeButtonStyle}>
-                            {t("settings.importModeAdd") || "Import (Add new only)"}
+                            {t("settings.importModeAdd")}
                         </Radio.Button>
                         <Radio.Button value="reimport" style={modeButtonStyle}>
-                            {t("settings.importModeUpdate") || "Reimport (Update/Delete)"}
+                            {t("settings.importModeUpdate")}
                         </Radio.Button>
                     </Space>
                 </Radio.Group>
             </Card>
 
             <Card style={cardStyle} styles={{ body: { padding: "20px" } }}>
-                <div style={cardTitleStyle}>{t("settings.pasteJson") || "Paste JSON"}</div>
+                <div style={cardTitleStyle}>{t("settings.pasteJson")}</div>
                 <Input.TextArea
-                    placeholder={t("settings.pasteJsonHere") || "Paste JSON here..."}
+                    placeholder={t("settings.pasteJsonHere")}
                     value={json}
                     onChange={onJsonChanged}
                     rows={8}
@@ -174,7 +174,7 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
             {staged.length > 0 && (
                 <div>
                     <div style={{ fontSize: "17px", fontWeight: 600, marginBottom: "16px" }}>
-                        {t("settings.stagingArea") || "Staging Area"} ({staged.length} {t("settings.ingredients") || "ingredients"})
+                        {t("settings.stagingArea")} ({staged.length} {t("settings.ingredients")})
                     </div>
                     <div style={{ maxHeight: "500px", overflowY: "auto", padding: "8px" }}>
                         <List

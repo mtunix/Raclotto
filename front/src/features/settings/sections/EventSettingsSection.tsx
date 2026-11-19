@@ -51,7 +51,7 @@ export function EventSettingsSection() {
     // Show error message if loading fails
     useEffect(() => {
         if (error && sessionKey) {
-            message.error(t("settings.loadFailed") || "Failed to load event configurations");
+            message.error(t("settings.loadFailed"));
         }
     }, [error, sessionKey, t]);
 
@@ -120,13 +120,13 @@ export function EventSettingsSection() {
             
             await Promise.all(updates);
             
-            message.success(t("common.saved") || "Saved");
+            message.success(t("common.saved"));
             // Invalidate cache to trigger refetch
             void mutateEventConfigs(sessionKey);
             setInitialConfigs(localConfigs);
         } catch (error) {
             console.error("Failed to save event configs:", error);
-            message.error(t("common.saveFailed") || "Failed to save");
+            message.error(t("common.saveFailed"));
         } finally {
             setSaving(false);
         }
@@ -146,14 +146,14 @@ export function EventSettingsSection() {
         <div className="settings-session-tab">
             {sessionKey ? (
                 <Card>
-                    <Title level={4} style={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.022em', marginBottom: 8 }}>{t("settings.eventSettings") || "Event Settings"}</Title>
+                    <Title level={4} style={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.022em', marginBottom: 8 }}>{t("settings.eventSettings")}</Title>
                     <Text type="secondary" style={{ display: "block", marginBottom: "24px", fontSize: '17px' }}>
-                        {t("settings.eventSettingsDescription") || "Configure event frequency and enable/disable events for this session."}
+                        {t("settings.eventSettingsDescription")}
                     </Text>
                     <Divider />
                     
                     {loading ? (
-                        <Text>{t("common.loading") || "Loading..."}</Text>
+                        <Text>{t("common.loading")}</Text>
                     ) : (
                         <>
                             {allConfigs.map(({ event_type, config, isGlobal }) => {
@@ -165,7 +165,7 @@ export function EventSettingsSection() {
                                         ? config.frequency_minutes 
                                         : 60);
                                 const displayName = event_type === "pan_swap" 
-                                    ? (t("events.panSwap") || "Pan Swap Event")
+                                    ? t("events.panSwap")
                                     : event_type;
 
                                 return (
@@ -183,7 +183,7 @@ export function EventSettingsSection() {
                                             {enabled && (
                                                 <div>
                                                     <div style={{ marginBottom: "8px" }}>
-                                                        <Text style={{ fontSize: '17px' }}>{t("settings.frequencyMinutes") || "Frequency (minutes)"}</Text>
+                                                        <Text style={{ fontSize: '17px' }}>{t("settings.frequencyMinutes")}</Text>
                                                     </div>
                                                     <InputNumber
                                                         min={1}
@@ -193,7 +193,7 @@ export function EventSettingsSection() {
                                                         disabled={saving || readOnly}
                                                         size="large"
                                                         style={{ width: "100%" }}
-                                                        placeholder={t("settings.optional") || "Optional"}
+                                                        placeholder={t("settings.optional")}
                                                     />
                                                 </div>
                                             )}
@@ -223,7 +223,7 @@ export function EventSettingsSection() {
                                     letterSpacing: '-0.022em'
                                 }}
                             >
-                                {t("common.save") || "Save"}
+                                {t("common.save")}
                             </Button>
                             )}
                         </>
@@ -232,7 +232,7 @@ export function EventSettingsSection() {
             ) : (
                 <Card className="settings-card" styles={{ body: { padding: '24px' } }}>
                     <Alert
-                        title={t("settings.noSession") || "No active session"}
+                        title={t("settings.noSession")}
                         type="warning"
                         showIcon
                         style={{ borderRadius: '12px' }}

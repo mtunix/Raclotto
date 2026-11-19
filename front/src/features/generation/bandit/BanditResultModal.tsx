@@ -55,7 +55,7 @@ export function BanditResultModal(props: BanditResultModalProps) {
                                     </Title>
                                     {pan.preparation_type && (
                                         <Text style={{ color: "white", opacity: 0.9, fontSize: "0.9rem", display: "block", marginTop: "4px" }}>
-                                            {t("generate.preparationType") || "Preparation Type"}: {pan.preparation_type.name}
+                                            {t("generate.preparationType")}: {pan.preparation_type.name}
                                         </Text>
                                     )}
                                 </Col>
@@ -67,7 +67,7 @@ export function BanditResultModal(props: BanditResultModalProps) {
                                         backdropFilter: "blur(10px)",
                                     }}>
                                         <Text strong style={{ color: "white", display: "block", marginBottom: "4px" }}>
-                                            {t("common.rate") || "Rate this pan"}
+                                            {t("common.rate")}
                                         </Text>
                                         <Rate value={rating} onChange={onRate} style={{ fontSize: "1.2rem" }} />
                                     </div>
@@ -86,7 +86,7 @@ export function BanditResultModal(props: BanditResultModalProps) {
                                     onClick={onSpinAgain}
                                     style={{ height: "48px", fontSize: "1rem", fontWeight: 600 }}
                                 >
-                                    {t("generate.rollAnotherDice") || "Roll Another Dice"}
+                                    {t("generate.rollAnotherDice")}
                                 </Button>
                             </Col>
                         </Row>
@@ -97,8 +97,8 @@ export function BanditResultModal(props: BanditResultModalProps) {
                             <Col span={24} style={{ textAlign: "center" }}>
                                 <Title level={3} style={{ marginBottom: "8px" }}>
                                     {spinning
-                                        ? (t("generate.banditSpinning") || "Spinning...")
-                                        : (t("generate.banditResult") || "Your Result!")}
+                                        ? t("generate.banditSpinning")
+                                        : t("generate.banditResult")}
                                 </Title>
                             </Col>
                         </Row>

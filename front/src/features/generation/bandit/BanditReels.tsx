@@ -125,7 +125,7 @@ function ReelCard({ reel }: { reel: Reel }) {
                         </div>
                     </div>
                 ) : (
-                    <Text type="secondary">{t("generate.banditNoItems") || "No items"}</Text>
+                    <Text type="secondary">{t("generate.banditNoItems")}</Text>
                 )}
             </div>
         </Card>

@@ -46,7 +46,7 @@ export function KitchenManagement() {
     
     useEffect(() => {
         if (ingredientsError && sessionKey) {
-            message.error(t("ingredient.loadFailed") || "Failed to load ingredients");
+            message.error(t("ingredient.loadFailed"));
         }
     }, [ingredientsError, sessionKey, t]);
 
@@ -90,19 +90,19 @@ export function KitchenManagement() {
         
         // Don't allow deleting default preparation types
         if (type.session_id === null || type.session_id === undefined) {
-            message.warning(t("ingredient.cannotDeleteDefault") || "Cannot delete default preparation types");
+            message.warning(t("ingredient.cannotDeleteDefault"));
             return;
         }
         
         deletePreparationType(type.id).then(() => {
-            message.success(t("ingredient.preparationTypeDeleted") || "Preparation type deleted");
+            message.success(t("ingredient.preparationTypeDeleted"));
             void mutatePrepTypes(sessionKey);
         }).catch((error: unknown) => {
             console.error("Failed to delete prep type:", error);
             const detail = axios.isAxiosError<ErrorResponseDto>(error) ? error.response?.data?.errors?.[0]?.detail : null;
             const errorMessage = detail ||
                                 (error instanceof Error ? error.message : null) ||
-                                t("ingredient.deleteFailed") || "Failed to delete preparation type";
+                                t("ingredient.deleteFailed");
             message.error(errorMessage);
         });
     };
@@ -138,7 +138,7 @@ export function KitchenManagement() {
                 ) : prepTypes.length === 0 ? (
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={t("ingredient.noPrepTypes") || "No preparation types"}
+                        description={t("ingredient.noPrepTypes")}
                         style={{ padding: '40px 0' }}
                     />
                 ) : (
@@ -164,7 +164,7 @@ export function KitchenManagement() {
                                             {prepType.name}
                                             {(prepType.session_id === null || prepType.session_id === undefined) && (
                                                 <Text type="secondary" style={{ fontSize: '15px', marginLeft: '8px' }}>
-                                                    ({t("ingredient.default") || "Default"})
+                                                    ({t("ingredient.default")})
                                                 </Text>
                                             )}
                                         </span>
@@ -197,7 +197,7 @@ export function KitchenManagement() {
                                 <Space.Compact style={{ width: '100%' }}>
                                     <Input
                                         size="large"
-                                        placeholder={t("ingredient.preparationTypeName") || "Enter preparation type name"}
+                                        placeholder={t("ingredient.preparationTypeName")}
                                         value={newPrepTypeName}
                                         onChange={(e) => setNewPrepTypeName(e.target.value)}
                                         onPressEnter={onPrepTypeAdd}
@@ -210,13 +210,13 @@ export function KitchenManagement() {
                                         onClick={onPrepTypeAdd}
                                         disabled={!newPrepTypeName.trim()}
                                     >
-                                        {t("common.save") || "Save"}
+                                        {t("common.save")}
                                     </Button>
                                     <Button 
                                         size="large"
                                         onClick={onPrepTypeAddCancel}
                                     >
-                                        {t("common.cancel") || "Cancel"}
+                                        {t("common.cancel")}
                                     </Button>
                                 </Space.Compact>
                             </div>
@@ -250,7 +250,7 @@ export function KitchenManagement() {
                                     {
                                         label: (
                                             <span className="segmented-label">
-                                                {t("ingredient.ingredients") || "Ingredients"}
+                                                {t("ingredient.ingredients")}
                                             </span>
                                         ),
                                         value: 'ingredients'
@@ -258,7 +258,7 @@ export function KitchenManagement() {
                                     {
                                         label: (
                                             <span className="segmented-label">
-                                                {t("ingredient.sauces") || "Sauces"}
+                                                {t("ingredient.sauces")}
                                             </span>
                                         ),
                                         value: 'sauces'
@@ -266,7 +266,7 @@ export function KitchenManagement() {
                                     {
                                         label: (
                                             <span className="segmented-label">
-                                                {t("ingredient.preparationTypes") || "Preparation Types"}
+                                                {t("ingredient.preparationTypes")}
                                             </span>
                                         ),
                                         value: 'prepTypes'
@@ -293,7 +293,7 @@ export function KitchenManagement() {
                                             onClick={() => handleAddIngredientClick(IngredientType.FILL)}
                                             block
                                         >
-                                            {t("ingredient.addIngredient") || "Add Ingredient"}
+                                            {t("ingredient.addIngredient")}
                                         </Button>
                                     </div>
                                     <IngredientListView
@@ -315,7 +315,7 @@ export function KitchenManagement() {
                                             onClick={() => handleAddIngredientClick(IngredientType.SAUCE)}
                                             block
                                         >
-                                            {t("ingredient.addSauce") || "Add Sauce"}
+                                            {t("ingredient.addSauce")}
                                         </Button>
                                     </div>
                                     <IngredientListView
@@ -338,7 +338,7 @@ export function KitchenManagement() {
                                                 onClick={onPrepTypeAddClick}
                                                 block
                                             >
-                                                {t("ingredient.addPreparationType") || "Add Preparation Type"}
+                                                {t("ingredient.addPreparationType")}
                                             </Button>
                                         </div>
                                     )}

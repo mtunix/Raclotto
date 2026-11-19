@@ -12,19 +12,19 @@ export function RestrictionsAlert({ fills, sauces }: { fills: Availability; sauc
     const line = (label: string, { allowed, total }: Availability) => (
         <Text>
             {label}: {allowed} / {total}
-            <Text type="secondary"> ({total - allowed} {t("generate.excluded") || "excluded"})</Text>
+            <Text type="secondary"> ({total - allowed} {t("generate.excluded")})</Text>
         </Text>
     );
 
     return (
         <Alert
             type="info"
-            title={t("generate.restrictionsApplied") || "Dietary restrictions applied"}
+            title={t("generate.restrictionsApplied")}
             description={
                 <div>
-                    {isRestricted(fills) && line(t("generate.availableIngredients") || "Available ingredients", fills)}
+                    {isRestricted(fills) && line(t("generate.availableIngredients"), fills)}
                     {isRestricted(fills) && isRestricted(sauces) && <br />}
-                    {isRestricted(sauces) && line(t("generate.availableSauces") || "Available sauces", sauces)}
+                    {isRestricted(sauces) && line(t("generate.availableSauces"), sauces)}
                 </div>
             }
             style={{ marginBottom: "16px" }}

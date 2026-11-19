@@ -20,7 +20,7 @@ export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) 
             void copyToClipboard(text, t);
         } catch (e) {
             console.error("Failed to export ingredients:", e);
-            message.error(t("settings.exportFailed") || "Failed to export ingredients");
+            message.error(t("settings.exportFailed"));
         } finally {
             setExporting(false);
         }
@@ -37,18 +37,18 @@ export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) 
                 block
                 style={wideButtonStyle}
             >
-                {t("settings.export") || "Export"}
+                {t("settings.export")}
             </Button>
             <Modal
-                title={t("settings.exportModalTitle") || "Export Ingredients"}
+                title={t("settings.exportModalTitle")}
                 open={json !== null}
                 onCancel={() => setJson(null)}
                 footer={[
                     <Button key="copy" icon={<CopyOutlined />} onClick={() => json && copyToClipboard(json, t)}>
-                        {t("settings.copyToClipboard") || "Copy to Clipboard"}
+                        {t("settings.copyToClipboard")}
                     </Button>,
                     <Button key="close" onClick={() => setJson(null)}>
-                        {t("common.close") || "Close"}
+                        {t("common.close")}
                     </Button>,
                 ]}
                 width="80%"

@@ -53,10 +53,10 @@ export function SessionSettingsSection() {
             const renamed = await updateSession(session.id, { name: name.trim() });
             setSession(renamed);
             void mutateSession(sessionKey);
-            message.success(t("common.saved") || "Saved");
+            message.success(t("common.saved"));
         } catch (e) {
             console.error("Failed to update session:", e);
-            message.error(t("common.saveFailed") || "Failed to save");
+            message.error(t("common.saveFailed"));
         } finally {
             setSavingName(false);
         }
@@ -70,7 +70,7 @@ export function SessionSettingsSection() {
             void navigate(`/recap/${encodeURIComponent(sessionKey)}`);
         } catch (e) {
             console.error("Failed to close session:", e);
-            message.error(t("session.closeFailed") || "Failed to close session");
+            message.error(t("session.closeFailed"));
         }
     }
 
@@ -119,7 +119,7 @@ export function SessionSettingsSection() {
                             disabled={!name.trim() || name === stored?.name}
                             className="settings-save-button-medium"
                         >
-                            {t("common.save") || "Save"}
+                            {t("common.save")}
                         </Button>
                     </Form.Item>
                 )}
@@ -128,33 +128,32 @@ export function SessionSettingsSection() {
             <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
                 <div style={{ marginBottom: "32px" }}>
                     <div className="settings-section-title" style={{ marginBottom: "8px" }}>
-                        {t("settings.prompt") || "LLM Prompt"}
+                        {t("settings.prompt")}
                     </div>
                     <div style={descriptionStyle}>
-                        {t("settings.promptDescription") || "View the ingredient JSON structure and LLM prompt for chat."}
+                        {t("settings.promptDescription")}
                     </div>
                     <Button size="large" icon={<BgColorsOutlined />} onClick={() => setPromptOpen(true)} block style={wideButtonStyle}>
-                        {t("settings.viewPrompt") || "View Prompt"}
+                        {t("settings.viewPrompt")}
                     </Button>
                 </div>
 
                 <div style={{ marginBottom: "32px" }}>
                     <div className="settings-section-title" style={{ marginBottom: "8px" }}>
-                        {t("settings.export") || "Export"}
+                        {t("settings.export")}
                     </div>
                     <div style={descriptionStyle}>
-                        {t("settings.exportDescription") || "View and copy all ingredients from this session as JSON."}
+                        {t("settings.exportDescription")}
                     </div>
                     <ExportIngredientsButton sessionKey={sessionKey} />
                 </div>
 
                 <div>
                     <div className="settings-section-title" style={{ marginBottom: "8px" }}>
-                        {t("settings.import") || "Import"}
+                        {t("settings.import")}
                     </div>
                     <div style={descriptionStyle}>
-                        {t("settings.importDescription") ||
-                            "Import ingredients from JSON. You can review and edit them before importing."}
+                        {t("settings.importDescription")}
                     </div>
                     <Button
                         size="large"
@@ -164,7 +163,7 @@ export function SessionSettingsSection() {
                         block
                         style={wideButtonStyle}
                     >
-                        {t("settings.import") || "Import"}
+                        {t("settings.import")}
                     </Button>
                 </div>
             </Card>
@@ -200,15 +199,15 @@ export function SessionSettingsSection() {
             <ImportIngredientsModal open={importOpen} sessionKey={sessionKey} onClose={() => setImportOpen(false)} />
 
             <Modal
-                title={t("session.confirmCloseTitle") || "End Session?"}
+                title={t("session.confirmCloseTitle")}
                 open={confirmingEnd}
                 onCancel={() => setConfirmingEnd(false)}
                 footer={[
                     <Button key="cancel" onClick={() => setConfirmingEnd(false)}>
-                        {t("common.cancel") || "Cancel"}
+                        {t("common.cancel")}
                     </Button>,
                     <Button key="confirm" type="primary" danger onClick={endSession}>
-                        {t("session.endSession") || "End Session"}
+                        {t("session.endSession")}
                     </Button>,
                 ]}
             >
@@ -216,23 +215,22 @@ export function SessionSettingsSection() {
             </Modal>
 
             <Modal
-                title={t("settings.llmPrompt") || "LLM Prompt"}
+                title={t("settings.llmPrompt")}
                 open={promptOpen}
                 onCancel={() => setPromptOpen(false)}
                 footer={[
                     <Button key="copy" icon={<CopyOutlined />} onClick={() => copyToClipboard(INGREDIENT_PROMPT, t)} style={{ width: "100%" }}>
-                        {t("settings.copyPrompt") || "Copy Prompt"}
+                        {t("settings.copyPrompt")}
                     </Button>,
                     <Button key="close" onClick={() => setPromptOpen(false)} style={{ width: "100%", marginTop: "8px" }}>
-                        {t("auth.close") || "Close"}
+                        {t("auth.close")}
                     </Button>,
                 ]}
                 width={700}
             >
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <div style={{ fontSize: "14px", color: "#666" }}>
-                        {t("settings.promptModalDescription") ||
-                            "Copy this prompt and paste it into your LLM chat along with your exported ingredients JSON."}
+                        {t("settings.promptModalDescription")}
                     </div>
                     <Input.TextArea
                         value={INGREDIENT_PROMPT}

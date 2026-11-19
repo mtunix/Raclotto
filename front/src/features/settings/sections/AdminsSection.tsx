@@ -25,7 +25,9 @@ export function AdminsSection() {
         try {
             const changed = await updateUser(user.id, { is_admin: isAdmin });
             await mutate(users.map((u) => (u.id === changed.id ? changed : u)), { revalidate: false });
-            void message.success(t(isAdmin ? "settings.adminGranted" : "settings.adminRevoked", { name: user.name }));
+            void message.success(
+                isAdmin ? t("settings.adminGranted", { name: user.name }) : t("settings.adminRevoked", { name: user.name }),
+            );
         } catch {
             void message.error(t("settings.adminChangeFailed"));
         } finally {

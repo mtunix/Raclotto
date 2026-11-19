@@ -70,7 +70,7 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                                 flexShrink: 0
                             }}
                             onClick={props.onEdit}
-                            title={t("common.edit") || "Edit"}
+                            title={t("common.edit")}
                         />
                     )}
                     {props.available && props.onDelete && (

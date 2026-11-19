@@ -17,7 +17,8 @@ test("rolls a pan, rates it and finds it in the history", async ({ page }) => {
   await expect(result).toBeVisible({ timeout: 15_000 });
   await expect(result.getByText(PANTRY_NAMES).first()).toBeVisible();
   await result.locator(".ant-rate-star").nth(3).click();
-  await result.getByRole("button", { name: t("common.close") }).click();
+  // The footer's button; antd's corner ✕ has the same name in German.
+  await result.getByRole("button", { name: t("common.close") }).last().click();
   await expect(result).toBeHidden();
 
   await page.goto(`/${session.id}/history`);

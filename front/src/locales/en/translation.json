@@ -21,7 +21,8 @@
     "saveFailed": "Failed to save",
     "edit": "Edit",
     "loading": "Loading...",
-    "back": "Back"
+    "back": "Back",
+    "notAvailable": "N/A"
   },
   "ingredient": {
     "ingredientName": "Ingredient Name",
@@ -99,7 +100,10 @@
     "creating": "Creating...",
     "welcome": "Welcome",
     "sessionNotFound": "This session does not exist or has been closed.",
-    "closedMessage": "This session is closed. Only its creator can reopen it, but you can see how it went."
+    "closedMessage": "This session is closed. Only its creator can reopen it, but you can see how it went.",
+    "loading": "Loading session...",
+    "closeFailed": "Failed to end the session",
+    "errorLoadingSession": "The session could not be loaded."
   },
   "toolbar": {
     "generateTitle": "Generate",
@@ -228,7 +232,8 @@
     "adminChangeFailed": "Failed to change admin rights"
   },
   "events": {
-    "panSwap": "Pan Swap Event"
+    "panSwap": "Pan Swap Event",
+    "dismiss": "Dismiss"
   },
   "history": {
     "consumedBy": "Consumed by",
@@ -262,7 +267,12 @@
     "leaderboard": "Leaderboard",
     "you": "You",
     "points": "Points",
-    "achievements": "Achievements"
+    "achievements": "Achievements",
+    "global": "Global",
+    "session": "Session",
+    "pans": "Pans",
+    "removeWidthCap": "Remove Width Cap",
+    "capWidth": "Cap Width"
   },
   "auth": {
     "login": "Login",
@@ -308,7 +318,8 @@
     "cancel": "Cancel",
     "close": "Close",
     "tooManyAttempts": "Too many failed sign-ins. Please wait 15 minutes and try again.",
-    "passwordTooShort": "At least {{count}} characters"
+    "passwordTooShort": "At least {{count}} characters",
+    "loginFailed": "Login failed. Please check your credentials."
   },
   "invite": {
     "generateToken": "Generate Invite Token",
@@ -365,7 +376,10 @@
     "biggestPan": "Biggest Pan",
     "panName": "Pan Name",
     "ingredientCount": "Ingredient Count",
-    "ingredients": "Ingredients"
+    "ingredients": "Ingredients",
+    "viewProfilePicture": "View Profile Picture",
+    "noHistoryYet": "No history yet",
+    "regenerateFailed": "Failed to regenerate profile picture"
   },
   "achievement": {
     "points": "pts",

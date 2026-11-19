@@ -48,20 +48,20 @@ export function EditPictureModal({ open, currentPicture, userName, userId, onSav
     close();
   }
 
-  const caption = <div style={captionStyle}>{t("profile.currentPicture") || "Current Profile Picture"}</div>;
+  const caption = <div style={captionStyle}>{t("profile.currentPicture")}</div>;
 
   return (
     <Modal
-      title={t("profile.changeProfilePicture") || "Change Profile Picture"}
+      title={t("profile.changeProfilePicture")}
       open={open}
       onCancel={cancel}
       footer={
         <div style={{ display: "flex", gap: "8px" }}>
           <Button onClick={cancel} style={{ flex: 1 }}>
-            {t("auth.cancel") || "Cancel"}
+            {t("auth.cancel")}
           </Button>
           <Button type="primary" onClick={save} disabled={draft === currentPicture} style={{ flex: 1 }}>
-            {t("common.save") || "Save"}
+            {t("common.save")}
           </Button>
         </div>
       }
@@ -73,7 +73,7 @@ export function EditPictureModal({ open, currentPicture, userName, userId, onSav
             {caption}
             <Avatar size={400} src={draft} style={{ border: "3px solid #1890ff" }} />
             <Button onClick={() => setDraft(null)} block>
-              {t("auth.removePhoto") || "Remove Photo"}
+              {t("auth.removePhoto")}
             </Button>
           </div>
         ) : (

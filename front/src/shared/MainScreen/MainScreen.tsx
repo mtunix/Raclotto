@@ -67,7 +67,7 @@ export function MainScreen(props: MainScreenProps) {
         return (
             <div style={{margin: "0", padding: "40px 24px", maxWidth: removeWidthCap ? 'none' : 1440, marginLeft: 'auto', marginRight: 'auto'}}>
                 <Card>
-                    <p>{t("session.loading") || "Loading session..."}</p>
+                    <p>{t("session.loading")}</p>
                 </Card>
             </div>
         );
@@ -109,13 +109,13 @@ export function MainScreen(props: MainScreenProps) {
                         } else if (path.includes("/history")) {
                             title = t("toolbar.historyTitle");
                         } else if (path.includes("/add")) {
-                            title = t("ingredient.ingredients") || "Ingredients";
+                            title = t("ingredient.ingredients");
                         } else if (path.includes("/achievements")) {
                             title = t("toolbar.achievementsTitle");
                         } else if (path.includes("/dashboard")) {
-                            title = t("toolbar.dashboardTitle") || "Dashboard";
+                            title = t("toolbar.dashboardTitle");
                         } else if (path.includes("/profile")) {
-                            title = t("profile.title") || "Profile";
+                            title = t("profile.title");
                         }
                         
                         // If there's a title, wrap the Outlet in a Card

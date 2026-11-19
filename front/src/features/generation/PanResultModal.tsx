@@ -124,14 +124,14 @@ export function PanResultModal({
                       marginTop: "8px",
                     }}
                   >
-                    🎉 {t("level.leveledUp") || "Level Up!"}
+                    🎉 {t("level.leveledUp")}
                   </Text>
                 )}
               </Col>
               <Col xs={24} sm={24} md={8}>
                 <div className={styles.ratingContainer}>
                   <Text strong className={styles.whiteText}>
-                    {t("common.rate") || "Rate this pan"}
+                    {t("common.rate")}
                   </Text>
                   <Rate onChange={onRating} className={styles.ratingStars} />
                 </div>
@@ -193,7 +193,7 @@ export function PanResultModal({
                   </div>
                 ) : (
                   <Text type="secondary" className={styles.subtitle}>
-                    {t("ingredient.noIngredients") || "No ingredients"}
+                    {t("ingredient.noIngredients")}
                   </Text>
                 )}
               </Card>
@@ -211,7 +211,7 @@ export function PanResultModal({
                 onClick={handleModalClose}
                 className={styles.closeButton}
               >
-                {t("common.close") || "Close"}
+                {t("common.close")}
               </Button>
             </Col>
           </Row>

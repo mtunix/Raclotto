@@ -2,18 +2,18 @@ import type { ReactNode, CSSProperties } from "react";
 import { Avatar, Button, Collapse, Spin } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ProfilePictureDto } from "../../api/generated/model";
+import { formatDate, useLanguage } from "../../lib/language";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 
 const CANDIDATE_BLUE = "#1890ff";
 
-const takenAt = (createdAt: string) =>
-  new Date(createdAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+const TAKEN_AT: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+};
 
 interface PictureHistoryProps {
   history: ProfilePictureDto[];
@@ -44,7 +44,7 @@ export function PictureHistory({ history, loading, onChoose, choosing = null, wh
       items={[
         {
           key: "1",
-          label: `${t("profile.pictureHistory") || "Profile Picture History"} (${history.length})`,
+          label: `${t("profile.pictureHistory")} (${history.length})`,
           children: (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {history.map((entry) => (
@@ -66,6 +66,7 @@ interface HistoryEntryProps {
 
 function HistoryEntry({ entry, onChoose, choosing }: HistoryEntryProps) {
   const { t } = useTranslation();
+  const language = useLanguage();
   const highlighted = !!onChoose && entry.is_candidate;
   return (
     <div
@@ -86,15 +87,15 @@ function HistoryEntry({ entry, onChoose, choosing }: HistoryEntryProps) {
         style={{ border: highlighted ? `3px solid ${CANDIDATE_BLUE}` : "2px solid #d9d9d9" }}
       />
       <div style={{ textAlign: "center", fontSize: "12px", color: "#666" }}>
-        <div>{takenAt(entry.created_at)}</div>
+        <div>{formatDate(entry.created_at, language, TAKEN_AT)}</div>
         {entry.level && (
           <div>
-            Level: {t(entry.level.name)} (ID: {entry.level_id})
+            {t("profile.level")}: {t(entry.level.name)} (ID: {entry.level_id})
           </div>
         )}
         {highlighted && (
           <div style={{ marginTop: "4px", color: CANDIDATE_BLUE, fontWeight: "bold" }}>
-            ✓ {t("image.generationCandidate") || "Generation Candidate"}
+            ✓ {t("image.generationCandidate")}
           </div>
         )}
       </div>
@@ -106,8 +107,8 @@ function HistoryEntry({ entry, onChoose, choosing }: HistoryEntryProps) {
           loading={choosing === entry.id}
         >
           {entry.is_candidate
-            ? t("image.candidateSelected") || "Selected"
-            : t("image.setAsCandidate") || "Set as Candidate"}
+            ? t("image.candidateSelected")
+            : t("image.setAsCandidate")}
         </Button>
       )}
     </div>

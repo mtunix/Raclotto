@@ -25,7 +25,7 @@ export function DirectPictureEditor({ picture, onChange, disabled, belowAvatar }
         <div style={pictureColumnStyle}>
           <Avatar size={120} src={getProfilePictureUrl(picture)} />
           <Button onClick={() => onChange(null)} disabled={disabled} block>
-            {t("auth.removePhoto") || "Remove Photo"}
+            {t("auth.removePhoto")}
           </Button>
         </div>
       ) : (

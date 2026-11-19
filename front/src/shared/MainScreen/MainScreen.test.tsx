@@ -80,7 +80,7 @@ it('dismisses the newest event and refetches the rest', async () => {
     });
     renderRoutes(routes, `/${current.id}`, { sharedCache: true });
 
-    fireEvent.click(await screen.findByText('Dismiss'));
+    fireEvent.click(await screen.findByText('events.dismiss'));
 
     await waitFor(() => expect(screen.queryByText(events[0].message)).not.toBeInTheDocument());
     expect(fake.last('POST', `/events/${events[0].id}/dismiss`)).toBeDefined();

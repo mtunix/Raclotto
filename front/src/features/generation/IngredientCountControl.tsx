@@ -1,4 +1,5 @@
 import { Card, Typography, InputNumber, Button, Form, Space } from "antd";
+import { useTranslation } from "react-i18next";
 import styles from "./GenerateView/GenerateView.module.css";
 
 const { Text } = Typography;
@@ -28,6 +29,7 @@ export function IngredientCountControl({
   onDecrement,
   onChange,
 }: IngredientCountControlProps) {
+  const { t } = useTranslation();
   return (
     <Card className={styles.card}>
       <Form.Item style={{ marginBottom: 0 }}>
@@ -52,7 +54,7 @@ export function IngredientCountControl({
               {label}
             </div>
             <Text type="secondary" className={styles.availableCount}>
-              Available: {availableCount} / {totalCount}
+              {t("generate.available")}: {availableCount} / {totalCount}
             </Text>
           </div>
           <Space.Compact style={{ display: "flex", gap: "8px" }}>

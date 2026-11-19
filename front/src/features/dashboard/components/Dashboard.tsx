@@ -250,7 +250,7 @@ function LeaderboardListItem(props: LeaderboardListItemProps) {
                   lineHeight: "16px",
                 }}
               >
-                {t("dashboard.you") || "You"}
+                {t("dashboard.you")}
               </Tag>
             )}
           </Text>
@@ -335,7 +335,7 @@ export function Dashboard() {
             onClick={() => setIsGlobal(!isGlobal)}
             size="large"
           >
-            {isGlobal ? "Global" : "Session"}
+            {isGlobal ? t("dashboard.global") : t("dashboard.session")}
           </Button>
           <Button
             type="default"
@@ -345,7 +345,7 @@ export function Dashboard() {
             className="remove-width-cap-button"
           >
             {!isSmallScreen &&
-              (removeWidthCap ? "Cap Width" : "Remove Width Cap")}
+              (removeWidthCap ? t("dashboard.capWidth") : t("dashboard.removeWidthCap"))}
           </Button>
         </Col>
       </Row>
@@ -370,7 +370,7 @@ export function Dashboard() {
                 color: "#1d1d1f",
               }}
             >
-              Pans
+              {t("dashboard.pans")}
             </Title>
             <List
               dataSource={pans}
@@ -484,7 +484,7 @@ export function Dashboard() {
                 color: "#1d1d1f",
               }}
             >
-              {t("dashboard.leaderboard") || "Leaderboard"}
+              {t("dashboard.leaderboard")}
             </Title>
             <List
               dataSource={limitedLeaderboard}

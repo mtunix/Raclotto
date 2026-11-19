@@ -94,14 +94,14 @@ export function LegacyView({
                 onChange={(e) => setRollPreparationType(e.target.checked)}
                 className={styles.checkbox}
               >
-                {t("generate.rollPreparationType") || "Roll preparation type"}
+                {t("generate.rollPreparationType")}
               </Checkbox>
               <Checkbox
                 checked={rollCheese}
                 onChange={(e) => setRollCheese(e.target.checked)}
                 className={styles.checkbox}
               >
-                {t("generate.rollCheese") || "Roll cheese level"}
+                {t("generate.rollCheese")}
               </Checkbox>
             </div>
           </Card>

@@ -19,10 +19,10 @@ export function useMyPictureActions(isOwnProfile: boolean, levelId: number | und
     setChanging(true);
     try {
       await changeMyPicture(picture);
-      message.success(t("profile.pictureUpdated") || "Profile picture updated successfully");
+      message.success(t("profile.pictureUpdated"));
     } catch (error) {
       console.error("Failed to update profile picture:", error);
-      message.error(errorText(error) || t("profile.pictureUpdateFailed") || "Failed to update profile picture");
+      message.error(errorText(error) || t("profile.pictureUpdateFailed"));
     } finally {
       setChanging(false);
     }
@@ -34,12 +34,12 @@ export function useMyPictureActions(isOwnProfile: boolean, levelId: number | und
     try {
       const { image_base64 } = await generateMyPicture(levelId);
       if (!image_base64) {
-        throw new Error("No image data returned from server");
+        throw new Error(t("profile.regenerateFailed"));
       }
-      message.success(t("profile.pictureUpdated") || "Profile picture updated successfully");
+      message.success(t("profile.pictureUpdated"));
     } catch (error) {
       console.error("Failed to regenerate profile picture:", error);
-      message.error(errorText(error) || t("profile.regenerateFailed") || "Failed to regenerate profile picture");
+      message.error(errorText(error) || t("profile.regenerateFailed"));
     } finally {
       setGenerating(false);
     }

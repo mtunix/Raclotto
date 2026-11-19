@@ -53,7 +53,7 @@ export function LevelUpPictureModal({
       .catch((error) => {
         console.error("Error generating profile picture:", error);
         message.error(
-          t("image.profilePictureError") || "Error generating profile picture",
+          t("image.profilePictureError"),
         );
         if (!cancelled) onClose();
       });
@@ -93,8 +93,7 @@ export function LevelUpPictureModal({
           <div style={{ marginBottom: "24px", fontSize: "48px" }}>✨🎨✨</div>
           <Spin
             description={
-              t("image.generatingProfilePicture") ||
-              "Generating your new profile picture..."
+              t("image.generatingProfilePicture")
             }
             size="large"
           />
@@ -107,8 +106,7 @@ export function LevelUpPictureModal({
               fontStyle: "italic",
             }}
           >
-            {t("image.generatingMessage") ||
-              "Creating an artistic masterpiece just for you..."}
+            {t("image.generatingMessage")}
           </div>
           <div
             style={{
@@ -180,11 +178,10 @@ export function LevelUpPictureModal({
               styles={{ body: { padding: "28px" } }}
             >
               <Title level={2} className={styles.whiteTitle}>
-                {t("image.yourNewProfilePicture") || "Your New Profile Picture"}
+                {t("image.yourNewProfilePicture")}
               </Title>
               <Text style={{ color: "#fff", fontSize: "16px" }}>
-                {t("image.profilePictureUpdated") ||
-                  "Your profile picture has been updated for your new level!"}
+                {t("image.profilePictureUpdated")}
               </Text>
             </Card>
 
@@ -199,7 +196,7 @@ export function LevelUpPictureModal({
             >
               <img
                 src={`data:${newProfilePicture.mime_type};base64,${newProfilePicture.image_base64}`}
-                alt={t("image.newAvatarAlt") || "Your new avatar"}
+                alt={t("image.newAvatarAlt")}
                 style={{
                   maxWidth: "100%",
                   maxHeight: "100%",
@@ -219,7 +216,7 @@ export function LevelUpPictureModal({
                   onClick={handleClose}
                   className={styles.closeButton}
                 >
-                  {t("common.close") || "Close"}
+                  {t("common.close")}
                 </Button>
               </Col>
             </Row>

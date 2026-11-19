@@ -188,13 +188,13 @@ export function IngredientModal(props: IngredientModalProps) {
             if (props.mode === 'edit' && props.ingredient && props.onSave) {
                 // Edit mode: update existing ingredient
                 await props.onSave(props.ingredient.id, ingredientData);
-                message.success(t("ingredient.updated") || "Ingredient updated successfully");
+                message.success(t("ingredient.updated"));
             } else if (props.mode === 'add') {
                 // Add mode: create new ingredient
                 if (!sessionKey) return;
                 
                 await ingredientCatalog.create(sessionKey, ingredientData);
-                message.success(t("ingredient.added") || "Ingredient added successfully");
+                message.success(t("ingredient.added"));
                 
                 if (props.onSuccess) {
                     props.onSuccess();
@@ -213,8 +213,8 @@ export function IngredientModal(props: IngredientModalProps) {
             console.error(`Failed to ${props.mode} ingredient:`, error);
             
             const errorMessage = props.mode === 'edit' 
-                ? (t("ingredient.updateFailed") || "Failed to update ingredient")
-                : (t("ingredient.addFailed") || "Failed to add ingredient");
+                ? t("ingredient.updateFailed")
+                : t("ingredient.addFailed");
             message.error(errorMessage);
         } finally {
             setLoading(false);
@@ -228,19 +228,19 @@ export function IngredientModal(props: IngredientModalProps) {
 
     const getTitle = () => {
         if (props.mode === 'edit') {
-            return t("ingredient.editIngredient") || "Edit Ingredient";
+            return t("ingredient.editIngredient");
         } else {
             if (props.initialType === IngredientType.SAUCE) {
-                return t("ingredient.addSauce") || "Add Sauce";
+                return t("ingredient.addSauce");
             }
-            return t("ingredient.addIngredient") || "Add Ingredient";
+            return t("ingredient.addIngredient");
         }
     };
 
     const getButtonText = () => {
         return props.mode === 'edit' 
-            ? (t("common.save") || "Save")
-            : (t("common.create") || "Create");
+            ? t("common.save")
+            : t("common.create");
     };
 
     return (
@@ -250,7 +250,7 @@ export function IngredientModal(props: IngredientModalProps) {
             onCancel={handleCancel}
             footer={[
                 <Button key="cancel" onClick={handleCancel}>
-                    {t("common.cancel") || "Cancel"}
+                    {t("common.cancel")}
                 </Button>,
                 <Button 
                     key="save" 
@@ -284,7 +284,7 @@ export function IngredientModal(props: IngredientModalProps) {
                             <Form.Item 
                                 style={{ marginBottom: 0 }}
                                 name="name"
-                                rules={[{ required: true, message: t("ingredient.nameRequired") || "Name is required" }]}
+                                rules={[{ required: true, message: t("ingredient.nameRequired") }]}
                             >
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                     <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
@@ -370,7 +370,7 @@ export function IngredientModal(props: IngredientModalProps) {
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                    {t("ingredient.category") || "Category"}
+                                    {t("ingredient.category")}
                                 </div>
                                 <ExclusiveTagChipGroup
                                     options={categoryOptions}
@@ -394,7 +394,7 @@ export function IngredientModal(props: IngredientModalProps) {
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                    {t("ingredient.allergens") || "Allergens"}
+                                    {t("ingredient.allergens")}
                                 </div>
                                 <MultiTagChipGroup
                                     options={allergenOptions}
@@ -418,12 +418,12 @@ export function IngredientModal(props: IngredientModalProps) {
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                                 <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                    {t("ingredient.additionalProperties") || "Additional Properties"}
+                                    {t("ingredient.additionalProperties")}
                                 </div>
                                 
                                 <div>
                                     <div style={{ marginBottom: '8px', fontSize: '17px', letterSpacing: '-0.022em' }}>
-                                        {t("ingredient.spicy") || "Spicy"}
+                                        {t("ingredient.spicy")}
                                     </div>
                                     <Slider
                                         min={0}
@@ -443,7 +443,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                     style={{ marginBottom: 0 }}
                                 >
                                     <Checkbox style={{ fontSize: '17px', letterSpacing: '-0.022em' }}>
-                                        {t("ingredient.wildcard") || "Wildcard"}
+                                        {t("ingredient.wildcard")}
                                     </Checkbox>
                                 </Form.Item>
 
@@ -453,7 +453,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                     style={{ marginBottom: 0 }}
                                 >
                                     <Checkbox style={{ fontSize: '17px', letterSpacing: '-0.022em' }}>
-                                        {t("ingredient.sweet") || "Sweet"}
+                                        {t("ingredient.sweet")}
                                     </Checkbox>
                                 </Form.Item>
                             </div>

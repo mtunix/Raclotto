@@ -25,10 +25,10 @@ export function SettingsView() {
     <Tabs
       defaultActiveKey="user"
       items={[
-        tab("user", t("settings.userSettings") || "User Settings", <UserSettingsSection />),
-        tab("session", t("settings.sessionSettings") || "Session Settings", <SessionSettingsSection />),
-        tab("events", t("settings.eventSettings") || "Event Settings", <EventSettingsSection />),
-        tab("invites", t("common.invites") || "Invites", <InvitesSection />),
+        tab("user", t("settings.userSettings"), <UserSettingsSection />),
+        tab("session", t("settings.sessionSettings"), <SessionSettingsSection />),
+        tab("events", t("settings.eventSettings"), <EventSettingsSection />),
+        tab("invites", t("common.invites"), <InvitesSection />),
         ...(canManageAdmins(user) ? [tab("admins", t("settings.admins"), <AdminsSection />)] : []),
       ]}
     />

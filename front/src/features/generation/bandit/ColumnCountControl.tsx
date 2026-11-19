@@ -44,11 +44,11 @@ export function ColumnCountControl({ value, max, onChange, disabled }: ColumnCou
                         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "8px" }}>
                                 <div style={{ fontSize: "17px", fontWeight: 600, letterSpacing: "-0.022em", color: "#1d1d1f" }}>
-                                    {t("generate.banditColumnCount") || "Number of Columns"}
+                                    {t("generate.banditColumnCount")}
                                 </div>
                                 {max > 0 && (
                                     <Text type="secondary" style={{ fontSize: "15px" }}>
-                                        {t("generate.banditColumnCountHelp") || "Choose how many columns to spin"} (1-{max})
+                                        {t("generate.banditColumnCountHelp")} (1-{max})
                                     </Text>
                                 )}
                             </div>

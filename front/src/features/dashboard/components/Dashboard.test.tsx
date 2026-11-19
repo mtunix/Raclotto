@@ -77,8 +77,8 @@ it("switching to the session asks for the session's stats", async () => {
   renderDashboard();
   await waitFor(() => expect(screen.getByText("Cleo")).toBeInTheDocument());
 
-  fireEvent.click(screen.getByText("Global"));
+  fireEvent.click(screen.getByText("dashboard.global"));
 
   await waitFor(() => expect(statsQueries()).toContainEqual({ session_key: session.key }));
-  expect(screen.getByText("Session")).toBeInTheDocument();
+  expect(screen.getByText("dashboard.session")).toBeInTheDocument();
 });

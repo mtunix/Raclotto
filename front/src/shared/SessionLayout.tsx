@@ -31,7 +31,7 @@ export function SessionLayout() {
 
     return (
         <Card>
-            <p>{t(status === "error" ? "session.errorLoadingSession" : "session.sessionNotFound")}</p>
+            <p>{status === "error" ? t("session.errorLoadingSession") : t("session.sessionNotFound")}</p>
             <Button type="primary" onClick={() => navigate("/")}>
                 {t("session.backToSessions")}
             </Button>

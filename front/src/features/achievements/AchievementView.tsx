@@ -59,7 +59,7 @@ export function AchievementView() {
                                 </Title>
                             </Space>
                             <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                                {achievement.value} {t("achievement.points") || "pts"}
+                                {achievement.value} {t("achievement.points")}
                             </Tag>
                         </div>
                         {displayDescription && (
@@ -69,7 +69,7 @@ export function AchievementView() {
                         )}
                         {isUnlocked && (
                             <Tag color="success" style={{ fontSize: '0.75rem' }}>
-                                {t("achievement.unlocked") || "Unlocked"}
+                                {t("achievement.unlocked")}
                             </Tag>
                         )}
                         {showProgress && !isUnlocked && (
@@ -83,7 +83,7 @@ export function AchievementView() {
                                     }}
                                 />
                                 <Text type="secondary" style={{ fontSize: '0.75rem', display: 'block', marginTop: '4px' }}>
-                                    {Math.round(progress * 100)}% {t("achievement.complete") || "complete"}
+                                    {Math.round(progress * 100)}% {t("achievement.complete")}
                                 </Text>
                             </div>
                         )}
@@ -106,7 +106,7 @@ export function AchievementView() {
                             {VectorGraphics.ACHIEVEMENTS}
                         </span>
                         <Text type="secondary">
-                            {t("achievement.noAchievements") || "No achievements available"}
+                            {t("achievement.noAchievements")}
                         </Text>
                     </div>
                 </Card>

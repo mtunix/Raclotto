@@ -1,4 +1,5 @@
 import { Card, Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
 import styles from '../GenerateView/GenerateView.module.css';
 import './PreparationTypeCard.css';
 
@@ -12,6 +13,7 @@ interface PreparationTypeCardProps {
 }
 
 export function PreparationTypeCard({ preparationType }: PreparationTypeCardProps) {
+    const { t } = useTranslation();
     return (
         <Card
             className={styles.card}
@@ -23,7 +25,7 @@ export function PreparationTypeCard({ preparationType }: PreparationTypeCardProp
                     </div>
                     <div className={`${styles.flexColumn} ${styles.gap4} ${styles.flex1}`}>
                         <Text strong className={styles.subtitle}>
-                            Preparation Type
+                            {t("generate.preparationType")}
                         </Text>
                         <Text className="preparation-type-name">
                             {preparationType.name}

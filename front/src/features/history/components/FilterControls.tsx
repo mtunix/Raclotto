@@ -33,11 +33,11 @@ export function FilterControls({
 
     return (
         <Space size="middle" align="center" wrap>
-            <Text strong>{t("history.filters") || "Filters"}:</Text>
+            <Text strong>{t("history.filters")}:</Text>
 
             {/* User Filter Popover */}
             <Popover
-                title={t("history.filterByUser") || "Filter by User"}
+                title={t("history.filterByUser")}
                 trigger="click"
                 content={
                     <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
@@ -63,7 +63,7 @@ export function FilterControls({
                     size="middle"
                     type={selectedUsers.length > 0 ? 'primary' : 'default'}
                 >
-                    {t("history.users") || "Users"}
+                    {t("history.users")}
                     {selectedUsers.length > 0 && (
                         <Tag style={{marginLeft: '4px'}}>
                             {selectedUsers.length}
@@ -74,7 +74,7 @@ export function FilterControls({
 
             {/* Rating Filter Popover */}
             <Popover
-                title={t("history.filterByRating") || "Filter by Rating"}
+                title={t("history.filterByRating")}
                 trigger="click"
                 content={
                     <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
@@ -87,7 +87,7 @@ export function FilterControls({
                                 <Space orientation="vertical" size="small" style={{width: '100%'}}>
                                     {uniqueRatings.map(rating => (
                                         <Checkbox key={rating} value={rating}>
-                                            {rating} {t("history.stars") || "stars"}
+                                            {rating} {t("history.stars")}
                                         </Checkbox>
                                     ))}
                                 </Space>
@@ -100,7 +100,7 @@ export function FilterControls({
                     size="middle"
                     type={selectedRatings.length > 0 ? 'primary' : 'default'}
                 >
-                    {t("history.rating") || "Rating"}
+                    {t("history.rating")}
                     {selectedRatings.length > 0 && (
                         <Tag style={{marginLeft: '4px'}}>
                             {selectedRatings.length}
@@ -111,7 +111,7 @@ export function FilterControls({
 
             {/* Ingredient Count Filter Popover */}
             <Popover
-                title={t("history.filterByIngredients") || "Filter by Ingredient Count"}
+                title={t("history.filterByIngredients")}
                 trigger="click"
                 content={
                     <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
@@ -124,7 +124,7 @@ export function FilterControls({
                                 <Space orientation="vertical" size="small" style={{width: '100%'}}>
                                     {uniqueIngredientRanges.map(range => (
                                         <Checkbox key={range} value={range}>
-                                            {range} {t("history.ingredients") || "ingredients"}
+                                            {range} {t("history.ingredients")}
                                         </Checkbox>
                                     ))}
                                 </Space>
@@ -137,7 +137,7 @@ export function FilterControls({
                     size="middle"
                     type={selectedIngredientCounts.length > 0 ? 'primary' : 'default'}
                 >
-                    {t("history.ingredients") || "Ingredients"}
+                    {t("history.ingredients")}
                     {selectedIngredientCounts.length > 0 && (
                         <Tag style={{marginLeft: '4px'}}>
                             {selectedIngredientCounts.length}
@@ -152,7 +152,7 @@ export function FilterControls({
                 onClick={onClearFilters}
                 disabled={selectedUsers.length === 0 && selectedRatings.length === 0 && selectedIngredientCounts.length === 0}
             >
-                {t("history.clearFilters") || "Clear Filters"}
+                {t("history.clearFilters")}
             </Button>
         </Space>
     );

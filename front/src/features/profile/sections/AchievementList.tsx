@@ -9,7 +9,7 @@ const { Title, Text } = Typography;
 export function AchievementList({ achievements }: { achievements: AchievementDto[] }) {
   const { t } = useTranslation();
   return (
-    <Card title={t("profile.achievements") || "Achievements"} style={{ marginBottom: "24px" }}>
+    <Card title={t("profile.achievements")} style={{ marginBottom: "24px" }}>
       {achievements.length > 0 ? (
         <Row gutter={[16, 16]}>
           {achievements.map((achievement) => (
@@ -25,7 +25,7 @@ export function AchievementList({ achievements }: { achievements: AchievementDto
                     </Text>
                   </div>
                   <Tag color={achievementValueColor(achievement.value || 0)}>
-                    {achievement.value || 0} {t("achievement.points") || "pts"}
+                    {achievement.value || 0} {t("achievement.points")}
                   </Tag>
                 </div>
               </Card>
@@ -34,7 +34,7 @@ export function AchievementList({ achievements }: { achievements: AchievementDto
         </Row>
       ) : (
         <Empty
-          description={t("profile.noAchievements") || "No achievements unlocked yet"}
+          description={t("profile.noAchievements")}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}

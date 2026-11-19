@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
 import { displayName } from "../../../shared/displayName";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
+import { formatDateTime, useLanguage } from "../../../lib/language";
 import { panCardStyle } from "../panCardStyle";
 
 const { Title, Text } = Typography;
@@ -10,6 +11,7 @@ const { Title, Text } = Typography;
 /** One of the user's pans, framed in their border. */
 export function ProfilePanCard({ pan }: { pan: PanDto }) {
   const { t } = useTranslation();
+  const language = useLanguage();
   const style = panCardStyle(pan.author);
 
   const card = (
@@ -21,7 +23,7 @@ export function ProfilePanCard({ pan }: { pan: PanDto }) {
               {displayName(pan.name, t)}
             </Title>
             <Text type="secondary" style={{ fontSize: "0.7rem" }}>
-              {new Date(pan.timestamp).toLocaleString()}
+              {formatDateTime(pan.timestamp, language)}
             </Text>
           </Space>
           {pan.rating > 0 && (
@@ -47,7 +49,7 @@ export function ProfilePanCard({ pan }: { pan: PanDto }) {
             </Space>
           ) : (
             <Text type="secondary" style={{ fontSize: "0.85rem" }}>
-              {t("ingredient.noIngredients") || "No ingredients"}
+              {t("ingredient.noIngredients")}
             </Text>
           )}
         </div>

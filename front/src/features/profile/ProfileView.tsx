@@ -31,7 +31,7 @@ export function ProfileView() {
   if (error || !profile) {
     return (
       <Card>
-        <Empty description={t("profile.userNotFound") || "User not found"} />
+        <Empty description={t("profile.userNotFound")} />
       </Card>
     );
   }

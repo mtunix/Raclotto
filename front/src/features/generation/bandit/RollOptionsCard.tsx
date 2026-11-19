@@ -27,7 +27,7 @@ export function RollOptionsCard(props: RollOptionsCardProps) {
                             disabled={props.disabled}
                             style={checkboxStyle}
                         >
-                            {t("generate.rollPreparationType") || "Roll preparation type"}
+                            {t("generate.rollPreparationType")}
                         </Checkbox>
                         <Checkbox
                             checked={props.rollCheese}
@@ -35,7 +35,7 @@ export function RollOptionsCard(props: RollOptionsCardProps) {
                             disabled={props.disabled}
                             style={checkboxStyle}
                         >
-                            {t("generate.rollCheese") || "Roll cheese level"}
+                            {t("generate.rollCheese")}
                         </Checkbox>
                     </div>
                 </Card>

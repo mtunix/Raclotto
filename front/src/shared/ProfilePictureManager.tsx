@@ -89,8 +89,8 @@ export function ProfilePictureManager({
           {showLabel && !disabled && (
             <div style={{ textAlign: "center", marginTop: "8px", fontSize: "12px", color: "#666" }}>
               {directMode
-                ? t("auth.profilePicture") || "Profile Picture"
-                : t("profile.clickToChange") || "Click to change"}
+                ? t("auth.profilePicture")
+                : t("profile.clickToChange")}
             </div>
           )}
         </div>

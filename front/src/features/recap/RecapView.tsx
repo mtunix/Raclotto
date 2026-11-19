@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router";
 import { useGetSessionRecap } from "../../api/generated/endpoints/sessions/sessions";
 import type { PanDto, ParticipantRecapDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
+import { formatDate, useLanguage } from "../../lib/language";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import { displayName } from "../../shared/displayName";
 import { IngredientDisplay } from "../../shared/IngredientDisplay/IngredientDisplay";
@@ -58,6 +59,7 @@ function PanHighlight({ icon, title, pan, extra }: HighlightProps) {
 /** How a session went: what was rolled, the best and the boldest pans, and everyone's evening. */
 export function RecapView() {
     const { t } = useTranslation();
+    const language = useLanguage();
     const navigate = useNavigate();
     const { sessionKey = "" } = useParams<{ sessionKey: string }>();
     const { data: recap, isLoading, error } = useGetSessionRecap(
@@ -107,7 +109,7 @@ export function RecapView() {
                 <div>
                     <Title level={2} style={{ margin: 0 }}>{recap.session.name}</Title>
                     <Text type="secondary">
-                        {new Date(recap.session.timestamp).toLocaleDateString()}
+                        {formatDate(recap.session.timestamp, language)}
                         {" · "}
                         {recap.session.active ? <Tag color="green">{t("recap.stillOpen")}</Tag> : <Tag>{t("recap.closed")}</Tag>}
                     </Text>

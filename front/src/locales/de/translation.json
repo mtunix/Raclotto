@@ -21,7 +21,8 @@
     "saveFailed": "Fehler beim Speichern",
     "edit": "Bearbeiten",
     "loading": "Lädt...",
-    "back": "Zurück"
+    "back": "Zurück",
+    "notAvailable": "k. A."
   },
   "ingredient": {
     "ingredientName": "Zutatname",
@@ -99,7 +100,10 @@
     "creating": "Erstelle...",
     "welcome": "Willkommen",
     "sessionNotFound": "Diese Session gibt es nicht oder sie wurde beendet.",
-    "closedMessage": "Diese Session ist beendet. Nur wer sie erstellt hat, kann sie wieder öffnen, aber Sie können sich ansehen, wie sie gelaufen ist."
+    "closedMessage": "Diese Session ist beendet. Nur wer sie erstellt hat, kann sie wieder öffnen, aber Sie können sich ansehen, wie sie gelaufen ist.",
+    "loading": "Session wird geladen...",
+    "closeFailed": "Session konnte nicht beendet werden",
+    "errorLoadingSession": "Die Session konnte nicht geladen werden."
   },
   "toolbar": {
     "generateTitle": "Generieren",
@@ -228,7 +232,8 @@
     "adminChangeFailed": "Adminrechte konnten nicht geändert werden"
   },
   "events": {
-    "panSwap": "Pfannen-Tausch-Ereignis"
+    "panSwap": "Pfannen-Tausch-Ereignis",
+    "dismiss": "Ausblenden"
   },
   "history": {
     "consumedBy": "Konsumiert von",
@@ -262,7 +267,12 @@
     "leaderboard": "Bestenliste",
     "you": "Du",
     "points": "Punkte",
-    "achievements": "Errungenschaften"
+    "achievements": "Errungenschaften",
+    "global": "Global",
+    "session": "Session",
+    "pans": "Pfannen",
+    "removeWidthCap": "Volle Breite",
+    "capWidth": "Breite begrenzen"
   },
   "auth": {
     "login": "Anmelden",
@@ -308,7 +318,8 @@
     "cancel": "Abbrechen",
     "close": "Schließen",
     "tooManyAttempts": "Zu viele fehlgeschlagene Anmeldungen. Bitte warten Sie 15 Minuten und versuchen Sie es erneut.",
-    "passwordTooShort": "Mindestens {{count}} Zeichen"
+    "passwordTooShort": "Mindestens {{count}} Zeichen",
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben."
   },
   "invite": {
     "generateToken": "Einladungstoken erstellen",
@@ -365,7 +376,10 @@
     "biggestPan": "Größte Pfanne",
     "panName": "Pfannenname",
     "ingredientCount": "Anzahl Zutaten",
-    "ingredients": "Zutaten"
+    "ingredients": "Zutaten",
+    "viewProfilePicture": "Profilbild ansehen",
+    "noHistoryYet": "Noch kein Verlauf",
+    "regenerateFailed": "Profilbild konnte nicht neu generiert werden"
   },
   "achievement": {
     "points": "Pkt",

@@ -109,7 +109,7 @@ export function Toolbar(props: ToolbarProps) {
     {
       id: 4,
       icon: <PlusOutlined />,
-      label: t("ingredient.ingredients") || "Ingredients",
+      label: t("ingredient.ingredients"),
     },
     { id: 5, icon: <TrophyOutlined />, label: t("common.achievements") },
     { id: 2, icon: <SettingOutlined />, label: t("common.settings") },

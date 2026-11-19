@@ -40,20 +40,20 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                 <Row gutter={[16, 16]}>
                     <Col xs={24} sm={12} md={8}>
                         <Form.Item
-                            label={t("ingredient.ingredientName") || "Name"}
+                            label={t("ingredient.ingredientName")}
                             validateStatus={errors?.name ? "error" : ""}
                             help={errors?.name}
                         >
                             <Input
                                 value={ingredient.name}
                                 onChange={(e) => onChange(index, "name", e.target.value)}
-                                placeholder={t("ingredient.ingredientName") || "Name"}
+                                placeholder={t("ingredient.ingredientName")}
                             />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12} md={8}>
                         <Form.Item
-                            label={t("ingredient.type") || "Type"}
+                            label={t("ingredient.type")}
                             validateStatus={errors?.type ? "error" : ""}
                             help={errors?.type}
                         >
@@ -62,8 +62,8 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                                 onChange={(value) => onChange(index, "type", value)}
                                 style={{ width: "100%" }}
                                 options={[
-                                    { value: IngredientType.FILL, label: t("ingredient.fill") || "FILL" },
-                                    { value: IngredientType.SAUCE, label: t("ingredient.sauce") || "SAUCE" },
+                                    { value: IngredientType.FILL, label: t("ingredient.fill") },
+                                    { value: IngredientType.SAUCE, label: t("ingredient.sauce") },
                                 ]}
                             />
                         </Form.Item>
@@ -78,7 +78,7 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                     </Col>
                     <Col xs={24}>
                         <Form.Item
-                            label={t("settings.dietaryTags") || "Dietary Tags"}
+                            label={t("settings.dietaryTags")}
                             validateStatus={errors?.dietary ? "error" : ""}
                             help={errors?.dietary}
                         >
@@ -105,11 +105,11 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                         </Form.Item>
                     </Col>
                     <Col xs={24}>
-                        <Form.Item label={t("ingredient.additionalProperties") || "Additional Properties"}>
+                        <Form.Item label={t("ingredient.additionalProperties")}>
                             <Space orientation="vertical" style={{ width: "100%" }}>
                                 <div>
                                     <div style={{ marginBottom: "8px" }}>
-                                        {t("ingredient.spicy") || "Spicy"} ({ingredient.spicy || 0}/3)
+                                        {t("ingredient.spicy")} ({ingredient.spicy || 0}/3)
                                     </div>
                                     <Slider
                                         min={0}
@@ -123,13 +123,13 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                                     checked={ingredient.wildcard || false}
                                     onChange={(e) => onChange(index, "wildcard", e.target.checked)}
                                 >
-                                    {t("ingredient.wildcard") || "Wildcard"}
+                                    {t("ingredient.wildcard")}
                                 </Checkbox>
                                 <Checkbox
                                     checked={ingredient.sweet || false}
                                     onChange={(e) => onChange(index, "sweet", e.target.checked)}
                                 >
-                                    {t("ingredient.sweet") || "Sweet"}
+                                    {t("ingredient.sweet")}
                                 </Checkbox>
                             </Space>
                         </Form.Item>

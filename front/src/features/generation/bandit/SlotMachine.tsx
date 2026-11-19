@@ -137,8 +137,8 @@ export function SlotMachine({ columns, canSpin, onSpin }: SlotMachineProps) {
                         display: "block",
                     }}>
                         {canSpin
-                            ? (t("generate.banditSpin") || "Pull the Lever! 🎰")
-                            : (t("generate.banditCannotSpin") || "Cannot Spin")}
+                            ? t("generate.banditSpin")
+                            : t("generate.banditCannotSpin")}
                     </Text>
                 </div>
             </div>

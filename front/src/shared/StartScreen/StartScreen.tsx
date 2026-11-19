@@ -48,11 +48,11 @@ export function JoinSession() {
                     setSession(reactivatedSession);
                     // Refresh the session list
                     void mutate();
-                    message.success(t("session.reactivated") || "Session reactivated successfully");
+                    message.success(t("session.reactivated"));
                     void navigate(`/${reactivatedSession.id}/generate`);
                 } catch (error) {
                     console.error("Failed to reactivate session:", error);
-                    message.error(t("session.reactivateFailed") || "Failed to reactivate session");
+                    message.error(t("session.reactivateFailed"));
                     setReactivating(false);
                     return;
                 }
@@ -100,7 +100,7 @@ export function JoinSession() {
                             value: i,
                             label: session.active
                                 ? session.name
-                                : `${session.name} ${t("session.inactive") || "(Inactive)"}`,
+                                : `${session.name} ${t("session.inactive")}`,
                         }))}
                     />
                 </Form.Item>
@@ -108,12 +108,12 @@ export function JoinSession() {
                     {selected && !selected.active && (
                         <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#fff7e6', borderRadius: '8px', border: '1px solid #ffd591' }}>
                             <Tag color="orange" style={{ marginBottom: '8px' }}>
-                                {t("session.inactive") || "Inactive"}
+                                {t("session.inactive")}
                             </Tag>
                             <div style={{ fontSize: '14px', color: '#666' }}>
                                 {recapOnly
                                     ? t("session.closedMessage")
-                                    : t("session.reactivateMessage") || "This session is inactive. It will be reactivated when you join."}
+                                    : t("session.reactivateMessage")}
                             </div>
                         </div>
                     )}
@@ -131,10 +131,10 @@ export function JoinSession() {
                         size="large"
                     >
                         {reactivating 
-                            ? (t("session.reactivating") || "Reactivating...")
+                            ? t("session.reactivating")
                             : (selected && !selected.active
-                                ? (t("session.joinAndReactivate") || "Join & Reactivate")
-                                : (t("session.join") || "Join"))
+                                ? t("session.joinAndReactivate")
+                                : t("session.join"))
                         }
                     </Button>
                     )}

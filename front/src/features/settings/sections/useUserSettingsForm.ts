@@ -52,7 +52,7 @@ export function useUserSettingsForm() {
 
     useEffect(() => {
         if (error) {
-            message.error(t("settings.loadFailed") || "Failed to load settings");
+            message.error(t("settings.loadFailed"));
         }
     }, [error, t]);
 
@@ -75,10 +75,10 @@ export function useUserSettingsForm() {
             // Pan cards show their author's border.
             void mutatePanLists();
             setUser(updated);
-            message.success(t("common.saved") || "Saved");
+            message.success(t("common.saved"));
         } catch (e) {
             console.error("Failed to save user settings:", e);
-            message.error(t("settings.saveFailed") || "Failed to save settings");
+            message.error(t("settings.saveFailed"));
             void mutateMe();
         } finally {
             setSaving(false);

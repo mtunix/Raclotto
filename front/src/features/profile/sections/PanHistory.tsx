@@ -24,7 +24,7 @@ export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps
     );
   } else if (pans.length === 0) {
     content = (
-      <Empty description={t("history.noPans") || "No pans in history"} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      <Empty description={t("history.noPans")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
     );
   } else {
     content = (
@@ -39,7 +39,7 @@ export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps
         {hasMore && (
           <div style={{ textAlign: "center", marginTop: "24px", marginBottom: "24px" }}>
             <Button type="primary" loading={loading} onClick={loadMore} size="large">
-              {t("history.loadMore") || "Load More"}
+              {t("history.loadMore")}
             </Button>
           </div>
         )}
@@ -47,5 +47,5 @@ export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps
     );
   }
 
-  return <Card title={t("profile.pansHistory") || "Pans History"}>{content}</Card>;
+  return <Card title={t("profile.pansHistory")}>{content}</Card>;
 }

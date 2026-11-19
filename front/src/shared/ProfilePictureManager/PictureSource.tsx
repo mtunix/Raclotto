@@ -46,7 +46,7 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
     <div style={columnStyle}>
       <input ref={fileInputRef} type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
       <Button icon={<UploadOutlined />} disabled={disabled} onClick={() => fileInputRef.current?.click()} block>
-        {t("auth.selectImage") || "Select Image"}
+        {t("auth.selectImage")}
       </Button>
       {active ? (
         <div style={columnStyle}>
@@ -59,16 +59,16 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
           />
           <Space orientation="vertical" style={{ width: "100%" }}>
             <Button onClick={takePicture} type="primary" size="large" disabled={disabled} block>
-              {t("auth.capture") || "Capture"}
+              {t("auth.capture")}
             </Button>
             <Button onClick={stop} size="large" disabled={disabled} block>
-              {t("auth.cancel") || "Cancel"}
+              {t("auth.cancel")}
             </Button>
           </Space>
         </div>
       ) : (
         <Button icon={<CameraOutlined />} onClick={start} disabled={disabled} block>
-          {t("auth.takePhoto") || "Take Photo"}
+          {t("auth.takePhoto")}
         </Button>
       )}
     </div>
