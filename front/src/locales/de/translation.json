@@ -93,7 +93,9 @@
     "noSessionSelected": "Keine Session ausgewählt",
     "backToSessions": "Zurück zu Sessions",
     "creating": "Erstelle...",
-    "welcome": "Willkommen"
+    "welcome": "Willkommen",
+    "sessionNotFound": "Diese Session gibt es nicht oder sie wurde beendet.",
+    "closedMessage": "Diese Session ist beendet. Nur wer sie erstellt hat, kann sie wieder öffnen, aber Sie können sich ansehen, wie sie gelaufen ist."
   },
   "toolbar": {
     "generateTitle": "Generieren",
@@ -445,5 +447,29 @@
       "title": "Keine Daten verfügbar",
       "message": "Derzeit sind keine Daten verfügbar."
     }
+  },
+  "recap": {
+    "title": "Session-Rückblick",
+    "description": "Die beste, die schlechteste und die mutigste Pfanne des Abends, und wie es allen ergangen ist.",
+    "show": "Rückblick anzeigen",
+    "backToSession": "Zurück zur Session",
+    "stillOpen": "Läuft noch",
+    "closed": "Beendet",
+    "pans": "Pfannen",
+    "ratings": "Bewertungen",
+    "participants": "Teilnehmer",
+    "who": "Wer",
+    "averageRating": "Durchschnitt Sterne",
+    "ratingsGiven": "Vergebene Bewertungen",
+    "bestPan": "Beste Pfanne",
+    "worstPan": "Schlechteste Pfanne",
+    "boldestPan": "Mutigste Pfanne",
+    "favoriteIngredient": "Lieblingszutat",
+    "inPans_one": "In {{count}} Pfanne",
+    "inPans_other": "In {{count}} Pfannen",
+    "ratingCount_one": "{{count}} Bewertung",
+    "ratingCount_other": "{{count}} Bewertungen",
+    "nothingRolled": "In dieser Session hat niemand eine Pfanne gezogen.",
+    "nothingRated": "Keine Pfanne wurde bewertet, also gibt es keine beste oder schlechteste."
   }
 }

@@ -13,6 +13,7 @@ import {useAppStore} from "../../AppSlice";
 import {useNavigate} from "react-router";
 import {useTranslation} from "react-i18next";
 import {useAuthStore} from "../../AuthSlice";
+import {canManageSession} from "../../model/permissions";
 
 export function JoinSession() {
     const { t } = useTranslation();
@@ -21,6 +22,7 @@ export function JoinSession() {
     let {data, isLoading, error, mutate} = useListSessions({include_inactive: true}, {swr: {onErrorRetry}});
     let [selectedIndex, setSelectedIndex] = React.useState(0);
     const [reactivating, setReactivating] = useState(false);
+    const user = useAuthStore((state) => state.user);
 
     // Sort sessions: active first, then inactive
     const sortedSessions = React.useMemo(() => {
@@ -81,6 +83,10 @@ export function JoinSession() {
         );
     }
 
+    const selected: SessionDto | undefined = sortedSessions[selectedIndex];
+    // A closed session only its creator or an admin can reopen; everyone else sees how it went.
+    const recapOnly = selected !== undefined && !selected.active && !canManageSession(user, selected);
+
     return (
         <Card title={t("session.joinExisting")} style={{ height: '100%' }}>
             <Form layout="vertical">
@@ -104,16 +110,23 @@ export function JoinSession() {
                     </Select>
                 </Form.Item>
                 <Form.Item style={{ marginBottom: 0 }}>
-                    {sortedSessions && sortedSessions.length > 0 && selectedIndex >= 0 && selectedIndex < sortedSessions.length && !sortedSessions[selectedIndex].active && (
+                    {selected && !selected.active && (
                         <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#fff7e6', borderRadius: '8px', border: '1px solid #ffd591' }}>
                             <Tag color="orange" style={{ marginBottom: '8px' }}>
                                 {t("session.inactive") || "Inactive"}
                             </Tag>
                             <div style={{ fontSize: '14px', color: '#666' }}>
-                                {t("session.reactivateMessage") || "This session is inactive. It will be reactivated when you join."}
+                                {recapOnly
+                                    ? t("session.closedMessage")
+                                    : t("session.reactivateMessage") || "This session is inactive. It will be reactivated when you join."}
                             </div>
                         </div>
                     )}
+                    {recapOnly ? (
+                        <Button type="primary" block size="large" onClick={() => navigate(`/recap/${encodeURIComponent(selected.key)}`)}>
+                            {t("recap.show")}
+                        </Button>
+                    ) : (
                     <Button 
                         type="primary" 
                         onClick={join} 
@@ -124,11 +137,17 @@ export function JoinSession() {
                     >
                         {reactivating 
                             ? (t("session.reactivating") || "Reactivating...")
-                            : (sortedSessions && sortedSessions.length > 0 && selectedIndex >= 0 && selectedIndex < sortedSessions.length && !sortedSessions[selectedIndex].active
+                            : (selected && !selected.active
                                 ? (t("session.joinAndReactivate") || "Join & Reactivate")
                                 : (t("session.join") || "Join"))
                         }
                     </Button>
+                    )}
+                    {selected && !selected.active && !recapOnly && (
+                        <Button type="link" block onClick={() => navigate(`/recap/${encodeURIComponent(selected.key)}`)}>
+                            {t("recap.show")}
+                        </Button>
+                    )}
                 </Form.Item>
             </Form>
         </Card>

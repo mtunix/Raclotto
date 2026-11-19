@@ -1,0 +1,16 @@
+.recap-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 48px;
+}
+
+.recap-highlight {
+    height: 100%;
+    border-radius: 18px;
+}
+
+@media (max-width: 576px) {
+    .recap-page {
+        padding: 24px 16px 32px;
+    }
+}

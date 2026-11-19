@@ -120,6 +120,20 @@ describe('JoinSession', () => {
         expect(fake.last('POST', '/sessions/reactivate')?.body).toEqual({ key: inactive.key });
         expect(useAppStore.getState().session).toEqual({ ...inactive, active: true });
     });
+
+    it("offers someone else's closed session only as a recap", async () => {
+        fake.on('GET', '/sessions', [session, { ...inactive, created_by_user_id: me.id + 1 }]);
+        renderRoute(<JoinSession />);
+        await screen.findByText(session.name);
+
+        await choose(`${inactive.name} session.inactive`);
+        expect(await screen.findByText('session.closedMessage')).toBeInTheDocument();
+        expect(screen.queryByText('session.joinAndReactivate')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText('recap.show'));
+
+        await waitFor(() => expect(currentPath()).toBe(`/recap/${inactive.key}`));
+        expect(fake.last('POST', '/sessions/reactivate')).toBeUndefined();
+    });
 });
 
 describe('SessionSelector', () => {

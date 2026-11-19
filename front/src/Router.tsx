@@ -14,6 +14,7 @@ import {KitchenManagement} from "./features/ingredients/components/KitchenManage
 import {SettingsView} from "./features/settings/SettingsView";
 import {AchievementView} from "./features/achievements/AchievementView";
 import {ProfileView} from "./features/profile/ProfileView";
+import {RecapView} from "./features/recap/RecapView";
 
 export const RaclottoRouter = createBrowserRouter([
     {
@@ -29,6 +30,15 @@ export const RaclottoRouter = createBrowserRouter([
             {
                 path: "register",
                 element: <RegisterView/>,
+                errorElement: <ErrorPage/>,
+            },
+            {
+                path: "recap/:sessionKey",
+                element: (
+                    <ProtectedRoute>
+                        <RecapView/>
+                    </ProtectedRoute>
+                ),
                 errorElement: <ErrorPage/>,
             },
             {

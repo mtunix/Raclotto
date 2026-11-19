@@ -93,7 +93,9 @@
     "noSessionSelected": "No session selected",
     "backToSessions": "Back to Sessions",
     "creating": "Creating...",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "sessionNotFound": "This session does not exist or has been closed.",
+    "closedMessage": "This session is closed. Only its creator can reopen it, but you can see how it went."
   },
   "toolbar": {
     "generateTitle": "Generate",
@@ -445,5 +447,29 @@
       "title": "No Data Available",
       "message": "No data is currently available."
     }
+  },
+  "recap": {
+    "title": "Session recap",
+    "description": "The best, the worst and the boldest pans of the evening, and how everyone did.",
+    "show": "Show recap",
+    "backToSession": "Back to the session",
+    "stillOpen": "Still going",
+    "closed": "Closed",
+    "pans": "Pans",
+    "ratings": "Ratings",
+    "participants": "Participants",
+    "who": "Who",
+    "averageRating": "Average stars",
+    "ratingsGiven": "Ratings given",
+    "bestPan": "Best pan",
+    "worstPan": "Worst pan",
+    "boldestPan": "Boldest pan",
+    "favoriteIngredient": "Favorite ingredient",
+    "inPans_one": "In {{count}} pan",
+    "inPans_other": "In {{count}} pans",
+    "ratingCount_one": "{{count}} rating",
+    "ratingCount_other": "{{count}} ratings",
+    "nothingRolled": "Nobody rolled a pan in this session.",
+    "nothingRated": "No pan was rated, so there is no best or worst pan."
   }
 }
