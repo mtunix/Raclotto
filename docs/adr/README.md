@@ -13,3 +13,4 @@ instead of rewriting it. The domain's vocabulary is in [`GLOSSARY.md`](../../GLO
 | [0004](0004-the-database-migrates-itself-at-startup.md) | The database migrates itself at startup | accepted | 2026-11-18 |
 | [0005](0005-keep-the-login-throttle-in-memory.md) | Keep the login throttle in memory | accepted | 2026-11-19 |
 | [0006](0006-build-the-frontend-with-vite-vitest-and-playwright.md) | Build the frontend with Vite, Vitest and Playwright | accepted | 2026-11-19 |
+| [0007](0007-take-the-sqlite-write-lock-at-the-start-of-every-transaction.md) | Take SQLite's write lock at the start of every transaction | accepted | 2026-11-19 |
