@@ -12,8 +12,6 @@ module.exports = {
     // Handle path aliases from tsconfig (baseUrl ".")
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
     '^src/(.*)$': '<rootDir>/src/$1',
-    '^@test-utils$': '<rootDir>/src/testUtils',
-    '^@test-utils/(.*)$': '<rootDir>/src/testUtils/$1',
   },
 
   // Transform files (same babel/css/file transforms the CRA tooling uses)

@@ -1,13 +1,11 @@
-import React from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
-import { SWRConfig } from 'swr';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
 import { me, session, sessions } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
 import { setTransport, Transport } from '../../lib/api/transport';
+import { currentPath, renderRoute } from '../../testUtils';
 import { JoinSession, SessionSelector, StartScreen } from './StartScreen';
 
 jest.mock('i18next', () => ({
@@ -30,24 +28,6 @@ afterEach(() => {
     setTransport(previous);
 });
 
-function Location() {
-    return <p data-testid="location">{useLocation().pathname}</p>;
-}
-
-function renderAt(element: React.ReactNode) {
-    const router = createMemoryRouter([
-        { path: '/', element },
-        { path: '*', element: <Location /> },
-    ]);
-    return render(
-        <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
-            <RouterProvider router={router} />
-        </SWRConfig>,
-    );
-}
-
-const location = () => screen.getByTestId('location').textContent;
-
 async function choose(optionText: string) {
     fireEvent.mouseDown(screen.getByRole('combobox'));
     const options = await screen.findAllByText(optionText);
@@ -56,7 +36,7 @@ async function choose(optionText: string) {
 
 describe('StartScreen', () => {
     it('greets the signed-in user and offers to create or join a session', async () => {
-        renderAt(<StartScreen />);
+        renderRoute(<StartScreen />);
 
         expect(screen.getByText(`session.welcome ${me.name}`)).toBeInTheDocument();
         expect(screen.getByText('session.createNew')).toBeInTheDocument();
@@ -65,17 +45,17 @@ describe('StartScreen', () => {
 
     it('goes straight to the session the user is already in', async () => {
         useAppStore.setState({ session });
-        renderAt(<StartScreen />);
+        renderRoute(<StartScreen />);
 
-        await waitFor(() => expect(location()).toBe(`/${session.id}`));
+        await waitFor(() => expect(currentPath()).toBe(`/${session.id}`));
     });
 
     it('signs out to the login page', async () => {
-        renderAt(<StartScreen />);
+        renderRoute(<StartScreen />);
 
         fireEvent.click(screen.getByText('auth.logout'));
 
-        await waitFor(() => expect(location()).toBe('/login'));
+        await waitFor(() => expect(currentPath()).toBe('/login'));
         expect(useAuthStore.getState().user).toBeNull();
     });
 });
@@ -83,7 +63,7 @@ describe('StartScreen', () => {
 describe('JoinSession', () => {
     it('shows a spinner while the sessions load', () => {
         fake.on('GET', '/sessions', () => new Promise(() => {}));
-        renderAt(<JoinSession />);
+        renderRoute(<JoinSession />);
 
         expect(screen.getByRole('status')).toBeInTheDocument();
     });
@@ -92,21 +72,21 @@ describe('JoinSession', () => {
         fake.on('GET', '/sessions', () => {
             throw Object.assign(new Error('gone'), { status: 404 });
         });
-        renderAt(<JoinSession />);
+        renderRoute(<JoinSession />);
 
         expect(await screen.findByText('error.unknown.title')).toBeInTheDocument();
     });
 
     it('says so when there is no session to join', async () => {
         fake.on('GET', '/sessions', []);
-        renderAt(<JoinSession />);
+        renderRoute(<JoinSession />);
 
         expect(await screen.findByText('session.noSessionsAvailable')).toBeInTheDocument();
     });
 
     it('asks for inactive sessions too, and lists active ones first', async () => {
         fake.on('GET', '/sessions', [inactive, session]);
-        renderAt(<JoinSession />);
+        renderRoute(<JoinSession />);
 
         expect(await screen.findByText(session.name)).toBeInTheDocument();
         expect(fake.last('GET', '/sessions')?.query).toEqual({ include_inactive: true });
@@ -114,12 +94,12 @@ describe('JoinSession', () => {
     });
 
     it('joins the selected active session', async () => {
-        renderAt(<JoinSession />);
+        renderRoute(<JoinSession />);
         await screen.findByText(session.name);
 
         fireEvent.click(screen.getByText('session.join'));
 
-        await waitFor(() => expect(location()).toBe(`/${session.id}/generate`));
+        await waitFor(() => expect(currentPath()).toBe(`/${session.id}/generate`));
         expect(useAppStore.getState().session).toEqual(session);
         expect(fake.last('POST', '/sessions/reactivate')).toBeUndefined();
     });
@@ -127,7 +107,7 @@ describe('JoinSession', () => {
     it('reactivates an inactive session before joining it', async () => {
         fake.on('GET', '/sessions', [session, inactive])
             .on('POST', '/sessions/reactivate', { ...inactive, active: true });
-        renderAt(<JoinSession />);
+        renderRoute(<JoinSession />);
         await screen.findByText(session.name);
 
         await choose(`${inactive.name} session.inactive`);
@@ -136,7 +116,7 @@ describe('JoinSession', () => {
             fireEvent.click(screen.getByText('session.joinAndReactivate'));
         });
 
-        await waitFor(() => expect(location()).toBe(`/${inactive.id}/generate`));
+        await waitFor(() => expect(currentPath()).toBe(`/${inactive.id}/generate`));
         expect(fake.last('POST', '/sessions/reactivate')?.body).toEqual({ key: inactive.key });
         expect(useAppStore.getState().session).toEqual({ ...inactive, active: true });
     });
@@ -144,7 +124,7 @@ describe('JoinSession', () => {
 
 describe('SessionSelector', () => {
     it('creates nothing until the session has a name', async () => {
-        renderAt(<SessionSelector />);
+        renderRoute(<SessionSelector />);
         await screen.findByText(session.name);
 
         fireEvent.change(screen.getByPlaceholderText('session.sessionNamePlaceholder'), { target: { value: '   ' } });
@@ -155,13 +135,13 @@ describe('SessionSelector', () => {
     it('creates a session under the trimmed name and opens it', async () => {
         const created: SessionDto = { ...session, id: 7, key: 'new', name: 'Friday' };
         fake.on('POST', '/sessions', created);
-        renderAt(<SessionSelector />);
+        renderRoute(<SessionSelector />);
         await screen.findByText(session.name);
 
         fireEvent.change(screen.getByPlaceholderText('session.sessionNamePlaceholder'), { target: { value: '  Friday ' } });
         fireEvent.click(screen.getByText('common.create'));
 
-        await waitFor(() => expect(location()).toBe(`/${created.id}`));
+        await waitFor(() => expect(currentPath()).toBe(`/${created.id}`));
         expect(fake.last('POST', '/sessions')?.body).toEqual({ name: 'Friday' });
         expect(useAppStore.getState().session).toEqual(created);
     });
