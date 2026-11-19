@@ -1,16 +1,53 @@
 # Raclotto
 
+[![CI](https://github.com/mtunix/Raclotto/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/mtunix/Raclotto/actions/workflows/ci.yml)
+
 Made for snack lovers by snack lovers <3
+
+Raclotto is a raclette lottery. Everyone at the table joins a session and rolls pans of random
+ingredients from the session's catalog, filtered by their diet, then rates what they got. Rolling
+and rating earn XP, levels and achievements, and session events such as a pan swap keep the table
+moving. Accounts are created by invitation; ingredient catalogs can be exported and imported, and
+profile pictures can be generated with Google's image model.
+
+A Flask and SQLite backend serves a React and TypeScript frontend; both ship as one Docker image.
 
 ## Developing
 
+You need Python 3.14 and Node 24.
+
 ```bash
 python -m venv venv && venv/bin/pip install -r requirements-dev.txt
-venv/bin/python -m back.src.dev     # Flask debug server on 127.0.0.1:8081
-cd front && npm ci && npm start     # proxies the API to it
+(cd front && npm ci)
+venv/bin/python -m back.src.dev     # API on 127.0.0.1:8081, reloads on change
+cd front && npm start               # frontend dev server, proxies the API to it
 ```
 
-`.env.example` lists every variable; copy it to `.env` to set any.
+`.env.example` lists every variable; copy it to `.env` to set any. Set `RACLOTTO_ADMIN_PASSWORD`
+there to get an `admin` user on the first start, who can then invite others.
+
+The checks CI runs:
+
+```bash
+venv/bin/python -m unittest discover -s back/test -t .      # backend tests
+venv/bin/mypy                                               # backend types
+venv/bin/ruff check && venv/bin/ruff format --check         # backend lint and formatting
+cd front && npx tsc --noEmit && npm run lint && CI=true npx jest   # frontend types, lint and tests
+cd front && npm run gen:api:check                           # the API client matches the backend
+```
+
+The frontend's API client is generated from the backend: after changing a DTO, run
+`cd front && npm run gen:api` to rewrite `back/openapi.json` and `front/src/api/generated/`.
+To keep formatting-only commits out of `git blame`, run
+`git config blame.ignoreRevsFile .git-blame-ignore-revs` once.
+
+| Path | What's there |
+|---|---|
+| `back/src/` | Flask API: routes in `api/`, domain logic in `interactor/`, models in `entity/` |
+| `back/migrations/` | Alembic revisions, applied when the app starts |
+| `back/test/` | Unit and integration tests |
+| `front/src/` | React app: views in `features/` and `shared/`, the generated client in `api/generated/` |
+| `deploy/` | Caddy config, systemd unit, release and update scripts |
 
 ## Deploying with Docker
 
