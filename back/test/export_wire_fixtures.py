@@ -9,7 +9,7 @@ generated client disagree. Rerun after changing a DTO and regenerating the clien
 import json
 from pathlib import Path
 
-from back.src.api.image_api import set_image_generator
+from back.src.interactor.profile_pictures import set_image_generator
 from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.entity.ingredient import IngredientType

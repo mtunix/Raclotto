@@ -104,31 +104,8 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
             .first()
         )
 
-    def set_candidate(self, picture_id: int) -> bool:
-        """
-        Set a profile picture as the candidate for generation context.
-        Unmarks any previous candidate for the same user.
-
-        :param picture_id: Picture ID to mark as candidate
-        :return: True if successful, False otherwise
-        """
-        try:
-            # Get the picture to find its user_id
-            picture = (
-                db.session.query(ProfilePictureHistory).filter_by(id=picture_id).first()
-            )
-            if not picture:
-                return False
-
-            # Unmark all other pictures for this user
-            db.session.query(ProfilePictureHistory).filter_by(
-                user_id=picture.user_id
-            ).update({"is_candidate": False})
-
-            # Mark this picture as candidate
-            picture.is_candidate = True
-            db.session.commit()
-            return True
-        except Exception as e:
-            db.session.rollback()
-            return False
+    def set_candidate(self, picture: ProfilePictureHistory) -> None:
+        """Make ``picture`` its user's only candidate for generation context."""
+        db.session.query(ProfilePictureHistory).filter_by(user_id=picture.user_id).update({"is_candidate": False})
+        picture.is_candidate = True
+        db.session.flush()

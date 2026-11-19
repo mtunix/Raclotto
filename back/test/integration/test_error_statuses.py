@@ -4,7 +4,7 @@ from typing import Any, Dict, Set, Tuple
 from flask import Flask
 
 from back.src.api.base_api import BaseApi, TypedEndpoint, init_api_rules
-from back.src.api.image_api import GeminiImageGenerator, set_image_generator
+from back.src.interactor.profile_pictures import GeminiImageGenerator, set_image_generator
 from back.src.api.openapi import build_openapi
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db

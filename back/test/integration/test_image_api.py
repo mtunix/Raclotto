@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import TypeAdapter
 
-from back.src.api.image_api import GeminiImageGenerator, ImageApi, set_image_generator
+from back.src.interactor.profile_pictures import GeminiImageGenerator, PictureError, ProfilePictures, set_image_generator
 from back.src.driver.database import db
 from back.src.dto.profile_picture import GeneratedPictureDto, ProfilePictureDto
 from back.src.entity.profile_picture_history import ProfilePictureHistory
@@ -135,7 +135,9 @@ class ImageApiTest(AppTest):
                 self.assertEqual(response.status_code, 500)
                 self.assertEqual(response.json["errors"][0]["title"], "Image generation unavailable")
                 self.assertEqual(self.call("POST", path, body=body).status_code, 401)
-        self.assertFalse(ImageApi().generate_profile_picture_for_user(self.ana.id))
+        with self.assertRaises(PictureError) as raised:
+            ProfilePictures().generate_for_level(self.ana)
+        self.assertEqual(raised.exception.kind, PictureError.UNAVAILABLE)
         self.assertEqual(self.history(self.ana), [])
 
     def test_generating_from_a_prompt_saves_the_users_picture(self):
