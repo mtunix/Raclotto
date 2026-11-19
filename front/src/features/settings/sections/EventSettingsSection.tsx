@@ -1,17 +1,15 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
 import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
+import { useTranslation } from "react-i18next";
 import { mutateEventConfigs, onErrorRetry } from "../../../lib/api/swrHooks";
-import type { SaveEventConfigBody, SessionDto } from "../../../api/generated/model";
+import type { SaveEventConfigBody } from "../../../api/generated/model";
+import { useAppStore } from "../../../AppSlice";
+import { useAuthStore } from "../../../AuthSlice";
+import { canManageSession } from "../../../model/permissions";
 import "../SettingsView.css";
 
 const { Title, Text } = Typography;
-
-interface EventSettingsSectionProps {
-    t: (key: string) => string;
-    sessionKey: string;
-    session: SessionDto | null;
-}
 
 type EventType = SaveEventConfigBody["event_type"];
 
@@ -23,7 +21,12 @@ interface EventConfigState {
     frequency_minutes: number | null;
 }
 
-export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSectionProps) {
+export function EventSettingsSection() {
+    const { t } = useTranslation();
+    const session = useAppStore((state) => state.session);
+    const sessionKey = session?.key ?? "";
+    const user = useAuthStore((state) => state.user);
+    const readOnly = !canManageSession(user, session);
     const [saving, setSaving] = useState(false);
     const [localConfigs, setLocalConfigs] = useState<Record<string, EventConfigState>>({});
     const initialConfigsRef = useRef<Record<string, EventConfigState>>({});
@@ -187,7 +190,7 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
                                                 <Switch
                                                     checked={enabled}
                                                     onChange={(checked) => handleToggle(event_type, checked)}
-                                                    disabled={saving}
+                                                    disabled={saving || readOnly}
                                                 />
                                             </div>
                                             
@@ -201,7 +204,7 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
                                                         max={60}
                                                         value={frequency}
                                                         onChange={(value) => handleFrequencyChange(event_type, value)}
-                                                        disabled={saving}
+                                                        disabled={saving || readOnly}
                                                         size="large"
                                                         style={{ width: "100%" }}
                                                         placeholder={t("settings.optional") || "Optional"}
@@ -215,7 +218,10 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
                             })}
                             
                             <Divider />
-                            
+
+                            {readOnly ? (
+                                <Alert type="info" showIcon message={t("settings.onlyCreatorManages")} />
+                            ) : (
                             <Button
                                 type="primary"
                                 size="large"
@@ -233,6 +239,7 @@ export function EventSettingsSection({ t, sessionKey, session }: EventSettingsSe
                             >
                                 {t("common.save") || "Save"}
                             </Button>
+                            )}
                         </>
                     )}
                 </Card>

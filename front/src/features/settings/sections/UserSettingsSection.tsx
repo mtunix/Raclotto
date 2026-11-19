@@ -1,78 +1,41 @@
 import React from "react";
 import { Card, Form, Input, Alert, Button, ColorPicker, Divider, Select, Switch, Typography } from "antd";
 import { LockOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 import { TagChipGroup } from "../../../shared/TagChipGroup";
-import type { MeDto } from "../../../api/generated/model";
+import { ChangePasswordSection } from "./ChangePasswordSection";
+import { useUserSettingsForm } from "./useUserSettingsForm";
 import "../SettingsView.css";
 
 const { Text } = Typography;
 
-interface OptionItem {
-    name: string;
-    key: string;
-}
+const DIET_OPTIONS = [
+    { name: "meat", key: "tags.meat" },
+    { name: "vegetarian", key: "tags.vegetarian" },
+    { name: "vegan", key: "tags.vegan" },
+    { name: "fish", key: "tags.fish" },
+    { name: "histamine", key: "tags.histamine" },
+    { name: "gluten", key: "tags.gluten" },
+    { name: "fructose", key: "tags.fructose" },
+    { name: "lactose", key: "tags.lactose" },
+];
 
-interface UserSettingsSectionProps {
-    t: (key: string) => string;
-    userLoading: boolean;
-    userSaving: boolean;
-    userName: string;
-    userColor: string;
-    userLanguage: MeDto["language"];
-    borderStyle: MeDto["border_style"];
-    borderTexture: MeDto["border_texture"];
-    glowEffect: boolean;
-    options: OptionItem[];
-    tagValues: Record<string, boolean>;
-    currentUser: MeDto | null;
-    isUserSettingsDirty: () => boolean;
-    onUserNameChanged: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onUserColorChanged: (color: string) => void;
-    setUserLanguage: (lang: MeDto["language"]) => void;
-    setBorderStyle: (style: MeDto["border_style"]) => void;
-    setBorderTexture: (texture: MeDto["border_texture"]) => void;
-    setGlowEffect: (val: boolean) => void;
-    setChecked: (type: string, checked: boolean) => void;
-    handleSaveUserSettings: () => void;
-}
+// The card decorations unlock by level.
+const BORDER_STYLE_LEVEL = 3;
+const BORDER_TEXTURE_LEVEL = 5;
+const GLOW_LEVEL = 7;
 
-export function UserSettingsSection(props: UserSettingsSectionProps) {
-    const {
-        t,
-        userLoading,
-        userSaving,
-        userName,
-        userColor,
-        userLanguage,
-        borderStyle,
-        borderTexture,
-        glowEffect,
-        options,
-        tagValues,
-        currentUser,
-        isUserSettingsDirty,
-        onUserNameChanged,
-        onUserColorChanged,
-        setUserLanguage,
-        setBorderStyle,
-        setBorderTexture,
-        setGlowEffect,
-        setChecked,
-        handleSaveUserSettings,
-    } = props;
-
-    // Debug level data
-    console.log('UserSettingsSection Debug:', {
-        currentUser,
-        level: currentUser?.level,
-        levelId: currentUser?.level?.id,
-        levelIdType: typeof currentUser?.level?.id,
-        parsedLevelId: currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) : 'N/A'
-    });
+export function UserSettingsSection() {
+    const { t } = useTranslation();
+    const { me, loading, saving, profile, diet, dirty, change, setChecked, save } = useUserSettingsForm();
+    const level = me?.level ? Number(me.level.id) : 0;
+    const styleUnlocked = level >= BORDER_STYLE_LEVEL;
+    const textureUnlocked = level >= BORDER_TEXTURE_LEVEL;
+    const glowUnlocked = level >= GLOW_LEVEL;
 
     return (
         <div className="settings-user-tab">
-            {userLoading ? (
+            {loading || !profile ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                     <Button type="text" disabled>
                         <span style={{ marginRight: 8 }}>
@@ -93,10 +56,10 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                     >
                         <Input
                             size="large"
-                            value={userName}
-                            onChange={onUserNameChanged}
+                            value={profile.name}
+                            onChange={(e) => change("name", e.target.value)}
                             placeholder={t("common.enterName")}
-                            disabled={userSaving}
+                            disabled={saving}
                         />
                     </Form.Item>
 
@@ -127,9 +90,9 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                     >
                         <div style={{ width: '100%', display: 'block' }}>
                             <ColorPicker
-                                value={userColor}
-                                onChangeComplete={(color) => onUserColorChanged(color.toHexString())}
-                                disabled={userSaving}
+                                value={profile.color}
+                                onChangeComplete={(color) => change("color", color.toHexString())}
+                                disabled={saving}
                                 showText
                                 format="hex"
                                 style={{ width: '100%', display: 'block' }}
@@ -139,12 +102,12 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
 
                     {/* Border Style - disabled when texture is selected */}
                     <Form.Item 
-                        label={<span style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: borderTexture ? '#d9d9d9' : '#1d1d1f' }}>
+                        label={<span style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: profile.border_texture ? '#d9d9d9' : '#1d1d1f' }}>
                             {t("settings.borderStyle") || "Border Style"}
-                            {currentUser?.level && parseInt(currentUser.level.id.toString(), 10) < 3 && (
+                            {!styleUnlocked && (
                                 <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
                             )}
-                            {borderTexture && currentUser?.level && parseInt(currentUser.level.id.toString(), 10) >= 3 && (
+                            {profile.border_texture && styleUnlocked && (
                                 <Text type="secondary" style={{ marginLeft: '8px', fontSize: '14px', fontWeight: 'normal' }}>
                                     ({t("settings.disabledWithTexture") || "Disabled when texture is active"})
                                 </Text>
@@ -154,23 +117,11 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                         labelCol={{ span: 24 }}
                         wrapperCol={{ span: 24 }}
                     >
-                        <div style={{ opacity: borderTexture ? 0.6 : 1 }}>
+                        <div style={{ opacity: profile.border_texture ? 0.6 : 1 }}>
                             <Select
-                                value={borderStyle}
-                                onChange={(value) => setBorderStyle(value)}
-                                disabled={(() => {
-        const isDisabled = userSaving || (currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) < 3 : true) || !!borderTexture;
-        console.log('Border Style Disabled Logic:', {
-            userSaving,
-            hasLevel: !!currentUser?.level,
-            levelId: currentUser?.level?.id,
-            parsedLevelId: currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) : 'N/A',
-            levelCheck: currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) < 3 : true,
-            borderTexture: !!borderTexture,
-            finalDisabled: isDisabled
-        });
-        return isDisabled;
-    })()}
+                                value={profile.border_style}
+                                onChange={(value) => change("border_style", value)}
+                                disabled={saving || !styleUnlocked || !!profile.border_texture}
                                 size="large"
                                 style={{ width: '100%' }}
                             >
@@ -181,11 +132,11 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                             </Select>
                         </div>
                         <div style={{ marginTop: '8px' }}>
-                            {borderTexture ? (
+                            {profile.border_texture ? (
                                 <Text type="secondary" style={{ fontSize: '14px' }}>
                                     {t("settings.styleDisabledInfo") || "Style is not applied when a texture is selected."}
                                 </Text>
-                            ) : currentUser?.level && parseInt(currentUser.level.id.toString(), 10) >= 3 ? (
+                            ) : styleUnlocked ? (
                                 <Text type="secondary" style={{ fontSize: '14px' }}>
                                     {t("settings.borderStyleUnlocked") || "Unlocked at level 3"}
                                 </Text>
@@ -201,7 +152,7 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                     <Form.Item 
                         label={<span className="settings-section-title">
                             {t("settings.borderTexture") || "Border Texture"}
-                            {currentUser?.level && parseInt(currentUser.level.id.toString(), 10) < 5 && (
+                            {!textureUnlocked && (
                                 <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
                             )}
                         </span>} 
@@ -210,9 +161,9 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                         wrapperCol={{ span: 24 }}
                     >
                         <Select
-                            value={borderTexture || undefined}
-                            onChange={(value) => setBorderTexture(value || null)}
-                            disabled={userSaving || (currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) < 5 : true)}
+                            value={profile.border_texture || undefined}
+                            onChange={(value) => change("border_texture", value || null)}
+                            disabled={saving || !textureUnlocked}
                             size="large"
                             style={{ width: '100%' }}
                             allowClear
@@ -227,7 +178,7 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                             <Select.Option value="herbs-02">{t("texture.herbs02") || "Herbs 2"}</Select.Option>
                         </Select>
                         <div style={{ marginTop: '8px' }}>
-                            {currentUser?.level && parseInt(currentUser.level.id.toString(), 10) >= 5 ? (
+                            {textureUnlocked ? (
                                 <Text type="secondary" style={{ fontSize: '14px' }}>
                                     {t("settings.borderTextureUnlocked") || "Unlocked at level 5"}
                                 </Text>
@@ -243,7 +194,7 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                     <Form.Item 
                         label={<span style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
                             {t("settings.glowEffect") || "Card Glow Effect"}
-                            {currentUser?.level && parseInt(currentUser.level.id.toString(), 10) < 7 && (
+                            {!glowUnlocked && (
                                 <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
                             )}
                         </span>} 
@@ -251,16 +202,16 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                         labelCol={{ span: 24 }}
                         wrapperCol={{ span: 24 }}
                     >
-                        <div style={{ opacity: (currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) < 7 : true) ? 0.6 : 1 }}>
+                        <div style={{ opacity: glowUnlocked ? 1 : 0.6 }}>
                             <Switch
-                                checked={glowEffect}
-                                onChange={(checked) => setGlowEffect(checked)}
-                                disabled={userSaving || (currentUser?.level ? parseInt(currentUser.level.id.toString(), 10) < 7 : true)}
+                                checked={profile.glow_effect}
+                                onChange={(checked) => change("glow_effect", checked)}
+                                disabled={saving || !glowUnlocked}
                                 size="default"
                             />
                         </div>
                         <div style={{ marginTop: '8px' }}>
-                            {currentUser?.level && parseInt(currentUser.level.id.toString(), 10) >= 7 ? (
+                            {glowUnlocked ? (
                                 <Text type="secondary" style={{ fontSize: '14px' }}>
                                     {t("settings.glowEffectUnlocked") || "Unlocked at level 7"}
                                 </Text>
@@ -279,9 +230,9 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                         wrapperCol={{ span: 24 }}
                     >
                         <Select
-                            value={userLanguage}
-                            onChange={(value) => setUserLanguage(value)}
-                            disabled={userSaving}
+                            value={profile.language}
+                            onChange={(value) => change("language", value)}
+                            disabled={saving}
                             size="large"
                             style={{ width: '100%' }}
                         >
@@ -301,10 +252,10 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                         wrapperCol={{ span: 24 }}
                     >
                         <TagChipGroup
-                            options={options}
-                            values={tagValues}
+                            options={DIET_OPTIONS}
+                            values={diet}
                             onChange={setChecked}
-                            disabled={userSaving}
+                            disabled={saving}
                             allowWrap
                         />
                     </Form.Item>
@@ -312,9 +263,9 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                         <Button
                             type="primary"
                             size="large"
-                            onClick={handleSaveUserSettings}
-                            loading={userSaving}
-                            disabled={!isUserSettingsDirty() || userSaving}
+                            onClick={save}
+                            loading={saving}
+                            disabled={!dirty || saving}
                             block
                             className="settings-save-button-large"
                         >
@@ -323,6 +274,7 @@ export function UserSettingsSection(props: UserSettingsSectionProps) {
                     </Form.Item>
                 </Card>
             )}
+            <ChangePasswordSection />
         </div>
     );
 }

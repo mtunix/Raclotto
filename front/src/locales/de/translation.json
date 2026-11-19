@@ -203,7 +203,14 @@
     "eventSettingsDescription": "Konfigurieren Sie die Ereignishäufigkeit und aktivieren/deaktivieren Sie Ereignisse für diese Session.",
     "globalDefault": "Globale Standardeinstellung",
     "frequencyMinutes": "Häufigkeit (Minuten)",
-    "optional": "Optional"
+    "optional": "Optional",
+    "changePassword": "Passwort ändern",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "changePasswordInfo": "Wenn Sie Ihr Passwort ändern, werden Sie auf allen anderen Geräten abgemeldet.",
+    "passwordChanged": "Passwort geändert. Ihre anderen Geräte sind abgemeldet.",
+    "wrongPassword": "Ihr aktuelles Passwort stimmt nicht.",
+    "onlyCreatorManages": "Nur wer die Session erstellt hat oder ein Admin kann sie umbenennen, ihre Ereignisse ändern oder sie beenden."
   },
   "events": {
     "panSwap": "Pfannen-Tausch-Ereignis"
@@ -283,7 +290,9 @@
     "cameraNotFound": "Keine Kamera auf diesem Gerät gefunden",
     "cameraInUse": "Kamera wird bereits von einer anderen Anwendung verwendet",
     "cancel": "Abbrechen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "tooManyAttempts": "Zu viele fehlgeschlagene Anmeldungen. Bitte warten Sie 15 Minuten und versuchen Sie es erneut.",
+    "passwordTooShort": "Mindestens {{count}} Zeichen"
   },
   "invite": {
     "generateToken": "Einladungstoken erstellen",

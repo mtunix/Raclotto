@@ -203,7 +203,14 @@
     "eventSettingsDescription": "Configure event frequency and enable/disable events for this session.",
     "globalDefault": "Global Default",
     "frequencyMinutes": "Frequency (minutes)",
-    "optional": "Optional"
+    "optional": "Optional",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "changePasswordInfo": "Changing your password signs you out on every other device.",
+    "passwordChanged": "Password changed. Your other devices are signed out.",
+    "wrongPassword": "Your current password is not right.",
+    "onlyCreatorManages": "Only the session's creator or an admin can rename it, change its events or end it."
   },
   "events": {
     "panSwap": "Pan Swap Event"
@@ -283,7 +290,9 @@
     "cameraNotFound": "No camera found on this device",
     "cameraInUse": "Camera is already in use by another application",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "tooManyAttempts": "Too many failed sign-ins. Please wait 15 minutes and try again.",
+    "passwordTooShort": "At least {{count}} characters"
   },
   "invite": {
     "generateToken": "Generate Invite Token",

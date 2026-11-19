@@ -13,6 +13,7 @@ import { ProfilePictureManager } from "../../../shared/ProfilePictureManager";
 import { mutateMe } from "../../../lib/api/swrHooks";
 import { normalizeDiet } from "../../../model/diet";
 import { useDietPreferences } from "../../../shared/useDietPreferences";
+import { MIN_PASSWORD_LENGTH } from "../../../lib/api/failedRequest";
 
 export function RegisterView() {
   const { t } = useTranslation();
@@ -192,7 +193,10 @@ export function RegisterView() {
           <Form.Item
             label={t("auth.password")}
             name="password"
-            rules={[{ required: true, message: t("auth.passwordRequired") }]}
+            rules={[
+              { required: true, message: t("auth.passwordRequired") },
+              { min: MIN_PASSWORD_LENGTH, message: t("auth.passwordTooShort", { count: MIN_PASSWORD_LENGTH }) },
+            ]}
             style={{ marginBottom: 24 }}
           >
             <Input.Password

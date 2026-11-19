@@ -119,7 +119,7 @@ describe('session settings', () => {
         expect(fake.last('PATCH', `/sessions/${session.id}`)?.body).toEqual({ name: 'Friday' });
     });
 
-    it('ends the session once confirmed and returns to the start screen', async () => {
+    it('ends the session once confirmed and shows its recap', async () => {
         fake.on('POST', '/sessions/close', { ...session, active: false });
         await renderSettings();
         await openTab('settings.sessionSettings');
@@ -128,9 +128,29 @@ describe('session settings', () => {
         const dialog = await screen.findByRole('dialog');
         fireEvent.click(button('session.endSession', dialog));
 
-        await waitFor(() => expect(currentPath()).toBe('/'));
+        await waitFor(() => expect(currentPath()).toBe(`/recap/${session.key}`));
         expect(fake.last('POST', '/sessions/close')?.body).toEqual({ key: session.key });
         expect(useAppStore.getState().session).toBeNull();
+    });
+
+    it("leaves renaming and ending to the session's creator", async () => {
+        useAuthStore.setState({ user: { ...me, id: me.id + 1 } });
+        await renderSettings();
+        await openTab('settings.sessionSettings');
+        const panel = screen.getByRole('tabpanel');
+
+        expect(await within(panel).findByText('settings.onlyCreatorManages')).toBeInTheDocument();
+        expect(within(panel).getByPlaceholderText('common.enterName')).toBeDisabled();
+        expect(within(panel).queryByText('session.endSession')).not.toBeInTheDocument();
+        expect(button('settings.export', panel)).toBeEnabled();
+    });
+
+    it('lets an admin end any session', async () => {
+        useAuthStore.setState({ user: { ...me, id: me.id + 1, is_admin: true } });
+        await renderSettings();
+        await openTab('settings.sessionSettings');
+
+        expect(await within(screen.getByRole('tabpanel')).findByText('session.endSession')).toBeInTheDocument();
     });
 
     it("exports the session's ingredients and copies them", async () => {
@@ -170,6 +190,53 @@ describe('session settings', () => {
         expect(request?.query).toEqual({ session_key: session.key });
         expect((request?.body as { ingredients: { name: string }[] }).ingredients.map((i) => i.name))
             .toEqual(ingredientExport.ingredients.map((i) => i.name));
+    });
+});
+
+describe('password', () => {
+    const passwordForm = () => screen.getByLabelText('settings.currentPassword').closest('form') as HTMLElement;
+
+    async function fillPasswords(current: string, next: string, confirm = next) {
+        await renderSettings();
+        fireEvent.change(screen.getByLabelText('settings.currentPassword'), { target: { value: current } });
+        fireEvent.change(screen.getByLabelText('settings.newPassword'), { target: { value: next } });
+        fireEvent.change(screen.getByLabelText('auth.confirmPassword'), { target: { value: confirm } });
+        await act(async () => {
+            fireEvent.click(button('settings.changePassword', passwordForm()));
+        });
+    }
+
+    it('changes the password and keeps this device signed in with the new token', async () => {
+        fake.on('POST', '/auth/password', { token: 'new-token' });
+
+        await fillPasswords('old-secret', 'new-secret');
+
+        await waitFor(() => expect(useAuthStore.getState().token).toBe('new-token'));
+        expect(fake.last('POST', '/auth/password')?.body).toEqual({ current_password: 'old-secret', new_password: 'new-secret' });
+    });
+
+    it('says when the current password is wrong', async () => {
+        fake.on('POST', '/auth/password', () => {
+            throw Object.assign(new Error('Bad Request'), { status: 400 });
+        });
+
+        await fillPasswords('wrong', 'new-secret');
+
+        expect(await screen.findByText('settings.wrongPassword')).toBeInTheDocument();
+    });
+
+    it('sends nothing while the new password is too short or not repeated', async () => {
+        await fillPasswords('old-secret', 'short');
+        expect(await screen.findByText('auth.passwordTooShort')).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText('settings.newPassword'), { target: { value: 'long-enough' } });
+        fireEvent.change(screen.getByLabelText('auth.confirmPassword'), { target: { value: 'different' } });
+        await act(async () => {
+            fireEvent.click(button('settings.changePassword', passwordForm()));
+        });
+        expect(await screen.findByText('auth.passwordsDoNotMatch')).toBeInTheDocument();
+
+        expect(fake.last('POST', '/auth/password')).toBeUndefined();
     });
 });
 

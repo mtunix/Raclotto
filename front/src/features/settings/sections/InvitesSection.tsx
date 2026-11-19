@@ -1,38 +1,63 @@
-import React from "react";
-import { Card, Alert, Form, Input, Button, List, Space, Tag } from "antd";
+import React, { useState } from "react";
+import { Card, Alert, Form, Input, Button, List, Space, Tag, message } from "antd";
 import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
-import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
+import { useTranslation } from "react-i18next";
+import { createInvite, revokeInvite, useListInvites } from "../../../api/generated/endpoints/invites/invites";
 import type { InviteDto } from "../../../api/generated/model";
+import { onErrorRetry } from "../../../lib/api/swrHooks";
+import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
+import { copyToClipboard } from "../copyToClipboard";
 import "../SettingsView.css";
 
-interface InvitesSectionProps {
-    t: (key: string) => string;
-    inviteError: string | null;
-    setInviteError: (v: string | null) => void;
-    inviteLoading: boolean;
-    loadingInvites: boolean;
-    invites: InviteDto[];
-    onInviteFinish: (values: { email: string }) => void | Promise<void>;
-    handleCopyToken: (token: string) => void;
-    handleRevoke: (id: number) => void;
-    formatDate: (s: string) => string;
-    isExpired: (expiresAt: string) => boolean;
+const iconButtonStyle: React.CSSProperties = {
+    height: '44px',
+    width: '44px',
+    padding: '0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '12px'
+};
+
+function formatDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
-export function InvitesSection(props: InvitesSectionProps) {
-    const {
-        t,
-        inviteError,
-        setInviteError,
-        inviteLoading,
-        loadingInvites,
-        invites,
-        onInviteFinish,
-        handleCopyToken,
-        handleRevoke,
-        formatDate,
-        isExpired,
-    } = props;
+const isExpired = (invite: InviteDto) => new Date(invite.expires_at) < new Date();
+
+/** Invite someone by email and keep track of the invites you sent. */
+export function InvitesSection() {
+    const { t } = useTranslation();
+    const { data: invites = [], isLoading, mutate } = useListInvites({
+        swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
+    });
+    const [creating, setCreating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    async function onCreate(values: { email: string }) {
+        setCreating(true);
+        setError(null);
+        try {
+            await createInvite({ email: values.email });
+            mutate();
+            message.success(t("invite.tokenCreated"));
+        } catch (e) {
+            setError(e instanceof Error && e.message ? e.message : t("invite.creationFailed"));
+        } finally {
+            setCreating(false);
+        }
+    }
+
+    async function onRevoke(inviteId: number) {
+        try {
+            await revokeInvite(inviteId);
+            mutate();
+            message.success(t("invite.tokenRevoked"));
+        } catch (e) {
+            setError(e instanceof Error && e.message ? e.message : t("invite.revokeFailed"));
+        }
+    }
 
     return (
         <div className="settings-session-tab">
@@ -42,19 +67,19 @@ export function InvitesSection(props: InvitesSectionProps) {
                 bodyStyle={{ padding: '24px' }}
                 style={{ marginBottom: '24px' }}
             >
-                {inviteError && (
+                {error && (
                     <Alert
-                        message={inviteError}
+                        message={error}
                         type="error"
                         showIcon
                         closable
-                        onClose={() => setInviteError(null)}
+                        onClose={() => setError(null)}
                         style={{ marginBottom: 16, borderRadius: '12px' }}
                     />
                 )}
                 <Form
                     name="createInvite"
-                    onFinish={onInviteFinish}
+                    onFinish={onCreate}
                     layout="vertical"
                     autoComplete="off"
                 >
@@ -74,7 +99,7 @@ export function InvitesSection(props: InvitesSectionProps) {
                             type="primary" 
                             size="large" 
                             htmlType="submit" 
-                            loading={inviteLoading}
+                            loading={creating}
                             className="settings-save-button-medium"
                         >
                             {t("invite.generate")}
@@ -89,7 +114,7 @@ export function InvitesSection(props: InvitesSectionProps) {
                 bodyStyle={{ padding: '24px' }}
             >
                 <List
-                    loading={loadingInvites}
+                    loading={isLoading}
                     dataSource={invites}
                     renderItem={(invite: InviteDto) => (
                         <List.Item
@@ -98,36 +123,21 @@ export function InvitesSection(props: InvitesSectionProps) {
                                     <Button
                                         type="text"
                                         icon={<CopyOutlined />}
-                                        onClick={() => {
-                                            const origin = window.location.origin;
-                                            const registerUrl = `${origin}/register?token=${encodeURIComponent(invite.token)}`;
-                                            handleCopyToken(registerUrl);
-                                        }}
+                                        onClick={() =>
+                                            copyToClipboard(
+                                                `${window.location.origin}/register?token=${encodeURIComponent(invite.token)}`,
+                                                t,
+                                            )
+                                        }
                                         size="large"
-                                        style={{ 
-                                            height: '44px',
-                                            width: '44px',
-                                            padding: '0',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            borderRadius: '12px'
-                                        }}
+                                        style={iconButtonStyle}
                                     />
-                                    {!invite.is_used && !isExpired(invite.expires_at) && (
+                                    {!invite.is_used && !isExpired(invite) && (
                                         <ConfirmDeleteButton
-                                            onConfirm={() => handleRevoke(invite.id)}
+                                            onConfirm={() => onRevoke(invite.id)}
                                             danger={true}
                                             icon={<CloseOutlined />}
-                                            style={{ 
-                                                height: '44px',
-                                                width: '44px',
-                                                padding: '0',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                borderRadius: '12px'
-                                            }}
+                                            style={iconButtonStyle}
                                         />
                                     )}
                                 </Space>
@@ -138,10 +148,10 @@ export function InvitesSection(props: InvitesSectionProps) {
                                     <Space>
                                         <span>{invite.email}</span>
                                         {invite.is_used && <Tag color="green">{t("invite.used")}</Tag>}
-                                        {!invite.is_used && isExpired(invite.expires_at) && (
+                                        {!invite.is_used && isExpired(invite) && (
                                             <Tag color="red">{t("invite.expired")}</Tag>
                                         )}
-                                        {!invite.is_used && !isExpired(invite.expires_at) && (
+                                        {!invite.is_used && !isExpired(invite) && (
                                             <Tag color="blue">{t("invite.active")}</Tag>
                                         )}
                                     </Space>
