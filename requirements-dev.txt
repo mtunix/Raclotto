@@ -1,4 +1,5 @@
 -r requirements.txt
+parameterized==0.9.0
 mypy==2.4.1
 ast-serialize==0.13.1
 librt==0.16.0
