@@ -5,7 +5,6 @@ import { login } from "../../../api/generated/endpoints/auth/auth";
 import { UnauthorizedError } from "../../../lib/api/transport";
 import { useAuthStore } from "../../../AuthSlice";
 import { useTranslation } from "react-i18next";
-import { changeLanguage } from "../../../i18n";
 
 export function LoginView() {
   const { t } = useTranslation();
@@ -23,7 +22,6 @@ export function LoginView() {
         password: values.password,
       });
       signIn(token, user);
-      changeLanguage(user.language);
       navigate("/");
     } catch (err: unknown) {
       setError(
