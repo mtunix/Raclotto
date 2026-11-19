@@ -46,14 +46,14 @@ const bodyOf = (dto: IngredientForUserDto) => ({
 
 let fake: FakeTransport;
 let previous: Transport;
-const onCancel = vi.fn(() => modal.setState({ visible: false }));
+const onCancel = vi.fn(() => useModalProps.setState({ visible: false }));
 const onSuccess = vi.fn();
 const onSave = vi.fn((_id: number, _body: unknown) => Promise.resolve());
 // The props the modal is shown with; tests change them as its parent would.
-const modal = create<ModalProps>(() => ({ visible: false, onCancel, mode: 'add' }));
+const useModalProps = create<ModalProps>(() => ({ visible: false, onCancel, mode: 'add' }));
 
 function Parent() {
-    return <IngredientModal {...modal()} />;
+    return <IngredientModal {...useModalProps()} />;
 }
 
 beforeEach(() => {
@@ -71,16 +71,16 @@ afterEach(() => {
 });
 
 function show(props: Partial<ModalProps>) {
-    act(() => modal.setState(props));
+    act(() => useModalProps.setState(props));
 }
 
 function renderAdd(props: Partial<ModalProps> = {}) {
-    modal.setState({ visible: true, onCancel, mode: 'add', onSuccess, ingredient: null, initialType: IngredientType.FILL, context: 'ingredients', ...props }, true);
+    useModalProps.setState({ visible: true, onCancel, mode: 'add', onSuccess, ingredient: null, initialType: IngredientType.FILL, context: 'ingredients', ...props }, true);
     renderRoute(<Parent />);
 }
 
 function renderEdit(dto: IngredientForUserDto) {
-    modal.setState({ visible: true, onCancel, mode: 'edit', ingredient: dto, onSave }, true);
+    useModalProps.setState({ visible: true, onCancel, mode: 'edit', ingredient: dto, onSave }, true);
     renderRoute(<Parent />);
 }
 

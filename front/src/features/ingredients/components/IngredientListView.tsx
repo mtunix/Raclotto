@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import {Collapse, List, Space, Empty, Badge, Spin} from "antd";
 import {IngredientType} from "../../../api/generated/model";
 import type {IngredientForUserDto} from "../../../api/generated/model";
@@ -18,7 +17,7 @@ export function IngredientListView(props: IngredientListViewProps) {
     const { t } = useTranslation();
     const { ingredients, loading, onDelete, onRefill, onEdit, type } = props;
 
-    const renderIngredients = useCallback(() => {
+    const renderIngredients = () => {
         const filteredIngredients = ingredients.filter(ingredient => ingredient.type === type);
         
         // Separate by available status and applicability
@@ -125,7 +124,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                 )}
             </>
         );
-    }, [ingredients, loading, onDelete, onRefill, onEdit, type, t]);
+    };
 
     return renderIngredients();
 }

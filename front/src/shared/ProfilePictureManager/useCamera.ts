@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { message } from "antd";
 import { useTranslation } from "react-i18next";
 import { cameraErrorKey } from "./cameraError";
@@ -44,12 +44,12 @@ export function useCamera(): Camera {
 
   useEffect(() => () => stopTracks(streamRef.current), []);
 
-  const stop = useCallback(() => {
+  const stop = () => {
     stopTracks(streamRef.current);
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setActive(false);
-  }, []);
+  };
 
   async function start() {
     if (!navigator.mediaDevices?.getUserMedia) {

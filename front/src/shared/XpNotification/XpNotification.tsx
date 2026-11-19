@@ -31,10 +31,12 @@ export function XpNotification() {
     useEffect(() => {
         if (!shown) return;
         startRef.current = performance.now();
-        let request = requestAnimationFrame(function tick() {
+        let request = requestAnimationFrame(tick);
+        // A declaration: the compiler bails out on a named function expression that schedules itself.
+        function tick() {
             setClock({ of: xpNotification, ms: performance.now() - startRef.current });
             request = requestAnimationFrame(tick);
-        });
+        }
         return () => cancelAnimationFrame(request);
     }, [shown, xpNotification]);
 

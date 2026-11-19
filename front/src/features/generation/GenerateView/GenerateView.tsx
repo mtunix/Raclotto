@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs } from "antd";
 import { BanditView } from "../BanditView";
 import { rollPan } from "../../../api/generated/endpoints/pans/pans";
@@ -79,14 +79,13 @@ export function GenerateView() {
   }, []);
 
   // Check if we can generate based on counts and available ingredients
-  const canGenerate = useCallback((): boolean => {
+  const canGenerate = (): boolean => {
     // Just check if we have at least one ingredient selected
     // The actual availability check is now handled in the child components
     return numFill > 0 || numSauce > 0;
-  }, [numFill, numSauce]);
+  };
 
-  // Memoize the canGenerate result to prevent unnecessary re-renders
-  const canGenerateResult = useMemo(() => canGenerate(), [canGenerate]);
+  const canGenerateResult = canGenerate();
 
   // Wrapper functions for count management
   const handleFillCountChange = (newCount: number) => {
@@ -136,10 +135,10 @@ export function GenerateView() {
   }, [fading]);
 
   const { animationDone } = panRoll;
-  const startAnimationTimer = useCallback((duration: number) => {
+  const startAnimationTimer = (duration: number) => {
     if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
     animationTimerRef.current = setTimeout(animationDone, duration);
-  }, [animationDone]);
+  };
   useEffect(() => () => {
     if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
   }, []);

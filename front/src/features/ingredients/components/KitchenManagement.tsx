@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {Segmented, Card, Row, Col, message, List, Button, Input, Space, Empty, Spin, Typography} from "antd";
 import {useTranslation} from "react-i18next";
 import axios from "axios";
@@ -50,42 +50,42 @@ export function KitchenManagement() {
         }
     }, [ingredientsError, sessionKey, t]);
 
-    const onDelete = useCallback((ingredient: IngredientForUserDto) => {
+    const onDelete = (ingredient: IngredientForUserDto) => {
         if (sessionKey) {
             ingredientCatalog.remove(sessionKey, ingredient.id).catch((error) => {
                 console.error("Failed to delete ingredient:", error);
             });
         }
-    }, [sessionKey]);
+    };
 
-    const onRefill = useCallback((ingredient: IngredientForUserDto) => {
+    const onRefill = (ingredient: IngredientForUserDto) => {
         if (sessionKey) {
             ingredientCatalog.refill(sessionKey, ingredient.id).catch((error) => {
                 console.error("Failed to refill ingredient:", error);
             });
         }
-    }, [sessionKey]);
+    };
 
-    const onEdit = useCallback((ingredient: IngredientForUserDto) => {
+    const onEdit = (ingredient: IngredientForUserDto) => {
         setEditingIngredient(ingredient);
         setIsEditModalVisible(true);
-    }, []);
+    };
 
-    const handleEditSave = useCallback(async (ingredientId: number, data: UpdateIngredientBody) => {
+    const handleEditSave = async (ingredientId: number, data: UpdateIngredientBody) => {
         await ingredientCatalog.update(sessionKey, ingredientId, data);
-    }, [sessionKey]);
+    };
 
-    const handleEditCancel = useCallback(() => {
+    const handleEditCancel = () => {
         setIsEditModalVisible(false);
         setEditingIngredient(null);
-    }, []);
+    };
 
-    const handleAddIngredientClick = useCallback((type: IngredientType) => {
+    const handleAddIngredientClick = (type: IngredientType) => {
         setAddIngredientModalType(type);
         setIsAddIngredientModalVisible(true);
-    }, []);
+    };
 
-    const onPrepTypeDelete = useCallback((type: PrepTypeDto) => {
+    const onPrepTypeDelete = (type: PrepTypeDto) => {
         if (!sessionKey) return;
         
         // Don't allow deleting default preparation types
@@ -105,19 +105,19 @@ export function KitchenManagement() {
                                 t("ingredient.deleteFailed") || "Failed to delete preparation type";
             message.error(errorMessage);
         });
-    }, [sessionKey, t]);
+    };
 
-    const onPrepTypeAddClick = useCallback(() => {
+    const onPrepTypeAddClick = () => {
         setIsAddingPrepType(true);
         setNewPrepTypeName("");
-    }, []);
+    };
 
-    const onPrepTypeAddCancel = useCallback(() => {
+    const onPrepTypeAddCancel = () => {
         setIsAddingPrepType(false);
         setNewPrepTypeName("");
-    }, []);
+    };
 
-    const onPrepTypeAdd = useCallback(() => {
+    const onPrepTypeAdd = () => {
         if (!sessionKey || !newPrepTypeName.trim()) return;
         createPreparationType({name: newPrepTypeName.trim()}, {session_key: sessionKey}).then(() => {
             setIsAddingPrepType(false);
@@ -126,9 +126,9 @@ export function KitchenManagement() {
         }).catch((error) => {
             console.error("Failed to add prep type:", error);
         });
-    }, [sessionKey, newPrepTypeName]);
+    };
 
-    const renderPrepTypes = useCallback(() => {
+    const renderPrepTypes = () => {
         return (
             <>
                 {loadingPrepTypes ? (
@@ -224,7 +224,7 @@ export function KitchenManagement() {
                 )}
             </>
         );
-    }, [prepTypes, loadingPrepTypes, onPrepTypeDelete, onPrepTypeAdd, onPrepTypeAddCancel, isAddingPrepType, newPrepTypeName, t]);
+    };
 
     return (
         <div style={{ padding: '8px 0' }}>

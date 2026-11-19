@@ -16,11 +16,13 @@ interface PictureSourceProps {
 
 /** Pick a picture from a file or take one with the camera. */
 export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps) {
+  // Destructured: once `camera.videoRef` is passed as a ref, the compiler counts every read of `camera` in render as a ref read.
+  const { active, videoRef, start, stop, capture } = camera;
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function pick(picture: string) {
-    camera.stop();
+    stop();
     onPicked(picture);
   }
 
@@ -35,8 +37,8 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
     readAsDataUrl(file).then(pick, (error: unknown) => console.error("Failed to read the picture:", error));
   }
 
-  function capture() {
-    const picture = camera.capture();
+  function takePicture() {
+    const picture = capture();
     if (picture) pick(picture);
   }
 
@@ -46,26 +48,26 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
       <Button icon={<UploadOutlined />} disabled={disabled} onClick={() => fileInputRef.current?.click()} block>
         {t("auth.selectImage") || "Select Image"}
       </Button>
-      {camera.active ? (
+      {active ? (
         <div style={columnStyle}>
           <video
-            ref={camera.videoRef}
+            ref={videoRef}
             autoPlay
             playsInline
             muted
             style={{ width: "100%", height: "auto", borderRadius: "8px", backgroundColor: "#000" }}
           />
           <Space orientation="vertical" style={{ width: "100%" }}>
-            <Button onClick={capture} type="primary" size="large" disabled={disabled} block>
+            <Button onClick={takePicture} type="primary" size="large" disabled={disabled} block>
               {t("auth.capture") || "Capture"}
             </Button>
-            <Button onClick={camera.stop} size="large" disabled={disabled} block>
+            <Button onClick={stop} size="large" disabled={disabled} block>
               {t("auth.cancel") || "Cancel"}
             </Button>
           </Space>
         </div>
       ) : (
-        <Button icon={<CameraOutlined />} onClick={camera.start} disabled={disabled} block>
+        <Button icon={<CameraOutlined />} onClick={start} disabled={disabled} block>
           {t("auth.takePhoto") || "Take Photo"}
         </Button>
       )}

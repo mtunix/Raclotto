@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useListPans } from "../../api/generated/endpoints/pans/pans";
 import type { ListPansParams, PanDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
@@ -53,20 +53,20 @@ export function usePanPages(
     );
   }
 
-  const loadMore = useCallback(() => {
+  const loadMore = () => {
     if (page?.has_more) {
       const next = page.offset + pageSize;
       setStored((previous) => (previous.filter === filter ? { ...previous, offset: next } : previous));
     }
-  }, [page, pageSize, filter]);
+  };
 
-  const replacePan = useCallback((fresh: PanDto) => {
+  const replacePan = (fresh: PanDto) => {
     setStored((previous) => {
       const next = new Map<number, PanDto[]>();
       previous.loaded.forEach((items, at) => next.set(at, items.map((pan) => (pan.id === fresh.id ? fresh : pan))));
       return { ...previous, loaded: next };
     });
-  }, []);
+  };
 
   // The current page is read from SWR directly: right after a reset it is cached but not yet in `loaded`.
   const shown = new Map(loaded);

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
     DEFAULT_DIET_PREFERENCES,
     type DietPreferences,
@@ -11,8 +11,8 @@ import {
  */
 export function useDietPreferences(initial: DietPreferences = DEFAULT_DIET_PREFERENCES) {
     const [prefs, setPrefs] = useState<DietPreferences>(initial);
-    const setChecked = useCallback((name: string, checked: boolean) => {
+    const setChecked = (name: string, checked: boolean) => {
         setPrefs((current) => toggleDietPreference(current, name, checked));
-    }, []);
+    };
     return { prefs, setPrefs, setChecked };
 }

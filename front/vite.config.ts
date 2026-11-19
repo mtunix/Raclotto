@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
+import babel from "@rolldown/plugin-babel";
 import basicSsl from "@vitejs/plugin-basic-ssl";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { searchForWorkspaceRoot } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -10,7 +11,7 @@ const certificate =
   SSL_CRT_FILE && SSL_KEY_FILE ? { cert: readFileSync(SSL_CRT_FILE), key: readFileSync(SSL_KEY_FILE) } : undefined;
 
 export default defineConfig({
-  plugins: [react(), ...(certificate ? [] : [basicSsl()])],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] }), ...(certificate ? [] : [basicSsl()])],
   server: {
     host: true,
     port: 3001,

@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useRef } from "react";
+import { useReducer, useRef } from "react";
 import type { PanDto, RollOutcomeDto } from "../../api/generated/model";
 import { ratePan } from "../rating/ratePan";
 import { applyRollOutcome, type LevelUp } from "./applyRollOutcome";
@@ -81,44 +81,41 @@ export function useRollSession(sessionKey: string): RollSession {
   // The same state, for `roll` and `rate`, which may run before the next render.
   const currentRef = useRef(idle);
 
-  const send = useCallback((event: RollEvent) => {
+  const send = (event: RollEvent) => {
     currentRef.current = rollSession(currentRef.current, event);
     dispatch(event);
-  }, []);
+  };
 
-  const roll = useCallback(
-    async (request: () => Promise<RollOutcomeDto>, { animated }: { animated: boolean }) => {
-      if (currentRef.current.phase !== "idle" && currentRef.current.phase !== "result") {
-        throw new Error(`Cannot roll while ${currentRef.current.phase}`);
-      }
-      send({ type: "roll", animated });
-      let outcome: RollOutcomeDto;
-      try {
-        outcome = await request();
-      } catch (error) {
-        send({ type: "failed" });
-        throw error;
-      }
-      send({ type: "rolled", pan: outcome.pan, levelUp: applyRollOutcome(outcome, sessionKey) });
-      return outcome.pan;
-    },
-    [send, sessionKey],
-  );
+  const roll = async (request: () => Promise<RollOutcomeDto>, { animated }: { animated: boolean }) => {
+    if (currentRef.current.phase !== "idle" && currentRef.current.phase !== "result") {
+      throw new Error(`Cannot roll while ${currentRef.current.phase}`);
+    }
+    send({ type: "roll", animated });
+    let outcome: RollOutcomeDto;
+    try {
+      outcome = await request();
+    } catch (error) {
+      send({ type: "failed" });
+      throw error;
+    }
+    send({ type: "rolled", pan: outcome.pan, levelUp: applyRollOutcome(outcome, sessionKey) });
+    return outcome.pan;
+  };
 
-  const rate = useCallback((stars: number) => {
+  const rate = (stars: number) => {
     const shown = currentRef.current;
     if (shown.phase !== "result" && shown.phase !== "revealing") {
       return Promise.reject(new Error("No pan to rate"));
     }
     return ratePan(shown.pan.id, stars);
-  }, []);
+  };
 
   return {
     state,
     roll,
     rate,
-    animationDone: useCallback(() => send({ type: "animationDone" }), [send]),
-    close: useCallback(() => send({ type: "close" }), [send]),
-    pictureClosed: useCallback(() => send({ type: "pictureClosed" }), [send]),
+    animationDone: () => send({ type: "animationDone" }),
+    close: () => send({ type: "close" }),
+    pictureClosed: () => send({ type: "pictureClosed" }),
   };
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import {Row, Col, Card} from "antd";
 import {onErrorRetry} from "../../lib/api/swrHooks";
 import {useListIngredients} from "../../api/generated/endpoints/ingredients/ingredients";
@@ -47,11 +47,11 @@ export function MainScreen(props: MainScreenProps) {
         }
     }, [session, sessionId, navigate]);
 
-    const handleDismissEvent = useCallback((eventId: number) => {
+    const handleDismissEvent = (eventId: number) => {
         dismissSessionEvent(sessionKey, eventId).catch((error) => {
             console.error("Failed to dismiss event:", error);
         });
-    }, [sessionKey]);
+    };
 
 
 
