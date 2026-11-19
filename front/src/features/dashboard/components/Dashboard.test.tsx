@@ -9,10 +9,6 @@ import { setTransport, Transport } from "../../../lib/api/transport";
 import { displayName } from "../../../shared/displayName";
 import { Dashboard } from "./Dashboard";
 
-// The jest CSS transform is broken; the styles don't matter here.
-jest.mock("./Dashboard.css", () => ({}));
-jest.mock("../../../shared/IngredientDisplay/IngredientDisplay.css", () => ({}));
-
 let fake: FakeTransport;
 let previous: Transport;
 

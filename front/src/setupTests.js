@@ -3,6 +3,10 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import { TextDecoder, TextEncoder } from 'util';
+
+// react-router reads these at import time; jsdom does not provide them.
+Object.assign(global, { TextEncoder, TextDecoder });
 
 // antd's grid and typography watch media queries and element sizes, which jsdom does not implement.
 Object.defineProperty(window, 'matchMedia', {
