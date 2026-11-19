@@ -127,7 +127,7 @@ class MigrateTest(unittest.TestCase):
         )
         self.assertEqual(self.query("SELECT version_num FROM alembic_version"), [(_head(),)])
 
-    def test_a_database_from_before_achievement_keys_gets_them_by_title(self):
+    def test_a_database_from_before_achievement_keys_gets_them_by_title_and_keeps_descriptions(self):
         self.given_database(
             "DROP INDEX ix_achievement_key",
             "ALTER TABLE achievement DROP COLUMN key",
@@ -143,7 +143,10 @@ class MigrateTest(unittest.TestCase):
             self.query("SELECT title, key FROM achievement ORDER BY id"),
             [("First Blood!", "first_blood"), ("First blood!", None), ("First Blood!", None), ("Vanilla", "vanilla")],
         )
-        self.assertNotIn(("description",), self.query("SELECT name FROM pragma_table_info('achievement')"))
+        self.assertEqual(
+            self.query("SELECT description FROM achievement ORDER BY id"),
+            [("Esse die erste Pfanne",), ("alt",), ("doppelt",), ("Eine Zutat",)],
+        )
         self.assertEqual(self.query("SELECT version_num FROM alembic_version"), [(_head(),)])
 
     def test_other_missing_columns_stop_startup_with_their_names(self):

@@ -1,8 +1,8 @@
 """add achievement keys
 
-Achievements gain ``key``, which their evaluators and the frontend's translations name them by, and
-lose ``description``: the frontend has its own in each language. Rows of achievements the seed
-data no longer has keep a null key.
+Achievements gain ``key``, which their evaluators and the frontend's translations name them by. The
+frontend has its own descriptions in each language; the old ``description`` column stays, unmapped,
+so no data is lost. Rows of achievements the seed data no longer has keep a null key.
 
 Revision ID: 1e2e43eb5cf6
 Revises: 3d9e6b2f4a10
@@ -65,8 +65,6 @@ def upgrade() -> None:
         return
     with op.batch_alter_table("achievement") as batch:
         batch.add_column(sa.Column("key", sa.String(), nullable=True))
-        if "description" in present:
-            batch.drop_column("description")
 
     achievement = sa.table(
         "achievement", sa.column("id", sa.Integer), sa.column("title", sa.String), sa.column("key", sa.String)
@@ -82,4 +80,3 @@ def downgrade() -> None:
     op.drop_index("ix_achievement_key", table_name="achievement")
     with op.batch_alter_table("achievement") as batch:
         batch.drop_column("key")
-        batch.add_column(sa.Column("description", sa.String(), nullable=True))
