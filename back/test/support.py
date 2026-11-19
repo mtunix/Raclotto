@@ -9,6 +9,7 @@ from sqlalchemy import event
 
 from back.src.api.base_api import BaseApi
 from back.src.auth.jwt import generate_token
+from back.src.auth.throttle import LoginThrottle
 from back.src.driver.api_custom import apis_custom
 from back.src.driver.app import App
 from back.src.driver.config import ConfigInMemory
@@ -53,6 +54,7 @@ class AppTest(unittest.TestCase):
         self.app.init_achievements()
         self.app.init_preparation_types()
         initialize_registry()
+        self.app.extensions["login_throttle"] = LoginThrottle()
         self.client = self.app.test_client()
 
     def tearDown(self):
@@ -128,7 +130,7 @@ class AppTest(unittest.TestCase):
             event.remove(db.engine, "before_cursor_execute", record)
 
     def bearer(self, user: User) -> dict:
-        token = generate_token(user.id, self.app.config["JWT_SECRET_KEY"])
+        token = generate_token(user.id, self.app.config["JWT_SECRET_KEY"], user.token_version)
         return {"Authorization": f"Bearer {token}"}
 
     def call(

@@ -3,7 +3,7 @@ from datetime import datetime
 from back.src.driver.database import db
 from back.src.dto.session import SessionDto
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.user import user_sessions
+from back.src.entity.user import User, user_sessions
 from back.test.support import AppTest
 
 
@@ -107,7 +107,7 @@ class TestChangeSession(SessionApiTest):
         self.assertEqual(self.call("PATCH", "/sessions/999", self.ana, body={"name": "x"}).status_code, 404)
 
     def test_delete(self):
-        session = self.make_session("s1")
+        session = self.make_session("s1", creator=self.ana)
 
         response = self.call("DELETE", f"/sessions/{session.id}", self.ana)
 
@@ -133,7 +133,7 @@ class TestChangeSession(SessionApiTest):
     def test_reactivate(self):
         session = self.closed("s1")
 
-        response = self.call("POST", "/sessions/reactivate", self.ben, body={"key": "s1"})
+        response = self.call("POST", "/sessions/reactivate", self.ana, body={"key": "s1"})
 
         self.assertEqual(response.status_code, 200, response.json)
         self.assertTrue(response.json["active"])
@@ -146,15 +146,32 @@ class TestChangeSession(SessionApiTest):
                 self.assertEqual(self.call("POST", path, self.ana, body={"key": "nope"}).status_code, 404)
                 self.assertEqual(self.call("POST", path, body={"key": "nope"}).status_code, 401)
 
-    def test_any_signed_in_user_may_change_any_session(self):
+    def changes(self, session: RaclottoSession, user: User) -> list[int]:
+        return [
+            self.call("PATCH", f"/sessions/{session.id}", user, body={"name": "mine"}).status_code,
+            self.call("POST", "/sessions/close", user, body={"key": session.key}).status_code,
+            self.call("POST", "/sessions/reactivate", user, body={"key": session.key}).status_code,
+            self.call("DELETE", f"/sessions/{session.id}", user).status_code,
+        ]
+
+    def test_only_the_creator_may_change_a_session(self):
         session = self.make_session("s1", creator=self.ana)
 
-        self.assertEqual(
-            self.call("PATCH", f"/sessions/{session.id}", self.ben, body={"name": "mine"}).status_code, 200
-        )
-        self.assertEqual(self.call("POST", "/sessions/close", self.ben, body={"key": "s1"}).status_code, 200)
-        self.assertEqual(self.call("POST", "/sessions/reactivate", self.ben, body={"key": "s1"}).status_code, 200)
-        self.assertEqual(self.call("DELETE", f"/sessions/{session.id}", self.ben).status_code, 204)
+        self.assertEqual(self.changes(session, self.ben), [403, 403, 403, 403])
+        stored = self.stored(session.id)
+        self.assertEqual((stored.name, stored.active), ("s1", True))
+        self.assertEqual(self.changes(session, self.ana), [200, 200, 200, 204])
+
+    def test_an_admin_may_change_any_session(self):
+        root = self.make_user("root", is_admin=True)
+
+        self.assertEqual(self.changes(self.make_session("s1", creator=self.ana), root), [200, 200, 200, 204])
+        self.assertEqual(self.changes(self.make_session("s2"), root), [200, 200, 200, 204])
+
+    def test_a_session_without_a_creator_is_only_an_admins_to_change(self):
+        session = self.make_session("s1")
+
+        self.assertEqual(self.changes(session, self.ana), [403, 403, 403, 403])
 
     def test_timestamp_is_iso_without_a_zone(self):
         session = self.make_session("s1")

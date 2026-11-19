@@ -39,6 +39,8 @@ class ApiErrorCode(Enum):
     incorrect_type = auto()
     undo_forbidden = auto()
     invalid_token = auto()
+    forbidden = auto()
+    too_many_requests = auto()
     internal_error = auto()
 
 

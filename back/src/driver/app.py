@@ -98,7 +98,7 @@ class App(Flask):
             logging.warning("No admin user exists and RACLOTTO_ADMIN_PASSWORD is not set; none was created")
             return
 
-        Accounts().create_user("admin", "admin@raclotto.local", password)
+        Accounts().create_user("admin", "admin@raclotto.local", password, is_admin=True)
         self.db.session.commit()
         logging.info("Admin user created successfully")
 

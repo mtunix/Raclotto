@@ -1,3 +1,5 @@
+import jwt
+
 from back.src.auth.password import hash_password
 from back.src.driver.database import db
 from back.src.dto.auth import AuthResultDto, TokenDto
@@ -66,6 +68,34 @@ class TestLogin(AuthTest):
         self.assertEqual(self.pointers(self.login("ana", "")), ["/body/password"])
         legacy = self.call("POST", "/auth/login", body={"email": "ana", "password": PASSWORD})
         self.assertEqual(sorted(self.pointers(legacy)), ["/body/email", "/body/name_or_email"])
+
+    def login_from(self, address: str, name_or_email: str, password: str = PASSWORD):
+        return self.client.post(
+            "/api/auth/login",
+            json={"name_or_email": name_or_email, "password": password},
+            environ_base={"REMOTE_ADDR": address},
+        )
+
+    def test_five_failures_pause_the_account_from_that_address(self):
+        statuses = [self.login_from("10.0.0.1", "ana", "wrong").status_code for _ in range(5)]
+
+        paused = self.login_from("10.0.0.1", "ANA")
+
+        self.assertEqual(statuses, [401] * 5)
+        self.assertEqual(paused.status_code, 429, paused.json)
+        self.assertEqual(paused.json["errors"][0]["title"], "Too many attempts")
+        self.assertEqual(self.login_from("10.0.0.2", "ana").status_code, 200)
+        self.assertEqual(self.login_from("10.0.0.1", "ana@example.com").status_code, 200)
+
+    def test_a_successful_login_forgets_the_failures(self):
+        for _ in range(4):
+            self.login_from("10.0.0.1", "ana", "wrong")
+        self.assertEqual(self.login_from("10.0.0.1", "ana").status_code, 200)
+
+        statuses = [self.login_from("10.0.0.1", "ana", "wrong").status_code for _ in range(4)]
+
+        self.assertEqual(statuses, [401] * 4)
+        self.assertEqual(self.login_from("10.0.0.1", "ana").status_code, 200)
 
 
 class TestMe(AuthTest):
@@ -205,6 +235,47 @@ class TestUpdateMe(AuthTest):
         self.assertEqual(db.session.query(ProfilePictureHistory).count(), 0)
 
 
+class TestChangePassword(AuthTest):
+    def login(self, password: str):
+        return self.call("POST", "/auth/login", body={"name_or_email": "ana", "password": password})
+
+    def change(self, current: str, new: str, user: User | None = None):
+        return self.call(
+            "POST", "/auth/password", user or self.ana, body={"current_password": current, "new_password": new}
+        )
+
+    def test_the_new_password_signs_in_and_other_devices_are_signed_out(self):
+        other_device = self.login(PASSWORD).json
+
+        response = self.change(PASSWORD, "much-longer")
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(self.me_with(TokenDto.model_validate(response.json).token).status_code, 200)
+        self.assertEqual(self.me_with(other_device["token"]).status_code, 401)
+        self.assertEqual((self.login(PASSWORD).status_code, self.login("much-longer").status_code), (401, 200))
+
+    def test_a_wrong_current_password_changes_nothing(self):
+        before = self.stored(self.ana.id)
+        password, version = before.password, before.token_version
+
+        response = self.change("wrong", "much-longer")
+
+        self.assertEqual(response.status_code, 400, response.json)
+        self.assertEqual(response.json["errors"][0]["title"], "Wrong password")
+        after = self.stored(self.ana.id)
+        self.assertEqual((after.password, after.token_version), (password, version))
+
+    def test_the_new_password_needs_eight_characters(self):
+        self.assertEqual(self.pointers(self.change(PASSWORD, "short")), ["/body/new_password"])
+
+    def test_tokens_without_a_version_count_as_the_first(self):
+        legacy = jwt.encode({"user_id": self.ana.id, "exp": 4102444800}, self.app.config["JWT_SECRET_KEY"])
+
+        self.assertEqual(self.me_with(legacy).status_code, 200)
+        self.change(PASSWORD, "much-longer")
+        self.assertEqual(self.me_with(legacy).status_code, 401)
+
+
 class TestRefresh(AuthTest):
     def test_refresh_issues_a_working_token(self):
         response = self.call("POST", "/auth/refresh", self.ana)
@@ -219,7 +290,7 @@ class TestRefresh(AuthTest):
 
 class TestRegister(AuthTest):
     def register(self, invite: InviteToken, **overrides):
-        body = {"token": invite.token, "email": invite.email, "name": "ben", "password": "pw", **overrides}
+        body = {"token": invite.token, "email": invite.email, "name": "ben", "password": "pw-12345", **overrides}
         return self.call("POST", "/auth/register", body=body)
 
     def error_title(self, response) -> str:
@@ -244,7 +315,7 @@ class TestRegister(AuthTest):
         self.assertTrue(db.session.get_one(InviteToken, invite.id).is_used)
         self.assertEqual(self.me_with(result.token).json["id"], ben.id)
         self.assertEqual(
-            self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw"}).status_code, 200
+            self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw-12345"}).status_code, 200
         )
 
     def test_the_first_picture_is_the_one_generation_starts_from(self):
@@ -290,6 +361,7 @@ class TestRegister(AuthTest):
         invite = self.make_invite(self.ana, "ben@example.com")
 
         self.assertEqual(self.pointers(self.register(invite, password="")), ["/body/password"])
+        self.assertEqual(self.pointers(self.register(invite, password="7 chars")), ["/body/password"])
         self.assertEqual(
             self.pointers(self.call("POST", "/auth/register", body={})),
             ["/body/token", "/body/email", "/body/name", "/body/password"],

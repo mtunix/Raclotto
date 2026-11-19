@@ -215,7 +215,7 @@ export const useRollBanditPan = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Delete a pan.
+ * @summary Delete your own pan.
  */
 export const deletePan = (
     panId: number,
@@ -238,7 +238,7 @@ export const getDeletePanMutationKey = (panId: number,) => [`/pans/${panId}`] as
 export type DeletePanMutationResult = NonNullable<Awaited<ReturnType<typeof deletePan>>>
 
 /**
- * @summary Delete a pan.
+ * @summary Delete your own pan.
  */
 export const useDeletePan = <TError = ErrorType<ErrorResponseDto>>(
   panId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deletePan>>, TError, Key, Arguments, Awaited<ReturnType<typeof deletePan>>> & { swrKey?: string }, }
@@ -294,7 +294,7 @@ export const useGetPan = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Rename a pan or mark it eaten.
+ * @summary Rename your own pan or mark it eaten.
  */
 export const updatePan = (
     panId: number,
@@ -320,7 +320,7 @@ export const getUpdatePanMutationKey = (panId: number,) => [`/pans/${panId}`] as
 export type UpdatePanMutationResult = NonNullable<Awaited<ReturnType<typeof updatePan>>>
 
 /**
- * @summary Rename a pan or mark it eaten.
+ * @summary Rename your own pan or mark it eaten.
  */
 export const useUpdatePan = <TError = ErrorType<ErrorResponseDto>>(
   panId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updatePan>>, TError, Key, UpdatePanBody, Awaited<ReturnType<typeof updatePan>>> & { swrKey?: string }, }

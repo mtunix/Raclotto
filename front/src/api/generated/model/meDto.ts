@@ -24,6 +24,7 @@ export interface MeDto {
   gluten: boolean;
   histamine: boolean;
   id: number;
+  is_admin: boolean;
   lactose: boolean;
   language: MeDtoLanguage;
   level: LevelDto | null;

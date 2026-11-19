@@ -29,36 +29,6 @@ class SessionRepository(BaseRepository[RaclottoSession]):
         """
         return db.session.query(RaclottoSession).filter_by(active=True).all()
 
-    def close_session(self, key: str) -> RaclottoSession | None:
-        """
-        Close a session by setting active to False.
-
-        :param key: Session key
-        :return: Updated session or None if not found
-        """
-        session = self.by_key(key)
-        if not session:
-            return None
-
-        session.active = False
-        db.session.flush()
-        return session
-
-    def reactivate_session(self, key: str) -> RaclottoSession | None:
-        """
-        Reactivate a session by setting active to True.
-
-        :param key: Session key
-        :return: Updated session or None if not found
-        """
-        session = self.by_key(key)
-        if not session:
-            return None
-
-        session.active = True
-        db.session.flush()
-        return session
-
     def all_sessions(self) -> list[RaclottoSession]:
         """
         Get all sessions (active and inactive).

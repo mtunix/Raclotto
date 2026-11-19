@@ -56,6 +56,10 @@ class User(Base):
     gluten: Mapped[bool] = mapped_column(default=True)
     color: Mapped[str | None] = mapped_column(default=None)
     language: Mapped[str] = mapped_column(default="de")  # Language preference: 'en' or 'de'
+    # Admins may change any session, pan and the global settings.
+    is_admin: Mapped[bool] = mapped_column(default=False)
+    # Tokens signed with an older version are rejected; a password change bumps it.
+    token_version: Mapped[int] = mapped_column(default=0)
 
     # Border customization
     border_style: Mapped[str | None] = mapped_column(

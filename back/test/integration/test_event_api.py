@@ -143,10 +143,33 @@ class EventApiTest(AppTest):
         self.assertTrue(global_config.enabled)
 
     def test_saving_without_a_session_changes_the_global_config(self):
-        response = self.call("POST", "/events/configs", self.ana, body={"event_type": "pan_swap", "enabled": False})
+        root = self.make_user("root", is_admin=True)
+
+        response = self.call("POST", "/events/configs", root, body={"event_type": "pan_swap", "enabled": False})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual((response.json["session_id"], response.json["frequency_minutes"]), (None, None))
+
+    def test_only_an_admin_changes_the_global_configs(self):
+        config = self.make_config(True)
+
+        saved = self.call("POST", "/events/configs", self.ana, body={"event_type": "pan_swap", "enabled": False})
+        patched = self.call("PATCH", f"/events/configs/{config.id}", self.ana, body={"enabled": False})
+
+        self.assertEqual((saved.status_code, patched.status_code), (403, 403))
+        db.session.refresh(config)
+        self.assertTrue(config.enabled)
+
+    def test_only_the_sessions_creator_changes_its_configs(self):
+        config = self.make_config(True, self.session)
+        body = {"event_type": "pan_swap", "enabled": False, "session_key": "s1"}
+
+        saved = self.call("POST", "/events/configs", self.ben, body=body)
+        patched = self.call("PATCH", f"/events/configs/{config.id}", self.ben, body={"enabled": False})
+
+        self.assertEqual((saved.status_code, patched.status_code), (403, 403))
+        db.session.refresh(config)
+        self.assertTrue(config.enabled)
 
     def test_saving_checks_the_body_and_the_session(self):
         for body, pointer in (
@@ -172,7 +195,7 @@ class EventApiTest(AppTest):
         self.assertEqual((cleared.json["enabled"], cleared.json["frequency_minutes"]), (False, None))
 
     def test_update_needs_a_change_and_a_known_config(self):
-        config = self.make_config(True)
+        config = self.make_config(True, self.session)
 
         self.assertEqual(self.call("PATCH", f"/events/configs/{config.id}", self.ana, body={}).status_code, 400)
         self.assertEqual(

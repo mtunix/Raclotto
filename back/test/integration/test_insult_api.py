@@ -7,7 +7,8 @@ from back.test.support import AppTest
 class InsultApiTest(AppTest):
     def setUp(self):
         super().setUp()
-        self.ana = self.make_user("ana")
+        self.ana = self.make_user("ana", is_admin=True)
+        self.ben = self.make_user("ben")
         self.insult = Insult(title="Thermomixer")
         db.session.add(self.insult)
         db.session.commit()
@@ -20,6 +21,17 @@ class InsultApiTest(AppTest):
         self.assertEqual(got.json, listed.json[0])
         self.assertEqual(self.call("GET", "/insults/999", self.ana).status_code, 404)
         self.assertEqual(self.call("GET", "/insults").status_code, 401)
+
+    def test_only_an_admin_changes_insults(self):
+        responses = [
+            self.call("POST", "/insults", self.ben, body={"title": "Langweiler"}),
+            self.call("PATCH", f"/insults/{self.insult.id}", self.ben, body={"title": "Panner"}),
+            self.call("DELETE", f"/insults/{self.insult.id}", self.ben),
+        ]
+
+        self.assertEqual([r.status_code for r in responses], [403, 403, 403])
+        self.assertEqual([i.title for i in db.session.query(Insult)], ["Thermomixer"])
+        self.assertEqual(self.call("GET", f"/insults/{self.insult.id}", self.ben).status_code, 200)
 
     def test_create(self):
         response = self.call("POST", "/insults", self.ana, body={"title": "Langweiler"})

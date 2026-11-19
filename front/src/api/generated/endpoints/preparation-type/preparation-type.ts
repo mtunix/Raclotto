@@ -70,7 +70,7 @@ export const useListPreparationTypes = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Add a preparation type to a session; without a session it becomes a default type.
+ * @summary Add a preparation type to a session; without a session an admin adds a default type.
  */
 export const createPreparationType = (
     createPrepTypeBody: CreatePrepTypeBody,
@@ -97,7 +97,7 @@ export const getCreatePreparationTypeMutationKey = (params?: CreatePreparationTy
 export type CreatePreparationTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createPreparationType>>>
 
 /**
- * @summary Add a preparation type to a session; without a session it becomes a default type.
+ * @summary Add a preparation type to a session; without a session an admin adds a default type.
  */
 export const useCreatePreparationType = <TError = ErrorType<ErrorResponseDto>>(
   params?: CreatePreparationTypeParams, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createPreparationType>>, TError, Key, CreatePrepTypeBody, Awaited<ReturnType<typeof createPreparationType>>> & { swrKey?: string }, }

@@ -1,4 +1,5 @@
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.dto.pan import (
@@ -53,6 +54,12 @@ class PanApi(BaseApi):
                 title="Pan not found",
                 detail="The specified pan does not exist",
             )
+        return pan
+
+    def _changeable(self, pan_id: int) -> Pan:
+        pan = self._pan(pan_id)
+        with guarded():
+            permissions().change_pan(pan)
         return pan
 
     def _dto(self, pan: Pan) -> PanDto:
@@ -139,21 +146,21 @@ class PanApi(BaseApi):
         return self._dto(self._pan(pan_id))
 
     @BaseApi.endpoint(
-        "/<int:pan_id>", ["PATCH"], body=UpdatePanBody, response=PanDto, operation_id="updatePan", errors=(404,)
+        "/<int:pan_id>", ["PATCH"], body=UpdatePanBody, response=PanDto, operation_id="updatePan", errors=(403, 404)
     )
     @require_auth
     def update_pan(self, pan_id: int, body: UpdatePanBody) -> PanDto:
-        """Rename a pan or mark it eaten."""
-        pan = self._pan(pan_id)
+        """Rename your own pan or mark it eaten."""
+        pan = self._changeable(pan_id)
         for field in body.model_fields_set:
             setattr(pan, field, getattr(body, field))
         dto = self._dto(pan)
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(404, 409))
+    @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(403, 404, 409))
     @require_auth
     def delete_pan(self, pan_id: int) -> None:
-        """Delete a pan."""
-        db.session.delete(self._pan(pan_id))
+        """Delete your own pan."""
+        db.session.delete(self._changeable(pan_id))
         db.session.commit()

@@ -80,6 +80,15 @@ def authenticate() -> User:
             detail="User associated with token no longer exists",
         )
 
+    # Tokens from before token versions carry none and count as version 0.
+    if payload.get("ver", 0) != user.token_version:
+        raise ApiError(
+            ApiErrorCode.invalid_token,
+            status=401,
+            title="Invalid or expired token",
+            detail="The provided token was revoked",
+        )
+
     # Store user in request context
     g.current_user = user
     return user

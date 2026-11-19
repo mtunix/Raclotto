@@ -1,4 +1,5 @@
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.dto.event import EventConfigDto, EventDto, SaveEventConfigBody, UpdateEventConfigBody
@@ -10,6 +11,8 @@ from back.src.repository.session_repository import SessionRepository
 
 
 class EventApi(BaseApi):
+    """A session's event configs are its creator's to change, the global ones an admin's."""
+
     url_prefix = "/events"
 
     def __init__(self) -> None:
@@ -28,6 +31,13 @@ class EventApi(BaseApi):
                 detail="The specified session does not exist",
             )
         return session
+
+    def _configurable(self, session: RaclottoSession | None) -> None:
+        with guarded():
+            if session is None:
+                permissions().change_global()
+            else:
+                permissions().manage_session(session)
 
     @BaseApi.endpoint(
         "", ["GET"], query=SessionKeyQuery, response=list[EventDto], operation_id="listEvents", errors=(404,)
@@ -67,12 +77,13 @@ class EventApi(BaseApi):
         body=SaveEventConfigBody,
         response=EventConfigDto,
         operation_id="saveEventConfig",
-        errors=(404,),
+        errors=(403, 404),
     )
     @require_auth
     def create_event_config(self, body: SaveEventConfigBody) -> EventConfigDto:
         """Create or change the config of an event type, the session's own or the global one."""
         session = self._session(body.session_key) if body.session_key is not None else None
+        self._configurable(session)
         config = self.events.configure(body.event_type, body.enabled, body.frequency_minutes, session)
         dto = EventConfigDto.model_validate(config)
         db.session.commit()
@@ -84,7 +95,7 @@ class EventApi(BaseApi):
         body=UpdateEventConfigBody,
         response=EventConfigDto,
         operation_id="updateEventConfig",
-        errors=(404,),
+        errors=(403, 404),
     )
     @require_auth
     def update_event_config(self, config_id: int, body: UpdateEventConfigBody) -> EventConfigDto:
@@ -97,6 +108,7 @@ class EventApi(BaseApi):
                 title="Configuration not found",
                 detail="The specified configuration does not exist",
             )
+        self._configurable(config.session)
         for field in body.model_fields_set:
             setattr(config, field, getattr(body, field))
         dto = EventConfigDto.model_validate(config)

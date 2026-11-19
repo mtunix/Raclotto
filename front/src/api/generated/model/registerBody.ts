@@ -13,7 +13,7 @@ export interface RegisterBody {
   email: string;
   /** @minLength 1 */
   name: string;
-  /** @minLength 1 */
+  /** @minLength 8 */
   password: string;
   profile_picture?: string | null;
   /** @minLength 1 */

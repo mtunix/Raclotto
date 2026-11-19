@@ -4,10 +4,10 @@ from typing import Any
 import jwt
 
 
-def generate_token(user_id: int, secret_key: str, expiration_days: int = 7) -> str:
-    """Generate a JWT token for a user."""
+def generate_token(user_id: int, secret_key: str, version: int = 0, expiration_days: int = 7) -> str:
+    """Generate a JWT token for a user; ``version`` is the user's token version when it was issued."""
     now = datetime.now(UTC)
-    payload = {"user_id": user_id, "exp": now + timedelta(days=expiration_days), "iat": now}
+    payload = {"user_id": user_id, "ver": version, "exp": now + timedelta(days=expiration_days), "iat": now}
     return jwt.encode(payload, secret_key, algorithm="HS256")
 
 

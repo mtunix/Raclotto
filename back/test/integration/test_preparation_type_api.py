@@ -51,10 +51,18 @@ class TestPreparationTypeApi(AppTest):
         self.assertNotIn("Fried", self.names(session_key="s2"))
 
     def test_create_without_a_session_adds_a_default_type(self):
-        response = self.call("POST", "/preparation_type", self.ana, body={"name": "Raw"})
+        root = self.make_user("root", is_admin=True)
+
+        response = self.call("POST", "/preparation_type", root, body={"name": "Raw"})
 
         self.assertEqual((response.status_code, response.json["session_id"]), (200, None))
         self.assertIn("Raw", self.names(session_key="s2"))
+
+    def test_only_an_admin_adds_a_default_type(self):
+        response = self.call("POST", "/preparation_type", self.ana, body={"name": "Raw"})
+
+        self.assertEqual(response.status_code, 403, response.json)
+        self.assertNotIn("Raw", self.names())
 
     def test_create_validates(self):
         empty = self.call("POST", "/preparation_type", self.ana, body={"name": ""}, query={"session_key": "s1"})

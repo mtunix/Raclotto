@@ -95,7 +95,7 @@ class TestLegacyEventTypes(AppTest):
 
     def setUp(self):
         super().setUp()
-        self.ana = self.make_user("ana")
+        self.ana = self.make_user("ana", is_admin=True)
         self.session = self.make_session("s1", creator=self.ana)
 
     def test_configs_of_unknown_types_are_listed_and_changed(self):

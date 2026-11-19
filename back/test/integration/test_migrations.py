@@ -110,6 +110,23 @@ class MigrateTest(unittest.TestCase):
         columns = {row[0] for row in self.query("SELECT name FROM pragma_table_info('level')")}
         self.assertTrue({"name", "label_en", "label_de", "required_experience"} <= columns)
 
+    def test_a_database_from_before_admins_makes_the_seeded_admin_one(self):
+        self.given_database(
+            'ALTER TABLE "user" DROP COLUMN is_admin',
+            'ALTER TABLE "user" DROP COLUMN token_version',
+            'INSERT INTO "user" (name, password, meat, vegetarian, vegan, fish, histamine, fructose, lactose, gluten, '
+            "language, experience_points) VALUES ('admin', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0), "
+            "('ana', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0)",
+        )
+
+        migrate(db)
+
+        self.assertEqual(
+            self.query('SELECT name, is_admin, token_version FROM "user" ORDER BY name'),
+            [("admin", 1, 0), ("ana", 0, 0)],
+        )
+        self.assertEqual(self.query("SELECT version_num FROM alembic_version"), [(_head(),)])
+
     def test_other_missing_columns_stop_startup_with_their_names(self):
         self.given_database('ALTER TABLE "user" DROP COLUMN glow_effect')
 

@@ -18,6 +18,7 @@ import type {
 
 import type {
   AuthResultDto,
+  ChangePasswordBody,
   ErrorResponseDto,
   InviteLookupDto,
   LoginBody,
@@ -72,7 +73,7 @@ export const useLookupInvite = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Sign in with name or email and password.
+ * @summary Sign in with name or email and password; too many failures from one address pause the account there.
  */
 export const login = (
     loginBody: LoginBody,
@@ -97,7 +98,7 @@ export const getLoginMutationKey = () => [`/auth/login`] as const;
 export type LoginMutationResult = NonNullable<Awaited<ReturnType<typeof login>>>
 
 /**
- * @summary Sign in with name or email and password.
+ * @summary Sign in with name or email and password; too many failures from one address pause the account there.
  */
 export const useLogin = <TError = ErrorType<ErrorResponseDto>>(
    options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof login>>, TError, Key, LoginBody, Awaited<ReturnType<typeof login>>> & { swrKey?: string }, }
@@ -188,6 +189,50 @@ export const useUpdateMe = <TError = ErrorType<ErrorResponseDto>>(
 
   const swrKey = swrOptions?.swrKey ?? getUpdateMeMutationKey();
   const swrFn = getUpdateMeMutationFetcher();
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Change the signed-in user's password; every other device is signed out, this one gets a new token.
+ */
+export const changePassword = (
+    changePasswordBody: ChangePasswordBody,
+ ) => {
+    return orvalMutator<TokenDto>(
+    {url: `/auth/password`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: changePasswordBody
+    },
+    );
+  }
+
+
+
+export const getChangePasswordMutationFetcher = ( ) => {
+  return (_: Key, { arg }: { arg: ChangePasswordBody }) => {
+    return changePassword(arg);
+  }
+}
+export const getChangePasswordMutationKey = () => [`/auth/password`] as const;
+
+export type ChangePasswordMutationResult = NonNullable<Awaited<ReturnType<typeof changePassword>>>
+
+/**
+ * @summary Change the signed-in user's password; every other device is signed out, this one gets a new token.
+ */
+export const useChangePassword = <TError = ErrorType<ErrorResponseDto>>(
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof changePassword>>, TError, Key, ChangePasswordBody, Awaited<ReturnType<typeof changePassword>>> & { swrKey?: string }, }
+) => {
+
+  const {swr: swrOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getChangePasswordMutationKey();
+  const swrFn = getChangePasswordMutationFetcher();
 
   const query = useSWRMutation(swrKey, swrFn, swrOptions)
 

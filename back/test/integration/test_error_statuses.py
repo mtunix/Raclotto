@@ -124,6 +124,7 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         super().setUp()
         self.ana = self.make_user("ana", meat=True)
         self.ben = self.make_user("ben")
+        self.root = self.make_user("root", is_admin=True)
         self.session = self.make_session("s1", creator=self.ana)
         self.potato = self.make_ingredient(self.session, "Potato")
 
@@ -137,7 +138,14 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         self.assert_answers(
             "login",
             self.call("POST", "/auth/login", body={}),
-            self.call("POST", "/auth/login", body={"name_or_email": "ana", "password": "wrong"}),
+            *[self.call("POST", "/auth/login", body={"name_or_email": "ana", "password": "wrong"}) for _ in range(6)],
+        )
+
+    def test_change_password(self):
+        self.assert_answers(
+            "changePassword",
+            self.call("POST", "/auth/password", body={"current_password": "x", "new_password": "longenough"}),
+            self.call("POST", "/auth/password", self.ana, body={"current_password": "x", "new_password": "short"}),
         )
 
     def test_update_me(self):
@@ -175,6 +183,7 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             "deletePan",
             self.call("DELETE", f"/pans/{rated.id}"),
             self.call("DELETE", "/pans/999", self.ana),
+            self.call("DELETE", f"/pans/{rated.id}", self.ben),
             # Deleting a rated pan would orphan its ratings.
             self.call("DELETE", f"/pans/{rated.id}", self.ana),
         )
@@ -185,6 +194,7 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             self.call("POST", "/sessions/close", body={"key": "s1"}),
             self.call("POST", "/sessions/close", self.ana, body={}),
             self.call("POST", "/sessions/close", self.ana, body={"key": "nope"}),
+            self.call("POST", "/sessions/close", self.ben, body={"key": "s1"}),
         )
 
     def test_available_counts_of_an_unknown_session_are_zero_not_404(self):
@@ -245,7 +255,8 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         self.assert_answers(
             "saveEventConfig",
             self.call("POST", "/events/configs", body={"event_type": "pan_swap", "enabled": True}),
-            self.call("POST", "/events/configs", self.ana, body={"event_type": "rain", "enabled": True}),
+            self.call("POST", "/events/configs", self.root, body={"event_type": "rain", "enabled": True}),
+            self.call("POST", "/events/configs", self.ana, body={"event_type": "pan_swap", "enabled": True}),
             self.call(
                 "POST",
                 "/events/configs",
@@ -283,6 +294,7 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
             self.call("PATCH", "/insults/999", body={"title": "x"}),
             self.call("PATCH", "/insults/999", self.ana, body={}),
             self.call("PATCH", "/insults/999", self.ana, body={"title": "x"}),
+            self.call("PATCH", "/insults/999", self.root, body={"title": "x"}),
         )
 
     def test_stats(self):

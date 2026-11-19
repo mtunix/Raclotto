@@ -211,6 +211,27 @@
         "title": "AvailableCountsDto",
         "type": "object"
       },
+      "ChangePasswordBody": {
+        "additionalProperties": false,
+        "properties": {
+          "current_password": {
+            "minLength": 1,
+            "title": "Current Password",
+            "type": "string"
+          },
+          "new_password": {
+            "minLength": 8,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordBody",
+        "type": "object"
+      },
       "CreateIngredientBody": {
         "additionalProperties": false,
         "properties": {
@@ -1303,6 +1324,10 @@
             "title": "Id",
             "type": "integer"
           },
+          "is_admin": {
+            "title": "Is Admin",
+            "type": "boolean"
+          },
           "lactose": {
             "title": "Lactose",
             "type": "boolean"
@@ -1381,6 +1406,7 @@
           "lactose",
           "gluten",
           "language",
+          "is_admin",
           "experience_points",
           "level",
           "next_level"
@@ -1706,7 +1732,7 @@
             "type": "string"
           },
           "password": {
-            "minLength": 1,
+            "minLength": 8,
             "title": "Password",
             "type": "string"
           },
@@ -2847,9 +2873,19 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Too Many Requests"
           }
         },
-        "summary": "Sign in with name or email and password.",
+        "summary": "Sign in with name or email and password; too many failures from one address pause the account there.",
         "tags": [
           "auth"
         ]
@@ -2950,6 +2986,62 @@
           }
         ],
         "summary": "Change the signed-in user's name, diet, language, picture or card decoration.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/password": {
+      "post": {
+        "operationId": "changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Change the signed-in user's password; every other device is signed out, this one gets a new token.",
         "tags": [
           "auth"
         ]
@@ -3214,6 +3306,16 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -3289,6 +3391,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -4410,6 +4522,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -4449,6 +4571,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -4577,6 +4709,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -5218,6 +5360,16 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -5244,7 +5396,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Delete a pan.",
+        "summary": "Delete your own pan.",
         "tags": [
           "pans"
         ]
@@ -5356,6 +5508,16 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -5372,7 +5534,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Rename a pan or mark it eaten.",
+        "summary": "Rename your own pan or mark it eaten.",
         "tags": [
           "pans"
         ]
@@ -5519,6 +5681,16 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -5535,7 +5707,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Add a preparation type to a session; without a session it becomes a default type.",
+        "summary": "Add a preparation type to a session; without a session an admin adds a default type.",
         "tags": [
           "preparation_type"
         ]
@@ -6137,6 +6309,16 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -6203,6 +6385,16 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -6251,6 +6443,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -6379,6 +6581,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "404": {
             "content": {

@@ -1,11 +1,14 @@
-from flask import current_app
+from math import ceil
+
+from flask import current_app, request
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
 from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.auth.password import verify_password
+from back.src.auth.throttle import login_throttle
 from back.src.driver.database import db
-from back.src.dto.auth import AuthResultDto, LoginBody, RegisterBody, TokenDto
+from back.src.dto.auth import AuthResultDto, ChangePasswordBody, LoginBody, RegisterBody, TokenDto
 from back.src.dto.invite import CreateInviteBody, InviteDto, InviteLookupDto
 from back.src.dto.user import MeDto, UpdateMeBody
 from back.src.entity.user import User
@@ -18,7 +21,7 @@ from back.src.repository.user_repository import UserRepository
 
 
 def _token(user: User) -> str:
-    return generate_token(user.id, current_app.config["JWT_SECRET_KEY"])
+    return generate_token(user.id, current_app.config["JWT_SECRET_KEY"], user.token_version)
 
 
 def _me(user: User) -> MeDto:
@@ -73,17 +76,31 @@ class AuthApi(BaseApi):
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login", errors=(401,))
+    @BaseApi.endpoint(
+        "/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login", errors=(401, 429)
+    )
     def login(self, body: LoginBody) -> AuthResultDto:
-        """Sign in with name or email and password."""
+        """Sign in with name or email and password; too many failures from one address pause the account there."""
+        throttle = login_throttle()
+        key = f"{request.remote_addr}|{body.name_or_email.casefold()}"
+        wait = throttle.retry_after(key)
+        if wait is not None:
+            raise ApiError(
+                ApiErrorCode.too_many_requests,
+                status=429,
+                title="Too many attempts",
+                detail=f"Too many failed sign-ins; try again in {ceil(wait.total_seconds() / 60)} minutes",
+            )
         user = self.user_repository.by_email_or_name(body.name_or_email)
         if not user or not verify_password(body.password, user.password):
+            throttle.failed(key)
             raise ApiError(
                 ApiErrorCode.invalid_token,
                 status=401,
                 title="Invalid credentials",
                 detail="Invalid email/name or password",
             )
+        throttle.succeeded(key)
         return AuthResultDto(token=_token(user), user=_me(user))
 
     @BaseApi.endpoint("/me", ["GET"], response=MeDto, operation_id="getMe")
@@ -121,6 +138,27 @@ class AuthApi(BaseApi):
             ProfilePictures().add(user, body.profile_picture)
 
         dto = _me(user)
+        db.session.commit()
+        return dto
+
+    @BaseApi.endpoint(
+        "/password", ["POST"], body=ChangePasswordBody, response=TokenDto, operation_id="changePassword", errors=(400,)
+    )
+    @require_auth
+    def change_password(self, body: ChangePasswordBody) -> TokenDto:
+        """Change the signed-in user's password; every other device is signed out, this one gets a new token."""
+        user = get_current_user()
+        try:
+            Accounts().change_password(user, body.current_password, body.new_password)
+        except AccountError as e:
+            # 400, not 401: the frontend signs out on a 401.
+            raise ApiError(
+                ApiErrorCode.incorrect_parameters,
+                status=400,
+                title="Wrong password",
+                detail="The current password is wrong",
+            ) from e
+        dto = TokenDto(token=_token(user))
         db.session.commit()
         return dto
 

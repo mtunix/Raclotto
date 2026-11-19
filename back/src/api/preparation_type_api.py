@@ -1,4 +1,5 @@
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
 from back.src.dto.preparation_type import CreatePrepTypeBody, PrepTypeDto
@@ -51,12 +52,16 @@ class PreparationTypeApi(BaseApi):
         body=CreatePrepTypeBody,
         response=PrepTypeDto,
         operation_id="createPreparationType",
-        errors=(404,),
+        errors=(403, 404),
     )
     @require_auth
     def create_preparation_type(self, query: SessionFilterQuery, body: CreatePrepTypeBody) -> PrepTypeDto:
-        """Add a preparation type to a session; without a session it becomes a default type."""
-        prep_type = self.repository.create({"name": body.name, "session_id": self._session_id(query.session_key)})
+        """Add a preparation type to a session; without a session an admin adds a default type."""
+        session_id = self._session_id(query.session_key)
+        if session_id is None:
+            with guarded():
+                permissions().change_global()
+        prep_type = self.repository.create({"name": body.name, "session_id": session_id})
         dto = PrepTypeDto.model_validate(prep_type)
         db.session.commit()
         return dto

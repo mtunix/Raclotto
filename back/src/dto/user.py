@@ -106,6 +106,8 @@ class MeDto(_UserCard):
     lactose: bool
     gluten: bool
     language: Language
+    # Admins may change any session and pan, and the global settings.
+    is_admin: bool
     experience_points: int
     # Null only while no levels exist.
     level: LevelDto | None
@@ -127,6 +129,7 @@ class MeDto(_UserCard):
             lactose=user.lactose,
             gluten=user.gluten,
             language=user.language if _is_language(user.language) else DEFAULT_LANGUAGE,
+            is_admin=user.is_admin,
         )
 
 

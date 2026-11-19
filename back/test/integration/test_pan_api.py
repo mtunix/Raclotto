@@ -233,6 +233,19 @@ class TestPanApi(AppTest):
         self.assertEqual(response.get_data(), b"")
         self.assertIsNone(db.session.get(Pan, pan.id))
 
+    def test_only_the_author_or_an_admin_changes_a_pan(self):
+        pan = self.make_pan(self.ana, self.s1, [self.potato])
+        root = self.make_user("root", is_admin=True)
+
+        renamed = self.call("PATCH", f"/pans/{pan.id}", self.ben, body={"name": "Mine"})
+        deleted = self.call("DELETE", f"/pans/{pan.id}", self.ben)
+
+        self.assertEqual((renamed.status_code, deleted.status_code), (403, 403))
+        db.session.expire_all()
+        self.assertEqual(db.session.get_one(Pan, pan.id).name, "pan")
+        self.assertEqual(self.call("PATCH", f"/pans/{pan.id}", root, body={"snacked": True}).status_code, 200)
+        self.assertEqual(self.call("DELETE", f"/pans/{pan.id}", root).status_code, 204)
+
     def test_pan_routes_require_auth(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
         for method, path, body in (

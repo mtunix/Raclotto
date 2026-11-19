@@ -4,15 +4,17 @@
     invite = Accounts().usable_invite(token)
     user = Accounts().register(token, name, email, password, picture)
     Accounts().revoke(creator, invite_id)
-    admin = Accounts().create_user(name, email, password)
+    admin = Accounts().create_user(name, email, password, is_admin=True)
+    Accounts().change_password(user, current, new)
 
 An invite is usable until it is used or expires, and only for its own email, in any case. Only
 its creator can revoke it, until it is used. A new user starts at the lowest level, and their
 first picture is the one generation starts from. Callers own the transaction: nothing here
-commits.
+commits. Changing the password bumps the user's token version, which signs out every other
+device.
 """
 
-from back.src.auth.password import hash_password
+from back.src.auth.password import hash_password, verify_password
 from back.src.driver.database import db
 from back.src.entity.invite_token import InviteToken
 from back.src.entity.user import User
@@ -32,6 +34,7 @@ class AccountError(Exception):
     TAKEN = "taken"
     # Revoking: someone else's invite is reported as unknown.
     USED_INVITE = "used_invite"
+    WRONG_PASSWORD = "wrong_password"
 
     def __init__(self, kind: str):
         super().__init__(kind)
@@ -83,7 +86,14 @@ class Accounts:
         db.session.delete(invite)
         db.session.flush()
 
-    def create_user(self, name: str, email: str, password: str) -> User:
+    def change_password(self, user: User, current: str, new: str) -> None:
+        if not verify_password(current, user.password):
+            raise AccountError(AccountError.WRONG_PASSWORD)
+        user.password = hash_password(new)
+        user.token_version += 1
+        db.session.flush()
+
+    def create_user(self, name: str, email: str, password: str, is_admin: bool = False) -> User:
         if self._users.by_email(email) or self._users.by_name(name):
             raise AccountError(AccountError.TAKEN)
         first_level = Levels().starting()
@@ -93,6 +103,7 @@ class Accounts:
             password=hash_password(password),
             experience_points=0,
             level_id=first_level.id if first_level else None,
+            is_admin=is_admin,
         )
         db.session.add(user)
         db.session.flush()

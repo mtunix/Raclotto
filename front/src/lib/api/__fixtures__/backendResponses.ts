@@ -38,7 +38,7 @@ export const rollOutcome: RollOutcomeDto = {
   ],
   "events": [
     {
-      "created_at": "2026-11-18T13:12:38.803355",
+      "created_at": "2026-11-19T11:23:07.982114",
       "data": {
         "pan1_id": 2,
         "pan1_user_id": 1,
@@ -64,7 +64,7 @@ export const rollOutcome: RollOutcomeDto = {
       "name": "Ada",
       "profile_picture": "/static/pictures/ada.png"
     },
-    "cheese_level": 4,
+    "cheese_level": 3,
     "id": 2,
     "ingredients": [
       {
@@ -122,7 +122,7 @@ export const rollOutcome: RollOutcomeDto = {
         "wildcard": false
       }
     ],
-    "name": "Innate Raclotto Pan",
+    "name": "Faulty Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -135,7 +135,7 @@ export const rollOutcome: RollOutcomeDto = {
     "rolled_preparation_type": true,
     "session_id": 1,
     "snacked": false,
-    "timestamp": "2026-11-18T13:12:38.797063",
+    "timestamp": "2026-11-19T11:23:07.979995",
     "user_id": 1
   },
   "reward": {
@@ -188,7 +188,7 @@ export const panPage: PanPageDto = {
         "name": "Ada",
         "profile_picture": "/static/pictures/ada.png"
       },
-      "cheese_level": 4,
+      "cheese_level": 3,
       "id": 2,
       "ingredients": [
         {
@@ -246,7 +246,7 @@ export const panPage: PanPageDto = {
           "wildcard": false
         }
       ],
-      "name": "Innate Raclotto Pan",
+      "name": "Faulty Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -267,7 +267,7 @@ export const panPage: PanPageDto = {
       "rolled_preparation_type": true,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-18T13:12:38.797063",
+      "timestamp": "2026-11-19T11:23:07.979995",
       "user_id": 1
     }
   ],
@@ -277,7 +277,7 @@ export const panPage: PanPageDto = {
 };
 
 export const loginResult: AuthResultDto = {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3OTU2MDg3NTgsImlhdCI6MTc5NTAwMzk1OH0.JSPoYjk9dzbPhI80xCiFE0yw0JTWHG2b3PT7TkSHLXI",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ2ZXIiOjAsImV4cCI6MTc5NTY4ODU4OCwiaWF0IjoxNzk1MDgzNzg4fQ.RC1Pn6Q36uHxk96wNjzeAWWlOc-Pp5yJhWqc-HrXrYc",
   "user": {
     "border_style": "dashed",
     "border_texture": "cheese",
@@ -290,6 +290,7 @@ export const loginResult: AuthResultDto = {
     "gluten": true,
     "histamine": true,
     "id": 1,
+    "is_admin": false,
     "lactose": true,
     "language": "de",
     "level": {
@@ -326,6 +327,7 @@ export const me: MeDto = {
   "gluten": true,
   "histamine": true,
   "id": 1,
+  "is_admin": false,
   "lactose": true,
   "language": "de",
   "level": {
@@ -419,16 +421,16 @@ export const userStats: UserStatsDto = {
       "fructose": false,
       "gluten": false,
       "histamine": false,
-      "id": 1,
-      "lactose": false,
+      "id": 3,
+      "lactose": true,
       "meat": false,
-      "name": "Potato",
+      "name": "Aioli",
       "session_id": 1,
       "spicy": 0,
       "sweet": false,
-      "type": 1,
-      "vegan": true,
-      "vegetarian": false,
+      "type": 2,
+      "vegan": false,
+      "vegetarian": true,
       "wildcard": false
     }
   },
@@ -460,7 +462,7 @@ export const userStats: UserStatsDto = {
       "name": "Ada",
       "profile_picture": "/static/pictures/ada.png"
     },
-    "cheese_level": 4,
+    "cheese_level": 3,
     "id": 2,
     "ingredients": [
       {
@@ -518,7 +520,7 @@ export const userStats: UserStatsDto = {
         "wildcard": false
       }
     ],
-    "name": "Innate Raclotto Pan",
+    "name": "Faulty Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -539,7 +541,7 @@ export const userStats: UserStatsDto = {
     "rolled_preparation_type": true,
     "session_id": 1,
     "snacked": false,
-    "timestamp": "2026-11-18T13:12:38.797063",
+    "timestamp": "2026-11-19T11:23:07.979995",
     "user_id": 1
   },
   "most_pans_session": {
@@ -555,10 +557,10 @@ export const userStats: UserStatsDto = {
 
 export const invite: InviteDto = {
   "email": "carl@example.com",
-  "expires_at": "2026-11-25T13:12:38.944199",
+  "expires_at": "2026-11-26T11:23:08.090685",
   "id": 1,
   "is_used": false,
-  "token": "PWBHEx1T7BijOcIU1M5nPAP_ICLXGnGh9IYGQC5wZoQ",
+  "token": "8Jeboos4WNhjZ7RQK2BYR7U37oVRxLCBVeHZd2qZtIw",
   "used_at": null
 };
 
@@ -568,7 +570,7 @@ export const session: SessionDto = {
   "id": 1,
   "key": "s1",
   "name": "s1",
-  "timestamp": "2026-11-18T13:12:38.693801"
+  "timestamp": "2026-11-19T11:23:07.868602"
 };
 
 export const sessions: SessionDto[] = [
@@ -578,7 +580,7 @@ export const sessions: SessionDto[] = [
     "id": 1,
     "key": "s1",
     "name": "s1",
-    "timestamp": "2026-11-18T13:12:38.693801"
+    "timestamp": "2026-11-19T11:23:07.868602"
   }
 ];
 
@@ -1293,7 +1295,7 @@ export const leaderboard: LeaderboardEntryDto[] = [
 
 export const events: EventDto[] = [
   {
-    "created_at": "2026-11-18T13:12:38.803355",
+    "created_at": "2026-11-19T11:23:07.982114",
     "data": {
       "pan1_id": 2,
       "pan1_user_id": 1,
@@ -1493,7 +1495,7 @@ export const stats: StatsDto = {
         "name": "Ada",
         "profile_picture": "/static/pictures/ada.png"
       },
-      "cheese_level": 4,
+      "cheese_level": 3,
       "id": 2,
       "ingredients": [
         {
@@ -1551,7 +1553,7 @@ export const stats: StatsDto = {
           "wildcard": false
         }
       ],
-      "name": "Innate Raclotto Pan",
+      "name": "Faulty Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -1572,7 +1574,7 @@ export const stats: StatsDto = {
       "rolled_preparation_type": true,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-18T13:12:38.797063",
+      "timestamp": "2026-11-19T11:23:07.979995",
       "user_id": 1
     },
     {
@@ -1625,7 +1627,7 @@ export const stats: StatsDto = {
           "wildcard": false
         }
       ],
-      "name": "Apathetic Raclotto Pan",
+      "name": "Used Raclotto Pan",
       "preparation_type": null,
       "preparation_type_id": null,
       "rating": 0.0,
@@ -1634,14 +1636,14 @@ export const stats: StatsDto = {
       "rolled_preparation_type": false,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-18T13:12:38.706995",
+      "timestamp": "2026-11-19T11:23:07.916470",
       "user_id": 2
     }
   ]
 };
 
 export const generatedPicture: GeneratedPictureDto = {
-  "created_at": "2026-11-18T13:12:39.074269",
+  "created_at": "2026-11-19T11:23:08.250648",
   "id": 2,
   "image_base64": "iVBORw0KGgo=",
   "level_id": 2,
@@ -1650,7 +1652,7 @@ export const generatedPicture: GeneratedPictureDto = {
 
 export const pictureHistory: ProfilePictureDto[] = [
   {
-    "created_at": "2026-11-18T13:12:39.074269",
+    "created_at": "2026-11-19T11:23:08.250648",
     "id": 2,
     "is_candidate": true,
     "level": {
@@ -1664,7 +1666,7 @@ export const pictureHistory: ProfilePictureDto[] = [
     "profile_picture": "data:image/png;base64,iVBORw0KGgo="
   },
   {
-    "created_at": "2026-11-18T13:12:38.695563",
+    "created_at": "2026-11-19T11:23:07.869973",
     "id": 1,
     "is_candidate": false,
     "level": null,

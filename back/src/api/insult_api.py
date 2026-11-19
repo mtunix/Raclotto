@@ -1,4 +1,5 @@
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
 from back.src.dto.insult import InsultBody, InsultDto
@@ -7,6 +8,8 @@ from back.src.repository.insult_repository import InsultRepository
 
 
 class InsultApi(BaseApi):
+    """Anyone signed in may read the insults; only admins may change them."""
+
     url_prefix = "/insults"
 
     def __init__(self) -> None:
@@ -24,16 +27,23 @@ class InsultApi(BaseApi):
             )
         return insult
 
+    def _changeable(self, insult_id: int) -> Insult:
+        with guarded():
+            permissions().change_global()
+        return self._insult(insult_id)
+
     @BaseApi.endpoint("", ["GET"], response=list[InsultDto], operation_id="listInsults")
     @require_auth
     def list_insults(self) -> list[InsultDto]:
         """List all insults."""
         return [InsultDto.model_validate(insult) for insult in self.repository.all()]
 
-    @BaseApi.endpoint("", ["POST"], body=InsultBody, response=InsultDto, operation_id="createInsult")
+    @BaseApi.endpoint("", ["POST"], body=InsultBody, response=InsultDto, operation_id="createInsult", errors=(403,))
     @require_auth
     def create_insult(self, body: InsultBody) -> InsultDto:
         """Add an insult."""
+        with guarded():
+            permissions().change_global()
         dto = InsultDto.model_validate(self.repository.create(body.model_dump()))
         db.session.commit()
         return dto
@@ -45,20 +55,25 @@ class InsultApi(BaseApi):
         return InsultDto.model_validate(self._insult(insult_id))
 
     @BaseApi.endpoint(
-        "/<int:insult_id>", ["PATCH"], body=InsultBody, response=InsultDto, operation_id="updateInsult", errors=(404,)
+        "/<int:insult_id>",
+        ["PATCH"],
+        body=InsultBody,
+        response=InsultDto,
+        operation_id="updateInsult",
+        errors=(403, 404),
     )
     @require_auth
     def update_insult(self, insult_id: int, body: InsultBody) -> InsultDto:
         """Change an insult's title."""
-        insult = self._insult(insult_id)
+        insult = self._changeable(insult_id)
         insult.title = body.title
         dto = InsultDto.model_validate(insult)
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/<int:insult_id>", ["DELETE"], status=204, operation_id="deleteInsult", errors=(404,))
+    @BaseApi.endpoint("/<int:insult_id>", ["DELETE"], status=204, operation_id="deleteInsult", errors=(403, 404))
     @require_auth
     def delete_insult(self, insult_id: int) -> None:
         """Delete an insult."""
-        db.session.delete(self._insult(insult_id))
+        db.session.delete(self._changeable(insult_id))
         db.session.commit()

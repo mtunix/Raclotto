@@ -11,6 +11,7 @@ export * from './apiErrorDto';
 export * from './apiErrorSourceDto';
 export * from './authResultDto';
 export * from './availableCountsDto';
+export * from './changePasswordBody';
 export * from './createIngredientBody';
 export * from './createIngredientParams';
 export * from './createInviteBody';

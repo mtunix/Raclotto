@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.dto.session import (
@@ -27,7 +28,7 @@ def _not_found() -> ApiError:
 
 
 class SessionApi(BaseApi):
-    """Any signed-in user may list, change, close, reactivate and delete any session."""
+    """Anyone signed in may create, list and read sessions; only the creator or an admin may change one."""
 
     url_prefix = "/sessions"
 
@@ -39,6 +40,13 @@ class SessionApi(BaseApi):
         session = self.repository.by_id(session_id)
         if not session:
             raise _not_found()
+        return session
+
+    def _managed(self, session: RaclottoSession | None) -> RaclottoSession:
+        if not session:
+            raise _not_found()
+        with guarded():
+            permissions().manage_session(session)
         return session
 
     @BaseApi.endpoint("", ["POST"], body=CreateSessionBody, response=SessionDto, operation_id="createSession")
@@ -85,33 +93,32 @@ class SessionApi(BaseApi):
         body=UpdateSessionBody,
         response=SessionDto,
         operation_id="updateSession",
-        errors=(404,),
+        errors=(403, 404),
     )
     @require_auth
     def update_session(self, session_id: int, body: UpdateSessionBody) -> SessionDto:
         """Rename a session."""
-        session = self._session(session_id)
+        session = self._managed(self.repository.by_id(session_id))
         session.name = body.name
         dto = SessionDto.model_validate(session)
         db.session.commit()
         return dto
 
-    @BaseApi.endpoint("/<int:session_id>", ["DELETE"], status=204, operation_id="deleteSession", errors=(404,))
+    @BaseApi.endpoint("/<int:session_id>", ["DELETE"], status=204, operation_id="deleteSession", errors=(403, 404))
     @require_auth
     def delete_session(self, session_id: int) -> None:
         """Delete a session."""
-        db.session.delete(self._session(session_id))
+        db.session.delete(self._managed(self.repository.by_id(session_id)))
         db.session.commit()
 
     @BaseApi.endpoint(
-        "/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession", errors=(404,)
+        "/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession", errors=(403, 404)
     )
     @require_auth
     def close_session(self, body: SessionKeyBody) -> SessionDto:
         """Close a session; achievements that wait for the end are judged."""
-        session = self.repository.close_session(body.key)
-        if not session:
-            raise _not_found()
+        session = self._managed(self.repository.by_key(body.key))
+        session.active = False
         Achievements().record(SessionClosed(session=session, actor=get_current_user()))
         dto = SessionDto.model_validate(session)
         db.session.commit()
@@ -123,14 +130,13 @@ class SessionApi(BaseApi):
         body=SessionKeyBody,
         response=SessionDto,
         operation_id="reactivateSession",
-        errors=(404,),
+        errors=(403, 404),
     )
     @require_auth
     def reactivate_session(self, body: SessionKeyBody) -> SessionDto:
         """Reopen a closed session."""
-        session = self.repository.reactivate_session(body.key)
-        if not session:
-            raise _not_found()
+        session = self._managed(self.repository.by_key(body.key))
+        session.active = True
         dto = SessionDto.model_validate(session)
         db.session.commit()
         return dto
