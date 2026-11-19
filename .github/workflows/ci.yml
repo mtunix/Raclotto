@@ -49,7 +49,7 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit -p .
       - run: npm run lint
-      - run: npx jest --config jest.ci.config.js --ci
+      - run: npx jest --ci
       - run: npm run build
 
   contract:

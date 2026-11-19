@@ -133,12 +133,6 @@ one-line `eslint-disable-next-line <rule> -- <why>`, never a file- or rule-wide 
 stays on 6: TS 7's native compiler has no JS API yet, which `@typescript-eslint`,
 fork-ts-checker and `config/modules.js` need.
 
-Known-broken frontend suites: `App.test.js`, `ErrorPage`, `GenerateView`, `HistoryView`,
-`SettingsView`, `MainScreen`, `StartScreen`, `Toolbar` fail to load (react-router needs
-`TextEncoder`, the CSS transform predates Jest 28, stale `../AppSlice` mock paths). The view
-suites need `FakeTransport` to be revived.
-`front/jest.ci.config.js` quarantines exactly these; take a suite off its list when it runs again.
-
 ## Configuration
 
 Read from the environment (and a git-ignored `.env`; `.env.example` documents every variable) by
@@ -179,7 +173,7 @@ The README has the operator steps. The pieces:
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `master` and `dev`, release tags and pull requests: the backend suite,
-`venv/bin/mypy`, `tsc`, `npm run lint`, jest through `jest.ci.config.js`, the production build (with `CI=true`, so build warnings
+`venv/bin/mypy`, `tsc`, `npm run lint`, jest, the production build (with `CI=true`, so build warnings
 fail it), and `npm run gen:api:check`. Python and Node versions come from `.python-version` and
 `front/.nvmrc`; actions are pinned to commit SHAs. After those pass, the `image` job builds the
 Docker image and smoke-tests it (healthy, serves the index, `/api/health` reports the version).
@@ -214,7 +208,8 @@ only builds and tests the image.
   (drift), and every routed endpoint appears in the spec.
 - **Frontend:** jest. Call the generated functions against `FakeTransport` (`setTransport(fake)`,
   `fake.on(...)`, `fake.last(...)`) with fixtures from `lib/api/__fixtures__/backendResponses.ts`,
-  not by mocking axios or modules.
+  not by mocking axios or modules. Views render in a data router through `renderRoutes` /
+  `renderRoute` (`src/testUtils.tsx`) and set the Zustand stores with `setState`.
 - **Test through the module's interface.** Swap collaborators through constructor arguments
   (`PanRoll(rng=..., achievements=...)`, `Achievements(evaluators=...)`), not `patch`.
 - **Regression tests must be seen red before green.** Revert the fix, confirm the new test
