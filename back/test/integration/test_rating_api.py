@@ -1,6 +1,7 @@
 from back.src.driver.database import db
 from back.src.dto.rating import RatingDto
 from back.src.entity.rating import Rating
+from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import AchievementEvaluator
 from back.src.interactor.achievement_registry import get_registry
 from back.src.interactor.facts import PanRated
@@ -118,6 +119,37 @@ class TestRatingApi(AppTest):
         self.assertEqual(deleted.get_data(), b"")
         self.assertEqual(self.call("GET", f"/ratings/{rating_id}", self.ana).status_code, 404)
         self.assertEqual(self.call("DELETE", f"/ratings/{rating_id}", self.ana).status_code, 404)
+
+    def test_someone_elses_rating_is_reported_as_missing(self):
+        rating_id = self.rate(self.ben, 2).json["id"]
+
+        changed = self.call("PATCH", f"/ratings/{rating_id}", self.ana, body={"rating": 5})
+        withdrawn = self.call("DELETE", f"/ratings/{rating_id}", self.ana)
+
+        self.assertEqual((changed.status_code, withdrawn.status_code), (404, 404))
+        self.assertEqual(changed.json["errors"][0]["title"], "Rating not found")
+        self.assertEqual(self.stored(), [(self.ben.id, self.pan.id, self.s1.id, 2)])
+
+    def best_rated_by_a_change(self, change) -> list:
+        """Ana's pan trails Dan's (3 to 4 stars) until Ben's rating changes from 2 to 5."""
+        cara, dan = self.make_user("cara"), self.make_user("dan")
+        rival = self.make_pan(dan, self.s1, [self.make_ingredient(self.s1, "Leek")])
+        self.rate(self.ben, 4, pan=rival)
+        self.rate(cara, 4, pan=rival)
+        rating_id = self.rate(self.ben, 2).json["id"]
+        self.rate(cara, 4)
+
+        self.assertEqual(change(rating_id).status_code, 200)
+        db.session.rollback()
+        return [a.title for a in db.session.get_one(User, self.ana.id).achievements]
+
+    def test_rating_a_pan_again_lets_achievements_react(self):
+        self.assertIn("Pantastic", self.best_rated_by_a_change(lambda _: self.rate(self.ben, 5)))
+
+    def test_changing_a_rating_lets_achievements_react(self):
+        titles = self.best_rated_by_a_change(
+            lambda rating_id: self.call("PATCH", f"/ratings/{rating_id}", self.ben, body={"rating": 5}))
+        self.assertIn("Pantastic", titles)
 
     def test_rating_routes_require_auth(self):
         for method, path, body in (

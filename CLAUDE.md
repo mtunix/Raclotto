@@ -62,6 +62,8 @@ The deep modules in `interactor/` and what they own:
   facts; evaluators declare `event_type`, `reacts_to` and a default `cooldown`. Owns the
   enabled/frequency config (a session's own overrides the global one). A new event type also goes
   into `EventType` in `dto/event.py`.
+- **`pan_ratings.py` — `PanRatings`**: rate a pan, change or withdraw your own rating (anyone
+  else's is reported as missing); every change of stars reports `PanRated`.
 - **`ingredient_catalog.py`, `profile_pictures.py`, `user_stats.py`**: ingredient changes and
   imports (with their achievement facts), picture generation behind the `ImageGenerator` seam,
   profile statistics. Routes map their errors to `ApiError`.

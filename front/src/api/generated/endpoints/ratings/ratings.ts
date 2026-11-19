@@ -114,7 +114,7 @@ export const useCreateRating = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Delete a rating.
+ * @summary Withdraw a rating the signed-in user gave.
  */
 export const deleteRating = (
     ratingId: number,
@@ -137,7 +137,7 @@ export const getDeleteRatingMutationKey = (ratingId: number,) => [`/ratings/${ra
 export type DeleteRatingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRating>>>
 
 /**
- * @summary Delete a rating.
+ * @summary Withdraw a rating the signed-in user gave.
  */
 export const useDeleteRating = <TError = ErrorType<ErrorResponseDto>>(
   ratingId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteRating>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteRating>>> & { swrKey?: string }, }
@@ -193,7 +193,7 @@ export const useGetRating = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Change a rating's stars.
+ * @summary Change the stars of a rating the signed-in user gave.
  */
 export const updateRating = (
     ratingId: number,
@@ -219,7 +219,7 @@ export const getUpdateRatingMutationKey = (ratingId: number,) => [`/ratings/${ra
 export type UpdateRatingMutationResult = NonNullable<Awaited<ReturnType<typeof updateRating>>>
 
 /**
- * @summary Change a rating's stars.
+ * @summary Change the stars of a rating the signed-in user gave.
  */
 export const useUpdateRating = <TError = ErrorType<ErrorResponseDto>>(
   ratingId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateRating>>, TError, Key, UpdateRatingBody, Awaited<ReturnType<typeof updateRating>>> & { swrKey?: string }, }

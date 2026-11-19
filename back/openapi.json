@@ -5776,7 +5776,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Delete a rating.",
+        "summary": "Withdraw a rating the signed-in user gave.",
         "tags": [
           "ratings"
         ]
@@ -5904,7 +5904,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Change a rating's stars.",
+        "summary": "Change the stars of a rating the signed-in user gave.",
         "tags": [
           "ratings"
         ]
