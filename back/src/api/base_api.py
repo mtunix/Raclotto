@@ -31,6 +31,7 @@ class ApiErrorCode(Enum):
     incorrect_type = auto()
     undo_forbidden = auto()
     invalid_token = auto()
+    internal_error = auto()
 
 
 ERROR_FIELDS = ('id_', 'status', 'code', 'title', 'detail', 'source')
@@ -257,7 +258,7 @@ def _routed_endpoint() -> Callable[..., Any]:
 
 
 def catch_integrity_errors(session: scoped_session[Any]) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    """Decorator to catch database integrity errors."""
+    """Answer 409 when a write breaks a database constraint (a taken name, a duplicate)."""
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -265,12 +266,15 @@ def catch_integrity_errors(session: scoped_session[Any]) -> Callable[[Callable[P
                 return func(*args, **kwargs)
             except IntegrityError as e:
                 session.rollback()
-                raise ApiError(
+                error = ApiError(
                     ApiErrorCode.incorrect_parameters,
                     status=409,
                     title="Conflict",
-                    detail=f"Database integrity error: {str(e)}"
+                    detail="The change conflicts with existing data",
                 )
+                # The database's message names tables and values; only the log gets it.
+                logging.warning("Integrity error %s: %s", error.id_, e)
+                raise error from e
         return wrapper
     return decorator
 
@@ -284,13 +288,15 @@ def catch_processing_exceptions(func: Callable[P, R]) -> Callable[P, R]:
         except ApiError:
             raise
         except Exception as e:
-            logging.error(f"Processing error: {e}", exc_info=True)
-            raise ApiError(
-                ApiErrorCode.incorrect_parameters,
+            # The exception may carry SQL, file paths or secrets; the client gets the id to quote.
+            error = ApiError(
+                ApiErrorCode.internal_error,
                 status=500,
                 title="Internal Server Error",
-                detail=str(e)
+                detail="An unexpected error occurred",
             )
+            logging.error("Unexpected error %s: %s", error.id_, e, exc_info=True)
+            raise error from e
     return wrapper
 
 

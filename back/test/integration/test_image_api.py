@@ -27,6 +27,11 @@ class FakeImageGenerator:
         return self.image
 
 
+class RaisingImageGenerator(FakeImageGenerator):
+    def generate(self, contents: list) -> Optional[str]:
+        raise RuntimeError("quota exceeded for key sk-secret")
+
+
 class ImageApiTest(AppTest):
     def setUp(self):
         super().setUp()
@@ -158,6 +163,17 @@ class ImageApiTest(AppTest):
         set_image_generator(FakeImageGenerator(image=None))
         response = self.call("POST", "/images/generate-banana", self.ana, body={"prompt": "x"})
         self.assertEqual((response.status_code, response.json["errors"][0]["title"]), (500, "No image generated"))
+
+    def test_a_generator_error_is_logged_and_kept_from_the_client(self):
+        set_image_generator(RaisingImageGenerator())
+
+        with self.assertLogs("back.src.interactor.profile_pictures", "ERROR") as logs:
+            response = self.call("POST", "/images/generate-banana", self.ana, body={"prompt": "x"})
+
+        self.assertEqual((response.status_code, response.json["errors"][0]["title"]), (500, "Image generation failed"))
+        self.assertNotIn("sk-secret", response.get_data(as_text=True))
+        self.assertIn("sk-secret", "\n".join(logs.output))
+        self.assertEqual(self.history(self.ana), [])
 
     def test_choosing_the_candidate(self):
         first = self.add_picture(self.ana, "/static/a.png", 10, candidate=True)

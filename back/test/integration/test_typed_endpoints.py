@@ -105,8 +105,19 @@ class TypedEndpointTest(AppTest):
         self.assertEqual(response.status_code, 200, response.json)
 
     def test_handler_returning_a_non_dto_fails_loudly(self):
-        [error] = self.assert_errors(self.call("GET", "/probe/untyped-result"), 500)
-        self.assertIn("declares response=ProbeDto but returned dict", error.detail)
+        with self.assertLogs(level="ERROR") as logs:
+            self.assert_errors(self.call("GET", "/probe/untyped-result"), 500)
+        self.assertIn("declares response=ProbeDto but returned dict", "\n".join(logs.output))
+
+    def test_an_unexpected_error_is_logged_and_kept_from_the_client(self):
+        with self.assertLogs(level="ERROR") as logs:
+            [error] = self.assert_errors(self.call("GET", "/probe/crash"), 500)
+
+        self.assertEqual((error.code, error.title), ("api_error_code.internal_error", "Internal Server Error"))
+        self.assertNotIn("secret internals", str(error.model_dump()))
+        log = "\n".join(logs.output)
+        self.assertIn("secret internals", log)
+        self.assertIn(error.id_, log)
 
     def test_no_content(self):
         response = self.call("DELETE", "/probe/3")

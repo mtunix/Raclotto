@@ -192,6 +192,8 @@ class TestUpdateMe(AuthTest):
         response = self.update({"name": "ben", "profile_picture": "/pics/new.png", "color": "#000000"})
 
         self.assertEqual(response.status_code, 409, response.json)
+        # The database's message (table, column, statement) stays out of the response.
+        self.assertEqual(response.json["errors"][0]["detail"], "The change conflicts with existing data")
         stored = self.stored(self.ana.id)
         self.assertEqual((stored.name, stored.color), ("ana", None))
         self.assertEqual(db.session.query(ProfilePictureHistory).count(), 0)

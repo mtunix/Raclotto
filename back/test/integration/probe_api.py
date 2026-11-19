@@ -39,6 +39,10 @@ class ProbeApi(BaseApi):
     def untyped_result(self):
         return {"name": "x", "count": 1, "limit": 0, "tags": []}
 
+    @BaseApi.endpoint("/crash", ["GET"], response=ProbeDto)
+    def crash(self) -> ProbeDto:
+        raise RuntimeError("secret internals")
+
     @BaseApi.endpoint("/<int:probe_id>", ["DELETE"], status=204)
     def delete_probe(self, probe_id: int) -> None:
         return None

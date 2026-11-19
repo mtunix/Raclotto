@@ -66,8 +66,12 @@ class ImageApi(BaseApi):
         except PictureError as e:
             if e.kind == PictureError.UNAVAILABLE:
                 raise _unavailable(e)
-            title = "No image generated" if e.kind == PictureError.NO_IMAGE else "Image generation failed"
-            raise ApiError(ApiErrorCode.incorrect_parameters, status=500, title=title, detail=e.detail)
+            if e.kind == PictureError.NO_IMAGE:
+                raise ApiError(ApiErrorCode.incorrect_parameters, status=500, title="No image generated",
+                               detail=e.detail)
+            # The generator's exception is logged; its text stays out of the response.
+            raise ApiError(ApiErrorCode.incorrect_parameters, status=500, title="Image generation failed",
+                           detail="Image generation failed. Please try again.")
         dto = _generated(picture)
         db.session.commit()
         return dto
