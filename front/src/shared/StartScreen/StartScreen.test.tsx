@@ -1,152 +1,168 @@
-// Needs FakeTransport to be revived: its API mocks went with the Api facade.
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router';
-import { StartScreen, JoinSession, SessionSelector } from './StartScreen';
-import { mockUseAppStore, createMockSession, resetAllMocks } from '../../testUtils';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
+import { SWRConfig } from 'swr';
+import { useAppStore } from '../../AppSlice';
+import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
-
-const mockUseSessions: jest.Mock<{ data?: SessionDto[]; isLoading: boolean; error: Error | null }> = jest.fn(() => ({ data: [], isLoading: false, error: null }));
-jest.mock('../../api/generated/endpoints/sessions/sessions', () => ({
-    useListSessions: () => mockUseSessions(),
-}));
-
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
-    useNavigate: () => jest.fn(),
-    useRouteError: () => null,
-}));
+import { me, session, sessions } from '../../lib/api/__fixtures__/backendResponses';
+import { FakeTransport } from '../../lib/api/fakeTransport';
+import { setTransport, Transport } from '../../lib/api/transport';
+import { JoinSession, SessionSelector, StartScreen } from './StartScreen';
 
 jest.mock('i18next', () => ({
     t: (key: string) => key,
 }));
 
-const mockUseAppStoreStartScreen = jest.fn();
-jest.mock('../AppSlice', () => ({
-    useAppStore: (selector: any) => mockUseAppStoreStartScreen(selector),
-}));
+let fake: FakeTransport;
+let previous: Transport;
+
+const inactive: SessionDto = { ...session, id: 2, key: 's2', name: 'Last year', active: false };
+
+beforeEach(() => {
+    fake = new FakeTransport().on('GET', '/sessions', sessions);
+    previous = setTransport(fake);
+    useAppStore.setState({ session: null });
+    useAuthStore.setState({ user: me });
+});
+
+afterEach(() => {
+    setTransport(previous);
+});
+
+function Location() {
+    return <p data-testid="location">{useLocation().pathname}</p>;
+}
+
+function renderAt(element: React.ReactNode) {
+    const router = createMemoryRouter([
+        { path: '/', element },
+        { path: '*', element: <Location /> },
+    ]);
+    return render(
+        <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+            <RouterProvider router={router} />
+        </SWRConfig>,
+    );
+}
+
+const location = () => screen.getByTestId('location').textContent;
+
+async function choose(optionText: string) {
+    fireEvent.mouseDown(screen.getByRole('combobox'));
+    const options = await screen.findAllByText(optionText);
+    fireEvent.click(options[options.length - 1]);
+}
 
 describe('StartScreen', () => {
-    beforeEach(() => {
-        resetAllMocks();
-        mockUseAppStoreStartScreen.mockImplementation((selector: any) => 
-            selector({ session: null, setSession: jest.fn(), clearSession: jest.fn() })
-        );
+    it('greets the signed-in user and offers to create or join a session', async () => {
+        renderAt(<StartScreen />);
+
+        expect(screen.getByText(`session.welcome ${me.name}`)).toBeInTheDocument();
+        expect(screen.getByText('session.createNew')).toBeInTheDocument();
+        expect(await screen.findByText(session.name)).toBeInTheDocument();
     });
 
-    it('renders session joined message when session exists', () => {
-        const mockSession = createMockSession({ name: 'Test Session' });
-        mockUseAppStoreStartScreen.mockImplementation((selector: any) => 
-            selector({ session: mockSession, setSession: jest.fn(), clearSession: jest.fn() })
-        );
-        mockUseSessions.mockReturnValue({ data: [], isLoading: false, error: null });
+    it('goes straight to the session the user is already in', async () => {
+        useAppStore.setState({ session });
+        renderAt(<StartScreen />);
 
-        render(<StartScreen />);
-        const heading = screen.getByRole('heading', { level: 1 });
-        expect(heading.textContent).toMatch(/Session.*Test Session.*beigetreten/i);
+        await waitFor(() => expect(location()).toBe(`/${session.id}`));
     });
 
-    it('renders session selector when no session', () => {
-        mockUseAppStore.mockImplementation((selector: any) => selector({ session: null }));
-        mockUseSessions.mockReturnValueOnce({ data: [], isLoading: false, error: null });
-        render(<StartScreen />);
-        expect(screen.getByText('Neue Session erstellen')).toBeInTheDocument();
+    it('signs out to the login page', async () => {
+        renderAt(<StartScreen />);
+
+        fireEvent.click(screen.getByText('auth.logout'));
+
+        await waitFor(() => expect(location()).toBe('/login'));
+        expect(useAuthStore.getState().user).toBeNull();
     });
 });
 
 describe('JoinSession', () => {
-    beforeEach(() => {
-        resetAllMocks();
-    });
+    it('shows a spinner while the sessions load', () => {
+        fake.on('GET', '/sessions', () => new Promise(() => {}));
+        renderAt(<JoinSession />);
 
-    it('renders loading spinner when loading', () => {
-        mockUseSessions.mockReturnValueOnce({ data: undefined, isLoading: true, error: null });
-        render(<JoinSession />);
         expect(screen.getByRole('status')).toBeInTheDocument();
     });
 
-    it('renders error page when error occurs', () => {
-        const error = new Error('Test error');
-        mockUseSessions.mockReturnValue({ data: undefined, isLoading: false, error: error as any });
-        render(<BrowserRouter><JoinSession /></BrowserRouter>);
-        expect(screen.getByText('error.unknown.title')).toBeInTheDocument();
-        expect(screen.getByText('error.unknown.message')).toBeInTheDocument();
+    it('shows the error page when the sessions fail to load', async () => {
+        fake.on('GET', '/sessions', () => {
+            throw Object.assign(new Error('gone'), { status: 404 });
+        });
+        renderAt(<JoinSession />);
+
+        expect(await screen.findByText('error.unknown.title')).toBeInTheDocument();
     });
 
-    it('displays session list', () => {
-        const sessions = [
-            createMockSession({ id: 1, name: 'Session 1' }),
-            createMockSession({ id: 2, name: 'Session 2' }),
-        ];
-        mockUseSessions.mockReturnValueOnce({ data: sessions, isLoading: false, error: null });
-        render(<JoinSession />);
-        expect(screen.getByText('Session 1')).toBeInTheDocument();
-        expect(screen.getByText('Session 2')).toBeInTheDocument();
+    it('says so when there is no session to join', async () => {
+        fake.on('GET', '/sessions', []);
+        renderAt(<JoinSession />);
+
+        expect(await screen.findByText('session.noSessionsAvailable')).toBeInTheDocument();
     });
 
-    it('selects session and calls setSession on join', async () => {
-        const user = userEvent.setup();
-        const mockSetSession = jest.fn();
-        mockUseAppStoreStartScreen.mockImplementation((selector: any) => {
-            const state = { session: null, setSession: mockSetSession, clearSession: jest.fn() };
-            return selector(state);
-        });
+    it('asks for inactive sessions too, and lists active ones first', async () => {
+        fake.on('GET', '/sessions', [inactive, session]);
+        renderAt(<JoinSession />);
 
-        const sessions = [
-            createMockSession({ id: 1, name: 'Session 1' }),
-            createMockSession({ id: 2, name: 'Session 2' }),
-        ];
-        mockUseSessions.mockReturnValue({ data: sessions, isLoading: false, error: null });
-
-        render(<BrowserRouter><JoinSession /></BrowserRouter>);
-
-        await waitFor(() => {
-            expect(screen.getByText('Session 1')).toBeInTheDocument();
-        });
-
-        const select = screen.getByRole('combobox');
-        await user.selectOptions(select, '1');
-
-        await waitFor(() => {
-            expect(select).toHaveValue('1');
-        });
-
-        await user.click(screen.getByText('Beitreten'));
-
-        await waitFor(() => {
-            expect(mockSetSession).toHaveBeenCalled();
-        });
-        
-        expect(mockSetSession).toHaveBeenCalledWith(expect.objectContaining({ id: expect.any(Number) }));
+        expect(await screen.findByText(session.name)).toBeInTheDocument();
+        expect(fake.last('GET', '/sessions')?.query).toEqual({ include_inactive: true });
+        expect(screen.getByText('session.join')).toBeInTheDocument();
     });
 
-    it('selects first session by default', () => {
-        const sessions = [
-            createMockSession({ id: 1, name: 'Session 1' }),
-            createMockSession({ id: 2, name: 'Session 2' }),
-        ];
-        mockUseSessions.mockReturnValueOnce({ data: sessions, isLoading: false, error: null });
-        render(<JoinSession />);
-        expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('0');
+    it('joins the selected active session', async () => {
+        renderAt(<JoinSession />);
+        await screen.findByText(session.name);
+
+        fireEvent.click(screen.getByText('session.join'));
+
+        await waitFor(() => expect(location()).toBe(`/${session.id}/generate`));
+        expect(useAppStore.getState().session).toEqual(session);
+        expect(fake.last('POST', '/sessions/reactivate')).toBeUndefined();
+    });
+
+    it('reactivates an inactive session before joining it', async () => {
+        fake.on('GET', '/sessions', [session, inactive])
+            .on('POST', '/sessions/reactivate', { ...inactive, active: true });
+        renderAt(<JoinSession />);
+        await screen.findByText(session.name);
+
+        await choose(`${inactive.name} session.inactive`);
+        expect(await screen.findByText('session.reactivateMessage')).toBeInTheDocument();
+        await act(async () => {
+            fireEvent.click(screen.getByText('session.joinAndReactivate'));
+        });
+
+        await waitFor(() => expect(location()).toBe(`/${inactive.id}/generate`));
+        expect(fake.last('POST', '/sessions/reactivate')?.body).toEqual({ key: inactive.key });
+        expect(useAppStore.getState().session).toEqual({ ...inactive, active: true });
     });
 });
 
 describe('SessionSelector', () => {
-    beforeEach(() => {
-        resetAllMocks();
+    it('creates nothing until the session has a name', async () => {
+        renderAt(<SessionSelector />);
+        await screen.findByText(session.name);
+
+        fireEvent.change(screen.getByPlaceholderText('session.sessionNamePlaceholder'), { target: { value: '   ' } });
+
+        expect(screen.getByText('common.create').closest('button')).toBeDisabled();
     });
 
-    it('renders create session form', () => {
-        mockUseSessions.mockReturnValueOnce({ data: [], isLoading: false, error: null });
-        render(<SessionSelector />);
-        expect(screen.getByText('Neue Session erstellen')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Sessionnamen eingeben')).toBeInTheDocument();
-    });
+    it('creates a session under the trimmed name and opens it', async () => {
+        const created: SessionDto = { ...session, id: 7, key: 'new', name: 'Friday' };
+        fake.on('POST', '/sessions', created);
+        renderAt(<SessionSelector />);
+        await screen.findByText(session.name);
 
-    it('renders join session component', () => {
-        mockUseSessions.mockReturnValueOnce({ data: [], isLoading: false, error: null });
-        render(<SessionSelector />);
-        expect(screen.getByText('Bestehender Session beitreten')).toBeInTheDocument();
+        fireEvent.change(screen.getByPlaceholderText('session.sessionNamePlaceholder'), { target: { value: '  Friday ' } });
+        fireEvent.click(screen.getByText('common.create'));
+
+        await waitFor(() => expect(location()).toBe(`/${created.id}`));
+        expect(fake.last('POST', '/sessions')?.body).toEqual({ name: 'Friday' });
+        expect(useAppStore.getState().session).toEqual(created);
     });
 });
