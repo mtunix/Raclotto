@@ -8,8 +8,9 @@ XP, levels and achievements. Two apps in one repo:
 | `back/`  | Python 3.14 (`.python-version`), Flask 3.1, SQLAlchemy 2, SQLite |
 | `front/` | React 19, TypeScript 6, Zustand + SWR, antd, Vite 8 (`vite.config.ts`, also configures Vitest 5) |
 
-There are no dev docs. The code map below and the module docstrings are the reference; read
-the module you are changing before inferring patterns from its neighbours.
+The code map below and the module docstrings are the reference, with the domain's terms in
+`GLOSSARY.md` and past decisions in `docs/adr/`; read the module you are changing before inferring
+patterns from its neighbours.
 
 ## Where things live
 
