@@ -19,7 +19,7 @@ from back.src.dto.ingredient import (
 from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
 from back.src.entity.ingredient import Ingredient, IngredientType
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.interactor.achievements import Achievements, CatalogChanged, IngredientAdded
+from back.src.interactor.ingredient_catalog import CatalogError, CatalogItem, IngredientCatalog
 from back.src.interactor.diet import Diet
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.session_repository import SessionRepository
@@ -32,6 +32,13 @@ def _dtos(ingredients: Iterable[Ingredient]) -> list[IngredientDto]:
     return [IngredientDto.model_validate(ingredient) for ingredient in ingredients]
 
 
+def _items(body: ImportIngredientsBody) -> list[CatalogItem]:
+    return [
+        CatalogItem(fields=item.model_dump(exclude=_NOT_IMPORTED), id=item.id, session_id=item.session_id)
+        for item in body.ingredients
+    ]
+
+
 class IngredientApi(BaseApi):
     url_prefix = "/ingredients"
 
@@ -39,12 +46,6 @@ class IngredientApi(BaseApi):
         super().__init__()
         self.repository = IngredientRepository()
         self.session_repository = SessionRepository()
-
-    @staticmethod
-    def _catalog_changed(session: RaclottoSession) -> None:
-        """Let achievements react to a change in the session's catalog, then commit."""
-        Achievements().record(CatalogChanged(session=session, actor=get_current_user()))
-        db.session.commit()
 
     def _session(self, session_key: str) -> RaclottoSession:
         session = self.session_repository.by_key(session_key)
@@ -85,13 +86,9 @@ class IngredientApi(BaseApi):
     @require_auth
     def create_ingredient(self, query: SessionKeyQuery, body: CreateIngredientBody) -> IngredientDto:
         """Add an ingredient to a session."""
-        user = get_current_user()
         session = self._session(query.session_key)
-        ingredient = self.repository.create({**body.model_dump(), "session": session})
+        ingredient = IngredientCatalog().add(get_current_user(), session, body.model_dump())
         dto = IngredientDto.model_validate(ingredient)
-        db.session.commit()
-
-        Achievements().record(IngredientAdded(ingredient=ingredient, user=user, session=session))
         db.session.commit()
         return dto
 
@@ -108,11 +105,9 @@ class IngredientApi(BaseApi):
     def update_ingredient(self, ingredient_id: int, body: UpdateIngredientBody) -> IngredientDto:
         """Change an ingredient's name, type, category or properties."""
         ingredient = self._ingredient(ingredient_id)
-        for field in body.model_fields_set:
-            setattr(ingredient, field, getattr(body, field))
+        IngredientCatalog().update(get_current_user(), ingredient, body.model_dump(include=body.model_fields_set))
         dto = IngredientDto.model_validate(ingredient)
         db.session.commit()
-        self._catalog_changed(ingredient.session)
         return dto
 
     @BaseApi.endpoint("/<int:ingredient_id>", ["DELETE"], query=DeleteIngredientQuery, status=204,
@@ -129,9 +124,8 @@ class IngredientApi(BaseApi):
                 detail="Session key does not match ingredient's session",
                 source={"pointer": "/query/session_key"},
             )
-        self.repository.mark_unavailable(ingredient_id)
+        IngredientCatalog().set_available(get_current_user(), ingredient, False)
         db.session.commit()
-        self._catalog_changed(ingredient.session)
 
     @BaseApi.endpoint("/refill", ["POST"], body=RefillIngredientBody, response=IngredientDto,
                       operation_id="refillIngredient", errors=(404,))
@@ -139,10 +133,9 @@ class IngredientApi(BaseApi):
     def refill_ingredient(self, body: RefillIngredientBody) -> IngredientDto:
         """Mark an ingredient available again."""
         ingredient = self._ingredient(body.id)
-        self.repository.mark_available(ingredient.id)
+        IngredientCatalog().set_available(get_current_user(), ingredient, True)
         dto = IngredientDto.model_validate(ingredient)
         db.session.commit()
-        self._catalog_changed(ingredient.session)
         return dto
 
     @BaseApi.endpoint("/available-counts", ["GET"], query=SessionKeyQuery, response=AvailableCountsDto,
@@ -182,12 +175,9 @@ class IngredientApi(BaseApi):
     def import_ingredients(self, query: SessionKeyQuery, body: ImportIngredientsBody) -> IngredientImportDto:
         """Add every listed ingredient to a session as a new one."""
         session = self._session(query.session_key)
-        created = self.repository.bulk_create(
-            [item.model_dump(exclude=_NOT_IMPORTED) for item in body.ingredients], session.id
-        )
+        created = IngredientCatalog().import_new(get_current_user(), session, _items(body))
         dto = IngredientImportDto(created=len(created), ingredients=_dtos(created))
         db.session.commit()
-        self._catalog_changed(session)
         return dto
 
     @BaseApi.endpoint("/reimport", ["POST"], query=SessionKeyQuery, body=ImportIngredientsBody,
@@ -196,44 +186,19 @@ class IngredientApi(BaseApi):
     def reimport_ingredients(self, query: SessionKeyQuery, body: ImportIngredientsBody) -> IngredientReimportDto:
         """Make a session's catalog the list: update listed ids, create the rest, mark the unlisted unavailable."""
         session = self._session(query.session_key)
-        current_ids = {ingredient.id for ingredient in self.repository.by_session(session.key)}
-
-        to_create, to_update, listed_ids = [], [], set()
-        for index, item in enumerate(body.ingredients):
-            if "session_id" in item.model_fields_set and item.session_id != session.id:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Mixed sessions",
-                    detail=f"ingredients[{index}] belongs to a different session. "
-                           f"All ingredients must belong to session_id {session.id}",
-                    source={"pointer": f"/body/ingredients/{index}/session_id"},
-                )
-            fields = item.model_dump(exclude=_NOT_IMPORTED)
-            if item.id is None:
-                to_create.append(fields)
-                continue
-            if item.id not in current_ids:
-                raise ApiError(
-                    ApiErrorCode.resource_not_found,
-                    status=404,
-                    title="Ingredient not found",
-                    detail=f"ingredients[{index}] with id {item.id} does not exist in this session",
-                    source={"pointer": f"/body/ingredients/{index}/id"},
-                )
-            to_update.append({"id": item.id, **fields})
-            listed_ids.add(item.id)
-
-        created = self.repository.bulk_create(to_create, session.id) if to_create else []
-        updated = self.repository.bulk_update(to_update) if to_update else []
-        unlisted = current_ids - listed_ids
-        deleted = self.repository.mark_unavailable_by_ids(list(unlisted)) if unlisted else 0
+        try:
+            result = IngredientCatalog().reimport(get_current_user(), session, _items(body))
+        except CatalogError as e:
+            if e.kind == CatalogError.OTHER_SESSION:
+                raise ApiError(ApiErrorCode.incorrect_parameters, status=400, title="Mixed sessions", detail=e.detail,
+                               source={"pointer": f"/body/ingredients/{e.index}/session_id"})
+            raise ApiError(ApiErrorCode.resource_not_found, status=404, title="Ingredient not found", detail=e.detail,
+                           source={"pointer": f"/body/ingredients/{e.index}/id"})
         dto = IngredientReimportDto(
-            created=len(created),
-            updated=len(updated),
-            deleted=deleted,
+            created=result.created,
+            updated=result.updated,
+            deleted=result.unavailable,
             ingredients=_dtos(self.repository.by_session(session.key)),
         )
         db.session.commit()
-        self._catalog_changed(session)
         return dto

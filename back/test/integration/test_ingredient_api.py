@@ -4,6 +4,9 @@ from pathlib import Path
 from back.src.driver.database import db
 from back.src.dto.ingredient import IngredientDto, IngredientForUserDto
 from back.src.entity.ingredient import Ingredient, IngredientType
+from back.src.interactor.achievement_evaluator import AchievementEvaluator
+from back.src.interactor.achievement_registry import get_registry
+from back.src.interactor.facts import CatalogChanged, IngredientAdded
 from back.test.support import AppTest
 
 FILL, SAUCE = IngredientType.FILL, IngredientType.SAUCE
@@ -430,3 +433,37 @@ class TestExportAndImport(IngredientApiTest):
         self.call("POST", "/ingredients/reimport", self.ana, query={"session_key": "s1"},
                   body={"ingredients": [only_aioli]})
         self.assertIn("King of the Sauce", held(self.ana))
+
+
+class BrokenOnCatalog(AchievementEvaluator):
+    reacts_to = (IngredientAdded, CatalogChanged)
+
+    def judge(self, fact, subject, achievement, context):
+        raise RuntimeError("boom")
+
+    def calculate_progress(self, user, achievement, context):
+        return None
+
+
+class TestChangesWhoseAchievementsFail(IngredientApiTest):
+    def setUp(self):
+        super().setUp()
+        self.potato = self.make_ingredient(self.session, "Potato", vegan=True)
+        evaluators = get_registry().evaluators
+        self.addCleanup(evaluators.__setitem__, "Connoisseur", evaluators["Connoisseur"])
+        evaluators["Connoisseur"] = BrokenOnCatalog()
+
+    def test_are_not_saved(self):
+        query = {"session_key": "s1"}
+        for name, response in (
+            ("create", lambda: self.call("POST", "/ingredients", self.ana, query=query, body=self.fields())),
+            ("update", lambda: self.call("PATCH", f"/ingredients/{self.potato.id}", self.ana, body={"name": "Leek"})),
+            ("import", lambda: self.call("POST", "/ingredients/import", self.ana, query=query,
+                                         body={"ingredients": [self.fields()]})),
+        ):
+            with self.subTest(name):
+                self.assertEqual(response().status_code, 500)
+                # What the request committed; the app context the test holds outlives the request's.
+                db.session.rollback()
+                self.assertEqual([i.name for i in self.in_session(self.session)], ["Potato"])
+
