@@ -87,11 +87,11 @@ class ImageApi(BaseApi):
                 raise _unavailable(e) from e
             if e.kind == PictureError.NO_IMAGE:
                 raise ApiError(
-                    ApiErrorCode.incorrect_parameters, status=500, title="No image generated", detail=e.detail
+                    ApiErrorCode.image_generation_failed, status=500, title="No image generated", detail=e.detail
                 ) from e
             # The generator's exception is logged; its text stays out of the response.
             raise ApiError(
-                ApiErrorCode.incorrect_parameters,
+                ApiErrorCode.image_generation_failed,
                 status=500,
                 title="Image generation failed",
                 detail="Image generation failed. Please try again.",
@@ -118,7 +118,7 @@ class ImageApi(BaseApi):
                 raise _unavailable(e) from e
             logger.error("Profile picture generation failed: %s", e.detail)
             raise ApiError(
-                ApiErrorCode.incorrect_parameters,
+                ApiErrorCode.image_generation_failed,
                 status=500,
                 title="Profile picture generation failed",
                 detail="Failed to generate profile picture. Please try again.",
@@ -144,5 +144,5 @@ class ImageApi(BaseApi):
                 raise ApiError(
                     ApiErrorCode.resource_not_found, status=404, title="Picture not found", detail=e.detail
                 ) from e
-            raise ApiError(ApiErrorCode.incorrect_parameters, status=403, title="Forbidden", detail=e.detail) from e
+            raise ApiError(ApiErrorCode.forbidden, status=403, title="Forbidden", detail=e.detail) from e
         db.session.commit()

@@ -30,7 +30,7 @@ class TestAchievementApi(AppTest):
         return TypeAdapter(list[AchievementStatusDto]).validate_python(response.json)
 
     def local_guide_status(self) -> AchievementStatusDto:
-        return next(a for a in self.statuses() if a.title == "Local Guide")
+        return next(a for a in self.statuses() if a.key == "local_guide")
 
     def local_guide_progress(self) -> float:
         progress = self.local_guide_status().progress
@@ -92,7 +92,7 @@ class TestAchievementApi(AppTest):
         self.unlock(other, "Local Guide")
 
         self.assertFalse(self.local_guide_status().unlocked)
-        self.assertTrue(next(a for a in self.statuses(other) if a.title == "Local Guide").unlocked)
+        self.assertTrue(next(a for a in self.statuses(other) if a.key == "local_guide").unlocked)
 
     def test_get_achievement_by_id(self):
         response = self.call("GET", f"/achievements/{self.local_guide.id}", self.user)

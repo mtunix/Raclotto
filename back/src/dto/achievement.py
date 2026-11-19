@@ -1,14 +1,16 @@
 from collections.abc import Iterable
 
 from back.src.dto.base import ResponseDto
+from back.src.entity.achievement import AchievementKey
 from back.src.interactor.achievements import AchievementStatus
 
 
 class AchievementDto(ResponseDto):
     # The columns are nullable, but every achievement is seeded from default_data with all of them set.
     id: int
-    title: str
-    description: str
+    # The frontend shows the title and description it translates by the key. Null: an achievement
+    # default_data no longer seeds, which some users may still hold.
+    key: AchievementKey | None
     value: int
     hidden: bool
     is_global: bool

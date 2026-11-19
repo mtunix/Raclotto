@@ -443,7 +443,10 @@ class AchievementsEventsImagesInsultsStatsSpecTest(unittest.TestCase):
 
         self.assertEqual(self.schemas["EventDto"]["properties"]["event_type"], stored)
         self.assertEqual(self.schemas["EventConfigDto"]["properties"]["event_type"], stored)
-        self.assertEqual(self.schemas["SaveEventConfigBody"]["properties"]["event_type"]["const"], "pan_swap")
+        self.assertEqual(
+            self.schemas["SaveEventConfigBody"]["properties"]["event_type"], {"$ref": "#/components/schemas/EventType"}
+        )
+        self.assertEqual(self.schemas["EventType"]["enum"], ["pan_swap"])
         self.assertEqual(self.schemas["SaveEventConfigBody"]["required"], ["event_type", "enabled"])
         self.assertNotIn("required", self.schemas["UpdateEventConfigBody"])
 

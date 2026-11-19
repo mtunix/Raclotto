@@ -8,7 +8,7 @@ from back.src.interactor.facts import Fact, PanRolled
 
 @dataclass(frozen=True)
 class Triggered:
-    """An event to announce: its message and the data the frontend shows with it."""
+    """An event to announce: an English message for the stored record, and the data the frontend fills into its text."""
 
     message: str
     data: dict[str, Any] = field(default_factory=dict)

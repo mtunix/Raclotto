@@ -511,8 +511,8 @@ class TestChangesWhoseAchievementsFail(IngredientApiTest):
         super().setUp()
         self.potato = self.make_ingredient(self.session, "Potato", vegan=True)
         evaluators = get_registry().evaluators
-        self.addCleanup(evaluators.__setitem__, "Connoisseur", evaluators["Connoisseur"])
-        evaluators["Connoisseur"] = BrokenOnCatalog()
+        self.addCleanup(evaluators.__setitem__, "connoisseur", evaluators["connoisseur"])
+        evaluators["connoisseur"] = BrokenOnCatalog()
 
     def test_are_not_saved(self):
         query = {"session_key": "s1"}

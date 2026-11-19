@@ -2,6 +2,7 @@ import { Button } from "antd";
 import { CloseOutlined, BellOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { EventDto } from "../../api/generated/model";
+import { eventMessage } from "./sessionEvents";
 import "./EventDisplay.css";
 
 type EventDisplayProps = {
@@ -27,7 +28,7 @@ export function EventDisplay(props: EventDisplayProps) {
             <div className="event-notification">
                 <div className="event-content">
                     <BellOutlined className="event-icon" />
-                    <span className="event-message">{event.message}</span>
+                    <span className="event-message">{eventMessage(event, t)}</span>
                     <Button
                         type="text"
                         icon={<CloseOutlined />}

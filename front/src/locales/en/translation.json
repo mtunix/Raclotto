@@ -232,8 +232,17 @@
     "adminChangeFailed": "Failed to change admin rights"
   },
   "events": {
-    "panSwap": "Pan Swap Event",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "types": {
+      "pan_swap": {
+        "name": "Pan swap",
+        "message_one": "Swap your pans! {{first}} and {{second}} rolled pans within {{count}} minute of each other.",
+        "message_other": "Swap your pans! {{first}} and {{second}} rolled pans within {{count}} minutes of each other."
+      }
+    },
+    "unknown": {
+      "message": "Something is happening at the table."
+    }
   },
   "history": {
     "consumedBy": "Consumed by",
@@ -530,5 +539,171 @@
     "eventsBody": "Events keep the table moving. A pan swap happens when two people roll within 10 minutes of each other: they swap pans. The session's creator can turn events off or change how often they happen.",
     "endTitle": "8. End of the evening",
     "endBody": "The person who created the session (or an admin) ends it under Settings. Everyone then sees the recap: the best, worst and boldest pans, the favorite ingredient, and everyone's pans, XP and stars."
+  },
+  "achievements": {
+    "gotta_eat_em_all": {
+      "title": "Gotta eat'em all!",
+      "description": "Eat every ingredient of a session"
+    },
+    "king_of_the_sauce": {
+      "title": "King of the Sauce",
+      "description": "Eat every sauce of a session"
+    },
+    "stack_overflow": {
+      "title": "Stack Overflow!",
+      "description": "Eat a pan with more than 10 ingredients"
+    },
+    "king_of_the_grill": {
+      "title": "King of the Grill",
+      "description": "Eat the most pans of a session"
+    },
+    "garbage_collector": {
+      "title": "Garbage Collector",
+      "description": "Eat a pan after a 3-hour break"
+    },
+    "happy_new_year": {
+      "title": "Happy New Year",
+      "description": "Eat the first pan of the year"
+    },
+    "local_guide": {
+      "title": "Local Guide",
+      "description": "Rate 10 pans"
+    },
+    "local_host": {
+      "title": "Local Host",
+      "description": "Open a session"
+    },
+    "first_blood": {
+      "title": "First Blood!",
+      "description": "Eat the first pan of a session"
+    },
+    "double_kill": {
+      "title": "Double Kill!",
+      "description": "Get the same pan twice in a row"
+    },
+    "second_to_none": {
+      "title": "Second to None",
+      "description": "Start a pan in the last minute of the year"
+    },
+    "duel": {
+      "title": "It's Time to D-D-D-Duel!",
+      "description": "End a session with 2 raclette eaters"
+    },
+    "connoisseur": {
+      "title": "Connoisseur",
+      "description": "Add an ingredient no one has added before"
+    },
+    "last_pan_standing": {
+      "title": "Last Pan Standing",
+      "description": "Eat the last pan of a session"
+    },
+    "easter_egg": {
+      "title": "Easter Egg",
+      "description": "Eat a pan with egg at Easter"
+    },
+    "vanilla": {
+      "title": "Vanilla",
+      "description": "Eat a pan with only one ingredient"
+    },
+    "pandler": {
+      "title": "Pandler",
+      "description": "Take part in 2 sessions within 24 hours"
+    },
+    "wizard": {
+      "title": "Wizard",
+      "description": "Guess how many pans a session will have"
+    },
+    "survival_of_the_fittest": {
+      "title": "Survival of the Fittest",
+      "description": "Eat the worst-rated pan of a session (at least 2 ratings)"
+    },
+    "raclotto_normalverbraucher": {
+      "title": "Average Raclotto Joe",
+      "description": "Eat a pan with cheese and potato"
+    },
+    "verpant": {
+      "title": "Late to the Pan",
+      "description": "Make your first pan an hour after the session started"
+    },
+    "pantastic": {
+      "title": "Pantastic",
+      "description": "Make the best-rated pan of a session (at least 2 ratings)"
+    },
+    "steakholder": {
+      "title": "Steakholder",
+      "description": "Eat 5 pans with meat"
+    },
+    "biotonne": {
+      "title": "Green Bin",
+      "description": "Eat 5 vegan pans"
+    },
+    "pan_sexual": {
+      "title": "Pan Sexual",
+      "description": "Rate your own pans 4 stars or more on average"
+    },
+    "japan": {
+      "title": "JaPan",
+      "description": "Eat a pan with nothing but fish"
+    },
+    "pan_o_rama": {
+      "title": "Pan-O-Rama",
+      "description": "Eat a pan with butter"
+    },
+    "panini": {
+      "title": "Panini",
+      "description": "Eat a pan with dough"
+    },
+    "panda": {
+      "title": "Panda",
+      "description": "Eat a pan with 5 vegetables and nothing else"
+    },
+    "pan_nic": {
+      "title": "Pan-nic",
+      "description": "Start a session in the open air"
+    },
+    "copy_paste": {
+      "title": "Copy & Paste",
+      "description": "Rebuild your neighbour's pan exactly"
+    },
+    "cheesus_christ": {
+      "title": "Cheesus Christ",
+      "description": "Stack at least 3 different cheeses on one pan"
+    },
+    "marzi_pan": {
+      "title": "Marzi-Pan",
+      "description": "Eat a sweet pan"
+    },
+    "firewall": {
+      "title": "Firewall",
+      "description": "Eat a pan with chili and a hot sauce"
+    },
+    "cheese_not_found": {
+      "title": "404 Cheese not found",
+      "description": "Eat a pan without cheese"
+    },
+    "retired": {
+      "title": "Retired achievement",
+      "description": "This achievement no longer exists."
+    }
+  },
+  "apiError": {
+    "unknown": "Something went wrong.",
+    "api_error_code": {
+      "missing_required_body_field": "Some required information is missing.",
+      "endpoint_not_found": "The server doesn't know this request.",
+      "resource_not_found": "That doesn't exist, or no longer does.",
+      "unknown_url_arg": "The request has a parameter the server doesn't know.",
+      "incorrect_header": "The server didn't understand the request.",
+      "incorrect_parameters": "Some of the information is invalid.",
+      "incorrect_type": "Some of the information has the wrong format.",
+      "undo_forbidden": "That can't be undone.",
+      "invalid_token": "Your sign-in or invite is invalid or has expired.",
+      "forbidden": "You aren't allowed to do that.",
+      "conflict": "That clashes with what already exists, such as a name that is taken.",
+      "too_many_requests": "Too many attempts. Please wait a few minutes.",
+      "image_generation_unavailable": "This server can't generate pictures.",
+      "image_generation_failed": "The picture could not be generated. Please try again.",
+      "internal_error": "Something went wrong on the server."
+    }
   }
 }

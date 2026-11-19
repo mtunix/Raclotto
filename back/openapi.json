@@ -3,10 +3,6 @@
     "schemas": {
       "AchievementDto": {
         "properties": {
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
           "hidden": {
             "title": "Hidden",
             "type": "boolean"
@@ -19,9 +15,15 @@
             "title": "Is Global",
             "type": "boolean"
           },
-          "title": {
-            "title": "Title",
-            "type": "string"
+          "key": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AchievementKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "value": {
             "title": "Value",
@@ -30,8 +32,7 @@
         },
         "required": [
           "id",
-          "title",
-          "description",
+          "key",
           "value",
           "hidden",
           "is_global"
@@ -39,13 +40,88 @@
         "title": "AchievementDto",
         "type": "object"
       },
+      "AchievementKey": {
+        "description": "Names an achievement for its evaluator and for the frontend, which translates title and description by it.",
+        "enum": [
+          "gotta_eat_em_all",
+          "king_of_the_sauce",
+          "stack_overflow",
+          "king_of_the_grill",
+          "garbage_collector",
+          "happy_new_year",
+          "local_guide",
+          "local_host",
+          "first_blood",
+          "double_kill",
+          "second_to_none",
+          "duel",
+          "connoisseur",
+          "last_pan_standing",
+          "easter_egg",
+          "vanilla",
+          "pandler",
+          "wizard",
+          "survival_of_the_fittest",
+          "raclotto_normalverbraucher",
+          "verpant",
+          "pantastic",
+          "steakholder",
+          "biotonne",
+          "pan_sexual",
+          "japan",
+          "pan_o_rama",
+          "panini",
+          "panda",
+          "pan_nic",
+          "copy_paste",
+          "cheesus_christ",
+          "marzi_pan",
+          "firewall",
+          "cheese_not_found"
+        ],
+        "title": "AchievementKey",
+        "type": "string",
+        "x-enum-varnames": [
+          "gotta_eat_em_all",
+          "king_of_the_sauce",
+          "stack_overflow",
+          "king_of_the_grill",
+          "garbage_collector",
+          "happy_new_year",
+          "local_guide",
+          "local_host",
+          "first_blood",
+          "double_kill",
+          "second_to_none",
+          "duel",
+          "connoisseur",
+          "last_pan_standing",
+          "easter_egg",
+          "vanilla",
+          "pandler",
+          "wizard",
+          "survival_of_the_fittest",
+          "raclotto_normalverbraucher",
+          "verpant",
+          "pantastic",
+          "steakholder",
+          "biotonne",
+          "pan_sexual",
+          "japan",
+          "pan_o_rama",
+          "panini",
+          "panda",
+          "pan_nic",
+          "copy_paste",
+          "cheesus_christ",
+          "marzi_pan",
+          "firewall",
+          "cheese_not_found"
+        ]
+      },
       "AchievementStatusDto": {
         "description": "An achievement and how far the signed-in user is with it.",
         "properties": {
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
           "hidden": {
             "title": "Hidden",
             "type": "boolean"
@@ -57,6 +133,16 @@
           "is_global": {
             "title": "Is Global",
             "type": "boolean"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AchievementKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "progress": {
             "anyOf": [
@@ -69,10 +155,6 @@
             ],
             "title": "Progress"
           },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          },
           "unlocked": {
             "title": "Unlocked",
             "type": "boolean"
@@ -84,8 +166,7 @@
         },
         "required": [
           "id",
-          "title",
-          "description",
+          "key",
           "value",
           "hidden",
           "is_global",
@@ -95,11 +176,49 @@
         "title": "AchievementStatusDto",
         "type": "object"
       },
+      "ApiErrorCode": {
+        "description": "What went wrong, for clients to tell errors apart; the frontend translates each one.",
+        "enum": [
+          "api_error_code.missing_required_body_field",
+          "api_error_code.endpoint_not_found",
+          "api_error_code.resource_not_found",
+          "api_error_code.unknown_url_arg",
+          "api_error_code.incorrect_header",
+          "api_error_code.incorrect_parameters",
+          "api_error_code.incorrect_type",
+          "api_error_code.undo_forbidden",
+          "api_error_code.invalid_token",
+          "api_error_code.forbidden",
+          "api_error_code.conflict",
+          "api_error_code.too_many_requests",
+          "api_error_code.image_generation_unavailable",
+          "api_error_code.image_generation_failed",
+          "api_error_code.internal_error"
+        ],
+        "title": "ApiErrorCode",
+        "type": "string",
+        "x-enum-varnames": [
+          "missing_required_body_field",
+          "endpoint_not_found",
+          "resource_not_found",
+          "unknown_url_arg",
+          "incorrect_header",
+          "incorrect_parameters",
+          "incorrect_type",
+          "undo_forbidden",
+          "invalid_token",
+          "forbidden",
+          "conflict",
+          "too_many_requests",
+          "image_generation_unavailable",
+          "image_generation_failed",
+          "internal_error"
+        ]
+      },
       "ApiErrorDto": {
         "properties": {
           "code": {
-            "title": "Code",
-            "type": "string"
+            "$ref": "#/components/schemas/ApiErrorCode"
           },
           "detail": {
             "anyOf": [
@@ -514,10 +633,6 @@
             "title": "Id",
             "type": "integer"
           },
-          "message": {
-            "title": "Message",
-            "type": "string"
-          },
           "session_id": {
             "title": "Session Id",
             "type": "integer"
@@ -527,12 +642,22 @@
           "id",
           "session_id",
           "event_type",
-          "message",
           "data",
           "created_at"
         ],
         "title": "EventDto",
         "type": "object"
+      },
+      "EventType": {
+        "description": "The types the backend evaluates; only these can be configured, and the frontend translates each.\n\nResponses carry any stored type, since the old API saved configs for any.",
+        "enum": [
+          "pan_swap"
+        ],
+        "title": "EventType",
+        "type": "string",
+        "x-enum-varnames": [
+          "pan_swap"
+        ]
       },
       "GenerateImageBody": {
         "additionalProperties": false,
@@ -2041,9 +2166,7 @@
             "type": "boolean"
           },
           "event_type": {
-            "const": "pan_swap",
-            "title": "Event Type",
-            "type": "string"
+            "$ref": "#/components/schemas/EventType"
           },
           "frequency_minutes": {
             "anyOf": [

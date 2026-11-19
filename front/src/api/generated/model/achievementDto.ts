@@ -4,12 +4,12 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { AchievementKey } from './achievementKey';
 
 export interface AchievementDto {
-  description: string;
   hidden: boolean;
   id: number;
   is_global: boolean;
-  title: string;
+  key: AchievementKey | null;
   value: number;
 }

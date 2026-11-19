@@ -3,7 +3,7 @@ import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button,
 import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
 import { useTranslation } from "react-i18next";
 import { mutateEventConfigs, onErrorRetry } from "../../../lib/api/swrHooks";
-import type { SaveEventConfigBody } from "../../../api/generated/model";
+import { EventType } from "../../../api/generated/model";
 import { useAppStore } from "../../../AppSlice";
 import { useAuthStore } from "../../../AuthSlice";
 import { canManageSession } from "../../../model/permissions";
@@ -11,10 +11,8 @@ import "../SettingsView.css";
 
 const { Title, Text } = Typography;
 
-type EventType = SaveEventConfigBody["event_type"];
-
 // Every event type the backend evaluates; configs of other types are left out.
-const KNOWN_EVENT_TYPES: EventType[] = ["pan_swap"];
+const KNOWN_EVENT_TYPES = Object.values(EventType);
 
 interface EventConfigState {
     enabled: boolean;
@@ -164,9 +162,7 @@ export function EventSettingsSection() {
                                     : (config && config.frequency_minutes !== null && config.frequency_minutes !== undefined 
                                         ? config.frequency_minutes 
                                         : 60);
-                                const displayName = event_type === "pan_swap" 
-                                    ? t("events.panSwap")
-                                    : event_type;
+                                const displayName = t(`events.types.${event_type}.name`);
 
                                 return (
                                     <div key={event_type} style={{ marginBottom: "32px" }}>

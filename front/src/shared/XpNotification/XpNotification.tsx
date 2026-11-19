@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { AchievementDto, LevelDto } from "../../api/generated/model";
 import type { LevelProgress } from "../../model/levelProgress";
 import { VectorGraphics } from "../../lib/vectorGraphics";
+import { achievementDescription, achievementTitle } from "../achievementText";
 import { achievementValueColor } from "../achievementValueColor";
 import { skipTo, xpNotificationFrame, type XpStage } from "./xpNotificationTimeline";
 import "./XpNotification.css";
@@ -143,10 +144,10 @@ export function XpNotification() {
                     {t("achievement.unlocked")}
                 </Text>
                 <Title level={4} style={{ margin: '12px 0 8px 0', fontSize: '1.2rem' }}>
-                    {achievement.title}
+                    {achievementTitle(achievement, t)}
                 </Title>
                 <Text type="secondary" style={{ fontSize: '0.9rem', display: 'block', marginBottom: '12px' }}>
-                    {achievement.description}
+                    {achievementDescription(achievement, t)}
                 </Text>
                 <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '14px', padding: '4px 12px', fontWeight: 600 }}>
                     {achievement.value} {t("achievement.points")}

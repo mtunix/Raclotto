@@ -1,249 +1,250 @@
-from back.src.entity.achievement import Achievement
+from back.src.entity.achievement import Achievement, AchievementKey
 from back.src.entity.insult import Insult
 from back.src.entity.level import Level
 
+# The UI shows each achievement's title and description from front/src/locales, under achievements.<key>.
 ACHIEVEMENTS = [
     Achievement(
+        key=AchievementKey.gotta_eat_em_all,
         title="Gotta eat'em all!",
-        description="Esse alle Zutaten des Raclottos",
         value=10,
         hidden=False,
         is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
+        key=AchievementKey.king_of_the_sauce,
         title="King of the Sauce",
-        description="Esse alle Saucen des Raclottos",
         value=10,
         hidden=False,
         is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
+        key=AchievementKey.stack_overflow,
         title="Stack Overflow!",
-        description="Esse eine Pfanne mit mehr als 10 Zutaten",
         value=8,
         hidden=False,
         is_global=True,  # Global: any pan
     ),
     Achievement(
+        key=AchievementKey.king_of_the_grill,
         title="King of the Grill",
-        description="Esse am meisten Pfannen in einem Raclotto",
         value=20,
         hidden=False,
         is_global=False,  # Session-specific: "in einem Raclotto"
     ),
     Achievement(
+        key=AchievementKey.garbage_collector,
         title="Garbage Collector",
-        description="Esse eine Pfanne nach einer 3-stündigen Pause",
         value=5,
         hidden=False,
         is_global=False,  # Session-specific: track pause within current session
     ),
     Achievement(
+        key=AchievementKey.happy_new_year,
         title="Happy new Year",
-        description="Esse die erste Pfanne des Jahres",
         value=6,
         hidden=True,
         is_global=True,  # Global: first pan of the year
     ),
     Achievement(
+        key=AchievementKey.local_guide,
         title="Local Guide",
-        description="Bewerte 10 Pfannen",
         value=3,
         hidden=False,
         is_global=True,  # Global: 10 ratings total
     ),
     Achievement(
+        key=AchievementKey.local_host,
         title="Local Host",
-        description="Eröffne ein Raclotto",
         value=10,
         hidden=False,
         is_global=True,  # Global: 1 session total
     ),
     Achievement(
+        key=AchievementKey.first_blood,
         title="First Blood!",
-        description="Esse die erste Pfanne des Raclottos",
         value=10,
         hidden=False,
         is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
+        key=AchievementKey.double_kill,
         title="Double Kill!",
-        description="Erhalte eine identische Pfanne direkt hintereinander",
         value=30,
         hidden=False,
         is_global=False,  # Session-specific: consecutive pans in current session
     ),
     Achievement(
+        key=AchievementKey.second_to_none,
         title="Second to none",
-        description="Starte eine Pfanne in der letzten Minute des Jahres",
         value=15,
         hidden=True,
         is_global=True,  # Global: any pan at end of year
     ),
     Achievement(
+        key=AchievementKey.duel,
         title="Zeit für ein D- D- D- Duell!",
-        description="Beende ein Raclotto mit 2 Racleuren",
         value=8,
         hidden=True,
         is_global=False,  # Session-specific: "ein Raclotto"
     ),
     Achievement(
+        key=AchievementKey.connoisseur,
         title="Connoisseur",
-        description="Füge eine nie dagewesene Zutat hinzu",
         value=3,
         hidden=False,
         is_global=True,  # Global: any new ingredient
     ),
     Achievement(
+        key=AchievementKey.last_pan_standing,
         title="Last Pan standing",
-        description="Esse die letzte Pfanne eines Raclottos",
         value=8,
         hidden=False,
         is_global=False,  # Session-specific: "eines Raclottos"
     ),
     Achievement(
+        key=AchievementKey.easter_egg,
         title="Easter Egg",
-        description="Esse eine Pfanne mit Ei an Ostern",
         value=50,
         hidden=False,
         is_global=True,  # Global: any pan at Easter
     ),
     Achievement(
+        key=AchievementKey.vanilla,
         title="Vanilla",
-        description="Esse eine Pfanne mit nur einer Zutat",
         value=10,
         hidden=False,
         is_global=False,  # Session-specific: pan in current session
     ),
     Achievement(
+        key=AchievementKey.pandler,
         title="Pandler",
-        description="Nimm an 2 Raclottos innerhalb von 24h teil",
         value=10,
         hidden=False,
         is_global=True,  # Global: across sessions
     ),
     Achievement(
+        key=AchievementKey.wizard,
         title="Wizard",
-        description="Schätze die richtige Anzahl der Pfannen eines Raclottos",
         value=35,
         hidden=False,
         is_global=False,  # Session-specific: "eines Raclottos"
     ),
     Achievement(
+        key=AchievementKey.survival_of_the_fittest,
         title="Survival of the Fittest",
-        description="Esse die schlecht bewerteste Pfanne eines Raclottos (mindestens 2 Bewertungen)",
         value=10,
         hidden=False,
         is_global=False,  # Session-specific: worst in a session
     ),
     Achievement(
+        key=AchievementKey.raclotto_normalverbraucher,
         title="Raclotto Normalverbraucher",
-        description="Esse eine Pfanne mit Käse und Kartoffel",
         value=12,
         hidden=False,
         is_global=True,  # Global: any pan
     ),
     Achievement(
+        key=AchievementKey.verpant,
         title="VerPant",
-        description="Mache deine erste Pfanne eine Stunde nach Start des Raclottos",
         value=5,
         hidden=True,
         is_global=False,  # Session-specific: "des Raclottos"
     ),
     Achievement(
+        key=AchievementKey.pantastic,
         title="Pantastic",
-        description="Erstelle die best bewerteste Pfanne eines Raclottos (mindestens 2 Bewertungen)",
         value=8,
         hidden=False,
         is_global=False,  # Session-specific: "eines Raclottos"
     ),
     Achievement(
+        key=AchievementKey.steakholder,
         title="Steakholder",
-        description="Esse 5 Pfannen mit Fleisch",
         value=5,
         hidden=False,
         is_global=False,  # Session-specific: 5 pans in a session
     ),
     Achievement(
+        key=AchievementKey.biotonne,
         title="Biotonne",
-        description="Esse 5 vegane Pfannen",
         value=5,
         hidden=False,
         is_global=False,  # Session-specific: 5 pans in a session
     ),
     Achievement(
+        key=AchievementKey.pan_sexual,
         title="Pan Sexual",
-        description="Bewerte deine Pfannen mit durchschnittlich 4+",
         value=8,
         hidden=True,
         is_global=True,  # Global: average across all ratings
     ),
     Achievement(
+        key=AchievementKey.japan,
         title="JaPan",
-        description="Esse eine Pfanne mit ausschließlich Fisch",
         value=12,
         hidden=False,
         is_global=True,  # Global: any pan
     ),
     Achievement(
+        key=AchievementKey.pan_o_rama,
         title="Pan-O-Rama",
-        description="Esse eine Pfanne mit Butter",
         value=5,
         hidden=False,
         is_global=True,  # Global: any pan
     ),
     Achievement(
+        key=AchievementKey.panini,
         title="Panini",
-        description="Esse eine Pfanne mit Teig",
         value=6,
         hidden=False,
         is_global=True,  # Global: any pan
     ),
     Achievement(
+        key=AchievementKey.panda,
         title="Panda",
-        description="Esse eine Pfanne mit 5 Gemüsezutaten und sonst nichts",
         value=11,
         hidden=False,
         is_global=True,  # Global: any pan
     ),
     Achievement(
+        key=AchievementKey.pan_nic,
         title="Pan-nic",
-        description="Starte ein Raclotto unter freim Himmel",
         value=15,
         hidden=False,
         is_global=True,  # Global: any session creation
     ),
     Achievement(
+        key=AchievementKey.copy_paste,
         title="Copy & Paste",
-        description="Baue die Pfanne deines Sitznachbarn exakt 1:1 nach",
         value=10,
         hidden=True,
         is_global=False,
     ),
     Achievement(
+        key=AchievementKey.cheesus_christ,
         title="Cheesus Christ",
-        description="Staple mindestens 3 verschiedene Käsesorten auf einer Pfanne",
         value=12,
         hidden=False,
         is_global=False,
     ),
     Achievement(
+        key=AchievementKey.marzi_pan,
         title="Marzi-Pan",
-        description="Esse eine suesse Pfanne",
         value=5,
         hidden=False,
         is_global=False,
     ),
     Achievement(
+        key=AchievementKey.firewall,
         title="Firewall",
-        description="Esse eine Pfanne mit Chili und einer scharfen Sauce",
         value=10,
         hidden=False,
         is_global=False,
     ),
     Achievement(
+        key=AchievementKey.cheese_not_found,
         title="404 Cheese not found",
-        description="Esse eine Pfanne ohne Käse",
         value=20,
         hidden=True,
         is_global=False,

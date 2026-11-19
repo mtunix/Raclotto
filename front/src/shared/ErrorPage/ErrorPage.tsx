@@ -1,6 +1,7 @@
 import {useRouteError} from "react-router";
 import {t} from "i18next";
 import {Row, Col, Typography} from "antd";
+import {failureMessage} from "../../lib/api/failedRequest";
 
 export class RaclottoError extends Error {
     public title: string;
@@ -36,9 +37,11 @@ export default function ErrorPage(props: ErrorPageProps) {
     const {Title, Paragraph, Text} = Typography;
 
     function renderRouteError() {
-        const errorMessage = error && typeof error === 'object' 
+        const diagnostic = error && typeof error === 'object' 
             ? ('statusText' in error ? String(error.statusText) : 'message' in error ? String(error.message) : '')
             : '';
+        // A failed request shows what its error code means, never the server's English.
+        const errorMessage = failureMessage(error, t, diagnostic);
         return <>
             <Title level={1}>{t("error.unexpected.title")}</Title>
             <Paragraph>{t("error.unexpected.message")}</Paragraph>

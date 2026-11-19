@@ -4,10 +4,11 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { ApiErrorCode } from './apiErrorCode';
 import type { ApiErrorSourceDto } from './apiErrorSourceDto';
 
 export interface ApiErrorDto {
-  code: string;
+  code: ApiErrorCode;
   detail: string | null;
   id_: string;
   source: ApiErrorSourceDto | null;

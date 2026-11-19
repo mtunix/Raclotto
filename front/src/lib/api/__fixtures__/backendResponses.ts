@@ -4,41 +4,37 @@ import type { AchievementStatusDto, AuthResultDto, AvailableCountsDto, EventConf
 export const rollOutcome: RollOutcomeDto = {
   "achievements": [
     {
-      "description": "Esse alle Zutaten des Raclottos",
       "hidden": false,
       "id": 1,
       "is_global": false,
-      "title": "Gotta eat'em all!",
+      "key": "gotta_eat_em_all",
       "value": 10
     },
     {
-      "description": "Esse alle Saucen des Raclottos",
       "hidden": false,
       "id": 2,
       "is_global": false,
-      "title": "King of the Sauce",
+      "key": "king_of_the_sauce",
       "value": 10
     },
     {
-      "description": "Esse am meisten Pfannen in einem Raclotto",
       "hidden": false,
       "id": 4,
       "is_global": false,
-      "title": "King of the Grill",
+      "key": "king_of_the_grill",
       "value": 20
     },
     {
-      "description": "Er\u00f6ffne ein Raclotto",
       "hidden": false,
       "id": 8,
       "is_global": true,
-      "title": "Local Host",
+      "key": "local_host",
       "value": 10
     }
   ],
   "events": [
     {
-      "created_at": "2026-11-19T15:55:05.557873",
+      "created_at": "2026-11-19T17:03:35.708773",
       "data": {
         "pan1_id": 2,
         "pan1_user_id": 1,
@@ -50,7 +46,6 @@ export const rollOutcome: RollOutcomeDto = {
       },
       "event_type": "pan_swap",
       "id": 1,
-      "message": "Swap your pans! Ada and Ben created pans within 10 minutes of each other.",
       "session_id": 1
     }
   ],
@@ -122,7 +117,7 @@ export const rollOutcome: RollOutcomeDto = {
         "wildcard": false
       }
     ],
-    "name": "Daily Raclotto Pan",
+    "name": "Delicious Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -135,7 +130,7 @@ export const rollOutcome: RollOutcomeDto = {
     "rolled_preparation_type": true,
     "session_id": 1,
     "snacked": false,
-    "timestamp": "2026-11-19T15:55:05.555793",
+    "timestamp": "2026-11-19T17:03:35.706745",
     "user_id": 1
   },
   "reward": {
@@ -246,7 +241,7 @@ export const panPage: PanPageDto = {
           "wildcard": false
         }
       ],
-      "name": "Daily Raclotto Pan",
+      "name": "Delicious Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -267,7 +262,7 @@ export const panPage: PanPageDto = {
       "rolled_preparation_type": true,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-19T15:55:05.555793",
+      "timestamp": "2026-11-19T17:03:35.706745",
       "user_id": 1
     }
   ],
@@ -306,7 +301,7 @@ export const panFilterOptions: PanFilterOptionsDto = {
 };
 
 export const loginResult: AuthResultDto = {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ2ZXIiOjAsImV4cCI6MTc5NTcwNDkwNSwiaWF0IjoxNzk1MTAwMTA1fQ.HB3bjRGakHi7l9rq9u5-M-OgzOQPbUVUn6HlH-IGtCk",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ2ZXIiOjAsImV4cCI6MTc5NTcwOTAxNSwiaWF0IjoxNzk1MTA0MjE1fQ.NHTXbrIZsWMNylRwNQ_04yuPAUIKYJQmbV3tr91YJxY",
   "user": {
     "border_style": "dashed",
     "border_texture": "cheese",
@@ -383,35 +378,31 @@ export const me: MeDto = {
 export const userProfile: UserProfileDto = {
   "achievements": [
     {
-      "description": "Esse alle Zutaten des Raclottos",
       "hidden": false,
       "id": 1,
       "is_global": false,
-      "title": "Gotta eat'em all!",
+      "key": "gotta_eat_em_all",
       "value": 10
     },
     {
-      "description": "Esse alle Saucen des Raclottos",
       "hidden": false,
       "id": 2,
       "is_global": false,
-      "title": "King of the Sauce",
+      "key": "king_of_the_sauce",
       "value": 10
     },
     {
-      "description": "Esse am meisten Pfannen in einem Raclotto",
       "hidden": false,
       "id": 4,
       "is_global": false,
-      "title": "King of the Grill",
+      "key": "king_of_the_grill",
       "value": 20
     },
     {
-      "description": "Er\u00f6ffne ein Raclotto",
       "hidden": false,
       "id": 8,
       "is_global": true,
-      "title": "Local Host",
+      "key": "local_host",
       "value": 10
     }
   ],
@@ -549,7 +540,7 @@ export const userStats: UserStatsDto = {
         "wildcard": false
       }
     ],
-    "name": "Daily Raclotto Pan",
+    "name": "Delicious Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -570,7 +561,7 @@ export const userStats: UserStatsDto = {
     "rolled_preparation_type": true,
     "session_id": 1,
     "snacked": false,
-    "timestamp": "2026-11-19T15:55:05.555793",
+    "timestamp": "2026-11-19T17:03:35.706745",
     "user_id": 1
   },
   "most_pans_session": {
@@ -586,20 +577,20 @@ export const userStats: UserStatsDto = {
 
 export const invite: InviteDto = {
   "email": "carl@example.com",
-  "expires_at": "2026-11-26T15:55:05.667758",
+  "expires_at": "2026-11-26T17:03:35.827219",
   "id": 1,
   "is_used": false,
-  "token": "g5yNzDQJGRRTX1fuH8Rr3Y7YDfFFCHtC_enDE4qU4RI",
+  "token": "ax6I-FNZ7bCU-ruDxUhC4fBT2NBrGgPqk21vOa7QlZg",
   "used_at": null
 };
 
 export const inviteLookup: InviteLookupDto = {
   "email": "carl@example.com",
-  "expires_at": "2026-11-26T15:55:05.667758"
+  "expires_at": "2026-11-26T17:03:35.827219"
 };
 
 export const registration: AuthResultDto = {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJ2ZXIiOjAsImV4cCI6MTc5NTcwNDkwNSwiaWF0IjoxNzk1MTAwMTA1fQ.tHiDjtfP7_unNPayw978GOWbh88_ylRLYGySWLXbhxM",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJ2ZXIiOjAsImV4cCI6MTc5NTcwOTAxNiwiaWF0IjoxNzk1MTA0MjE2fQ.OkDuNZ4ZMITLwXCaOOHjmdSmUFtmfM1IhC45L1MR3Co",
   "user": {
     "border_style": "solid",
     "border_texture": null,
@@ -679,7 +670,7 @@ export const session: SessionDto = {
   "id": 1,
   "key": "s1",
   "name": "s1",
-  "timestamp": "2026-11-19T15:55:05.449560"
+  "timestamp": "2026-11-19T17:03:35.596749"
 };
 
 export const sessions: SessionDto[] = [
@@ -689,7 +680,7 @@ export const sessions: SessionDto[] = [
     "id": 1,
     "key": "s1",
     "name": "s1",
-    "timestamp": "2026-11-19T15:55:05.449560"
+    "timestamp": "2026-11-19T17:03:35.596749"
   }
 ];
 
@@ -1033,352 +1024,317 @@ export const ingredientReimport: IngredientReimportDto = {
 
 export const achievementStatuses: AchievementStatusDto[] = [
   {
-    "description": "Esse alle Zutaten des Raclottos",
     "hidden": false,
     "id": 1,
     "is_global": false,
+    "key": "gotta_eat_em_all",
     "progress": 1.0,
-    "title": "Gotta eat'em all!",
     "unlocked": true,
     "value": 10
   },
   {
-    "description": "Esse alle Saucen des Raclottos",
     "hidden": false,
     "id": 2,
     "is_global": false,
+    "key": "king_of_the_sauce",
     "progress": 0.5,
-    "title": "King of the Sauce",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Esse eine Pfanne mit mehr als 10 Zutaten",
     "hidden": false,
     "id": 3,
     "is_global": true,
+    "key": "stack_overflow",
     "progress": 0.0,
-    "title": "Stack Overflow!",
     "unlocked": false,
     "value": 8
   },
   {
-    "description": "Esse am meisten Pfannen in einem Raclotto",
     "hidden": false,
     "id": 4,
     "is_global": false,
+    "key": "king_of_the_grill",
     "progress": 1.0,
-    "title": "King of the Grill",
     "unlocked": true,
     "value": 20
   },
   {
-    "description": "Esse eine Pfanne nach einer 3-st\u00fcndigen Pause",
     "hidden": false,
     "id": 5,
     "is_global": false,
+    "key": "garbage_collector",
     "progress": 0.0,
-    "title": "Garbage Collector",
     "unlocked": false,
     "value": 5
   },
   {
-    "description": "Esse die erste Pfanne des Jahres",
     "hidden": true,
     "id": 6,
     "is_global": true,
+    "key": "happy_new_year",
     "progress": null,
-    "title": "Happy new Year",
     "unlocked": false,
     "value": 6
   },
   {
-    "description": "Bewerte 10 Pfannen",
     "hidden": false,
     "id": 7,
     "is_global": true,
+    "key": "local_guide",
     "progress": 0.0,
-    "title": "Local Guide",
     "unlocked": false,
     "value": 3
   },
   {
-    "description": "Er\u00f6ffne ein Raclotto",
     "hidden": false,
     "id": 8,
     "is_global": true,
+    "key": "local_host",
     "progress": 1.0,
-    "title": "Local Host",
     "unlocked": true,
     "value": 10
   },
   {
-    "description": "Esse die erste Pfanne des Raclottos",
     "hidden": false,
     "id": 9,
     "is_global": false,
+    "key": "first_blood",
     "progress": 0.0,
-    "title": "First Blood!",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Erhalte eine identische Pfanne direkt hintereinander",
     "hidden": false,
     "id": 10,
     "is_global": false,
+    "key": "double_kill",
     "progress": 0.0,
-    "title": "Double Kill!",
     "unlocked": false,
     "value": 30
   },
   {
-    "description": "Starte eine Pfanne in der letzten Minute des Jahres",
     "hidden": true,
     "id": 11,
     "is_global": true,
+    "key": "second_to_none",
     "progress": null,
-    "title": "Second to none",
     "unlocked": false,
     "value": 15
   },
   {
-    "description": "Beende ein Raclotto mit 2 Racleuren",
     "hidden": true,
     "id": 12,
     "is_global": false,
+    "key": "duel",
     "progress": null,
-    "title": "Zeit f\u00fcr ein D- D- D- Duell!",
     "unlocked": false,
     "value": 8
   },
   {
-    "description": "F\u00fcge eine nie dagewesene Zutat hinzu",
     "hidden": false,
     "id": 13,
     "is_global": true,
+    "key": "connoisseur",
     "progress": 1.0,
-    "title": "Connoisseur",
     "unlocked": true,
     "value": 3
   },
   {
-    "description": "Esse die letzte Pfanne eines Raclottos",
     "hidden": false,
     "id": 14,
     "is_global": false,
+    "key": "last_pan_standing",
     "progress": 1.0,
-    "title": "Last Pan standing",
     "unlocked": false,
     "value": 8
   },
   {
-    "description": "Esse eine Pfanne mit Ei an Ostern",
     "hidden": false,
     "id": 15,
     "is_global": true,
+    "key": "easter_egg",
     "progress": null,
-    "title": "Easter Egg",
     "unlocked": false,
     "value": 50
   },
   {
-    "description": "Esse eine Pfanne mit nur einer Zutat",
     "hidden": false,
     "id": 16,
     "is_global": false,
+    "key": "vanilla",
     "progress": 0.0,
-    "title": "Vanilla",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Nimm an 2 Raclottos innerhalb von 24h teil",
     "hidden": false,
     "id": 17,
     "is_global": true,
+    "key": "pandler",
     "progress": 0.0,
-    "title": "Pandler",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Sch\u00e4tze die richtige Anzahl der Pfannen eines Raclottos",
     "hidden": false,
     "id": 18,
     "is_global": false,
+    "key": "wizard",
     "progress": null,
-    "title": "Wizard",
     "unlocked": false,
     "value": 35
   },
   {
-    "description": "Esse die schlecht bewerteste Pfanne eines Raclottos (mindestens 2 Bewertungen)",
     "hidden": false,
     "id": 19,
     "is_global": false,
+    "key": "survival_of_the_fittest",
     "progress": 0.0,
-    "title": "Survival of the Fittest",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Esse eine Pfanne mit K\u00e4se und Kartoffel",
     "hidden": false,
     "id": 20,
     "is_global": true,
+    "key": "raclotto_normalverbraucher",
     "progress": null,
-    "title": "Raclotto Normalverbraucher",
     "unlocked": false,
     "value": 12
   },
   {
-    "description": "Mache deine erste Pfanne eine Stunde nach Start des Raclottos",
     "hidden": true,
     "id": 21,
     "is_global": false,
+    "key": "verpant",
     "progress": null,
-    "title": "VerPant",
     "unlocked": false,
     "value": 5
   },
   {
-    "description": "Erstelle die best bewerteste Pfanne eines Raclottos (mindestens 2 Bewertungen)",
     "hidden": false,
     "id": 22,
     "is_global": false,
+    "key": "pantastic",
     "progress": 0.0,
-    "title": "Pantastic",
     "unlocked": false,
     "value": 8
   },
   {
-    "description": "Esse 5 Pfannen mit Fleisch",
     "hidden": false,
     "id": 23,
     "is_global": false,
+    "key": "steakholder",
     "progress": 0.2,
-    "title": "Steakholder",
     "unlocked": false,
     "value": 5
   },
   {
-    "description": "Esse 5 vegane Pfannen",
     "hidden": false,
     "id": 24,
     "is_global": false,
+    "key": "biotonne",
     "progress": 0.0,
-    "title": "Biotonne",
     "unlocked": false,
     "value": 5
   },
   {
-    "description": "Bewerte deine Pfannen mit durchschnittlich 4+",
     "hidden": true,
     "id": 25,
     "is_global": true,
+    "key": "pan_sexual",
     "progress": null,
-    "title": "Pan Sexual",
     "unlocked": false,
     "value": 8
   },
   {
-    "description": "Esse eine Pfanne mit ausschlie\u00dflich Fisch",
     "hidden": false,
     "id": 26,
     "is_global": true,
+    "key": "japan",
     "progress": 0.0,
-    "title": "JaPan",
     "unlocked": false,
     "value": 12
   },
   {
-    "description": "Esse eine Pfanne mit Butter",
     "hidden": false,
     "id": 27,
     "is_global": true,
+    "key": "pan_o_rama",
     "progress": null,
-    "title": "Pan-O-Rama",
     "unlocked": false,
     "value": 5
   },
   {
-    "description": "Esse eine Pfanne mit Teig",
     "hidden": false,
     "id": 28,
     "is_global": true,
+    "key": "panini",
     "progress": null,
-    "title": "Panini",
     "unlocked": false,
     "value": 6
   },
   {
-    "description": "Esse eine Pfanne mit 5 Gem\u00fcsezutaten und sonst nichts",
     "hidden": false,
     "id": 29,
     "is_global": true,
+    "key": "panda",
     "progress": null,
-    "title": "Panda",
     "unlocked": false,
     "value": 11
   },
   {
-    "description": "Starte ein Raclotto unter freim Himmel",
     "hidden": false,
     "id": 30,
     "is_global": true,
+    "key": "pan_nic",
     "progress": null,
-    "title": "Pan-nic",
     "unlocked": false,
     "value": 15
   },
   {
-    "description": "Baue die Pfanne deines Sitznachbarn exakt 1:1 nach",
     "hidden": true,
     "id": 31,
     "is_global": false,
+    "key": "copy_paste",
     "progress": null,
-    "title": "Copy & Paste",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Staple mindestens 3 verschiedene K\u00e4sesorten auf einer Pfanne",
     "hidden": false,
     "id": 32,
     "is_global": false,
+    "key": "cheesus_christ",
     "progress": null,
-    "title": "Cheesus Christ",
     "unlocked": false,
     "value": 12
   },
   {
-    "description": "Esse eine suesse Pfanne",
     "hidden": false,
     "id": 33,
     "is_global": false,
+    "key": "marzi_pan",
     "progress": null,
-    "title": "Marzi-Pan",
     "unlocked": false,
     "value": 5
   },
   {
-    "description": "Esse eine Pfanne mit Chili und einer scharfen Sauce",
     "hidden": false,
     "id": 34,
     "is_global": false,
+    "key": "firewall",
     "progress": null,
-    "title": "Firewall",
     "unlocked": false,
     "value": 10
   },
   {
-    "description": "Esse eine Pfanne ohne K\u00e4se",
     "hidden": true,
     "id": 35,
     "is_global": false,
+    "key": "cheese_not_found",
     "progress": null,
-    "title": "404 Cheese not found",
     "unlocked": false,
     "value": 20
   }
@@ -1410,7 +1366,7 @@ export const leaderboard: LeaderboardEntryDto[] = [
 
 export const events: EventDto[] = [
   {
-    "created_at": "2026-11-19T15:55:05.557873",
+    "created_at": "2026-11-19T17:03:35.708773",
     "data": {
       "pan1_id": 2,
       "pan1_user_id": 1,
@@ -1422,7 +1378,6 @@ export const events: EventDto[] = [
     },
     "event_type": "pan_swap",
     "id": 1,
-    "message": "Swap your pans! Ada and Ben created pans within 10 minutes of each other.",
     "session_id": 1
   }
 ];
@@ -1668,7 +1623,7 @@ export const stats: StatsDto = {
           "wildcard": false
         }
       ],
-      "name": "Daily Raclotto Pan",
+      "name": "Delicious Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -1689,7 +1644,7 @@ export const stats: StatsDto = {
       "rolled_preparation_type": true,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-19T15:55:05.555793",
+      "timestamp": "2026-11-19T17:03:35.706745",
       "user_id": 1
     },
     {
@@ -1742,7 +1697,7 @@ export const stats: StatsDto = {
           "wildcard": false
         }
       ],
-      "name": "Childlike Raclotto Pan",
+      "name": "Jumbled Raclotto Pan",
       "preparation_type": null,
       "preparation_type_id": null,
       "rating": 0.0,
@@ -1751,7 +1706,7 @@ export const stats: StatsDto = {
       "rolled_preparation_type": false,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-19T15:55:05.495144",
+      "timestamp": "2026-11-19T17:03:35.643450",
       "user_id": 2
     }
   ]
@@ -1826,7 +1781,7 @@ export const sessionRecap: SessionRecapDto = {
         "wildcard": false
       }
     ],
-    "name": "Daily Raclotto Pan",
+    "name": "Delicious Raclotto Pan",
     "preparation_type": {
       "id": 1,
       "name": "Raclotto Pfanne",
@@ -1847,7 +1802,7 @@ export const sessionRecap: SessionRecapDto = {
     "rolled_preparation_type": true,
     "session_id": 1,
     "snacked": false,
-    "timestamp": "2026-11-19T15:55:05.555793",
+    "timestamp": "2026-11-19T17:03:35.706745",
     "user_id": 1
   },
   "boldest_pan": {
@@ -1919,7 +1874,7 @@ export const sessionRecap: SessionRecapDto = {
           "wildcard": false
         }
       ],
-      "name": "Daily Raclotto Pan",
+      "name": "Delicious Raclotto Pan",
       "preparation_type": {
         "id": 1,
         "name": "Raclotto Pfanne",
@@ -1940,7 +1895,7 @@ export const sessionRecap: SessionRecapDto = {
       "rolled_preparation_type": true,
       "session_id": 1,
       "snacked": false,
-      "timestamp": "2026-11-19T15:55:05.555793",
+      "timestamp": "2026-11-19T17:03:35.706745",
       "user_id": 1
     },
     "xp": 33
@@ -1966,7 +1921,7 @@ export const sessionRecap: SessionRecapDto = {
     },
     "pan_count": 2
   },
-  "last_pan_at": "2026-11-19T15:55:05.555793",
+  "last_pan_at": "2026-11-19T17:03:35.706745",
   "pan_count": 2,
   "participants": [
     {
@@ -2007,7 +1962,7 @@ export const sessionRecap: SessionRecapDto = {
     "id": 1,
     "key": "s1",
     "name": "s1",
-    "timestamp": "2026-11-19T15:55:05.449560"
+    "timestamp": "2026-11-19T17:03:35.596749"
   },
   "worst_pan": null
 };
@@ -2021,7 +1976,7 @@ export const imageGenerationUnavailable: ImageGenerationDto = {
 };
 
 export const generatedPicture: GeneratedPictureDto = {
-  "created_at": "2026-11-19T15:55:05.817437",
+  "created_at": "2026-11-19T17:03:36.001158",
   "id": 2,
   "image_base64": "iVBORw0KGgo=",
   "level_id": 2,
@@ -2030,7 +1985,7 @@ export const generatedPicture: GeneratedPictureDto = {
 
 export const pictureHistory: ProfilePictureDto[] = [
   {
-    "created_at": "2026-11-19T15:55:05.817437",
+    "created_at": "2026-11-19T17:03:36.001158",
     "id": 2,
     "is_candidate": true,
     "level": {
@@ -2044,7 +1999,7 @@ export const pictureHistory: ProfilePictureDto[] = [
     "profile_picture": "data:image/png;base64,iVBORw0KGgo="
   },
   {
-    "created_at": "2026-11-19T15:55:05.450847",
+    "created_at": "2026-11-19T17:03:35.598062",
     "id": 1,
     "is_candidate": false,
     "level": null,

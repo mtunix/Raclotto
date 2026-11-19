@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {Segmented, Card, Row, Col, message, Button, Input, Space, Empty, Spin, Typography} from "antd";
 import {useTranslation} from "react-i18next";
-import axios from "axios";
+import {failureMessage} from "../../../lib/api/failedRequest";
 import {mutatePrepTypes, onErrorRetry} from "../../../lib/api/swrHooks";
 import {useAppStore} from "../../../AppSlice";
 import {useListIngredients} from "../../../api/generated/endpoints/ingredients/ingredients";
@@ -12,7 +12,6 @@ import {
 } from "../../../api/generated/endpoints/preparation-type/preparation-type";
 import {IngredientType} from "../../../api/generated/model";
 import type {
-    ErrorResponseDto,
     IngredientForUserDto,
     PrepTypeDto,
     UpdateIngredientBody,
@@ -100,11 +99,7 @@ export function KitchenManagement() {
             void mutatePrepTypes(sessionKey);
         }).catch((error: unknown) => {
             console.error("Failed to delete prep type:", error);
-            const detail = axios.isAxiosError<ErrorResponseDto>(error) ? error.response?.data?.errors?.[0]?.detail : null;
-            const errorMessage = detail ||
-                                (error instanceof Error ? error.message : null) ||
-                                t("ingredient.deleteFailed");
-            message.error(errorMessage);
+            message.error(failureMessage(error, t, t("ingredient.deleteFailed")));
         });
     };
 

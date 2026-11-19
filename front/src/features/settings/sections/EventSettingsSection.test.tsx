@@ -38,7 +38,7 @@ async function renderSection(configs: EventConfigDto[] | ((request: RecordedRequ
     useAppStore.setState({ session: current });
     renderRoute(<EventSettingsSection />, { sharedCache: true });
     await waitFor(() => expect(configFetches()).toBe(1));
-    await screen.findByText('events.panSwap');
+    await screen.findByText('events.types.pan_swap.name');
     return current;
 }
 

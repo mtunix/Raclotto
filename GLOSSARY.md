@@ -189,8 +189,9 @@ Code: `Reward`, `RewardDto`, part of `RollOutcome`.
 **Achievement**:
 A titled goal worth a number of points; some are hidden until unlocked. A user holds it or not,
 and may have progress (0 to 1) towards it. Seed data marks each as global or session-specific.
-Code: `Achievement` (`value` = points, `hidden`, `is_global`), `AchievementStatusDto`,
-`UserAchievementProgress`. The leaderboard sums points.
+Code: `Achievement` (`key`, `value` = points, `hidden`, `is_global`), `AchievementKey`,
+`AchievementStatusDto`, `UserAchievementProgress`. The leaderboard sums points. The UI shows its title
+and description from the translations, by key; the stored `title` only names the row.
 
 **Fact**:
 Something that happened in a session, reported to achievements and events: a pan rolled, a pan
@@ -202,7 +203,7 @@ _Avoid_: event (that is the session event below), trigger
 The rule behind one achievement or one event type. An achievement evaluator declares which facts
 it reacts to, whom it judges (the actor, the pan's author, every participant, or the author of the
 session's last pan) and whether the achievement is revocable.
-Code: `AchievementEvaluator`, `EventEvaluator`, keyed by achievement title or `event_type`.
+Code: `AchievementEvaluator`, `EventEvaluator`, keyed by achievement key or `event_type`.
 
 **Revocable**:
 An achievement its holder loses again when the evaluator no longer finds it earned

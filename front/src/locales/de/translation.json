@@ -232,8 +232,17 @@
     "adminChangeFailed": "Adminrechte konnten nicht geändert werden"
   },
   "events": {
-    "panSwap": "Pfannen-Tausch-Ereignis",
-    "dismiss": "Ausblenden"
+    "dismiss": "Ausblenden",
+    "types": {
+      "pan_swap": {
+        "name": "Pfannen-Tausch",
+        "message_one": "Tauschen Sie Ihre Pfannen! {{first}} und {{second}} haben innerhalb von {{count}} Minute je eine Pfanne gezogen.",
+        "message_other": "Tauschen Sie Ihre Pfannen! {{first}} und {{second}} haben innerhalb von {{count}} Minuten je eine Pfanne gezogen."
+      }
+    },
+    "unknown": {
+      "message": "Am Tisch tut sich etwas."
+    }
   },
   "history": {
     "consumedBy": "Konsumiert von",
@@ -530,5 +539,171 @@
     "eventsBody": "Ereignisse halten den Tisch in Bewegung. Ein Pfannen-Tausch passiert, wenn zwei Personen innerhalb von 10 Minuten eine Pfanne ziehen: Sie tauschen ihre Pfannen. Wer die Session erstellt hat, kann Ereignisse abschalten oder ändern, wie oft sie vorkommen.",
     "endTitle": "8. Ende des Abends",
     "endBody": "Wer die Session erstellt hat (oder ein Admin), beendet sie unter Einstellungen. Danach sehen alle den Rückblick: die beste, schlechteste und mutigste Pfanne, die Lieblingszutat und die Pfannen, XP und Sterne aller."
+  },
+  "achievements": {
+    "gotta_eat_em_all": {
+      "title": "Gotta eat'em all!",
+      "description": "Alle Zutaten einer Session essen"
+    },
+    "king_of_the_sauce": {
+      "title": "King of the Sauce",
+      "description": "Alle Saucen einer Session essen"
+    },
+    "stack_overflow": {
+      "title": "Stack Overflow!",
+      "description": "Eine Pfanne mit mehr als 10 Zutaten essen"
+    },
+    "king_of_the_grill": {
+      "title": "King of the Grill",
+      "description": "Die meisten Pfannen einer Session essen"
+    },
+    "garbage_collector": {
+      "title": "Garbage Collector",
+      "description": "Nach 3 Stunden Pause eine Pfanne essen"
+    },
+    "happy_new_year": {
+      "title": "Happy new Year",
+      "description": "Die erste Pfanne des Jahres essen"
+    },
+    "local_guide": {
+      "title": "Local Guide",
+      "description": "10 Pfannen bewerten"
+    },
+    "local_host": {
+      "title": "Local Host",
+      "description": "Eine Session eröffnen"
+    },
+    "first_blood": {
+      "title": "First Blood!",
+      "description": "Die erste Pfanne einer Session essen"
+    },
+    "double_kill": {
+      "title": "Double Kill!",
+      "description": "Zweimal direkt hintereinander die gleiche Pfanne bekommen"
+    },
+    "second_to_none": {
+      "title": "Second to none",
+      "description": "In der letzten Minute des Jahres eine Pfanne starten"
+    },
+    "duel": {
+      "title": "Zeit für ein D- D- D- Duell!",
+      "description": "Eine Session mit 2 Racleuren beenden"
+    },
+    "connoisseur": {
+      "title": "Connoisseur",
+      "description": "Eine nie dagewesene Zutat hinzufügen"
+    },
+    "last_pan_standing": {
+      "title": "Last Pan standing",
+      "description": "Die letzte Pfanne einer Session essen"
+    },
+    "easter_egg": {
+      "title": "Easter Egg",
+      "description": "An Ostern eine Pfanne mit Ei essen"
+    },
+    "vanilla": {
+      "title": "Vanilla",
+      "description": "Eine Pfanne mit nur einer Zutat essen"
+    },
+    "pandler": {
+      "title": "Pandler",
+      "description": "Innerhalb von 24 Stunden an 2 Sessions teilnehmen"
+    },
+    "wizard": {
+      "title": "Wizard",
+      "description": "Die richtige Anzahl an Pfannen einer Session schätzen"
+    },
+    "survival_of_the_fittest": {
+      "title": "Survival of the Fittest",
+      "description": "Die am schlechtesten bewertete Pfanne einer Session essen (mindestens 2 Bewertungen)"
+    },
+    "raclotto_normalverbraucher": {
+      "title": "Raclotto Normalverbraucher",
+      "description": "Eine Pfanne mit Käse und Kartoffel essen"
+    },
+    "verpant": {
+      "title": "VerPant",
+      "description": "Die erste eigene Pfanne erst eine Stunde nach Beginn der Session machen"
+    },
+    "pantastic": {
+      "title": "Pantastic",
+      "description": "Die am besten bewertete Pfanne einer Session machen (mindestens 2 Bewertungen)"
+    },
+    "steakholder": {
+      "title": "Steakholder",
+      "description": "5 Pfannen mit Fleisch essen"
+    },
+    "biotonne": {
+      "title": "Biotonne",
+      "description": "5 vegane Pfannen essen"
+    },
+    "pan_sexual": {
+      "title": "Pan Sexual",
+      "description": "Die eigenen Pfannen im Schnitt mit 4 Sternen oder mehr bewerten"
+    },
+    "japan": {
+      "title": "JaPan",
+      "description": "Eine Pfanne mit ausschließlich Fisch essen"
+    },
+    "pan_o_rama": {
+      "title": "Pan-O-Rama",
+      "description": "Eine Pfanne mit Butter essen"
+    },
+    "panini": {
+      "title": "Panini",
+      "description": "Eine Pfanne mit Teig essen"
+    },
+    "panda": {
+      "title": "Panda",
+      "description": "Eine Pfanne mit 5 Gemüsezutaten und sonst nichts essen"
+    },
+    "pan_nic": {
+      "title": "Pan-nic",
+      "description": "Eine Session unter freiem Himmel starten"
+    },
+    "copy_paste": {
+      "title": "Copy & Paste",
+      "description": "Die Pfanne des Sitznachbarn exakt 1:1 nachbauen"
+    },
+    "cheesus_christ": {
+      "title": "Cheesus Christ",
+      "description": "Mindestens 3 verschiedene Käsesorten auf einer Pfanne stapeln"
+    },
+    "marzi_pan": {
+      "title": "Marzi-Pan",
+      "description": "Eine süße Pfanne essen"
+    },
+    "firewall": {
+      "title": "Firewall",
+      "description": "Eine Pfanne mit Chili und einer scharfen Sauce essen"
+    },
+    "cheese_not_found": {
+      "title": "404 Cheese not found",
+      "description": "Eine Pfanne ohne Käse essen"
+    },
+    "retired": {
+      "title": "Ehemaliger Erfolg",
+      "description": "Diesen Erfolg gibt es nicht mehr."
+    }
+  },
+  "apiError": {
+    "unknown": "Etwas ist schiefgelaufen.",
+    "api_error_code": {
+      "missing_required_body_field": "Es fehlen erforderliche Angaben.",
+      "endpoint_not_found": "Der Server kennt diese Anfrage nicht.",
+      "resource_not_found": "Das gibt es nicht oder nicht mehr.",
+      "unknown_url_arg": "Die Anfrage enthält einen Parameter, den der Server nicht kennt.",
+      "incorrect_header": "Der Server hat die Anfrage nicht verstanden.",
+      "incorrect_parameters": "Einige Angaben sind ungültig.",
+      "incorrect_type": "Einige Angaben haben das falsche Format.",
+      "undo_forbidden": "Das lässt sich nicht rückgängig machen.",
+      "invalid_token": "Ihre Anmeldung oder Einladung ist ungültig oder abgelaufen.",
+      "forbidden": "Dazu sind Sie nicht berechtigt.",
+      "conflict": "Das kollidiert mit Bestehendem, etwa einem schon vergebenen Namen.",
+      "too_many_requests": "Zu viele Versuche. Bitte warten Sie ein paar Minuten.",
+      "image_generation_unavailable": "Dieser Server kann keine Bilder erzeugen.",
+      "image_generation_failed": "Das Bild konnte nicht erzeugt werden. Bitte versuchen Sie es erneut.",
+      "internal_error": "Auf dem Server ist etwas schiefgelaufen."
+    }
   }
 }

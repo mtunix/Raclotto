@@ -176,7 +176,7 @@ class TestRollRoutes(AppTest):
         self.assertEqual(len(outcome.pan.ingredients), 3)
         self.assertEqual(outcome.reward.xp_after - outcome.reward.xp_before, outcome.reward.xp_gained)
         self.assertGreater(outcome.reward.xp_gained, 0)
-        self.assertIn("First Blood!", [a.title for a in outcome.achievements])
+        self.assertIn("first_blood", [a.key for a in outcome.achievements])
         self.assertEqual(outcome.events, [])
 
     def test_every_roll_route_names_the_author(self):

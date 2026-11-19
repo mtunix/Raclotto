@@ -4,13 +4,14 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { EventType } from './eventType';
 
 /**
  * Set whether an event type is enabled, for one session or globally.
  */
 export interface SaveEventConfigBody {
   enabled: boolean;
-  event_type: 'pan_swap';
+  event_type: EventType;
   frequency_minutes?: number | null;
   session_key?: string | null;
 }

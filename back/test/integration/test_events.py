@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import get_args
 
 from back.src.driver.database import db
 from back.src.dto.event import EventType
@@ -123,7 +122,7 @@ class EventsTest(AppTest):
         self.assertEqual([e.event_type for e in events], ["always"])
 
     def test_every_evaluated_event_type_can_be_configured(self):
-        self.assertEqual({e.event_type for e in default_evaluators()}, set(get_args(EventType)))
+        self.assertEqual({e.event_type for e in default_evaluators()}, set(EventType))
 
 
 class PanSwapTest(AppTest):

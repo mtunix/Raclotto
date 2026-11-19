@@ -1,22 +1,27 @@
 from datetime import datetime
-from typing import Any, Literal
+from enum import StrEnum
+from typing import Any
 
 from pydantic import Field, model_validator
 
 from back.src.dto.base import RequestDto, ResponseDto, omittable
 
-# The types the backend evaluates; only these can be configured. Responses carry any stored
-# type, since the old API saved configs for any.
-EventType = Literal["pan_swap"]
+
+class EventType(StrEnum):
+    """The types the backend evaluates; only these can be configured, and the frontend translates each.
+
+    Responses carry any stored type, since the old API saved configs for any.
+    """
+
+    pan_swap = "pan_swap"
 
 
 class EventDto(ResponseDto):
     id: int
     session_id: int
     event_type: str
-    message: str
-    # Whatever the event's evaluator stored. pan_swap: pan1_id, pan1_user_id, pan1_user_name,
-    # pan2_id, pan2_user_id, pan2_user_name, time_window_minutes.
+    # Whatever the event's evaluator stored; the frontend fills it into its text for the type. pan_swap:
+    # pan1_id, pan1_user_id, pan1_user_name, pan2_id, pan2_user_id, pan2_user_name, time_window_minutes.
     data: dict[str, Any] | None
     created_at: datetime
 

@@ -5,7 +5,6 @@ import types
 import uuid
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from functools import wraps
 from http import HTTPStatus
 from typing import (
@@ -26,24 +25,8 @@ from sqlalchemy.orm import scoped_session
 from werkzeug.datastructures import MultiDict
 
 from ..driver.database import db
-from ..utils import str_code_from_enum, un_camel_case
-
-
-class ApiErrorCode(Enum):
-    missing_required_body_field = auto()
-    endpoint_not_found = auto()
-    resource_not_found = auto()
-    unknown_url_arg = auto()
-    incorrect_header = auto()
-    incorrect_parameters = auto()
-    incorrect_type = auto()
-    undo_forbidden = auto()
-    invalid_token = auto()
-    forbidden = auto()
-    too_many_requests = auto()
-    image_generation_unavailable = auto()
-    internal_error = auto()
-
+from ..dto.base import ApiErrorCode as ApiErrorCode  # routes raise ApiError with it from here
+from ..utils import un_camel_case
 
 ERROR_FIELDS = ("id_", "status", "code", "title", "detail", "source")
 
@@ -51,7 +34,7 @@ ERROR_FIELDS = ("id_", "status", "code", "title", "detail", "source")
 class ApiError(Exception):
     def __init__(
         self,
-        code: Enum,
+        code: ApiErrorCode,
         id_: uuid.UUID | None = None,
         status: int = 400,
         title: str | None = None,
@@ -59,7 +42,7 @@ class ApiError(Exception):
         source: dict[str, str] | None = None,
     ):
         super().__init__()
-        self.code = str_code_from_enum(code)
+        self.code = code
         self.id_ = id_ if id_ is not None else uuid.uuid4()
         self.status = status
         self.title = title
@@ -290,7 +273,7 @@ def catch_integrity_errors[**P, R](session: scoped_session[Any]) -> Callable[[Ca
             except IntegrityError as e:
                 session.rollback()
                 error = ApiError(
-                    ApiErrorCode.incorrect_parameters,
+                    ApiErrorCode.conflict,
                     status=409,
                     title="Conflict",
                     detail="The change conflicts with existing data",

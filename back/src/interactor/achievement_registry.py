@@ -1,4 +1,4 @@
-from back.src.entity.achievement import Achievement
+from back.src.entity.achievement import Achievement, AchievementKey
 from back.src.interactor.achievement_evaluator import AchievementEvaluator
 
 
@@ -8,18 +8,13 @@ class AchievementRegistry:
     def __init__(self) -> None:
         self._evaluators: dict[str, AchievementEvaluator] = {}
 
-    def register_evaluator(self, achievement_title: str, evaluator: AchievementEvaluator) -> None:
-        """
-        Register an evaluator for an achievement.
-
-        :param achievement_title: The title of the achievement
-        :param evaluator: The evaluator instance
-        """
-        self._evaluators[achievement_title] = evaluator
+    def register_evaluator(self, key: str, evaluator: AchievementEvaluator) -> None:
+        """Register the evaluator of the achievement with ``key``."""
+        self._evaluators[key] = evaluator
 
     @property
     def evaluators(self) -> dict[str, AchievementEvaluator]:
-        """Achievement title -> evaluator."""
+        """Achievement key -> evaluator."""
         return self._evaluators
 
     def has_evaluator(self, achievement: Achievement) -> bool:
@@ -29,7 +24,7 @@ class AchievementRegistry:
         :param achievement: The achievement entity
         :return: True if evaluator is registered, False otherwise
         """
-        return achievement.title in self._evaluators
+        return achievement.key in self._evaluators
 
 
 # Global registry instance
@@ -105,24 +100,24 @@ def initialize_registry() -> None:
     )
 
     # Register specific evaluators
-    _registry.register_evaluator("Stack Overflow!", StackOverflowEvaluator())
-    _registry.register_evaluator("First Blood!", FirstBloodEvaluator())
-    _registry.register_evaluator("Local Guide", LocalGuideEvaluator())
-    _registry.register_evaluator("Local Host", LocalHostEvaluator())
-    _registry.register_evaluator("King of the Sauce", KingOfTheSauceEvaluator())
-    _registry.register_evaluator("King of the Grill", KingOfTheGrillEvaluator())
-    _registry.register_evaluator("Garbage Collector", GarbageCollectorEvaluator())
-    _registry.register_evaluator("Double Kill!", DoubleKillEvaluator())
-    _registry.register_evaluator("Connoisseur", ConnoisseurEvaluator())
-    _registry.register_evaluator("Last Pan standing", LastPanStandingEvaluator())
-    _registry.register_evaluator("Vanilla", VanillaEvaluator())
-    _registry.register_evaluator("Pandler", PandlerEvaluator())
-    _registry.register_evaluator("Survival of the Fittest", SurvivalOfTheFittestEvaluator())
-    _registry.register_evaluator("Pantastic", PantasticEvaluator())
-    _registry.register_evaluator("Steakholder", SteakholderEvaluator())
-    _registry.register_evaluator("Biotonne", BiotonneEvaluator())
-    _registry.register_evaluator("Gotta eat'em all!", GottaEatEmAllEvaluator())
-    _registry.register_evaluator("JaPan", JapanEvaluator())
+    _registry.register_evaluator(AchievementKey.stack_overflow, StackOverflowEvaluator())
+    _registry.register_evaluator(AchievementKey.first_blood, FirstBloodEvaluator())
+    _registry.register_evaluator(AchievementKey.local_guide, LocalGuideEvaluator())
+    _registry.register_evaluator(AchievementKey.local_host, LocalHostEvaluator())
+    _registry.register_evaluator(AchievementKey.king_of_the_sauce, KingOfTheSauceEvaluator())
+    _registry.register_evaluator(AchievementKey.king_of_the_grill, KingOfTheGrillEvaluator())
+    _registry.register_evaluator(AchievementKey.garbage_collector, GarbageCollectorEvaluator())
+    _registry.register_evaluator(AchievementKey.double_kill, DoubleKillEvaluator())
+    _registry.register_evaluator(AchievementKey.connoisseur, ConnoisseurEvaluator())
+    _registry.register_evaluator(AchievementKey.last_pan_standing, LastPanStandingEvaluator())
+    _registry.register_evaluator(AchievementKey.vanilla, VanillaEvaluator())
+    _registry.register_evaluator(AchievementKey.pandler, PandlerEvaluator())
+    _registry.register_evaluator(AchievementKey.survival_of_the_fittest, SurvivalOfTheFittestEvaluator())
+    _registry.register_evaluator(AchievementKey.pantastic, PantasticEvaluator())
+    _registry.register_evaluator(AchievementKey.steakholder, SteakholderEvaluator())
+    _registry.register_evaluator(AchievementKey.biotonne, BiotonneEvaluator())
+    _registry.register_evaluator(AchievementKey.gotta_eat_em_all, GottaEatEmAllEvaluator())
+    _registry.register_evaluator(AchievementKey.japan, JapanEvaluator())
 
     # Get all achievements from database
     from back.src.repository.achievement_repository import AchievementRepository
@@ -133,5 +128,5 @@ def initialize_registry() -> None:
     # Register placeholder evaluator for each achievement that doesn't have one
     placeholder = PlaceholderEvaluator()
     for achievement in achievements:
-        if achievement.title is not None and not _registry.has_evaluator(achievement):
-            _registry.register_evaluator(achievement.title, placeholder)
+        if achievement.key is not None and not _registry.has_evaluator(achievement):
+            _registry.register_evaluator(achievement.key, placeholder)

@@ -6,7 +6,9 @@
  */
 
 export * from './achievementDto';
+export * from './achievementKey';
 export * from './achievementStatusDto';
+export * from './apiErrorCode';
 export * from './apiErrorDto';
 export * from './apiErrorSourceDto';
 export * from './authResultDto';
@@ -27,6 +29,7 @@ export * from './errorResponseDto';
 export * from './eventConfigDto';
 export * from './eventDto';
 export * from './eventDtoData';
+export * from './eventType';
 export * from './exportIngredientsParams';
 export * from './generatedPictureDto';
 export * from './generateImageBody';

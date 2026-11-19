@@ -3,6 +3,7 @@ import {useListAchievements} from "../../api/generated/endpoints/achievements/ac
 import type {AchievementStatusDto} from "../../api/generated/model";
 import {onErrorRetry} from "../../lib/api/swrHooks";
 import { VectorGraphics } from "../../lib/vectorGraphics";
+import { achievementDescription, achievementTitle } from "../../shared/achievementText";
 import { achievementValueColor } from "../../shared/achievementValueColor";
 import {useTranslation} from "react-i18next";
 
@@ -25,8 +26,8 @@ export function AchievementView() {
     const renderAchievementCard = (achievement: AchievementStatusDto) => {
         const isHidden = achievement.hidden;
         const isUnlocked = achievement.unlocked;
-        const displayTitle = isHidden ? "???" : achievement.title;
-        const displayDescription = isHidden ? "???" : achievement.description;
+        const displayTitle = isHidden ? "???" : achievementTitle(achievement, t);
+        const displayDescription = isHidden ? "???" : achievementDescription(achievement, t);
         const progress = achievement.progress;
         const showProgress = progress !== null;
 

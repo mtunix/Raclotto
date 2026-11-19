@@ -2,9 +2,8 @@ import { useState } from "react";
 import { message } from "antd";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../AuthSlice";
+import { failureMessage } from "../../lib/api/failedRequest";
 import { changeMyPicture, generateMyPicture } from "../../shared/myProfilePicture";
-
-const errorText = (error: unknown) => (error instanceof Error ? error.message : "");
 
 /** Changing or regenerating the picture on the signed-in user's own profile; does nothing on anyone else's. */
 export function useMyPictureActions(isOwnProfile: boolean, levelId: number | undefined) {
@@ -22,7 +21,7 @@ export function useMyPictureActions(isOwnProfile: boolean, levelId: number | und
       message.success(t("profile.pictureUpdated"));
     } catch (error) {
       console.error("Failed to update profile picture:", error);
-      message.error(errorText(error) || t("profile.pictureUpdateFailed"));
+      message.error(failureMessage(error, t, t("profile.pictureUpdateFailed")));
     } finally {
       setChanging(false);
     }
@@ -34,12 +33,13 @@ export function useMyPictureActions(isOwnProfile: boolean, levelId: number | und
     try {
       const { image_base64 } = await generateMyPicture(levelId);
       if (!image_base64) {
-        throw new Error(t("profile.regenerateFailed"));
+        message.error(t("profile.regenerateFailed"));
+        return;
       }
       message.success(t("profile.pictureUpdated"));
     } catch (error) {
       console.error("Failed to regenerate profile picture:", error);
-      message.error(errorText(error) || t("profile.regenerateFailed"));
+      message.error(failureMessage(error, t, t("profile.regenerateFailed")));
     } finally {
       setGenerating(false);
     }

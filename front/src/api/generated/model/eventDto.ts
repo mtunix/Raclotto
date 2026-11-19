@@ -11,6 +11,5 @@ export interface EventDto {
   data: EventDtoData;
   event_type: string;
   id: number;
-  message: string;
   session_id: number;
 }

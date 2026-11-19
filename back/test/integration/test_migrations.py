@@ -127,6 +127,25 @@ class MigrateTest(unittest.TestCase):
         )
         self.assertEqual(self.query("SELECT version_num FROM alembic_version"), [(_head(),)])
 
+    def test_a_database_from_before_achievement_keys_gets_them_by_title(self):
+        self.given_database(
+            "DROP INDEX ix_achievement_key",
+            "ALTER TABLE achievement DROP COLUMN key",
+            "ALTER TABLE achievement ADD COLUMN description VARCHAR",
+            "INSERT INTO achievement (title, description, value, hidden, is_global) VALUES "
+            "('First Blood!', 'Esse die erste Pfanne', 10, 0, 0), ('First blood!', 'alt', 10, 0, 0), "
+            "('First Blood!', 'doppelt', 10, 0, 0), ('Vanilla', 'Eine Zutat', 10, 0, 0)",
+        )
+
+        migrate(db)
+
+        self.assertEqual(
+            self.query("SELECT title, key FROM achievement ORDER BY id"),
+            [("First Blood!", "first_blood"), ("First blood!", None), ("First Blood!", None), ("Vanilla", "vanilla")],
+        )
+        self.assertNotIn(("description",), self.query("SELECT name FROM pragma_table_info('achievement')"))
+        self.assertEqual(self.query("SELECT version_num FROM alembic_version"), [(_head(),)])
+
     def test_other_missing_columns_stop_startup_with_their_names(self):
         self.given_database('ALTER TABLE "user" DROP COLUMN glow_effect')
 

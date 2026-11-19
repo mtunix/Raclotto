@@ -1,5 +1,6 @@
 """Base classes for the request and response DTOs, and the error body every endpoint shares."""
 
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -26,6 +27,26 @@ def omittable(**constraints: Any) -> Any:
     return Field(default=None, **constraints)
 
 
+class ApiErrorCode(StrEnum):
+    """What went wrong, for clients to tell errors apart; the frontend translates each one."""
+
+    missing_required_body_field = "api_error_code.missing_required_body_field"
+    endpoint_not_found = "api_error_code.endpoint_not_found"
+    resource_not_found = "api_error_code.resource_not_found"
+    unknown_url_arg = "api_error_code.unknown_url_arg"
+    incorrect_header = "api_error_code.incorrect_header"
+    incorrect_parameters = "api_error_code.incorrect_parameters"
+    incorrect_type = "api_error_code.incorrect_type"
+    undo_forbidden = "api_error_code.undo_forbidden"
+    invalid_token = "api_error_code.invalid_token"
+    forbidden = "api_error_code.forbidden"
+    conflict = "api_error_code.conflict"
+    too_many_requests = "api_error_code.too_many_requests"
+    image_generation_unavailable = "api_error_code.image_generation_unavailable"
+    image_generation_failed = "api_error_code.image_generation_failed"
+    internal_error = "api_error_code.internal_error"
+
+
 class ApiErrorSourceDto(ResponseDto):
     pointer: str
 
@@ -33,7 +54,8 @@ class ApiErrorSourceDto(ResponseDto):
 class ApiErrorDto(ResponseDto):
     id_: str
     status: int
-    code: str
+    code: ApiErrorCode
+    # English, for logs and API users; the frontend shows its translation of `code` instead.
     title: str | None
     detail: str | None
     source: ApiErrorSourceDto | None

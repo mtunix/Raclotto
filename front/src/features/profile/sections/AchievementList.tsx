@@ -1,6 +1,7 @@
 import { Card, Col, Empty, Row, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { AchievementDto } from "../../../api/generated/model";
+import { achievementDescription, achievementTitle } from "../../../shared/achievementText";
 import { achievementValueColor } from "../../../shared/achievementValueColor";
 
 const { Title, Text } = Typography;
@@ -18,10 +19,10 @@ export function AchievementList({ achievements }: { achievements: AchievementDto
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
                     <Title level={5} style={{ margin: 0, fontSize: "14px" }}>
-                      {achievement.title || ""}
+                      {achievementTitle(achievement, t)}
                     </Title>
                     <Text type="secondary" style={{ fontSize: "12px" }}>
-                      {achievement.description || ""}
+                      {achievementDescription(achievement, t)}
                     </Text>
                   </div>
                   <Tag color={achievementValueColor(achievement.value || 0)}>

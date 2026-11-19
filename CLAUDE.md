@@ -44,7 +44,9 @@ Every endpoint is typed: `BaseApi.endpoint(route, methods, query=, body=, respon
   which turns `Forbidden` into a 403.
 - `operation_id` names the generated client function (`rollPan`); unique across the app.
 - Responses are plain JSON (`application/json` only, 406/415 otherwise). Errors are
-  `{"errors": [ApiErrorDto, …]}` (`ErrorResponseDto`); raise `ApiError` to produce one.
+  `{"errors": [ApiErrorDto, …]}` (`ErrorResponseDto`); raise `ApiError` to produce one. Its `code`
+  (`ApiErrorCode` in `dto/base.py`) is what the frontend translates; `title` and `detail` are English
+  for logs and API users, never shown in the UI.
 
 The deep modules in `interactor/` and what they own:
 
@@ -58,13 +60,15 @@ The deep modules in `interactor/` and what they own:
   before the commit.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
   what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `IngredientAdded`,
-  `CatalogChanged`, `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`.
-  Never special-case an achievement by title outside its evaluator. `record` flushes, the caller
+  `CatalogChanged`, `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`,
+  and are registered by the achievement's `key` (`AchievementKey`), which also names its texts in the
+  frontend. Never special-case an achievement by key or title outside its evaluator. `record` flushes, the caller
   commits, together with the change the fact reports.
 - **`events.py` — `Events.record(fact) -> list[Event]`**: session events (pan swap) from the same
   facts; evaluators declare `event_type`, `reacts_to` and a default `cooldown`. Owns the
   enabled/frequency config (a session's own overrides the global one). A new event type also goes
-  into `EventType` in `dto/event.py`.
+  into `EventType` in `dto/event.py`, and its name and message, filled from the event's `data`, into
+  the frontend's `events.types.<type>`.
 - **`accounts.py` — `Accounts`**: invites (issue, look up, revoke), creating users, by
   registration or the admin seed (`is_admin`), granting or revoking admin, and changing a password,
   which bumps the user's `token_version` and so revokes every token issued before; a new user
@@ -98,7 +102,7 @@ The deep modules in `interactor/` and what they own:
 | `features/`, `shared/` | Feature views and shared components. `shared/` never imports `features/`. |
 | `AuthSlice.ts`, `AppSlice.ts` | Zustand stores (signed-in user, current session). |
 | `i18n.ts` | Translations; the language last shown is kept in `localStorage`, and `followUserLanguage()` (started in `index.tsx`) switches to the signed-in user's. |
-| `lib/language.ts`, `locales/` | Every user-visible text is a key in both `locales/{de,en}` (no `|| "fallback"`; `locales/translations.test.ts` checks), dates go through `formatDate`/`formatDateTime`, and antd's own texts follow the language via `AntdLocale`. |
+| `lib/language.ts`, `locales/` | Every user-visible text is a key in both `locales/{de,en}` (no `|| "fallback"`; `locales/translations.test.ts` checks), dates go through `formatDate`/`formatDateTime`, and antd's own texts follow the language via `AntdLocale`. The backend sends identifiers, not text: achievements by `key` (`shared/achievementText.ts`), events by `event_type` and `data` (`eventMessage`), errors by `code` (`failureMessage` in `lib/api/failedRequest.ts`); the test checks every identifier the generated client lists. |
 
 A roll returns a `RollOutcomeDto` (pan + reward + achievements + events). Views roll through
 `useRollSession` (`features/generation/rollSession.ts`: roll, reveal, rate, level-up picture), which

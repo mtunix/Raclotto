@@ -3,7 +3,7 @@ import { Form, Input, Button, Card, Alert } from "antd";
 import { useNavigate } from "react-router";
 import { login } from "../../../api/generated/endpoints/auth/auth";
 import { UnauthorizedError } from "../../../lib/api/transport";
-import { failedStatus } from "../../../lib/api/failedRequest";
+import { failedStatus, failureMessage } from "../../../lib/api/failedRequest";
 import { useAuthStore } from "../../../AuthSlice";
 import { useTranslation } from "react-i18next";
 
@@ -30,9 +30,7 @@ export function LoginView() {
           ? t("auth.invalidCredentials")
           : failedStatus(err) === 429
             ? t("auth.tooManyAttempts")
-            : err instanceof Error && err.message
-            ? err.message
-            : t("auth.loginFailed"),
+            : failureMessage(err, t, t("auth.loginFailed")),
       );
     } finally {
       setLoading(false);

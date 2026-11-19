@@ -1,6 +1,7 @@
 import random
 
 from back.src.driver.database import db
+from back.src.entity.achievement import Achievement, AchievementKey
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.rating import Rating
 from back.src.entity.user_achievement_progress import UserAchievementProgress
@@ -12,6 +13,7 @@ from back.src.interactor.achievements import (
     SessionClosed,
 )
 from back.src.interactor.pan_roll import PanRoll, RollOptions
+from back.src.repository.achievement_repository import AchievementRepository
 from back.test.support import AppTest
 
 FILL, SAUCE = IngredientType.FILL, IngredientType.SAUCE
@@ -128,5 +130,31 @@ class TestAchievements(AppTest):
         response = self.call("GET", "/achievements", self.ana)
 
         self.assertEqual(response.status_code, 200, response.json)
-        first_blood = next(a for a in response.json if a["title"] == "First Blood!")
+        first_blood = next(a for a in response.json if a["key"] == "first_blood")
         self.assertTrue(first_blood["unlocked"])
+
+
+class TestSeededAchievements(AppTest):
+    def test_every_key_is_seeded_once(self):
+        self.assertCountEqual([a.key for a in AchievementRepository().all()], list(AchievementKey))
+
+    def test_seeding_again_finds_each_achievement_by_its_key(self):
+        first_blood = AchievementRepository().by_title("First Blood!")
+        assert first_blood is not None
+        first_blood.title = "Renamed"
+        first_blood.value = 1
+        db.session.commit()
+
+        self.app.init_achievements()
+
+        self.assertEqual(len(AchievementRepository().all()), len(AchievementKey))
+        self.assertEqual((first_blood.title, first_blood.value), ("First Blood!", 10))
+
+    def test_an_achievement_no_longer_seeded_is_listed_without_a_key(self):
+        db.session.add(Achievement(title="First blood!", value=10, hidden=False, is_global=False))
+        db.session.commit()
+
+        response = self.call("GET", "/achievements", self.make_user("ana"))
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual([a["value"] for a in response.json if a["key"] is None], [10])

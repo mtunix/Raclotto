@@ -4,7 +4,7 @@ import { SWRConfig } from "swr";
 import { events } from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
 import { setTransport, type Transport } from "../../lib/api/transport";
-import { dismissSessionEvent, useSessionEvents } from "./sessionEvents";
+import { dismissSessionEvent, eventMessage, useSessionEvents } from "./sessionEvents";
 
 let fake: FakeTransport;
 let previous: Transport;
@@ -70,4 +70,18 @@ it("a failed dismissal refetches nothing", async () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(listed("failed")).toHaveLength(1);
+});
+
+it("announces a pan swap in the UI's words, with the two cooks and the window", () => {
+    const t = (key: string, options?: Record<string, unknown>) => `${key} ${JSON.stringify(options)}`;
+
+    expect(eventMessage(events[0], t)).toBe('events.types.pan_swap.message {"first":"Ada","second":"Ben","count":10}');
+});
+
+it("announces events of other types or shapes generically", () => {
+    const t = (key: string) => key;
+
+    expect(eventMessage({ event_type: "rain", data: { mm: 3 } }, t)).toBe("events.unknown.message");
+    expect(eventMessage({ event_type: "pan_swap", data: { pan1_id: 1 } }, t)).toBe("events.unknown.message");
+    expect(eventMessage({ event_type: "pan_swap", data: null }, t)).toBe("events.unknown.message");
 });

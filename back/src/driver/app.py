@@ -126,53 +126,26 @@ class App(Flask):
             logging.info(f"Default preparation type '{default_name}' created successfully")
 
     def init_achievements(self) -> None:
-        """Initialize achievements from default_data if they don't exist."""
+        """Create the achievements of default_data that don't exist, by key, and update the others."""
         from back.src.entity.achievement import Achievement
         from back.src.model.default_data import ACHIEVEMENTS
         from back.src.repository.achievement_repository import AchievementRepository
 
-        achievement_repository = AchievementRepository()
-        existing_achievements = achievement_repository.all()
-        existing_titles = {ach.title for ach in existing_achievements}
-
-        new_achievements = []
-        for achievement_data in ACHIEVEMENTS:
-            if achievement_data.title not in existing_titles:
-                # Create a new Achievement entity from the default data
-                new_achievement = Achievement(
-                    title=achievement_data.title,
-                    description=achievement_data.description,
-                    value=achievement_data.value,
-                    hidden=achievement_data.hidden,
-                    is_global=getattr(
-                        achievement_data, "is_global", True
-                    ),  # Default to True for backward compatibility
-                )
-                new_achievements.append(new_achievement)
-
-        if new_achievements:
-            self.db.session.add_all(new_achievements)
-            self.db.session.commit()
-            logging.info(f"Initialized {len(new_achievements)} achievements")
-
-        # Also update existing achievements if their data changed
-        for achievement_data in ACHIEVEMENTS:
-            existing = achievement_repository.by_title(achievement_data.title)
-            if existing:
-                # Update description, value, hidden status, and is_global flag if they differ
-                is_global = getattr(achievement_data, "is_global", True)
-                if (
-                    existing.description != achievement_data.description
-                    or existing.value != achievement_data.value
-                    or existing.hidden != achievement_data.hidden
-                    or existing.is_global != is_global
-                ):
-                    existing.description = achievement_data.description
-                    existing.value = achievement_data.value
-                    existing.hidden = achievement_data.hidden
-                    existing.is_global = is_global
-                    self.db.session.commit()
-                    logging.info(f"Updated achievement: {achievement_data.title}")
+        existing = {achievement.key: achievement for achievement in AchievementRepository().all()}
+        created = 0
+        for seed in ACHIEVEMENTS:
+            achievement = existing.get(seed.key)
+            if achievement is None:
+                achievement = Achievement(key=seed.key)
+                self.db.session.add(achievement)
+                created += 1
+            achievement.title = seed.title
+            achievement.value = seed.value
+            achievement.hidden = seed.hidden
+            achievement.is_global = seed.is_global
+        self.db.session.commit()
+        if created:
+            logging.info(f"Initialized {created} achievements")
 
     def init_levels(self) -> None:
         """Initialize levels from default_data if they don't exist."""

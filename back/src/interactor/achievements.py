@@ -72,7 +72,7 @@ class AchievementStatus:
 
 class Achievements:
     def __init__(self, evaluators: Mapping[str, AchievementEvaluator] | None = None):
-        """``evaluators`` maps achievement title to evaluator; defaults to the app registry."""
+        """``evaluators`` maps achievement key to evaluator; defaults to the app registry."""
         self._evaluators = evaluators if evaluators is not None else get_registry().evaluators
         self._achievements = AchievementRepository()
         self._users = UserRepository()
@@ -137,9 +137,9 @@ class Achievements:
         return statuses
 
     def _evaluator(self, achievement: Achievement) -> AchievementEvaluator | None:
-        if achievement.title is None:
+        if achievement.key is None:
             return None
-        return self._evaluators.get(achievement.title)
+        return self._evaluators.get(achievement.key)
 
     def _audience(self, audience: Audience, fact: Fact) -> list[User]:
         if audience == "actor":

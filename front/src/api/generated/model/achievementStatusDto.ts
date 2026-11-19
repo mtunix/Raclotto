@@ -4,17 +4,17 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { AchievementKey } from './achievementKey';
 
 /**
  * An achievement and how far the signed-in user is with it.
  */
 export interface AchievementStatusDto {
-  description: string;
   hidden: boolean;
   id: number;
   is_global: boolean;
+  key: AchievementKey | null;
   progress: number | null;
-  title: string;
   unlocked: boolean;
   value: number;
 }

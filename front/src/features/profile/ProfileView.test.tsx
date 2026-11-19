@@ -63,7 +63,7 @@ it("shows the signed-in user's own profile with their email, statistics and pans
 
     expect(await screen.findByText("ada@example.com")).toBeInTheDocument();
     expect(screen.getByText("image.regeneratePicture")).toBeInTheDocument();
-    expect(screen.getByText("Gotta eat'em all!")).toBeInTheDocument();
+    expect(screen.getByText("achievements.gotta_eat_em_all.title")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { level: 4, name: panPage.items[0].name ?? "" })).toBeInTheDocument();
     expect(screen.queryByText("history.loadMore")).not.toBeInTheDocument();
     expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: [me.id] });

@@ -47,8 +47,8 @@ class TestRatingApi(AppTest):
 
     def test_a_rating_whose_achievements_fail_is_not_saved(self):
         evaluators = get_registry().evaluators
-        self.addCleanup(evaluators.__setitem__, "Local Guide", evaluators["Local Guide"])
-        evaluators["Local Guide"] = BrokenOnRating()
+        self.addCleanup(evaluators.__setitem__, "local_guide", evaluators["local_guide"])
+        evaluators["local_guide"] = BrokenOnRating()
 
         response = self.rate(self.ben, 4)
 

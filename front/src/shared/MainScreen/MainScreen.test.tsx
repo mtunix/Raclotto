@@ -59,7 +59,7 @@ it("shows the session's toolbar and loads its ingredients and events", async () 
 
     expect(screen.getAllByText(current.name).length).toBeGreaterThan(0);
     expect(screen.getByText('home')).toBeInTheDocument();
-    expect(await screen.findByText(events[0].message)).toBeInTheDocument();
+    expect(await screen.findByText('events.types.pan_swap.message')).toBeInTheDocument();
     expect(fake.last('GET', '/ingredients')?.query).toEqual({ session_key: current.key });
     expect(fake.last('GET', '/events')?.query).toEqual({ session_key: current.key });
 });
@@ -82,7 +82,7 @@ it('dismisses the newest event and refetches the rest', async () => {
 
     fireEvent.click(await screen.findByText('events.dismiss'));
 
-    await waitFor(() => expect(screen.queryByText(events[0].message)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText('events.types.pan_swap.message')).not.toBeInTheDocument());
     expect(fake.last('POST', `/events/${events[0].id}/dismiss`)).toBeDefined();
 });
 

@@ -1,3 +1,4 @@
+import { AchievementKey, ApiErrorCode, EventType } from "../api/generated/model";
 import de from "./de/translation.json";
 import en from "./en/translation.json";
 
@@ -41,6 +42,29 @@ it.each(Object.entries(locales))("has every key the source names in %s", (_, key
 it.each(Object.entries({ de, en }))("has every key the %s texts nest", (_, translation) => {
   const nested = JSON.stringify(translation).matchAll(/\$t\(([^)]+)\)/g);
   expect([...nested].map((match) => match[1]).filter((key) => !has(locales.de, key) || !has(locales.en, key))).toEqual([]);
+});
+
+// The backend sends these identifiers for the frontend to translate; the generated client lists every one it can send.
+const serverTexts = {
+  achievements: [...Object.values(AchievementKey), "retired"].flatMap((key) => [
+    `achievements.${key}.title`,
+    `achievements.${key}.description`,
+  ]),
+  events: Object.values(EventType).flatMap((type) => [`events.types.${type}.name`, `events.types.${type}.message`]),
+  apiError: [...Object.values(ApiErrorCode).map((code) => `apiError.${code}`), "apiError.unknown"],
+};
+
+it.each(Object.entries(serverTexts))("translates every %s identifier the backend sends", (_, keys) => {
+  expect(keys.filter((key) => !has(locales.de, key) || !has(locales.en, key))).toEqual([]);
+});
+
+it.each(Object.entries(serverTexts))("has no %s texts for identifiers the backend no longer sends", (family, keys) => {
+  const known = new Set(keys);
+  const stale = [...locales.en].filter(
+    (key) =>
+      key.startsWith(family === "events" ? "events.types." : `${family}.`) && !known.has(key.replace(/_(one|other)$/, "")),
+  );
+  expect(stale).toEqual([]);
 });
 
 it("has no English fallbacks behind t(), which never show: t() returns the key when one is missing", () => {

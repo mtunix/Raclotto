@@ -4,6 +4,7 @@ import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { createInvite, revokeInvite, useListInvites } from "../../../api/generated/endpoints/invites/invites";
 import type { InviteDto } from "../../../api/generated/model";
+import { failureMessage } from "../../../lib/api/failedRequest";
 import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { formatDateTime, useLanguage } from "../../../lib/language";
 import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
@@ -41,7 +42,7 @@ export function InvitesSection() {
             void mutate();
             message.success(t("invite.tokenCreated"));
         } catch (e) {
-            setError(e instanceof Error && e.message ? e.message : t("invite.creationFailed"));
+            setError(failureMessage(e, t, t("invite.creationFailed")));
         } finally {
             setCreating(false);
         }
@@ -53,7 +54,7 @@ export function InvitesSection() {
             void mutate();
             message.success(t("invite.tokenRevoked"));
         } catch (e) {
-            setError(e instanceof Error && e.message ? e.message : t("invite.revokeFailed"));
+            setError(failureMessage(e, t, t("invite.revokeFailed")));
         }
     }
 
