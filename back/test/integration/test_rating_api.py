@@ -1,7 +1,20 @@
 from back.src.driver.database import db
 from back.src.dto.rating import RatingDto
 from back.src.entity.rating import Rating
+from back.src.interactor.achievement_evaluator import AchievementEvaluator
+from back.src.interactor.achievement_registry import get_registry
+from back.src.interactor.facts import PanRated
 from back.test.support import AppTest
+
+
+class BrokenOnRating(AchievementEvaluator):
+    reacts_to = (PanRated,)
+
+    def judge(self, fact, subject, achievement, context):
+        raise RuntimeError("boom")
+
+    def calculate_progress(self, user, achievement, context):
+        return None
 
 
 class TestRatingApi(AppTest):
@@ -17,7 +30,8 @@ class TestRatingApi(AppTest):
         return self.call("POST", "/ratings", user, body={"pan_id": (pan or self.pan).id, "rating": stars, **extra})
 
     def stored(self) -> list:
-        db.session.expire_all()
+        # What the requests committed; the app context the test holds outlives each request's.
+        db.session.rollback()
         return [(r.user_id, r.pan_id, r.session_id, r.rating) for r in db.session.query(Rating).order_by(Rating.id)]
 
     def test_rating_belongs_to_the_signed_in_user_and_the_pans_session(self):
@@ -28,6 +42,16 @@ class TestRatingApi(AppTest):
         self.assertEqual((rating.user_id, rating.pan_id, rating.session_id, rating.rating),
                          (self.ben.id, self.pan.id, self.s1.id, 4))
         self.assertEqual(self.stored(), [(self.ben.id, self.pan.id, self.s1.id, 4)])
+
+    def test_a_rating_whose_achievements_fail_is_not_saved(self):
+        evaluators = get_registry().evaluators
+        self.addCleanup(evaluators.__setitem__, "Local Guide", evaluators["Local Guide"])
+        evaluators["Local Guide"] = BrokenOnRating()
+
+        response = self.rate(self.ben, 4)
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(self.stored(), [])
 
     def test_rating_cannot_name_another_user(self):
         response = self.rate(self.ben, 4, user_id=self.ana.id)

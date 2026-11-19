@@ -60,14 +60,10 @@ class RatingApi(BaseApi):
             rating.rating = body.rating
         db.session.flush()
         dto = RatingDto.model_validate(rating)
-        # Committed first so the evaluators see the new rating in pan.ratings.
-        db.session.commit()
-
         # Only a first rating counts; re-rating the same pan changes nothing for achievements.
         if is_new:
             Achievements().record(PanRated(rating=rating, pan=pan, rater=user, session=pan.session))
-            db.session.commit()
-
+        db.session.commit()
         return dto
 
     @BaseApi.endpoint("/<int:rating_id>", ["GET"], response=RatingDto, operation_id="getRating", errors=(404,))
