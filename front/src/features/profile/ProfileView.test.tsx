@@ -1,7 +1,14 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { ProfilePictureDto } from "../../api/generated/model";
 import { useAuthStore } from "../../AuthSlice";
-import { me, panPage, pictureHistory, userProfile, userStats } from "../../lib/api/__fixtures__/backendResponses";
+import {
+    generatedPicture,
+    me,
+    panPage,
+    pictureHistory,
+    userProfile,
+    userStats,
+} from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
 import { setTransport, Transport } from "../../lib/api/transport";
 import { renderRoutes } from "../../testUtils";
@@ -45,4 +52,46 @@ it("makes a slowly saved picture the candidate once it is saved", async () => {
     });
     expect(fake.last("PATCH", "/auth/me")?.body).toEqual({ profile_picture: null });
     expect(useAuthStore.getState().user?.profile_picture).toBeNull();
+});
+
+it("shows the signed-in user's own profile with their email, statistics and pans", async () => {
+    fake.on("GET", "/pans", { ...panPage, has_more: false });
+    renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile");
+
+    expect(await screen.findByText("ada@example.com")).toBeInTheDocument();
+    expect(screen.getByText("Regenerate Picture")).toBeInTheDocument();
+    expect(screen.getByText("Gotta eat'em all!")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 4, name: panPage.items[0].name ?? "" })).toBeInTheDocument();
+    expect(screen.queryByText("history.loadMore")).not.toBeInTheDocument();
+    expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: me.id });
+});
+
+it("shows someone else's profile without their email or picture actions", async () => {
+    fake.on("GET", "/users/5", { ...userProfile, id: 5, name: "Bob" })
+        .on("GET", "/users/5/stats", userStats);
+    renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile/5");
+
+    expect(await screen.findByText("Bob")).toBeInTheDocument();
+    expect(screen.queryByText("ada@example.com")).not.toBeInTheDocument();
+    expect(screen.queryByText("Regenerate Picture")).not.toBeInTheDocument();
+    expect(screen.queryByText("profile.clickToChange")).not.toBeInTheDocument();
+    expect(fake.last("GET", "/pans")?.query).toMatchObject({ user_id: 5 });
+});
+
+it("says so for a user that does not exist", async () => {
+    fake.on("GET", "/users/9", () => Promise.reject(Object.assign(new Error("404"), { status: 404 })))
+        .on("GET", "/users/9/stats", () => Promise.reject(Object.assign(new Error("404"), { status: 404 })));
+    renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile/9");
+
+    expect(await screen.findByText("profile.userNotFound")).toBeInTheDocument();
+});
+
+it("regenerates the picture for the user's level", async () => {
+    fake.on("POST", "/images/generate-profile-picture", generatedPicture).on("GET", "/auth/me", me);
+    renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile");
+
+    fireEvent.click(await screen.findByText("Regenerate Picture"));
+
+    expect(await screen.findByText("profile.pictureUpdated")).toBeInTheDocument();
+    expect(fake.last("POST", "/images/generate-profile-picture")?.body).toEqual({ level_id: userProfile.level?.id });
 });
