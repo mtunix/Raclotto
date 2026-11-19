@@ -1,109 +1,98 @@
-// Needs FakeTransport to be revived: its API mocks went with the Api facade.
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { RouteObject } from 'react-router';
+import { useAppStore } from '../../AppSlice';
+import { useAuthStore } from '../../AuthSlice';
+import { me, session, userProfile } from '../../lib/api/__fixtures__/backendResponses';
+import { FakeTransport } from '../../lib/api/fakeTransport';
+import { setTransport, Transport } from '../../lib/api/transport';
+import { currentPath, renderRoutes } from '../../testUtils';
 import { Toolbar } from './Toolbar';
-import { createMockIngredientForUser, resetAllMocks } from '../../testUtils';
-import { IngredientType } from '../../api/generated/model';
 
-describe('Toolbar', () => {
-    const mockIngredients = [
-        createMockIngredientForUser({ id: 1, name: 'Ingredient 1', type: IngredientType.FILL }),
-        createMockIngredientForUser({ id: 2, name: 'Ingredient 2', type: IngredientType.SAUCE }),
-    ];
-    const sessionKey = 'test-session';
-    const mockSessionClosed = jest.fn();
+let fake: FakeTransport;
+let previous: Transport;
 
-    const renderToolbar = () => render(
-        <Toolbar
-            ingredients={mockIngredients}
-            session={sessionKey}
-            sessionId="123"
-            sessionClosed={mockSessionClosed}
-        />
-    );
+beforeEach(() => {
+    fake = new FakeTransport().on('GET', `/users/${me.id}`, userProfile);
+    previous = setTransport(fake);
+    useAppStore.setState({ session });
+    useAuthStore.setState({ user: me, token: 'token', isAuthenticated: true });
+});
 
-    beforeEach(() => {
-        resetAllMocks();
-    });
+afterEach(() => {
+    setTransport(previous);
+});
 
-    it('renders all toolbar buttons', () => {
-        renderToolbar();
-        expect(screen.getByText(/common\.shuffle/)).toBeInTheDocument();
-        expect(screen.getByText(/common\.settings/)).toBeInTheDocument();
-        expect(screen.getByText(/common\.history/)).toBeInTheDocument();
-        expect(screen.getByText('+')).toBeInTheDocument();
-        expect(screen.getByText(/common\.achievements/)).toBeInTheDocument();
-        expect(screen.getByText(/common\.serverSettings/)).toBeInTheDocument();
-    });
+const toolbar = <Toolbar ingredients={[]} session={session.key} sessionId={String(session.id)} sessionClosed={() => {}} />;
+const routes: RouteObject[] = [{ path: '/:sessionId/:view?', element: toolbar }];
+const views = ['dashboard', 'generate', 'history', 'add', 'achievements', 'settings'];
 
-    it('opens generate view when shuffle button is clicked', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText(/common\.shuffle/));
-        expect(screen.getByText('toolbar.generateTitle')).toBeInTheDocument();
-    });
+function renderAt(path: string) {
+    return renderRoutes(routes, path);
+}
 
-    it('opens settings view when settings button is clicked', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText(/common\.settings/));
-        expect(screen.getByText('toolbar.userSettingsTitle')).toBeInTheDocument();
-    });
+const button = (label: string) => screen.getByText(label).closest('button') as HTMLElement;
+const labels = ['common.dashboard', 'common.shuffle', 'common.history', 'ingredient.ingredients', 'common.achievements', 'common.settings'];
 
-    it('opens history view when history button is clicked', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText(/common\.history/));
-        expect(screen.getByText('toolbar.historyTitle')).toBeInTheDocument();
-    });
+it("shows the session's name and a button per view", () => {
+    renderAt(`/${session.id}`);
 
-    it('opens add ingredient view when plus button is clicked', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText('+'));
-        expect(screen.getByText('toolbar.addIngredientTitle')).toBeInTheDocument();
-    });
+    expect(screen.getAllByText(session.name).length).toBeGreaterThan(0);
+    for (const label of labels) {
+        expect(button(label)).toBeInTheDocument();
+    }
+});
 
-    it('opens achievements view when achievements button is clicked', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText(/common\.achievements/));
-        expect(screen.getByText('toolbar.achievementsTitle')).toBeInTheDocument();
-    });
+it.each(labels.map((label, i) => [label, views[i]]))('%s opens the %s view', async (label, view) => {
+    const { router } = renderAt(`/${session.id}`);
 
-    it('opens server settings view when server settings button is clicked', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText(/common\.serverSettings/));
-        expect(screen.getByText('toolbar.serverSettingsTitle')).toBeInTheDocument();
-    });
+    fireEvent.click(button(label));
 
-    it('closes tool when same button is clicked again', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        const shuffleButton = screen.getByText(/common\.shuffle/);
-        await user.click(shuffleButton);
-        expect(screen.getByText('toolbar.generateTitle')).toBeInTheDocument();
-        await user.click(shuffleButton);
-        expect(screen.queryByText('toolbar.generateTitle')).not.toBeInTheDocument();
-    });
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/${session.id}/${view}`));
+});
 
-    it('switches between different tools', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        await user.click(screen.getByText(/common\.shuffle/));
-        expect(screen.getByText('toolbar.generateTitle')).toBeInTheDocument();
-        await user.click(screen.getByText(/common\.settings/));
-        expect(screen.queryByText('toolbar.generateTitle')).not.toBeInTheDocument();
-        expect(screen.getByText('toolbar.userSettingsTitle')).toBeInTheDocument();
-    });
+it('highlights the open view and stays on it when clicked again', () => {
+    const { router } = renderAt(`/${session.id}/history`);
 
-    it('highlights active button', async () => {
-        const user = userEvent.setup();
-        renderToolbar();
-        const shuffleButton = screen.getByText(/common\.shuffle/);
-        await user.click(shuffleButton);
-        expect(shuffleButton.closest('button')).toHaveClass('ant-btn-primary');
-    });
+    expect(button('common.history')).toHaveClass('ant-btn-primary');
+    expect(button('common.shuffle')).not.toHaveClass('ant-btn-primary');
+    fireEvent.click(button('common.history'));
+
+    expect(router.state.location.pathname).toBe(`/${session.id}/history`);
+    expect(router.state.historyAction).toBe('POP');
+});
+
+it("opens the signed-in user's profile from the avatar", async () => {
+    const { container, router } = renderAt(`/${session.id}`);
+
+    fireEvent.click(container.querySelector('.toolbar-profile-avatar') as HTMLElement);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/${session.id}/profile/${me.id}`));
+});
+
+it("shows the profile's current picture rather than the one the user signed in with", async () => {
+    const picture = 'data:image/png;base64,bmV3';
+    fake.on('GET', `/users/${me.id}`, { ...userProfile, profile_picture: picture });
+    const { container } = renderAt(`/${session.id}`);
+
+    await waitFor(() => expect(container.querySelector('.toolbar-profile-avatar img')).toHaveAttribute('src', picture));
+});
+
+it('leaves the session for the start screen', async () => {
+    renderRoutes([{ path: '/:sessionId', element: toolbar }], `/${session.id}`);
+
+    fireEvent.click(screen.getAllByText(/session\.leave/)[0]);
+
+    await waitFor(() => expect(currentPath()).toBe('/'));
+    expect(useAppStore.getState().session).toBeNull();
+    expect(useAuthStore.getState().user).toEqual(me);
+});
+
+it('signs out to the login page', async () => {
+    const { router } = renderAt(`/${session.id}`);
+
+    fireEvent.click(screen.getByText('auth.logout'));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
+    expect(useAppStore.getState().session).toBeNull();
+    expect(useAuthStore.getState().user).toBeNull();
 });
