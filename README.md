@@ -6,9 +6,10 @@ Made for snack lovers by snack lovers <3
 
 Raclotto is a raclette lottery. Everyone at the table joins a session and rolls pans of random
 ingredients from the session's catalog, filtered by their diet, then rates what they got. Rolling
-and rating earn XP, levels and achievements, and session events such as a pan swap keep the table
-moving. Accounts are created by invitation; ingredient catalogs can be exported and imported, and
-profile pictures can be generated with Google's image model.
+earns XP and levels, rolling and rating earn achievements, and session events such as a pan swap
+keep the table moving. When the session's creator ends it, everyone gets a recap of the evening;
+the rules are in the app under Rules. Accounts are created by invitation; ingredient catalogs can
+be exported and imported, and profile pictures can be generated with Google's image model.
 
 A Flask and SQLite backend serves a React and TypeScript frontend; both ship as one Docker image.
 
@@ -24,7 +25,9 @@ cd front && npm start               # frontend dev server, proxies the API to it
 ```
 
 `.env.example` lists every variable; copy it to `.env` to set any. Set `RACLOTTO_ADMIN_PASSWORD`
-there to get an `admin` user on the first start, who can then invite others.
+there to get an `admin` user on the first start, who can then invite others. A session can be
+renamed, closed, reopened or deleted only by its creator or an admin, and only admins change the
+global settings; there is no screen for granting admin yet, so set `is_admin` in the database.
 
 The checks CI runs:
 

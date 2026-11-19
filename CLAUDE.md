@@ -26,6 +26,7 @@ the module you are changing before inferring patterns from its neighbours.
 | Spec | `api/openapi.py` | Builds `back/openapi.json` from the endpoint declarations. |
 | Migrations | `driver/migrations.py`, `back/migrations/` | Alembic; the app migrates its database at startup (below). |
 | Frontend serving | `driver/app.py` (`App.serve`) | Files of the frontend build in `static/`; any other non-API path gets `index.html` for the browser router. |
+| Auth | `auth/` | JWT (carries the user's `token_version`), the `@require_auth` guard, the in-memory login throttle (5 failures per address and account per 15 min). |
 
 Schema changes ship with an Alembic revision (`venv/bin/alembic revision -m "..."`; render it with
 `--autogenerate` against a database at head via `RACLOTTO_DATABASE_URL`). At startup `migrate()`
@@ -38,7 +39,8 @@ Every endpoint is typed: `BaseApi.endpoint(route, methods, query=, body=, respon
 - The handler gets `query=` / `body=` as validated DTOs (path params as plain kwargs) and returns the
   response DTO; returning anything else is a 500.
 - `errors=` lists every error status the handler and its callees raise; 400 (invalid DTO) and 401
-  (`@require_auth`) are implied.
+  (`@require_auth`) are implied. A permission check runs inside `with guarded():` (`api/guard.py`),
+  which turns `Forbidden` into a 403.
 - `operation_id` names the generated client function (`rollPan`); unique across the app.
 - Responses are plain JSON (`application/json` only, 406/415 otherwise). Errors are
   `{"errors": [ApiErrorDto, …]}` (`ErrorResponseDto`); raise `ApiError` to produce one.
@@ -62,8 +64,15 @@ The deep modules in `interactor/` and what they own:
   facts; evaluators declare `event_type`, `reacts_to` and a default `cooldown`. Owns the
   enabled/frequency config (a session's own overrides the global one). A new event type also goes
   into `EventType` in `dto/event.py`.
-- **`accounts.py` — `Accounts`**: invites (issue, look up, revoke) and creating users, by
-  registration or the admin seed; a new user starts at the lowest level.
+- **`accounts.py` — `Accounts`**: invites (issue, look up, revoke), creating users, by
+  registration or the admin seed (`is_admin`), and changing a password, which bumps the user's
+  `token_version` and so revokes every token issued before; a new user starts at the lowest level.
+- **`permissions.py` — `Permissions(user)`**: who may change what. A session is its creator's to
+  rename, close, reactivate, delete and configure events for; a pan its author's; the global event
+  configs, default preparation types and insults an admin's. Admins may do all of it. Rolling,
+  rating and a session's ingredients are open to everyone signed in. Never check ownership in a route.
+- **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
+  worst and boldest pan, favorite ingredient, each participant's pans, XP and stars); read-only.
 - **`levels.py` — `Levels`**: the XP a pan earns and the level it reaches (`award -> Reward`),
   the progress a profile shows, and the level new users start at.
 - **`pan_ratings.py` — `PanRatings`**: rate a pan, change or withdraw your own rating (anyone
@@ -80,9 +89,10 @@ The deep modules in `interactor/` and what they own:
 | `api/generated/` | orval output from `back/openapi.json`: endpoint functions, SWR hooks, key getters, DTO types. Never edit; `npm run gen:api`. |
 | `lib/api/transport.ts`, `orvalMutator.ts` | The seam: generated code calls the mutator, which calls `transport()`. Auth hooks are registered by `AuthSlice`. |
 | `lib/api/swrHooks.ts` | Cache invalidation (`mutateX`) built on the generated key getters; SWR retry policy. |
-| `model/diet.ts`, `model/levelProgress.ts`, `features/generation/rollSession.ts`, `features/generation/applyRollOutcome.ts`, `features/rating/ratePan.ts`, `features/ingredients/ingredientCatalog.ts`, `features/history/usePanPages.ts`, `features/settings/ingredientImport.ts`, `shared/EventDisplay/sessionEvents.ts`, `shared/XpNotification/xpNotificationTimeline.ts`, `shared/myProfilePicture.ts` | Hand-written domain logic over the generated types. |
+| `model/diet.ts`, `model/levelProgress.ts`, `model/permissions.ts`, `features/generation/rollSession.ts`, `features/generation/applyRollOutcome.ts`, `features/rating/ratePan.ts`, `features/ingredients/ingredientCatalog.ts`, `features/history/usePanPages.ts`, `features/settings/ingredientImport.ts`, `shared/EventDisplay/sessionEvents.ts`, `shared/XpNotification/xpNotificationTimeline.ts`, `shared/myProfilePicture.ts` | Hand-written domain logic over the generated types. |
 | `features/`, `shared/` | Feature views and shared components. `shared/` never imports `features/`. |
 | `AuthSlice.ts`, `AppSlice.ts` | Zustand stores (signed-in user, current session). |
+| `i18n.ts` | Translations; the language last shown is kept in `localStorage`, and `followUserLanguage()` (started in `index.tsx`) switches to the signed-in user's. |
 
 A roll returns a `RollOutcomeDto` (pan + reward + achievements + events). Views roll through
 `useRollSession` (`features/generation/rollSession.ts`: roll, reveal, rate, level-up picture), which
