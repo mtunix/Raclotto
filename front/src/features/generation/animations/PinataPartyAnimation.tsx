@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import type { IngredientDto } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
 
 interface PinataPartyAnimationProps {
-    ingredients?: any[]; // Optional, not used but kept for API compatibility
+    ingredients?: IngredientDto[]; // Optional, not used but kept for API compatibility
     duration?: number; // in milliseconds
     fading?: boolean; // Whether the animation should fade out
 }
@@ -40,25 +41,15 @@ const CONFETTI_EMOJIS = ["✨", "⭐", "🌟", "💫", "🎊", "🎉"];
 
 export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
     const { duration = 4000, fading = false } = props;
-    const [flyingIngredients, setFlyingIngredients] = useState<FlyingIngredient[]>([]);
-    const [confetti, setConfetti] = useState<FlyingIngredient[]>([]);
-    const [centerX, setCenterX] = useState(0);
-    const [centerY, setCenterY] = useState(0);
-    const [pinataEmoji, setPinataEmoji] = useState("🎉");
-    const [boomEmoji, setBoomEmoji] = useState("💥");
 
-    useEffect(() => {
+    const [scene] = useState(() => {
         // Randomly select a piñata emoji and boom emoji
         const randomPinataEmoji = PINATA_EMOJIS[Math.floor(Math.random() * PINATA_EMOJIS.length)];
         const randomBoomEmoji = BOOM_EMOJIS[Math.floor(Math.random() * BOOM_EMOJIS.length)];
-        setPinataEmoji(randomPinataEmoji);
-        setBoomEmoji(randomBoomEmoji);
 
         // Calculate center of screen
         const centerXPos = window.innerWidth / 2;
         const centerYPos = window.innerHeight / 2;
-        setCenterX(centerXPos);
-        setCenterY(centerYPos);
 
         // Reduce particle count on mobile for better performance
         const isMobile = Util.isMobile();
@@ -123,9 +114,9 @@ export function PinataPartyAnimation(props: PinataPartyAnimationProps) {
             });
         }
 
-        setFlyingIngredients(newFlyingIngredients);
-        setConfetti(newConfetti);
-    }, [duration]);
+        return { pinataEmoji: randomPinataEmoji, boomEmoji: randomBoomEmoji, centerX: centerXPos, centerY: centerYPos, flyingIngredients: newFlyingIngredients, confetti: newConfetti };
+    });
+    const { flyingIngredients, confetti, centerX, centerY, pinataEmoji, boomEmoji } = scene;
 
     return (
         <div

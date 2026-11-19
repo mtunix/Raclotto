@@ -5,7 +5,7 @@ import type { SessionDto } from "../api/generated/model";
 import { useAppStore } from "../AppSlice";
 import { session } from "../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../lib/api/fakeTransport";
-import { setTransport, Transport } from "../lib/api/transport";
+import { setTransport, type Transport } from "../lib/api/transport";
 import { useRouteSession } from "./useRouteSession";
 
 const other: SessionDto = { ...session, id: session.id + 1, key: "s2", name: "s2" };

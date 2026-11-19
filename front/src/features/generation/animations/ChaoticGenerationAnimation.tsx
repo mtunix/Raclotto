@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import type { IngredientDto } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
 
 interface ChaoticGenerationAnimationProps {
-    ingredients?: any[]; // Optional, not used but kept for API compatibility
+    ingredients?: IngredientDto[]; // Optional, not used but kept for API compatibility
     duration?: number; // in milliseconds
     fading?: boolean; // Whether the animation should fade out
 }
@@ -32,9 +33,8 @@ const FOOD_ICONS = [
 
 export function ChaoticGenerationAnimation(props: ChaoticGenerationAnimationProps) {
     const { duration = 1000, fading = false } = props;
-    const [flyingIngredients, setFlyingIngredients] = useState<FlyingIngredient[]>([]);
 
-    useEffect(() => {
+    const [scene] = useState(() => {
         // Reduce particle count on mobile for better performance
         const isMobile = Util.isMobile();
         const isLowPerf = Util.isLowPerformanceDevice();
@@ -47,8 +47,8 @@ export function ChaoticGenerationAnimation(props: ChaoticGenerationAnimationProp
 
             // Random starting position (from various edges)
             const edge = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
-            let startX = 0;
-            let startY = 0;
+            let startX: number;
+            let startY: number;
             
             if (edge === 0) {
                 // Top edge
@@ -84,8 +84,9 @@ export function ChaoticGenerationAnimation(props: ChaoticGenerationAnimationProp
             });
         }
 
-        setFlyingIngredients(newFlyingIngredients);
-    }, []);
+        return { flyingIngredients: newFlyingIngredients };
+    });
+    const { flyingIngredients } = scene;
 
     return (
         <div

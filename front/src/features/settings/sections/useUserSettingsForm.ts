@@ -5,7 +5,7 @@ import { updateMe, useGetMe } from "../../../api/generated/endpoints/auth/auth";
 import type { MeDto } from "../../../api/generated/model";
 import { useAuthStore } from "../../../AuthSlice";
 import { mutateMe, mutatePanLists, onErrorRetry } from "../../../lib/api/swrHooks";
-import { DietPreferences, normalizeDiet } from "../../../model/diet";
+import { type DietPreferences, normalizeDiet } from "../../../model/diet";
 import { useDietPreferences } from "../../../shared/useDietPreferences";
 
 /** The user tab's fields besides the diet; saved together with it. */
@@ -41,13 +41,14 @@ export function useUserSettingsForm() {
     const [saved, setSaved] = useState<Saved | null>(null);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        if (!me) return;
+    const [loadedFrom, setLoadedFrom] = useState<typeof me>(undefined);
+    if (me && me !== loadedFrom) {
+        setLoadedFrom(me);
         const loaded = savedOf(me);
         setProfile(loaded.profile);
         setDiet(loaded.diet);
         setSaved(loaded);
-    }, [me, setDiet]);
+    }
 
     useEffect(() => {
         if (error) {
@@ -70,15 +71,15 @@ export function useUserSettingsForm() {
             const updated = await updateMe({ ...profile, ...normalized });
             setSaved({ profile, diet: normalized });
             setDiet(normalized);
-            mutateMe();
+            void mutateMe();
             // Pan cards show their author's border.
-            mutatePanLists();
+            void mutatePanLists();
             setUser(updated);
             message.success(t("common.saved") || "Saved");
         } catch (e) {
             console.error("Failed to save user settings:", e);
             message.error(t("settings.saveFailed") || "Failed to save settings");
-            mutateMe();
+            void mutateMe();
         } finally {
             setSaving(false);
         }

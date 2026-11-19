@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import type { IngredientDto } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
 
 interface SlotMachineAnimationProps {
-    ingredients?: any[]; // Optional, not used but kept for API compatibility
+    ingredients?: IngredientDto[]; // Optional, not used but kept for API compatibility
     duration?: number; // in milliseconds
     fading?: boolean; // Whether the animation should fade out
 }
@@ -32,23 +33,16 @@ const FOOD_ICONS = [
 
 export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
     const { duration = 3000, fading = false } = props;
-    const [flyingIngredients, setFlyingIngredients] = useState<FlyingIngredient[]>([]);
-    const [centerX, setCenterX] = useState(0);
-    const [centerY, setCenterY] = useState(0);
-    const [reelIcons, setReelIcons] = useState<string[]>(["🍕", "🍔", "🌮"]);
 
-    useEffect(() => {
+    const [scene] = useState(() => {
         // Randomly select icons for the three reels
         const reel1Icon = FOOD_ICONS[Math.floor(Math.random() * FOOD_ICONS.length)];
         const reel2Icon = FOOD_ICONS[Math.floor(Math.random() * FOOD_ICONS.length)];
         const reel3Icon = FOOD_ICONS[Math.floor(Math.random() * FOOD_ICONS.length)];
-        setReelIcons([reel1Icon, reel2Icon, reel3Icon]);
 
         // Calculate center of screen
         const centerXPos = window.innerWidth / 2;
         const centerYPos = window.innerHeight / 2;
-        setCenterX(centerXPos);
-        setCenterY(centerYPos);
 
         // Reduce particle count on mobile for better performance
         const isMobile = Util.isMobile();
@@ -103,8 +97,9 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
             });
         }
 
-        setFlyingIngredients(newFlyingIngredients);
-    }, [duration]);
+        return { reelIcons: [reel1Icon, reel2Icon, reel3Icon], centerX: centerXPos, centerY: centerYPos, flyingIngredients: newFlyingIngredients };
+    });
+    const { flyingIngredients, centerX, centerY, reelIcons } = scene;
 
     return (
         <div
@@ -147,6 +142,7 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
                 {/* Three spinning reels */}
                 {reelIcons.map((icon, index) => (
                     <div
+                        // eslint-disable-next-line @eslint-react/no-array-index-key -- a reel is its position
                         key={index}
                         style={{
                             width: Util.isMobile() ? "60px" : "120px",
@@ -291,5 +287,4 @@ export function SlotMachineAnimation(props: SlotMachineAnimationProps) {
         </div>
     );
 }
-
 

@@ -14,7 +14,7 @@ export function readAsDataUrl(file: Blob): Promise<string> {
       if (typeof reader.result === "string") resolve(reader.result);
       else reject(new Error("The picture could not be read as a data URL"));
     };
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () => reject(reader.error ?? new Error("The picture could not be read"));
     reader.readAsDataURL(file);
   });
 }

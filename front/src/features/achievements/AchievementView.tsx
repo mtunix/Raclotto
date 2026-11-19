@@ -9,9 +9,7 @@ import {useTranslation} from "react-i18next";
 
 const {Title, Text} = Typography;
 
-type AchievementViewProps = {};
-
-export function AchievementView(props: AchievementViewProps) {
+export function AchievementView() {
     const {t} = useTranslation();
     const { data: achievements = [], isLoading: waiting } = useListAchievements({
         swr: { onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },

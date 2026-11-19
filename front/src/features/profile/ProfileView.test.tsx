@@ -10,7 +10,7 @@ import {
     userStats,
 } from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
-import { setTransport, Transport } from "../../lib/api/transport";
+import { setTransport, type Transport } from "../../lib/api/transport";
 import { renderRoutes } from "../../testUtils";
 import { ProfileView } from "./ProfileView";
 

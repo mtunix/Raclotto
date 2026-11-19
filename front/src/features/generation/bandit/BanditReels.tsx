@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Col, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
-import { columnSpan, Reel, ReelStatus } from "./reelSpin";
+import { columnSpan, type Reel, type ReelStatus } from "./reelSpin";
 import "./bandit.css";
 
 const { Text } = Typography;
@@ -137,6 +137,7 @@ export function BanditReels({ reels }: { reels: Reel[] }) {
     return (
         <Row gutter={[16, 16]} style={{ marginBottom: "16px", minHeight: "300px" }}>
             {reels.map((reel, index) => (
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- a reel is its column
                 <Col key={index} {...span}>
                     <ReelCard reel={reel} />
                 </Col>

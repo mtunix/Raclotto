@@ -5,7 +5,7 @@ import { useAuthStore } from "../../AuthSlice";
 import { applyRollOutcome } from "../../features/generation/applyRollOutcome";
 import { me, rollOutcome } from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
-import { setTransport, Transport } from "../../lib/api/transport";
+import { setTransport, type Transport } from "../../lib/api/transport";
 import { XpNotification } from "./XpNotification";
 
 const { level, next_level } = rollOutcome.reward;

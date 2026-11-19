@@ -9,7 +9,7 @@ import { createRating } from "../../api/generated/endpoints/ratings/ratings";
 import type { PanPageDto, RatingDto, RollOutcomeDto } from "../../api/generated/model";
 import { panPage, rating, rollOutcome } from "./__fixtures__/backendResponses";
 import { FakeTransport } from "./fakeTransport";
-import { setTransport, Transport } from "./transport";
+import { setTransport, type Transport } from "./transport";
 
 let fake: FakeTransport;
 let previous: Transport;

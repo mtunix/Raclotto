@@ -35,8 +35,9 @@ The checks CI runs:
 venv/bin/python -m unittest discover -s back/test -t .      # backend tests
 venv/bin/mypy                                               # backend types
 venv/bin/ruff check && venv/bin/ruff format --check         # backend lint and formatting
-cd front && npx tsc --noEmit && npm run lint && CI=true npx jest   # frontend types, lint and tests
+cd front && npx tsc -b && npm run lint && npx vitest run   # frontend types, lint and tests
 cd front && npm run gen:api:check                           # the API client matches the backend
+cd front && npm run test:e2e                                # end to end (npx playwright install chromium first)
 ```
 
 The frontend's API client is generated from the backend: after changing a DTO, run

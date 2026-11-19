@@ -1,7 +1,8 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { createMemoryRouter, RouteObject, RouterProvider, useLocation } from "react-router";
+import { createMemoryRouter, type RouteObject, RouterProvider, useLocation } from "react-router";
 import { SWRConfig } from "swr";
+import { ConfigProvider } from "antd";
 
 function CurrentPath() {
     return <p data-testid="current-path">{useLocation().pathname}</p>;
@@ -24,10 +25,13 @@ export function renderRoutes(routes: RouteObject[], path: string, options: Rende
         initialEntries: [path],
     });
     const swr = options.sharedCache ? { dedupingInterval: 0 } : { provider: () => new Map(), dedupingInterval: 0 };
+    // jsdom never fires transitionend, so antd's motion would keep closed modals mounted.
     const result = render(
-        <SWRConfig value={swr}>
-            <RouterProvider router={router} />
-        </SWRConfig>,
+        <ConfigProvider theme={{ token: { motion: false } }}>
+            <SWRConfig value={swr}>
+                <RouterProvider router={router} />
+            </SWRConfig>
+        </ConfigProvider>,
     );
     return { router, ...result };
 }

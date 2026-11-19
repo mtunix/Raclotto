@@ -1,11 +1,11 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { RouteObject } from 'react-router';
+import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../../AppSlice';
 import { useAuthStore } from '../../../AuthSlice';
 import type { PanDto, PanPageDto, SessionDto } from '../../../api/generated/model';
 import { generatedPicture, me, panPage, rating, rollOutcome, session } from '../../../lib/api/__fixtures__/backendResponses';
-import { FakeTransport, RecordedRequest } from '../../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../../lib/api/transport';
+import { FakeTransport, type RecordedRequest } from '../../../lib/api/fakeTransport';
+import { setTransport, type Transport } from '../../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../../testUtils';
 import { HistoryView } from './HistoryView';
 

@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import type { SessionRecapDto } from '../../api/generated/model';
 import { sessionRecap } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../lib/api/transport';
+import { setTransport, type Transport } from '../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../testUtils';
 import { RecapView } from './RecapView';
 

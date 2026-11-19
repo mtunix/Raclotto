@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Button, Card, Form, Input, message, Modal, Spin } from "antd";
 import { BarChartOutlined, BgColorsOutlined, CopyOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -40,9 +40,11 @@ export function SessionSettingsSection() {
     const [promptOpen, setPromptOpen] = useState(false);
     const [confirmingEnd, setConfirmingEnd] = useState(false);
 
-    useEffect(() => {
-        if (stored) setName(stored.name);
-    }, [stored]);
+    const [namedFrom, setNamedFrom] = useState<typeof stored>(undefined);
+    if (stored && stored !== namedFrom) {
+        setNamedFrom(stored);
+        setName(stored.name);
+    }
 
     async function saveName() {
         if (!session || !name.trim()) return;
@@ -50,7 +52,7 @@ export function SessionSettingsSection() {
         try {
             const renamed = await updateSession(session.id, { name: name.trim() });
             setSession(renamed);
-            mutateSession(sessionKey);
+            void mutateSession(sessionKey);
             message.success(t("common.saved") || "Saved");
         } catch (e) {
             console.error("Failed to update session:", e);
@@ -65,7 +67,7 @@ export function SessionSettingsSection() {
             await closeSession({ key: sessionKey });
             setConfirmingEnd(false);
             clearSession();
-            navigate(`/recap/${encodeURIComponent(sessionKey)}`);
+            void navigate(`/recap/${encodeURIComponent(sessionKey)}`);
         } catch (e) {
             console.error("Failed to close session:", e);
             message.error(t("session.closeFailed") || "Failed to close session");

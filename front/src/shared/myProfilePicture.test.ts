@@ -15,7 +15,7 @@ import {
   userProfile,
 } from "../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../lib/api/fakeTransport";
-import { setTransport, Transport } from "../lib/api/transport";
+import { setTransport, type Transport } from "../lib/api/transport";
 import { changeMyPicture, chooseCandidatePicture, generateMyPicture } from "./myProfilePicture";
 
 const [current, older] = pictureHistory;
@@ -120,7 +120,7 @@ describe("changing the signed-in user's picture", () => {
     fake.on("POST", `/images/set-candidate-picture/${saved.id}`, () => {
       throw new Error("403");
     });
-    jest.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(await changeMyPicture(picture)).toEqual(after);
     expect(useAuthStore.getState().user).toEqual(after);

@@ -1,80 +1,35 @@
-import tsParser from "@typescript-eslint/parser";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
-import reactHooks from "eslint-plugin-react-hooks";
+import js from "@eslint/js";
+import eslintReact from "@eslint-react/eslint-plugin";
+import { defineConfig } from "eslint/config";
 import importX from "eslint-plugin-import-x";
 import jsxA11y from "eslint-plugin-jsx-a11y-x";
-import eslintReact from "@eslint-react/eslint-plugin";
+import tseslint from "typescript-eslint";
 
-// eslint-config-react-app's TypeScript rule set on ESLint 10 plugins; the forks keep the original rule ids.
-// eslint-plugin-react rules without an @eslint-react equivalent are covered by tsc or ESLint 10's JSX scoping.
-export default [
+export default defineConfig(
+    { ignores: ["build/**", "src/api/generated/**"] },
+    js.configs.recommended,
+    tseslint.configs.recommendedTypeChecked,
     {
-        ignores: ["**/node_modules/**", "build/**", "dist/**"],
+        languageOptions: {
+            parserOptions: { projectService: { allowDefaultProject: ["eslint.config.mjs"] } },
+        },
     },
     {
-        files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
-        languageOptions: {
-            parser: tsParser,
-            ecmaVersion: "latest",
-            sourceType: "module",
-            parserOptions: { ecmaFeatures: { jsx: true } },
-        },
-        plugins: {
-            "@typescript-eslint": tsPlugin,
-            "react-hooks": reactHooks,
-            "import": importX,
-            "jsx-a11y": jsxA11y,
-            "@eslint-react": eslintReact,
-        },
+        files: ["src/**/*.{ts,tsx}"],
+        extends: [
+            eslintReact.configs["recommended-type-checked"],
+            jsxA11y.configs.recommended,
+        ],
+    },
+    {
+        plugins: { import: importX },
         rules: {
-            "array-callback-return": "warn",
-            "dot-location": ["warn", "property"],
-            "eqeqeq": ["warn", "smart"],
-            "getter-return": "warn",
-            "new-parens": "warn",
-            "no-caller": "warn",
-            "no-cond-assign": ["warn", "except-parens"],
-            "no-const-assign": "warn",
-            "no-control-regex": "warn",
-            "no-delete-var": "warn",
-            "no-dupe-args": "warn",
-            "no-dupe-keys": "warn",
-            "no-duplicate-case": "warn",
-            "no-empty-character-class": "warn",
-            "no-empty-pattern": "warn",
-            "no-eval": "warn",
-            "no-ex-assign": "warn",
-            "no-extend-native": "warn",
-            "no-extra-bind": "warn",
-            "no-extra-label": "warn",
-            "no-fallthrough": "warn",
-            "no-func-assign": "warn",
-            "no-global-assign": "warn",
-            "no-implied-eval": "warn",
-            "no-invalid-regexp": "warn",
-            "no-iterator": "warn",
-            "no-label-var": "warn",
-            "no-labels": ["warn", { allowLoop: true, allowSwitch: false }],
-            "no-lone-blocks": "warn",
-            "no-loop-func": "warn",
-            "no-mixed-operators": ["warn", {
-                groups: [
-                    ["&", "|", "^", "~", "<<", ">>", ">>>"],
-                    ["==", "!=", "===", "!==", ">", ">=", "<", "<="],
-                    ["&&", "||"],
-                    ["in", "instanceof"],
-                ],
-                allowSamePrecedence: false,
-            }],
-            "no-multi-str": "warn",
-            "no-new-func": "warn",
-            "no-new-object": "warn",
-            "no-new-symbol": "warn",
-            "no-new-wrappers": "warn",
-            "no-obj-calls": "warn",
-            "no-octal": "warn",
-            "no-octal-escape": "warn",
-            "no-regex-spaces": "warn",
+            "@typescript-eslint/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
+            "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false } }],
+            "@typescript-eslint/no-unused-vars": ["error", { args: "none", ignoreRestSiblings: true }],
+            "import/first": "error",
+            "import/no-duplicates": "error",
+            // Browser globals that read like local variables (`name`, `status`, `event`, …).
             "no-restricted-globals": ["error",
                 "addEventListener", "blur", "close", "closed", "confirm", "defaultStatus", "defaultstatus",
                 "event", "external", "find", "focus", "frameElement", "frames", "history", "innerHeight",
@@ -85,86 +40,24 @@ export default [
                 "screenY", "scroll", "scrollbars", "scrollBy", "scrollTo", "scrollX", "scrollY", "self",
                 "status", "statusbar", "stop", "toolbar", "top",
             ],
-            "no-restricted-properties": ["error",
-                { object: "require", property: "ensure", message: "Please use import() instead." },
-                { object: "System", property: "import", message: "Please use import() instead." },
-            ],
-            "no-restricted-syntax": ["warn", "WithStatement"],
-            "no-script-url": "warn",
-            "no-self-assign": "warn",
-            "no-self-compare": "warn",
-            "no-sequences": "warn",
-            "no-shadow-restricted-names": "warn",
-            "no-sparse-arrays": "warn",
-            "no-template-curly-in-string": "warn",
-            "no-this-before-super": "warn",
-            "no-throw-literal": "warn",
-            "no-unreachable": "warn",
-            "no-unsafe-negation": "warn",
-            "no-unused-labels": "warn",
-            "no-useless-computed-key": "warn",
-            "no-useless-concat": "warn",
-            "no-useless-escape": "warn",
-            "no-useless-rename": ["warn", { ignoreDestructuring: false, ignoreImport: false, ignoreExport: false }],
-            "no-whitespace-before-property": "warn",
-            "no-with": "warn",
-            "require-yield": "warn",
-            "rest-spread-spacing": ["warn", "never"],
-            "strict": ["warn", "never"],
-            "unicode-bom": ["warn", "never"],
-            "use-isnan": "warn",
-            "valid-typeof": "warn",
-
-            "@typescript-eslint/consistent-type-assertions": "warn",
-            "@typescript-eslint/no-array-constructor": "warn",
-            "@typescript-eslint/no-redeclare": "warn",
-            "@typescript-eslint/no-unused-expressions": ["error", {
-                allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: true, enforceForJSX: false,
-            }],
-            "@typescript-eslint/no-unused-vars": ["warn", { args: "none", ignoreRestSiblings: true }],
-            "@typescript-eslint/no-use-before-define": ["warn", {
-                functions: false, classes: false, variables: false, typedefs: false,
-            }],
-
-            "import/first": "error",
-            "import/no-amd": "error",
-            "import/no-anonymous-default-export": "warn",
-            "import/no-webpack-loader-syntax": "error",
-
-            "react-hooks/exhaustive-deps": "warn",
-            "react-hooks/rules-of-hooks": "error",
-
-            "@eslint-react/jsx-no-comment-textnodes": "warn",
-            "@eslint-react/no-direct-mutation-state": "warn",
-            "@eslint-react/dom-no-dangerously-set-innerhtml-with-children": "warn",
-            "@eslint-react/dom-no-unsafe-target-blank": "warn",
-            "@eslint-react/dom-no-string-style-prop": "warn",
-
-            "jsx-a11y/alt-text": "warn",
-            "jsx-a11y/anchor-has-content": "warn",
-            "jsx-a11y/anchor-is-valid": ["warn", { aspects: ["noHref", "invalidHref"] }],
-            "jsx-a11y/aria-activedescendant-has-tabindex": "warn",
-            "jsx-a11y/aria-props": "warn",
-            "jsx-a11y/aria-proptypes": "warn",
-            "jsx-a11y/aria-role": ["warn", { ignoreNonDOM: true }],
-            "jsx-a11y/aria-unsupported-elements": "warn",
-            "jsx-a11y/heading-has-content": "warn",
-            "jsx-a11y/iframe-has-title": "warn",
-            "jsx-a11y/img-redundant-alt": "warn",
-            "jsx-a11y/no-access-key": "warn",
-            "jsx-a11y/no-distracting-elements": "warn",
-            "jsx-a11y/no-redundant-roles": "warn",
-            "jsx-a11y/role-has-required-aria-props": "warn",
-            "jsx-a11y/role-supports-aria-props": "warn",
-            "jsx-a11y/scope": "warn",
-
-            "@typescript-eslint/no-useless-constructor": "off",
-            "no-useless-constructor": "off",
         },
     },
     {
-        // orval 8 no longer emits the disable comment above its type + const enum pairs.
-        files: ["src/api/generated/**"],
-        rules: { "@typescript-eslint/no-redeclare": "off" },
+        files: ["**/*.test.{ts,tsx}"],
+        rules: {
+            // `await act(async () => …)` flushes pending updates even when the callback awaits nothing.
+            "@typescript-eslint/require-await": "off",
+            // Mocks are passed around to assert on, never called unbound.
+            "@typescript-eslint/unbound-method": "off",
+        },
     },
-];
+    {
+        files: ["src/shared/**"],
+        ignores: ["**/*.test.{ts,tsx}"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                patterns: [{ group: ["**/features/**"], message: "shared/ never imports features/." }],
+            }],
+        },
+    },
+);

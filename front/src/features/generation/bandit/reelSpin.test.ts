@@ -1,5 +1,5 @@
 import { ingredientsForUser, rollOutcome } from "../../../lib/api/__fixtures__/backendResponses";
-import { aimReels, columnSpan, Reel, reelsAt, shuffledReels, spinDuration } from "./reelSpin";
+import { aimReels, columnSpan, type Reel, reelsAt, shuffledReels, spinDuration } from "./reelSpin";
 
 const [potato, pork, aioli, leek] = ingredientsForUser;
 const first = () => 0;

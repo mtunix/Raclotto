@@ -39,14 +39,14 @@ export function applyRollOutcome(outcome: RollOutcomeDto, sessionKey: string): L
     useAppStore.getState().showXpNotification(reward, achievements);
   }
 
-  mutatePanLists();
-  mutateAvailableCounts(sessionKey);
+  void mutatePanLists();
+  void mutateAvailableCounts(sessionKey);
   if (user) {
-    mutateUserProfile(user.id);
-    mutateMe();
+    void mutateUserProfile(user.id);
+    void mutateMe();
   }
-  if (achievements.length > 0) mutateAchievements();
-  if (events.length > 0) mutateEvents(sessionKey);
+  if (achievements.length > 0) void mutateAchievements();
+  if (events.length > 0) void mutateEvents(sessionKey);
 
   return reward.leveled_up && reward.level
     ? { leveledUp: true, newLevelId: reward.level.id }

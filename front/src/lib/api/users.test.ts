@@ -22,7 +22,7 @@ import {
   userStats,
 } from "./__fixtures__/backendResponses";
 import { FakeTransport } from "./fakeTransport";
-import { setTransport, Transport } from "./transport";
+import { setTransport, type Transport } from "./transport";
 
 let fake: FakeTransport;
 let previous: Transport;

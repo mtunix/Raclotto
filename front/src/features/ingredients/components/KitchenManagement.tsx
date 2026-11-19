@@ -96,7 +96,7 @@ export function KitchenManagement() {
         
         deletePreparationType(type.id).then(() => {
             message.success(t("ingredient.preparationTypeDeleted") || "Preparation type deleted");
-            mutatePrepTypes(sessionKey);
+            void mutatePrepTypes(sessionKey);
         }).catch((error: unknown) => {
             console.error("Failed to delete prep type:", error);
             const detail = axios.isAxiosError<ErrorResponseDto>(error) ? error.response?.data?.errors?.[0]?.detail : null;
@@ -122,7 +122,7 @@ export function KitchenManagement() {
         createPreparationType({name: newPrepTypeName.trim()}, {session_key: sessionKey}).then(() => {
             setIsAddingPrepType(false);
             setNewPrepTypeName("");
-            mutatePrepTypes(sessionKey);
+            void mutatePrepTypes(sessionKey);
         }).catch((error) => {
             console.error("Failed to add prep type:", error);
         });
@@ -200,6 +200,7 @@ export function KitchenManagement() {
                                         value={newPrepTypeName}
                                         onChange={(e) => setNewPrepTypeName(e.target.value)}
                                         onPressEnter={onPrepTypeAdd}
+                                        // eslint-disable-next-line jsx-a11y-x/no-autofocus -- the field appears because the user asked to add a type
                                         autoFocus
                                     />
                                     <Button 

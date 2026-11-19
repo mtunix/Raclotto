@@ -36,7 +36,7 @@ i18n.on('languageChanged', (lang: string) => {
   }
 });
 
-i18n
+void i18n
   .use(initReactI18next)
   .init({
     resources,
@@ -49,7 +49,7 @@ i18n
 
 // Function to change language
 export const changeLanguage = (lang: string) => {
-  i18n.changeLanguage(lang);
+  void i18n.changeLanguage(lang);
 };
 
 export default i18n;

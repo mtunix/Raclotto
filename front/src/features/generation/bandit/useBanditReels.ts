@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
-import { aimReels, Reel, reelsAt, shuffledReels, spinDuration } from "./reelSpin";
+import { aimReels, type Reel, reelsAt, shuffledReels, spinDuration } from "./reelSpin";
 
 // Rendering every animation frame is too slow with many reels.
 const RENDER_INTERVAL_MS = 100;
@@ -8,21 +8,23 @@ const RENDER_INTERVAL_MS = 100;
 /** `count` reels over `items`, reshuffled when either count changes, and their spin onto a pan. */
 export function useBanditReels(items: IngredientDto[], count: number) {
     const [reels, setReels] = useState<Reel[]>([]);
-    const frame = useRef<number | undefined>(undefined);
+    const frameRef = useRef<number | undefined>(undefined);
 
-    useEffect(() => {
-        if (items.length === 0) return;
+    // items is a new array every render; reshuffle only when the reel or item count changes.
+    const shape = items.length === 0 ? null : `${count}:${items.length}`;
+    const [shuffledFor, setShuffledFor] = useState<string | null>(null);
+    if (shape !== null && shape !== shuffledFor) {
+        setShuffledFor(shape);
         setReels(shuffledReels(items, count));
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- items is a new array every render; reshuffle only when the reel or item count changes
-    }, [count, items.length]);
+    }
 
     useEffect(() => () => {
-        if (frame.current !== undefined) cancelAnimationFrame(frame.current);
+        if (frameRef.current !== undefined) cancelAnimationFrame(frameRef.current);
     }, []);
 
     function unlock() {
-        if (frame.current !== undefined) cancelAnimationFrame(frame.current);
-        frame.current = undefined;
+        if (frameRef.current !== undefined) cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
         setReels((current) => current.map((reel) => ({ ...reel, status: "idle" })));
     }
 
@@ -42,10 +44,10 @@ export function useBanditReels(items: IngredientDto[], count: number) {
                 rendered = now;
             }
             if (stopped) {
-                frame.current = undefined;
+                frameRef.current = undefined;
                 onStopped();
             } else {
-                frame.current = requestAnimationFrame(tick);
+                frameRef.current = requestAnimationFrame(tick);
             }
         };
         tick();

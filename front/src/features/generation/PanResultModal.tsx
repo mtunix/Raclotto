@@ -40,13 +40,17 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [visibleIngredients, setVisibleIngredients] = useState<Set<number>>(
-    new Set(),
+    () => new Set(),
   );
+  const showing = open ? pan : null;
+  const [revealing, setRevealing] = useState(showing);
+  if (revealing !== showing) {
+    setRevealing(showing);
+    setVisibleIngredients(new Set());
+  }
   // Slot-machine style animation for standard view
   useEffect(() => {
     if (open && pan) {
-      setVisibleIngredients(new Set());
-
       const fillIngredients = pan.ingredients.filter(
         (i) => i.type === IngredientType.FILL,
       );
@@ -57,6 +61,7 @@ export const PanResultModal: React.FC<PanResultModalProps> = ({
 
       const timeoutIds: number[] = [];
       allItems.forEach((item, index) => {
+        // eslint-disable-next-line @eslint-react/web-api-no-leaked-timeout -- cleared through timeoutIds in the cleanup
         const timeoutId = window.setTimeout(() => {
           setVisibleIngredients((prev) => {
             const next = new Set(prev);

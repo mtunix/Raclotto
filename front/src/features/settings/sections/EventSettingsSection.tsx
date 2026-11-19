@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import { Card, Switch, InputNumber, Space, message, Typography, Divider, Button, Alert } from "antd";
 import { saveEventConfig, useListEventConfigs } from "../../../api/generated/endpoints/events/events";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,18 @@ interface EventConfigState {
     frequency_minutes: number | null;
 }
 
+/** Each known event type's settings, from its config or the defaults. */
+function configStates(configs: readonly { event_type: string; enabled: boolean; frequency_minutes?: number | null }[]) {
+    const states: Record<string, EventConfigState> = {};
+    for (const config of configs) {
+        states[config.event_type] = { enabled: config.enabled, frequency_minutes: config.frequency_minutes ?? 60 };
+    }
+    for (const eventType of KNOWN_EVENT_TYPES) {
+        states[eventType] ??= { enabled: true, frequency_minutes: 60 };
+    }
+    return states;
+}
+
 export function EventSettingsSection() {
     const { t } = useTranslation();
     const session = useAppStore((state) => state.session);
@@ -29,11 +41,12 @@ export function EventSettingsSection() {
     const readOnly = !canManageSession(user, session);
     const [saving, setSaving] = useState(false);
     const [localConfigs, setLocalConfigs] = useState<Record<string, EventConfigState>>({});
-    const initialConfigsRef = useRef<Record<string, EventConfigState>>({});
+    const [initialConfigs, setInitialConfigs] = useState<Record<string, EventConfigState>>({});
 
-    const { data: configs = [], isLoading: loading, error } = useListEventConfigs({ session_key: sessionKey }, {
+    const { data, isLoading: loading, error } = useListEventConfigs({ session_key: sessionKey }, {
         swr: { enabled: !!sessionKey, onErrorRetry, revalidateOnFocus: false, revalidateOnReconnect: true },
     });
+    const configs = data ?? [];
     
     // Show error message if loading fails
     React.useEffect(() => {
@@ -42,39 +55,13 @@ export function EventSettingsSection() {
         }
     }, [error, sessionKey, t]);
 
-    // Initialize local state from fetched configs
-    useEffect(() => {
-        if (configs.length > 0) {
-            const initial: Record<string, EventConfigState> = {};
-            const local: Record<string, EventConfigState> = {};
-            
-            configs.forEach(config => {
-                const state: EventConfigState = {
-                    enabled: config.enabled,
-                    frequency_minutes: config.frequency_minutes !== null && config.frequency_minutes !== undefined 
-                        ? config.frequency_minutes 
-                        : 60
-                };
-                initial[config.event_type] = { ...state };
-                local[config.event_type] = { ...state };
-            });
-            
-            // Also initialize known event types that might not have configs yet
-            KNOWN_EVENT_TYPES.forEach(eventType => {
-                if (!initial[eventType]) {
-                    const state: EventConfigState = {
-                        enabled: true,
-                        frequency_minutes: 60
-                    };
-                    initial[eventType] = { ...state };
-                    local[eventType] = { ...state };
-                }
-            });
-            
-            initialConfigsRef.current = initial;
-            setLocalConfigs(local);
-        }
-    }, [configs]);
+    const [loadedFrom, setLoadedFrom] = useState<typeof data>(undefined);
+    if (data && data.length > 0 && data !== loadedFrom) {
+        setLoadedFrom(data);
+        const loaded = configStates(data);
+        setInitialConfigs(loaded);
+        setLocalConfigs(loaded);
+    }
 
     const handleToggle = useCallback((eventType: string, enabled: boolean) => {
         setLocalConfigs(prev => ({
@@ -97,7 +84,7 @@ export function EventSettingsSection() {
     }, []);
 
     const isDirty = () => {
-        const initial = initialConfigsRef.current;
+        const initial = initialConfigs;
         const local = localConfigs;
         
         for (const eventType in local) {
@@ -135,9 +122,8 @@ export function EventSettingsSection() {
             
             message.success(t("common.saved") || "Saved");
             // Invalidate cache to trigger refetch
-            mutateEventConfigs(sessionKey);
-            // Update initial refs to match current state
-            initialConfigsRef.current = JSON.parse(JSON.stringify(localConfigs));
+            void mutateEventConfigs(sessionKey);
+            setInitialConfigs(localConfigs);
         } catch (error) {
             console.error("Failed to save event configs:", error);
             message.error(t("common.saveFailed") || "Failed to save");

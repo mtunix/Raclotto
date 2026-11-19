@@ -23,7 +23,7 @@ export function LoginView() {
         password: values.password,
       });
       signIn(token, user);
-      navigate("/");
+      void navigate("/");
     } catch (err: unknown) {
       setError(
         err instanceof UnauthorizedError

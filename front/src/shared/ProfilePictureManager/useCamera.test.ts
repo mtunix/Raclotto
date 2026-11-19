@@ -7,7 +7,7 @@ function installCamera(getUserMedia: () => Promise<unknown>) {
 }
 
 function fakeStream() {
-  const track = { stop: jest.fn() };
+  const track = { stop: vi.fn() };
   return { track, stream: { getTracks: () => [track] } };
 }
 
@@ -51,7 +51,7 @@ it("captures nothing before the video has a frame", async () => {
 });
 
 it("says why the camera could not start", async () => {
-  jest.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "error").mockImplementation(() => {});
   installCamera(async () => {
     throw Object.assign(new Error("denied"), { name: "NotAllowedError" });
   });

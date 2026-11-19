@@ -15,8 +15,8 @@ export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {
     const { onConfirm, danger = true, className = "", style = {}, confirmationTimeout = 5000, icon = VectorGraphics.REMOVE } = props;
     const [isConfirming, setIsConfirming] = useState(false);
     const [progress, setProgress] = useState(0);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const startTimeRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -34,7 +34,6 @@ export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {
     useEffect(() => {
         if (isConfirming) {
             startTimeRef.current = Date.now();
-            setProgress(0);
             
             // Update progress every 50ms for smooth animation
             intervalRef.current = setInterval(() => {
@@ -54,12 +53,9 @@ export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {
                 }
                 timeoutRef.current = null;
             }, confirmationTimeout);
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-            setProgress(0);
+        } else if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
         }
 
         return () => {
@@ -72,6 +68,7 @@ export function ConfirmDeleteButton(props: ConfirmDeleteButtonProps) {
     const handleClick = () => {
         if (!isConfirming) {
             // First click - start confirmation
+            setProgress(0);
             setIsConfirming(true);
         } else {
             // Second click - confirm deletion

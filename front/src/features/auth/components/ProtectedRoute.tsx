@@ -15,7 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     // If authenticated but user data not yet loaded, fetch it
     if (isAuthenticated && userId && !user) {
-      fetchUser();
+      void fetchUser();
     }
   }, [isAuthenticated, userId, user, fetchUser]);
 

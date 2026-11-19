@@ -1,5 +1,5 @@
 import type { AxiosError } from "axios";
-import { HttpMethod, QueryParam, transport } from "./transport";
+import { type HttpMethod, type QueryParam, transport } from "./transport";
 
 /** The request description orval's generated functions pass to {@link orvalMutator}. */
 export interface OrvalRequest {

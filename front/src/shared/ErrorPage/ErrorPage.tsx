@@ -31,7 +31,7 @@ type ErrorPageProps = {
  * It is _usually_ being rendered by the router.
  */
 export default function ErrorPage(props: ErrorPageProps) {
-    let error: unknown = useRouteError();
+    const error: unknown = useRouteError();
 
     const {Title, Paragraph, Text} = Typography;
 

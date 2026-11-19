@@ -13,7 +13,7 @@ export function SessionLayout() {
 
     useEffect(() => {
         if (!sessionId) {
-            navigate("/");
+            void navigate("/");
         }
     }, [sessionId, navigate]);
 

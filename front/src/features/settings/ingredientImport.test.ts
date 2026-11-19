@@ -1,18 +1,12 @@
-import fs from "fs";
-import path from "path";
 import { ingredientExport } from "../../lib/api/__fixtures__/backendResponses";
+// What users downloaded from the export before the typed endpoints; the backend tests import it too.
+import OLD_EXPORT_FILE from "../../../../back/test/fixtures/ingredient_export_before_dtos.json?raw";
 import {
   categoryProblem,
   stageExportFile,
-  StagedIngredient,
+  type StagedIngredient,
   toImported,
 } from "./ingredientImport";
-
-// What users downloaded from the export before the typed endpoints; the backend tests import it too.
-const OLD_EXPORT_FILE = fs.readFileSync(
-  path.join(__dirname, "../../../../back/test/fixtures/ingredient_export_before_dtos.json"),
-  "utf8",
-);
 
 const staged = (overrides: Partial<StagedIngredient>): StagedIngredient => ({
   id: 1,

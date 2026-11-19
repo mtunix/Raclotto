@@ -9,7 +9,7 @@ import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
 import { me, panPage, rollOutcome, userProfile } from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
-import { setTransport, Transport } from "../../lib/api/transport";
+import { setTransport, type Transport } from "../../lib/api/transport";
 import { applyRollOutcome } from "./applyRollOutcome";
 
 // The fixture user is the roller after the roll; this is them before it.

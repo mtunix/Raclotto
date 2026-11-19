@@ -1,5 +1,5 @@
 import type { AchievementDto, RewardDto } from "../../api/generated/model";
-import { LevelProgress, levelProgress } from "../../model/levelProgress";
+import { type LevelProgress, levelProgress } from "../../model/levelProgress";
 
 export const PAGE_MS = 3000;
 export const FADE_MS = 500;

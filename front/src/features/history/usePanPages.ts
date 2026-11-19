@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useListPans } from "../../api/generated/endpoints/pans/pans";
 import type { ListPansParams, PanDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
@@ -16,12 +16,12 @@ export interface PanFilter {
  */
 export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) {
   const filter = JSON.stringify([session_key, user_id]);
-  const [stored, setPages] = useState<Pages>(() => startOver(filter));
+  const [stored, setStored] = useState<Pages>(() => startOver(filter));
   // Reset while rendering, not in an effect, so the old offset is never asked for with the new filter.
   let pages = stored;
   if (stored.filter !== filter) {
     pages = startOver(filter);
-    setPages(pages);
+    setStored(pages);
   }
   const { offset, loaded } = pages;
 
@@ -40,25 +40,25 @@ export function usePanPages({ session_key, user_id }: PanFilter, pageSize = 12) 
     },
   });
 
-  useEffect(() => {
-    if (page) {
-      setPages((previous) =>
-        previous.filter === filter
-          ? { ...previous, loaded: new Map(previous.loaded).set(page.offset, page.items) }
-          : previous,
-      );
-    }
-  }, [page, filter]);
+  const [mergedPage, setMergedPage] = useState<typeof page>(undefined);
+  if (page && page !== mergedPage) {
+    setMergedPage(page);
+    setStored((previous) =>
+      previous.filter === filter
+        ? { ...previous, loaded: new Map(previous.loaded).set(page.offset, page.items) }
+        : previous,
+    );
+  }
 
   const loadMore = useCallback(() => {
     if (page?.has_more) {
       const next = page.offset + pageSize;
-      setPages((previous) => (previous.filter === filter ? { ...previous, offset: next } : previous));
+      setStored((previous) => (previous.filter === filter ? { ...previous, offset: next } : previous));
     }
   }, [page, pageSize, filter]);
 
   const replacePan = useCallback((fresh: PanDto) => {
-    setPages((previous) => {
+    setStored((previous) => {
       const next = new Map<number, PanDto[]>();
       previous.loaded.forEach((items, at) => next.set(at, items.map((pan) => (pan.id === fresh.id ? fresh : pan))));
       return { ...previous, loaded: next };

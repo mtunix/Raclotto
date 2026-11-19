@@ -1,14 +1,15 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import type * as ReactRouter from 'react-router';
 import ErrorPage, { RaclottoError, ApiNoResponseError } from './ErrorPage';
 
-let mockRouteError: any = null;
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+let mockRouteError: unknown = null;
+vi.mock('react-router', async (importOriginal) => ({
+    ...await importOriginal<typeof ReactRouter>(),
     useRouteError: () => mockRouteError,
 }));
 
-jest.mock('i18next', () => ({
+vi.mock('i18next', () => ({
     t: (key: string) => key,
 }));
 

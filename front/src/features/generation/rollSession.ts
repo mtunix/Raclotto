@@ -1,7 +1,7 @@
 import { useCallback, useReducer, useRef } from "react";
 import type { PanDto, RollOutcomeDto } from "../../api/generated/model";
 import { ratePan } from "../rating/ratePan";
-import { applyRollOutcome, LevelUp } from "./applyRollOutcome";
+import { applyRollOutcome, type LevelUp } from "./applyRollOutcome";
 
 /**
  * A roll from the click to the closed result: the request, its outcome applied, the animation
@@ -79,17 +79,17 @@ export interface RollSession {
 export function useRollSession(sessionKey: string): RollSession {
   const [state, dispatch] = useReducer(rollSession, idle);
   // The same state, for `roll` and `rate`, which may run before the next render.
-  const current = useRef(idle);
+  const currentRef = useRef(idle);
 
   const send = useCallback((event: RollEvent) => {
-    current.current = rollSession(current.current, event);
+    currentRef.current = rollSession(currentRef.current, event);
     dispatch(event);
   }, []);
 
   const roll = useCallback(
     async (request: () => Promise<RollOutcomeDto>, { animated }: { animated: boolean }) => {
-      if (current.current.phase !== "idle" && current.current.phase !== "result") {
-        throw new Error(`Cannot roll while ${current.current.phase}`);
+      if (currentRef.current.phase !== "idle" && currentRef.current.phase !== "result") {
+        throw new Error(`Cannot roll while ${currentRef.current.phase}`);
       }
       send({ type: "roll", animated });
       let outcome: RollOutcomeDto;
@@ -106,7 +106,7 @@ export function useRollSession(sessionKey: string): RollSession {
   );
 
   const rate = useCallback((stars: number) => {
-    const shown = current.current;
+    const shown = currentRef.current;
     if (shown.phase !== "result" && shown.phase !== "revealing") {
       return Promise.reject(new Error("No pan to rate"));
     }

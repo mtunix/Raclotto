@@ -81,7 +81,7 @@ export function GenerateView() {
     if (initialSauce > 0) {
       updateCount("sauce", initialSauce);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- seeds the counts once on mount; later changes go through the store
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- seeds the counts once on mount; later changes go through the store
   }, []);
 
   // Check if we can generate based on counts and available ingredients

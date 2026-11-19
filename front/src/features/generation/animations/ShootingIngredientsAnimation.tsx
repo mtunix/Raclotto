@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import type { IngredientDto } from "../../../api/generated/model";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 import { Util } from "../../../lib/util";
 
 interface ShootingIngredientsAnimationProps {
-    ingredients?: any[];
+    ingredients?: IngredientDto[];
     duration?: number;
     fading?: boolean;
 }
@@ -27,14 +28,11 @@ interface SmokeParticle {
 
 export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimationProps) {
     const { duration = 3500, fading = false, ingredients = [] } = props;
-    const [ejections, setEjections] = useState<IngredientEjection[]>([]);
-    const [rocketPath, setRocketPath] = useState<{ startX: number; startY: number; endX: number; endY: number; angle: number } | null>(null);
-    const [exhaustParticles, setExhaustParticles] = useState<SmokeParticle[]>([]);
 
-    useEffect(() => {
+    const [scene] = useState(() => {
         // Use actual ingredients if available, otherwise use food emojis
         const availableIngredients = ingredients.length > 0 
-            ? ingredients.filter((i: any) => i.available !== false)
+            ? ingredients.filter((i) => i.available !== false)
             : [];
 
         // Reduce particle count on mobile for better performance
@@ -50,8 +48,6 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
         const endX = window.innerWidth + 100; // End off-screen right
         const endY = window.innerHeight * 0.7; // Lower third
         const rocketAngle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
-
-        setRocketPath({ startX, startY, endX, endY, angle: rocketAngle });
 
         // Create ingredient ejections - spread throughout rocket flight
         for (let i = 0; i < ejectionCount; i++) {
@@ -82,8 +78,6 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
             });
         }
 
-        setEjections(newEjections);
-
         // Reduce exhaust particles on mobile
         const exhaustCount = isLowPerf ? 10 : isMobile ? 15 : 30;
         const newExhaust: SmokeParticle[] = [];
@@ -97,10 +91,9 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
                 opacity: 0.5 + Math.random() * 0.4
             });
         }
-        setExhaustParticles(newExhaust);
-    }, [duration, ingredients]);
-
-    if (!rocketPath) return null;
+        return { rocketPath: { startX, startY, endX, endY, angle: rocketAngle }, ejections: newEjections, exhaustParticles: newExhaust };
+    });
+    const { ejections, rocketPath, exhaustParticles } = scene;
 
     const rocketDeltaX = rocketPath.endX - rocketPath.startX;
     const rocketDeltaY = rocketPath.endY - rocketPath.startY;
@@ -225,6 +218,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
 
                             return (
                                 <div
+                                    // eslint-disable-next-line @eslint-react/no-array-index-key -- a puff is its position in the trail
                                     key={`smoke-${ejection.id}-${smokeIdx}`}
                                     style={{
                                         position: "absolute",

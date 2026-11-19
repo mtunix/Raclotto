@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {createPan} from "../../../api/generated/endpoints/pans/pans";
 import type {PanDto} from "../../../api/generated/model";
-import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar} from "antd";
+import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar, Grid} from "antd";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
 import {useAuthStore} from "../../../AuthSlice";
@@ -18,20 +18,19 @@ import { ratePan } from "../../rating/ratePan";
 import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
 import {getUniqueUsers, getUniqueRatings, getIngredientCountRanges, filterPans, sortPans} from "./historyUtils";
-import useBreakpoint from "antd/es/grid/hooks/useBreakpoint";
 import {displayName} from "../../../shared/displayName";
 
 const {Title, Text} = Typography;
 
 export function HistoryView() {
-    let { t } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const params = useParams<{sessionId: string}>();
     const sessionId = params.sessionId || "";
     const session = useAppStore((state) => state.session);
     const sessionKey = session?.key || "";
     const currentUser = useAuthStore((state) => state.user);
-    let [cloningPanId, setCloningPanId] = useState<number | null>(null);
+    const [cloningPanId, setCloningPanId] = useState<number | null>(null);
     const [cloneConfirmVisible, setCloneConfirmVisible] = useState(false);
     const [selectedPan, setSelectedPan] = useState<PanDto | null>(null);
     const cloneRoll = useRollSession(sessionKey);
@@ -42,16 +41,17 @@ export function HistoryView() {
     const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
     const [selectedIngredientCounts, setSelectedIngredientCounts] = useState<string[]>([]);
     const [filtersExpanded, setFiltersExpanded] = useState(false);
-    const screens = useBreakpoint();
+    const screens = Grid.useBreakpoint();
     const isMobile = screens.xs || screens.sm;
     const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({ session_key: sessionKey });
 
-    // Reset the filters when the session changes
-    useEffect(() => {
+    const [filteredSession, setFilteredSession] = useState(sessionKey);
+    if (filteredSession !== sessionKey) {
+        setFilteredSession(sessionKey);
         setSelectedUsers([]);
         setSelectedRatings([]);
         setSelectedIngredientCounts([]);
-    }, [sessionKey]);
+    }
 
     function onRating(id: number, rating: number) {
         if (!sessionKey) return;
@@ -134,7 +134,7 @@ export function HistoryView() {
     function handleProfileClick(userId?: number) {
         if (userId && sessionId) {
             const profileRoute = `/${sessionId}/profile/${userId}`;
-            navigate(profileRoute);
+            void navigate(profileRoute);
         }
     }
 

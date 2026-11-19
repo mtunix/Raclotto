@@ -3,10 +3,10 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import type { PanDto, PanPageDto } from "../../api/generated/model";
 import { panPage } from "../../lib/api/__fixtures__/backendResponses";
-import { FakeTransport, RecordedRequest } from "../../lib/api/fakeTransport";
+import { FakeTransport, type RecordedRequest } from "../../lib/api/fakeTransport";
 import { mutatePanLists } from "../../lib/api/swrHooks";
-import { setTransport, Transport } from "../../lib/api/transport";
-import { PanFilter, usePanPages } from "./usePanPages";
+import { setTransport, type Transport } from "../../lib/api/transport";
+import { type PanFilter, usePanPages } from "./usePanPages";
 
 const pan = (id: number, rating = 0): PanDto => ({ ...panPage.items[0], id, name: `Pan ${id}`, rating });
 

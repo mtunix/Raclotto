@@ -12,7 +12,7 @@ import {
     session,
 } from '../../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../../lib/api/transport';
+import { setTransport, type Transport } from '../../../lib/api/transport';
 import { renderRoute } from '../../../testUtils';
 import { GenerateView } from './GenerateView';
 import { useIngredientStore } from './ingredientStore';
@@ -37,12 +37,12 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
 });
 
-const generateButton = () => screen.getByText('generate.generateButton').closest('button') as HTMLElement;
-const countInputs = () => screen.getAllByRole('spinbutton') as HTMLInputElement[];
+const generateButton = () => screen.getByText('generate.generateButton').closest<HTMLElement>('button')!;
+const countInputs = () => screen.getAllByRole<HTMLInputElement>('spinbutton');
 
 async function renderView() {
     const result = renderRoute(<GenerateView />);
@@ -52,12 +52,12 @@ async function renderView() {
 
 /** Clicks generate and lets the roll animation run out. */
 async function generate() {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     fireEvent.click(generateButton());
     await act(async () => {
-        await jest.advanceTimersByTimeAsync(15000);
+        await vi.advanceTimersByTimeAsync(15000);
     });
-    jest.useRealTimers();
+    vi.useRealTimers();
 }
 
 it('shows how many fills and sauces are available in the session', async () => {
@@ -152,7 +152,7 @@ it('returns to the controls when the roll fails', async () => {
     fake.on('POST', '/pans/generate', () => {
         throw new Error('no ingredients left');
     });
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     localStorage.setItem('numFill', '1');
     await renderView();
 

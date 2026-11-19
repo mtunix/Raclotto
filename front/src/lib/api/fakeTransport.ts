@@ -1,4 +1,4 @@
-import { HttpMethod, RequestOptions, Transport } from "./transport";
+import { type HttpMethod, type RequestOptions, type Transport } from "./transport";
 
 export interface RecordedRequest {
   method: HttpMethod;
@@ -20,7 +20,8 @@ export class FakeTransport implements Transport {
   readonly requests: RecordedRequest[] = [];
   private readonly routes = new Map<string, Responder>();
 
-  on(method: HttpMethod, path: string, response: unknown | Responder): this {
+  /** `response` is the document to answer with, or a `Responder` computing it from the request. */
+  on(method: HttpMethod, path: string, response: unknown): this {
     this.routes.set(
       `${method} ${path}`,
       typeof response === "function"
@@ -30,7 +31,7 @@ export class FakeTransport implements Transport {
     return this;
   }
 
-  async request(
+  request(
     method: HttpMethod,
     path: string,
     options: RequestOptions = {},
@@ -44,9 +45,13 @@ export class FakeTransport implements Transport {
     this.requests.push(recorded);
     const responder = this.routes.get(`${method} ${path}`);
     if (!responder) {
-      throw new Error(`FakeTransport: no response registered for ${method} ${path}`);
+      return Promise.reject(new Error(`FakeTransport: no response registered for ${method} ${path}`));
     }
-    return responder(recorded);
+    try {
+      return Promise.resolve(responder(recorded));
+    } catch (error: unknown) {
+      return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 
   /** The last request made to `METHOD /path`, if any. */
@@ -58,5 +63,5 @@ export class FakeTransport implements Transport {
 }
 
 function structuredCloneSafe<T>(value: T): T {
-  return value === undefined ? value : JSON.parse(JSON.stringify(value));
+  return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
 }

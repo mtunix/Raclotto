@@ -18,7 +18,7 @@ import { mutateIngredientCatalog } from "../../lib/api/swrHooks";
 
 async function thenRefetch<T>(sessionKey: string, change: Promise<T>): Promise<T> {
   const result = await change;
-  mutateIngredientCatalog(sessionKey);
+  void mutateIngredientCatalog(sessionKey);
   return result;
 }
 

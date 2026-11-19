@@ -40,7 +40,7 @@ export function MainScreen(props: MainScreenProps) {
             // But give a small delay in case session is being updated
             const timeout = setTimeout(() => {
                 if (session && session.id.toString() !== sessionId) {
-            navigate("/");
+            void navigate("/");
                 }
             }, 500);
             return () => clearTimeout(timeout);

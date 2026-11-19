@@ -7,7 +7,7 @@ import type { AchievementDto, LevelDto } from "../../api/generated/model";
 import type { LevelProgress } from "../../model/levelProgress";
 import { VectorGraphics } from "../../lib/vectorGraphics";
 import { achievementValueColor } from "../achievementValueColor";
-import { skipTo, xpNotificationFrame, XpStage } from "./xpNotificationTimeline";
+import { skipTo, xpNotificationFrame, type XpStage } from "./xpNotificationTimeline";
 import "./XpNotification.css";
 
 const { Text, Title } = Typography;

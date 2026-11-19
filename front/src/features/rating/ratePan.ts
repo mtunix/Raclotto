@@ -13,11 +13,11 @@ export async function ratePan(panId: number, stars: number): Promise<PanDto> {
   await createRating({ pan_id: panId, rating: stars });
   const pan = await getPan(panId);
   const rater = useAuthStore.getState().user;
-  mutatePanLists();
-  mutateAchievements();
-  mutateUserProfile(pan.user_id);
+  void mutatePanLists();
+  void mutateAchievements();
+  void mutateUserProfile(pan.user_id);
   if (rater && rater.id !== pan.user_id) {
-    mutateUserProfile(rater.id);
+    void mutateUserProfile(rater.id);
   }
   return pan;
 }

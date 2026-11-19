@@ -8,7 +8,7 @@ import {
 } from "../../api/generated/endpoints/sessions/sessions";
 import type {SessionDto} from "../../api/generated/model";
 import {onErrorRetry} from "../../lib/api/swrHooks";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {useAppStore} from "../../AppSlice";
 import {useNavigate} from "react-router";
 import {useTranslation} from "react-i18next";
@@ -19,8 +19,8 @@ export function JoinSession() {
     const { t } = useTranslation();
     const setSession = useAppStore((state) => state.setSession);
     const navigate = useNavigate();
-    let {data, isLoading, error, mutate} = useListSessions({include_inactive: true}, {swr: {onErrorRetry}});
-    let [selectedIndex, setSelectedIndex] = React.useState(0);
+    const {data, isLoading, error, mutate} = useListSessions({include_inactive: true}, {swr: {onErrorRetry}});
+    const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [reactivating, setReactivating] = useState(false);
     const user = useAuthStore((state) => state.user);
 
@@ -47,9 +47,9 @@ export function JoinSession() {
                     const reactivatedSession = await reactivateSession({key: selectedSession.key});
                     setSession(reactivatedSession);
                     // Refresh the session list
-                    mutate();
+                    void mutate();
                     message.success(t("session.reactivated") || "Session reactivated successfully");
-                    navigate(`/${reactivatedSession.id}/generate`);
+                    void navigate(`/${reactivatedSession.id}/generate`);
                 } catch (error) {
                     console.error("Failed to reactivate session:", error);
                     message.error(t("session.reactivateFailed") || "Failed to reactivate session");
@@ -58,7 +58,7 @@ export function JoinSession() {
                 }
             } else {
                 setSession(selectedSession);
-                navigate(`/${selectedSession.id}/generate`);
+                void navigate(`/${selectedSession.id}/generate`);
             }
         }
     }
@@ -67,11 +67,11 @@ export function JoinSession() {
         setSelectedIndex(value);
     }
 
-    useEffect(() => {
-        if (sortedSessions && sortedSessions.length > 0) {
-            setSelectedIndex(0);
-        }
-    }, [sortedSessions]);
+    const [indexedSessions, setIndexedSessions] = useState(sortedSessions);
+    if (indexedSessions !== sortedSessions) {
+        setIndexedSessions(sortedSessions);
+        if (sortedSessions.length > 0) setSelectedIndex(0);
+    }
 
     if (isLoading) return <SpinnerContainer/>;
     if (error) return <ErrorPage/>;
@@ -173,7 +173,7 @@ export function SessionSelector() {
         createSession({name: sessionName.trim()}).then((session) => {
             setSession(session);
             setIsCreating(false);
-            navigate(`/${session.id}`);
+            void navigate(`/${session.id}`);
         }).catch((error) => {
             console.error("Failed to create session:", error);
             setIsCreating(false);
@@ -234,7 +234,7 @@ export function StartScreen() {
 
     React.useEffect(() => {
         if (session) {
-            navigate(`/${session.id}`);
+            void navigate(`/${session.id}`);
         }
     }, [session, navigate]);
 
@@ -242,7 +242,7 @@ export function StartScreen() {
         <div style={{margin: "0", padding: "40px 24px"}}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, maxWidth: 1440, marginLeft: 'auto', marginRight: 'auto' }}>
                 <h2 style={{ margin: 0, fontSize: 32, fontWeight: 600, letterSpacing: '-0.022em' }}>{t("session.welcome")} {user?.name}</h2>
-                <Button size="large" onClick={() => { logout(); navigate("/login"); }}>
+                <Button size="large" onClick={() => { logout(); void navigate("/login"); }}>
                     {t("auth.logout")}
                 </Button>
             </div>

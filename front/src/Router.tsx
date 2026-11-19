@@ -4,24 +4,17 @@ import App from "./App";
 import {SessionSelector} from "./shared/StartScreen/StartScreen";
 import {MainScreen} from "./shared/MainScreen/MainScreen";
 import {LoginView} from "./features/auth/components/LoginView";
-import {RegisterView} from "./features/auth/components/RegisterView";
 import {ProtectedRoute} from "./features/auth/components/ProtectedRoute";
 import {SessionLayout} from "./shared/SessionLayout";
-import {Dashboard} from "./features/dashboard/components/Dashboard";
-import {GenerateView} from "./features/generation/GenerateView/GenerateView";
-import {HistoryView} from "./features/history/components/HistoryView";
-import {KitchenManagement} from "./features/ingredients/components/KitchenManagement";
-import {SettingsView} from "./features/settings/SettingsView";
-import {AchievementView} from "./features/achievements/AchievementView";
-import {ProfileView} from "./features/profile/ProfileView";
-import {RecapView} from "./features/recap/RecapView";
-import {RulesView} from "./shared/Rules/RulesView";
+import {SpinnerContainer} from "./shared/Spinner/Spinner";
 
 export const RaclottoRouter = createBrowserRouter([
     {
         path: "/",
         element: <App/>,
         errorElement: <ErrorPage/>,
+        // Shown while the first page's code loads; the feature pages are split out of the main bundle.
+        hydrateFallbackElement: <SpinnerContainer/>,
         children: [
             {
                 path: "login",
@@ -30,21 +23,22 @@ export const RaclottoRouter = createBrowserRouter([
             },
             {
                 path: "register",
-                element: <RegisterView/>,
+                lazy: {Component: async () => (await import("./features/auth/components/RegisterView")).RegisterView},
                 errorElement: <ErrorPage/>,
             },
             {
                 path: "rules",
-                element: <RulesView/>,
+                lazy: {Component: async () => (await import("./shared/Rules/RulesView")).RulesView},
                 errorElement: <ErrorPage/>,
             },
             {
                 path: "recap/:sessionKey",
-                element: (
-                    <ProtectedRoute>
-                        <RecapView/>
-                    </ProtectedRoute>
-                ),
+                lazy: {
+                    element: async () => {
+                        const {RecapView} = await import("./features/recap/RecapView");
+                        return <ProtectedRoute><RecapView/></ProtectedRoute>;
+                    },
+                },
                 errorElement: <ErrorPage/>,
             },
             {
@@ -76,37 +70,37 @@ export const RaclottoRouter = createBrowserRouter([
                             },
                             {
                                 path: "dashboard",
-                                element: <Dashboard/>,
+                                lazy: {Component: async () => (await import("./features/dashboard/components/Dashboard")).Dashboard},
                                 errorElement: <ErrorPage/>,
                             },
                             {
                                 path: "generate",
-                                element: <GenerateView/>,
+                                lazy: {Component: async () => (await import("./features/generation/GenerateView/GenerateView")).GenerateView},
                                 errorElement: <ErrorPage/>,
                             },
                             {
                                 path: "history",
-                                element: <HistoryView/>,
+                                lazy: {Component: async () => (await import("./features/history/components/HistoryView")).HistoryView},
                                 errorElement: <ErrorPage/>,
                             },
                             {
                                 path: "add",
-                                element: <KitchenManagement/>,
+                                lazy: {Component: async () => (await import("./features/ingredients/components/KitchenManagement")).KitchenManagement},
                                 errorElement: <ErrorPage/>,
                             },
                             {
                                 path: "settings",
-                                element: <SettingsView/>,
+                                lazy: {Component: async () => (await import("./features/settings/SettingsView")).SettingsView},
                                 errorElement: <ErrorPage/>,
                             },
                             {
                                 path: "achievements",
-                                element: <AchievementView/>,
+                                lazy: {Component: async () => (await import("./features/achievements/AchievementView")).AchievementView},
                                 errorElement: <ErrorPage/>,
                             },
                             {
                                 path: "profile/:userId?",
-                                element: <ProfileView/>,
+                                lazy: {Component: async () => (await import("./features/profile/ProfileView")).ProfileView},
                                 errorElement: <ErrorPage/>,
                             },
                         ]

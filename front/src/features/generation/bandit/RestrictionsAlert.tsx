@@ -1,7 +1,7 @@
 import React from "react";
 import { Alert, Typography } from "antd";
 import { useTranslation } from "react-i18next";
-import { Availability, isRestricted } from "./banditLimits";
+import { type Availability, isRestricted } from "./banditLimits";
 
 const { Text } = Typography;
 

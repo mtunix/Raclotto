@@ -101,60 +101,37 @@ export function IngredientModal(props: IngredientModalProps) {
         }
     }, [props.mode, props.ingredient, props.initialType, props.context]);
 
+    // The fields outside the form start over whenever the modal opens or what it edits changes.
+    const source = { visible: props.visible, mode: props.mode, ingredient: props.ingredient, initialType: props.initialType, context: props.context };
+    const [shownFrom, setShownFrom] = useState<typeof source | null>(null);
+    if (!shownFrom || (Object.keys(source) as (keyof typeof source)[]).some((key) => shownFrom[key] !== source[key])) {
+        setShownFrom(source);
+        if (props.visible) {
+            const ingredient = props.mode === 'edit' ? props.ingredient : null;
+            setSpicyLevel(ingredient?.spicy || 0);
+            setIngredientName(ingredient?.name || "");
+            setSelectedCategory(ingredient
+                ? ingredient.meat ? "meat" : ingredient.vegetarian ? "vegetarian" : ingredient.vegan ? "vegan" : ingredient.fish ? "fish" : null
+                : "vegetarian");
+            setAllergenValues({
+                gluten: ingredient?.gluten || false,
+                histamine: ingredient?.histamine || false,
+                fructose: ingredient?.fructose || false,
+                lactose: ingredient?.lactose || false,
+            });
+            setSelectedType(ingredient
+                ? ingredient.type
+                : props.initialType ?? (props.context === 'sauces' ? IngredientType.SAUCE : IngredientType.FILL));
+        }
+    }
+
+    // The form's own store is outside React state, so it is reset after the render that opened the modal.
     useEffect(() => {
         if (props.visible) {
-            if (props.mode === 'edit' && props.ingredient) {
-                // Edit mode: set local state for components not managed by form
-                const spicyValue = props.ingredient.spicy || 0;
-                setSpicyLevel(spicyValue);
-                setSelectedType(props.ingredient.type);
-                setIngredientName(props.ingredient.name || "");
-                
-                // Set category state
-                const category = props.ingredient.meat ? "meat" :
-                               props.ingredient.vegetarian ? "vegetarian" :
-                               props.ingredient.vegan ? "vegan" :
-                               props.ingredient.fish ? "fish" : null;
-                setSelectedCategory(category);
-                
-                // Set allergen state
-                setAllergenValues({
-                    gluten: props.ingredient.gluten || false,
-                    histamine: props.ingredient.histamine || false,
-                    fructose: props.ingredient.fructose || false,
-                    lactose: props.ingredient.lactose || false,
-                });
-                
-                // Reset form fields with ingredient data
-                form.resetFields();
-                form.setFieldsValue(getInitialValues());
-            } else {
-                // Add mode: reset local state and set default type based on context
-                setSpicyLevel(0);
-                setSelectedCategory("vegetarian");
-                setIngredientName("");
-                setAllergenValues({
-                    gluten: false,
-                    histamine: false,
-                    fructose: false,
-                    lactose: false,
-                });
-                
-                // Set default type based on context or initialType
-                let defaultType: IngredientType = IngredientType.FILL;
-                if (props.initialType) {
-                    defaultType = props.initialType;
-                } else if (props.context === 'sauces') {
-                    defaultType = IngredientType.SAUCE;
-                }
-                setSelectedType(defaultType);
-                
-                // Reset form fields with new initial values
-                form.resetFields();
-                form.setFieldsValue(getInitialValues());
-            }
+            form.resetFields();
+            form.setFieldsValue(getInitialValues());
         }
-    }, [props.visible, props.mode, props.ingredient, props.initialType, props.context, form, getInitialValues]);
+    }, [props.visible, form, getInitialValues]);
 
     const handleCategoryChange = (category: string | null) => {
         setSelectedCategory(category);
@@ -352,7 +329,7 @@ export function IngredientModal(props: IngredientModalProps) {
                                     <Radio.Group 
                                         size="large"
                                         value={selectedType}
-                                        onChange={(e) => handleTypeChange(e.target.value)}
+                                        onChange={(e) => handleTypeChange(e.target.value as IngredientType)}
                                     >
                                         <Radio 
                                             value={IngredientType.FILL}

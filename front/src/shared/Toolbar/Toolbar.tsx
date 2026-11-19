@@ -34,7 +34,7 @@ type ToolbarProps = {
 };
 
 export function Toolbar(props: ToolbarProps) {
-  let { t } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const paramsSessionId = useParams<{ sessionId: string }>().sessionId;
@@ -76,7 +76,7 @@ export function Toolbar(props: ToolbarProps) {
 
   function handleProfileClick() {
     const profileRoute = `/${sessionId}/profile${currentUser?.id ? `/${currentUser.id}` : ""}`;
-    navigate(profileRoute);
+    void navigate(profileRoute);
   }
 
   function onToolbarClicked(id: number) {
@@ -85,7 +85,7 @@ export function Toolbar(props: ToolbarProps) {
       // Only navigate if not already on this route
       // If already active, do nothing (don't deactivate)
       if (getActiveRoute() !== id) {
-        navigate(route);
+        void navigate(route);
       }
     }
   }
@@ -95,12 +95,12 @@ export function Toolbar(props: ToolbarProps) {
   function handleLogout() {
     logout();
     clearSession();
-    navigate("/login");
+    void navigate("/login");
   }
 
   function handleLeaveSession() {
     clearSession();
-    navigate("/");
+    void navigate("/");
   }
 
   const buttonProps = [

@@ -3,7 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { message } from "antd";
 import { pictureHistory } from "../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../lib/api/fakeTransport";
-import { setTransport, Transport } from "../lib/api/transport";
+import { setTransport, type Transport } from "../lib/api/transport";
 import { renderRoute } from "../testUtils";
 import { ProfilePictureManager } from "./ProfilePictureManager";
 
@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 function fakeCamera() {
-  const track = { stop: jest.fn() };
+  const track = { stop: vi.fn() };
   Object.defineProperty(navigator, "mediaDevices", {
     configurable: true,
     value: { getUserMedia: async () => ({ getTracks: () => [track] }) },
@@ -50,7 +50,7 @@ async function openDialog() {
 
 describe("on the user's own profile", () => {
   it("loads the picture history only once the dialog opens", async () => {
-    renderRoute(<ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={jest.fn()} userId={1} />);
+    renderRoute(<ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={vi.fn()} userId={1} />);
     await screen.findByText("profile.clickToChange");
     expect(historyFetches(1)).toBe(0);
 
@@ -64,7 +64,7 @@ describe("on the user's own profile", () => {
   });
 
   it("saves only a changed picture, then closes", async () => {
-    const onPictureChange = jest.fn();
+    const onPictureChange = vi.fn();
     renderRoute(<ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={onPictureChange} userId={1} />);
     const dialog = await openDialog();
     const save = within(dialog).getByText("common.save").closest("button");
@@ -79,7 +79,7 @@ describe("on the user's own profile", () => {
   });
 
   it("discards the edit on cancel", async () => {
-    const onPictureChange = jest.fn();
+    const onPictureChange = vi.fn();
     renderRoute(<ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={onPictureChange} userId={1} />);
     const dialog = await openDialog();
     fireEvent.click(within(dialog).getByText("auth.removePhoto"));
@@ -92,7 +92,7 @@ describe("on the user's own profile", () => {
   });
 
   it("takes a picked image file as the new picture", async () => {
-    const onPictureChange = jest.fn();
+    const onPictureChange = vi.fn();
     renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={onPictureChange} userId={1} userName="ada" />);
     const dialog = await openDialog();
     expect(within(dialog).getByText("A")).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe("on the user's own profile", () => {
   });
 
   it("refuses a file that is no image", async () => {
-    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={jest.fn()} userId={1} />);
+    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={vi.fn()} userId={1} />);
     const dialog = await openDialog();
 
     pickFile(new File(["text"], "notes.txt", { type: "text/plain" }));
@@ -122,7 +122,7 @@ describe("on the user's own profile", () => {
         stored = [{ ...current, is_candidate: false }, { ...older, is_candidate: true }];
         return undefined;
       });
-    renderRoute(<ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={jest.fn()} userId={7} />, {
+    renderRoute(<ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={vi.fn()} userId={7} />, {
       sharedCache: true,
     });
     const dialog = await openDialog();
@@ -139,7 +139,7 @@ describe("on the user's own profile", () => {
 
   it("stops the camera when the dialog closes", async () => {
     const track = fakeCamera();
-    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={jest.fn()} userId={1} />);
+    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={vi.fn()} userId={1} />);
     const dialog = await openDialog();
     fireEvent.click(within(dialog).getByText("auth.takePhoto"));
     await within(dialog).findByText("auth.capture");
@@ -150,7 +150,7 @@ describe("on the user's own profile", () => {
   });
 
   it("says so when the browser has no camera", async () => {
-    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={jest.fn()} userId={1} />);
+    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={vi.fn()} userId={1} />);
     const dialog = await openDialog();
 
     fireEvent.click(within(dialog).getByText("auth.takePhoto"));
@@ -161,7 +161,7 @@ describe("on the user's own profile", () => {
 
   it("opens nothing while disabled", async () => {
     const { container } = renderRoute(
-      <ProfilePictureManager currentPicture={null} onPictureChange={jest.fn()} userId={1} userName="ada" disabled />,
+      <ProfilePictureManager currentPicture={null} onPictureChange={vi.fn()} userId={1} userName="ada" disabled />,
     );
 
     fireEvent.click(await within(container).findByText("A"));
@@ -174,7 +174,7 @@ describe("on the user's own profile", () => {
 describe("on someone else's profile", () => {
   it("shows their picture and history read-only", async () => {
     renderRoute(
-      <ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={jest.fn()} userId={1} isOwnProfile={false} />,
+      <ProfilePictureManager currentPicture={current.profile_picture} onPictureChange={vi.fn()} userId={1} isOwnProfile={false} />,
     );
     const dialog = await openDialog();
 
@@ -188,7 +188,7 @@ describe("on someone else's profile", () => {
 
   it("says when they have no history yet", async () => {
     fake.on("GET", historyPath(1), []);
-    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={jest.fn()} userId={1} isOwnProfile={false} />);
+    renderRoute(<ProfilePictureManager currentPicture={null} onPictureChange={vi.fn()} userId={1} isOwnProfile={false} />);
     const dialog = await openDialog();
 
     expect(await within(dialog).findByText("profile.noHistoryYet")).toBeInTheDocument();
@@ -206,7 +206,7 @@ describe("in direct mode", () => {
   }
 
   it("reports every pick and removal at once, without a dialog or requests", async () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     renderRoute(<Registration onChange={onChange} />);
 
     pickFile(png());

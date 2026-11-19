@@ -1,5 +1,5 @@
 import { rollOutcome } from "../../lib/api/__fixtures__/backendResponses";
-import { idle, RollEvent, rollSession, RollState } from "./rollSession";
+import { idle, type RollEvent, rollSession, type RollState } from "./rollSession";
 
 const pan = rollOutcome.pan;
 const other = { ...pan, id: pan.id + 1 };

@@ -10,7 +10,7 @@ import {
     session,
 } from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
-import { setTransport, Transport } from "../../lib/api/transport";
+import { setTransport, type Transport } from "../../lib/api/transport";
 import { renderRoute } from "../../testUtils";
 import { BanditView } from "./BanditView";
 
@@ -33,7 +33,7 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-    jest.useRealTimers();
+    vi.useRealTimers();
 });
 
 function renderBandit() {
@@ -53,12 +53,12 @@ function renderBandit() {
 async function spin() {
     renderBandit();
     fireEvent.click(await screen.findByText("−"));
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     fireEvent.click(screen.getByText("generate.banditSpin"));
     await act(async () => {
-        await jest.advanceTimersByTimeAsync(20000);
+        await vi.advanceTimersByTimeAsync(20000);
     });
-    jest.useRealTimers();
+    vi.useRealTimers();
     return screen.findByRole("dialog");
 }
 

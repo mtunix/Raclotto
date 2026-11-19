@@ -17,7 +17,7 @@ export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) 
         try {
             const text = JSON.stringify(await exportIngredients({ session_key: sessionKey }), null, 2);
             setJson(text);
-            copyToClipboard(text, t);
+            void copyToClipboard(text, t);
         } catch (e) {
             console.error("Failed to export ingredients:", e);
             message.error(t("settings.exportFailed") || "Failed to export ingredients");

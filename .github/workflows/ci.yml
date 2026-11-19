@@ -52,9 +52,9 @@ jobs:
           cache: npm
           cache-dependency-path: front/package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit -p .
+      - run: npx tsc -b
       - run: npm run lint
-      - run: npx jest --ci
+      - run: npx vitest run
       - run: npm run build
 
   contract:
@@ -79,9 +79,41 @@ jobs:
       - run: npm run gen:api:check
         working-directory: front
 
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      E2E_RUN_DIR: ${{ github.workspace }}/e2e-run
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: front/.nvmrc
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+      - run: python -m venv venv && venv/bin/pip install -r requirements.txt
+      - run: npm ci && npx playwright install --with-deps chromium
+        working-directory: front
+      - run: mkdir -p "$E2E_RUN_DIR" && npm run test:e2e
+        working-directory: front
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: e2e-report
+          path: |
+            front/playwright-report
+            e2e-run/results
+          retention-days: 7
+
   image:
     name: Docker image
-    needs: [backend, frontend, contract]
+    needs: [backend, frontend, contract, e2e]
     if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 20

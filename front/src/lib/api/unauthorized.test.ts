@@ -2,18 +2,18 @@ import axios from "axios";
 import { getMe, login } from "../../api/generated/endpoints/auth/auth";
 import { useAuthStore } from "../../AuthSlice";
 import { loginResult } from "./__fixtures__/backendResponses";
-import { axiosTransport, setTransport, Transport, UnauthorizedError } from "./transport";
+import { axiosTransport, setTransport, type Transport, UnauthorizedError } from "./transport";
 
-jest.mock("axios", () => {
+vi.mock("axios", () => {
   const instance = {
-    request: jest.fn(),
+    request: vi.fn(),
     isAxiosError: (error: unknown) =>
       typeof error === "object" && error !== null && "isAxiosError" in error,
   };
   return { __esModule: true, default: instance };
 });
 
-const request = axios.request as jest.Mock;
+const request = vi.mocked(axios).request;
 const unauthorized = { isAxiosError: true, response: { status: 401, data: { errors: [] } } };
 
 let previous: Transport;
@@ -38,6 +38,7 @@ it("a 401 from a generated call signs the user out", async () => {
     expect.objectContaining({
       method: "GET",
       url: "/api/auth/me",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- asymmetric matchers are typed any
       headers: expect.objectContaining({ Authorization: `Bearer ${loginResult.token}` }),
     }),
   );
@@ -58,7 +59,7 @@ it("bad credentials reject with UnauthorizedError and leave the user signed out"
 it("other errors pass through unchanged", async () => {
   const badRequest = { isAxiosError: true, response: { status: 400 } };
   request.mockRejectedValueOnce(badRequest);
-  jest.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "error").mockImplementation(() => {});
 
   await expect(login({ name_or_email: "", password: "" })).rejects.toBe(badRequest);
 });

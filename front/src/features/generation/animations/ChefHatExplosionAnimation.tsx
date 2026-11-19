@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import type { IngredientDto } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
 
 interface ChefHatExplosionAnimationProps {
-    ingredients?: any[]; // Optional, not used but kept for API compatibility
+    ingredients?: IngredientDto[]; // Optional, not used but kept for API compatibility
     duration?: number; // in milliseconds
     fading?: boolean; // Whether the animation should fade out
 }
@@ -34,21 +35,14 @@ const CHEF_HAT_EMOJIS = ["👨‍🍳", "👩‍🍳", "🧑‍🍳", "🎩", "�
 
 export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps) {
     const { duration = 3000, fading = false } = props;
-    const [flyingIngredients, setFlyingIngredients] = useState<FlyingIngredient[]>([]);
-    const [centerX, setCenterX] = useState(0);
-    const [centerY, setCenterY] = useState(0);
-    const [centerEmoji, setCenterEmoji] = useState("👨‍🍳");
 
-    useEffect(() => {
+    const [scene] = useState(() => {
         // Randomly select a chef hat emoji
         const randomChefHatEmoji = CHEF_HAT_EMOJIS[Math.floor(Math.random() * CHEF_HAT_EMOJIS.length)];
-        setCenterEmoji(randomChefHatEmoji);
 
         // Calculate center of screen
         const centerXPos = window.innerWidth / 2;
         const centerYPos = window.innerHeight / 2;
-        setCenterX(centerXPos);
-        setCenterY(centerYPos);
 
         // Reduce particle count on mobile for better performance
         const isMobile = Util.isMobile();
@@ -88,8 +82,9 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
             });
         }
 
-        setFlyingIngredients(newFlyingIngredients);
-    }, [duration]);
+        return { centerEmoji: randomChefHatEmoji, centerX: centerXPos, centerY: centerYPos, flyingIngredients: newFlyingIngredients };
+    });
+    const { flyingIngredients, centerX, centerY, centerEmoji } = scene;
 
     return (
         <div

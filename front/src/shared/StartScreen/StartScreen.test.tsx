@@ -4,11 +4,11 @@ import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
 import { me, session, sessions } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../lib/api/transport';
+import { setTransport, type Transport } from '../../lib/api/transport';
 import { currentPath, renderRoute } from '../../testUtils';
 import { JoinSession, SessionSelector, StartScreen } from './StartScreen';
 
-jest.mock('i18next', () => ({
+vi.mock('i18next', () => ({
     t: (key: string) => key,
 }));
 

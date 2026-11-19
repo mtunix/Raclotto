@@ -7,10 +7,10 @@ export interface Camera {
   /** The video the stream plays in while the camera is active. */
   videoRef: React.RefObject<HTMLVideoElement | null>;
   active: boolean;
-  start(): Promise<void>;
-  stop(): void;
+  start: () => Promise<void>;
+  stop: () => void;
   /** The current frame as a JPEG data URL, stopping the camera; null while there is no frame yet. */
-  capture(): string | null;
+  capture: () => string | null;
 }
 
 const stopTracks = (stream: MediaStream | null) => stream?.getTracks().forEach((track) => track.stop());

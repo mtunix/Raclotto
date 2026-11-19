@@ -49,7 +49,15 @@ export function ProfilePictureManager({
     <>
       {!hideAvatar && (
         <div
+          role={opensDialog ? "button" : undefined}
+          tabIndex={opensDialog ? 0 : undefined}
           onClick={opensDialog ? () => setOpen(true) : undefined}
+          onKeyDown={opensDialog ? (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpen(true);
+            }
+          } : undefined}
           style={{
             cursor: opensDialog ? "pointer" : "default",
             display: "inline-block",

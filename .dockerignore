@@ -9,4 +9,5 @@
 front/node_modules/
 front/build/
 front/coverage/
+front/playwright-report/
 **/__pycache__/

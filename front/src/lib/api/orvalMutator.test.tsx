@@ -9,7 +9,7 @@ import {
 } from "../../api/generated/endpoints/levels/levels";
 import type { LevelDto } from "../../api/generated/model";
 import { FakeTransport } from "./fakeTransport";
-import { setTransport, Transport } from "./transport";
+import { setTransport, type Transport } from "./transport";
 
 const levels: LevelDto[] = [
   { id: 1, name: "level.novice", label_en: "Novice", label_de: "Neuling", required_experience: 0 },

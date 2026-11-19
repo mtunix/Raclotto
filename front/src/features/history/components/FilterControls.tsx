@@ -44,7 +44,7 @@ export function FilterControls({
                         <Space direction="vertical" style={{width: '100%'}}>
                             <Checkbox.Group
                                 value={selectedUsers}
-                                onChange={(values) => onUsersChange(values as number[])}
+                                onChange={(values) => onUsersChange(values)}
                                 style={{width: '100%'}}
                             >
                                 <Space direction="vertical" size="small" style={{width: '100%'}}>
@@ -81,7 +81,7 @@ export function FilterControls({
                         <Space direction="vertical" style={{width: '100%'}}>
                             <Checkbox.Group
                                 value={selectedRatings}
-                                onChange={(values) => onRatingsChange(values as number[])}
+                                onChange={(values) => onRatingsChange(values)}
                                 style={{width: '100%'}}
                             >
                                 <Space direction="vertical" size="small" style={{width: '100%'}}>
@@ -118,7 +118,7 @@ export function FilterControls({
                         <Space direction="vertical" style={{width: '100%'}}>
                             <Checkbox.Group
                                 value={selectedIngredientCounts}
-                                onChange={(values) => onIngredientCountsChange(values as string[])}
+                                onChange={(values) => onIngredientCountsChange(values)}
                                 style={{width: '100%'}}
                             >
                                 <Space direction="vertical" size="small" style={{width: '100%'}}>

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import NoDataPage from './NoDataPage';
 
-jest.mock('i18next', () => ({
+vi.mock('i18next', () => ({
     t: (key: string) => key,
 }));
 

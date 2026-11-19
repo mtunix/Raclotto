@@ -40,7 +40,7 @@ export function InvitesSection() {
         setError(null);
         try {
             await createInvite({ email: values.email });
-            mutate();
+            void mutate();
             message.success(t("invite.tokenCreated"));
         } catch (e) {
             setError(e instanceof Error && e.message ? e.message : t("invite.creationFailed"));
@@ -52,7 +52,7 @@ export function InvitesSection() {
     async function onRevoke(inviteId: number) {
         try {
             await revokeInvite(inviteId);
-            mutate();
+            void mutate();
             message.success(t("invite.tokenRevoked"));
         } catch (e) {
             setError(e instanceof Error && e.message ? e.message : t("invite.revokeFailed"));

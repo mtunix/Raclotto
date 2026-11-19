@@ -10,14 +10,15 @@ interface CheeseSliderProps {
 
 export function CheeseSlider({ cheeseLevel }: CheeseSliderProps) {
     const [animatedValue, setAnimatedValue] = useState(0);
+    const [animatedLevel, setAnimatedLevel] = useState(cheeseLevel);
+    if (animatedLevel !== cheeseLevel) {
+        setAnimatedLevel(cheeseLevel);
+        setAnimatedValue(0);
+    }
     const animationRef = useRef<number | null>(null);
     const startTimeRef = useRef<number | null>(null);
 
     useEffect(() => {
-        if (cheeseLevel === undefined || cheeseLevel === null) return;
-
-        // Reset animation
-        setAnimatedValue(0);
         startTimeRef.current = Date.now();
 
         let lastUpdate = startTimeRef.current;

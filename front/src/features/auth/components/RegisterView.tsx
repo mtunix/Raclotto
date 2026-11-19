@@ -55,10 +55,10 @@ export function RegisterView() {
           setInvitePrefilled(true);
           setError(null);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to load invite by token:", err);
         if (!cancelled) {
-          setError(err?.message || t("auth.inviteTokenInvalid"));
+          setError((err instanceof Error && err.message) || t("auth.inviteTokenInvalid"));
         }
       } finally {
         if (!cancelled) {
@@ -67,7 +67,7 @@ export function RegisterView() {
       }
     };
 
-    fetchInvite();
+    void fetchInvite();
 
     return () => {
       cancelled = true;
@@ -112,13 +112,13 @@ export function RegisterView() {
       // Registration takes no diet; the new user's preferences are saved right after
       try {
         setUser(await updateMe(normalizeDiet(tagValues)));
-        mutateMe();
+        void mutateMe();
       } catch (e) {
         console.error("Failed to save dietary preferences:", e);
       }
-      navigate("/");
-    } catch (err: any) {
-      setError(err.message || t("auth.registrationFailed"));
+      void navigate("/");
+    } catch (err: unknown) {
+      setError((err instanceof Error && err.message) || t("auth.registrationFailed"));
     } finally {
       setLoading(false);
     }

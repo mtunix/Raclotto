@@ -103,7 +103,7 @@ function dropEmpty(
 export const axiosTransport: Transport = {
   async request(method, path, options = {}) {
     try {
-      const response = await axios.request({
+      const response = await axios.request<unknown>({
         method,
         url: `${API_BASE}${path}`,
         params: dropEmpty(options.query),

@@ -1,7 +1,7 @@
-import { IngredientType } from "../../../api/generated/model";
+import { type IngredientDto, type IngredientType } from "../../../api/generated/model";
 
 export function getTotalIngredientTypeCount(
-  ingredients: any[],
+  ingredients: IngredientDto[],
   type: IngredientType,
 ): number {
   return ingredients.filter((i) => i.type === type).length;

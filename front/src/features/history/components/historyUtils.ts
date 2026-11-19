@@ -60,7 +60,7 @@ export function filterPans(pans: PanDto[], filters: FilterOptions): PanDto[] {
         // Ingredient count filter
         if (filters.selectedIngredientCounts.length > 0) {
             const totalCount = pan.ingredients.length;
-            let range = '';
+            let range: string;
             if (totalCount <= 3) range = '1-3';
             else if (totalCount <= 6) range = '4-6';
             else if (totalCount <= 9) range = '7-9';

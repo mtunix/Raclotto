@@ -1,15 +1,15 @@
 import axios from "axios";
 import { axiosTransport } from "./transport";
 
-jest.mock("axios", () => {
+vi.mock("axios", () => {
   const instance = {
-    request: jest.fn(() => Promise.resolve({ data: { ok: true } })),
+    request: vi.fn(() => Promise.resolve({ data: { ok: true } })),
     isAxiosError: () => false,
   };
   return { __esModule: true, default: instance };
 });
 
-const request = axios.request as jest.Mock;
+const request = vi.mocked(axios).request;
 
 describe("axiosTransport", () => {
   it("drops empty query values and repeats keys for arrays", async () => {

@@ -1,10 +1,10 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { RouteObject } from 'react-router';
+import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import { me, session, userProfile } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../lib/api/transport';
+import { setTransport, type Transport } from '../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../testUtils';
 import { Toolbar } from './Toolbar';
 

@@ -20,11 +20,11 @@ export function getProfilePictureUrl(picture: string | null | undefined): string
   // If it's a relative path, prepend the API base URL
   if (picture.startsWith('/')) {
     // Remove leading slash and construct full URL
-    const apiBase = process.env.REACT_APP_API_URL || 'https://localhost:3001';
+    const apiBase = import.meta.env.VITE_API_URL || 'https://localhost:3001';
     return `${apiBase}${picture}`;
   }
 
   // Otherwise, assume it's a relative path without leading slash
-  const apiBase = process.env.REACT_APP_API_URL || 'https://localhost:3001';
+  const apiBase = import.meta.env.VITE_API_URL || 'https://localhost:3001';
   return `${apiBase}/${picture}`;
 }

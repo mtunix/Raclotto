@@ -1,11 +1,11 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { RouteObject } from 'react-router';
+import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
 import { events, ingredientsForUser, session } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../lib/api/transport';
+import { setTransport, type Transport } from '../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../testUtils';
 import { MainScreen } from './MainScreen';
 
@@ -24,7 +24,7 @@ beforeEach(() => {
 
 afterEach(() => {
     setTransport(previous);
-    jest.useRealTimers();
+    vi.useRealTimers();
 });
 
 const routes: RouteObject[] = [{
@@ -87,12 +87,12 @@ it('dismisses the newest event and refetches the rest', async () => {
 });
 
 it('leaves for the start screen when the URL names another session', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     inSession();
     renderRoutes(routes, '/999', { sharedCache: true });
 
     await act(async () => {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
     });
 
     expect(currentPath()).toBe('/');

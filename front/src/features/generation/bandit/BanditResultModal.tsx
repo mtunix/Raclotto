@@ -3,7 +3,7 @@ import { Button, Card, Col, Modal, Rate, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
 import { displayName } from "../../../shared/displayName";
-import { Reel } from "./reelSpin";
+import { type Reel } from "./reelSpin";
 import { BanditReels } from "./BanditReels";
 
 const { Text, Title } = Typography;

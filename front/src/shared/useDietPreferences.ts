@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import {
     DEFAULT_DIET_PREFERENCES,
-    DietPreferences,
+    type DietPreferences,
     toggleDietPreference,
 } from "../model/diet";
 

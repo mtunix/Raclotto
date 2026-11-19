@@ -5,7 +5,7 @@ import { useAppStore } from "../../../AppSlice";
 import { useAuthStore } from "../../../AuthSlice";
 import { session, stats } from "../../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../../lib/api/fakeTransport";
-import { setTransport, Transport } from "../../../lib/api/transport";
+import { setTransport, type Transport } from "../../../lib/api/transport";
 import { displayName } from "../../../shared/displayName";
 import { Dashboard } from "./Dashboard";
 

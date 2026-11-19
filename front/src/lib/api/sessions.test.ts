@@ -10,7 +10,7 @@ import type { SessionDto } from "../../api/generated/model";
 import { useAppStore } from "../../AppSlice";
 import { session, sessions } from "./__fixtures__/backendResponses";
 import { FakeTransport } from "./fakeTransport";
-import { setTransport, Transport } from "./transport";
+import { setTransport, type Transport } from "./transport";
 
 let fake: FakeTransport;
 let previous: Transport;

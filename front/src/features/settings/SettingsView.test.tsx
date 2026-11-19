@@ -10,14 +10,14 @@ import {
     session,
 } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
-import { setTransport, Transport } from '../../lib/api/transport';
+import { setTransport, type Transport } from '../../lib/api/transport';
 import { currentPath, renderRoutes } from '../../testUtils';
 import { SettingsView } from './SettingsView';
 
 let fake: FakeTransport;
 let previous: Transport;
 let invites = [invite];
-const writeText = jest.fn((_text: string) => Promise.resolve());
+const writeText = vi.fn((_text: string) => Promise.resolve());
 
 beforeAll(() => {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });

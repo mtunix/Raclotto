@@ -36,11 +36,16 @@ export function LevelUpPictureModal({
   const { t } = useTranslation();
   const [newProfilePicture, setNewProfilePicture] =
     useState<GeneratedPictureDto | null>(null);
+  const generating = open && levelId ? levelId : null;
+  const [generatingFor, setGeneratingFor] = useState(generating);
+  if (generatingFor !== generating) {
+    setGeneratingFor(generating);
+    setNewProfilePicture(null);
+  }
 
   useEffect(() => {
     if (!open || !levelId) return;
     let cancelled = false;
-    setNewProfilePicture(null);
     generateMyPicture(levelId)
       .then((picture) => {
         if (!cancelled) setNewProfilePicture(picture);
@@ -55,7 +60,7 @@ export function LevelUpPictureModal({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one generation per open level; a new onClose or t must not start another
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- one generation per open level; a new onClose or t must not start another
   }, [open, levelId]);
 
   const handleClose = () => {

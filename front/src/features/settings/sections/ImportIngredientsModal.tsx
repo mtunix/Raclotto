@@ -3,8 +3,8 @@ import { Button, Card, Input, List, message, Modal, Radio, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ImportedIngredient } from "../../../api/generated/model";
 import { ingredientCatalog } from "../../ingredients/ingredientCatalog";
-import { categoryProblem, isIngredientType, stageExportFile, StagedIngredient, toImported } from "../ingredientImport";
-import { StagedFieldChange, StagedIngredientCard } from "./StagedIngredientCard";
+import { categoryProblem, isIngredientType, stageExportFile, type StagedIngredient, toImported } from "../ingredientImport";
+import { type StagedFieldChange, StagedIngredientCard } from "./StagedIngredientCard";
 import "../SettingsView.css";
 
 type ImportMode = "import" | "reimport";
@@ -148,7 +148,7 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
         >
             <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
                 <div style={cardTitleStyle}>{t("settings.selectImportMode") || "Select Import Mode"}</div>
-                <Radio.Group value={mode} onChange={(e) => setMode(e.target.value)} style={{ width: "100%" }}>
+                <Radio.Group value={mode} onChange={(e) => setMode(e.target.value as ImportMode)} style={{ width: "100%" }}>
                     <Space direction="vertical" style={{ width: "100%" }} size="middle">
                         <Radio.Button value="import" style={modeButtonStyle}>
                             {t("settings.importModeAdd") || "Import (Add new only)"}

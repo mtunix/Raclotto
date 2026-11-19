@@ -4,3 +4,5 @@ node_modules/**
 *.pem
 cert.pem
 key.pem
+# Playwright
+playwright-report/

@@ -6,7 +6,7 @@ XP, levels and achievements. Two apps in one repo:
 | Path     | Stack                                                        |
 |----------|--------------------------------------------------------------|
 | `back/`  | Python 3.14 (`.python-version`), Flask 3.1, SQLAlchemy 2, SQLite |
-| `front/` | React 19, TypeScript 6, Zustand + SWR, antd, ejected CRA (webpack 5, Babel 8 via `config/babelPreset.js`, jest 30) |
+| `front/` | React 19, TypeScript 6, Zustand + SWR, antd, Vite 8 (`vite.config.ts`, also configures Vitest 5) |
 
 There are no dev docs. The code map below and the module docstrings are the reference; read
 the module you are changing before inferring patterns from its neighbours.
@@ -135,10 +135,11 @@ venv/bin/alembic current                                   # revision of instanc
 venv/bin/python -m back.src.backup DEST                    # consistent copy of the database while it runs; `-` for stdout
 deploy/release.sh                                          # dev → master, tagged as the next release; --patch [BRANCH] for a letter
 
-cd front && CI=true npx jest <path>      # one test file — the edit loop
-cd front && CI=true npx jest             # whole frontend suite
-cd front && npx tsc --noEmit             # type check
-cd front && npm start                    # dev server
+cd front && npx vitest run <path>        # one test file — the edit loop
+cd front && npx vitest run               # whole frontend suite
+cd front && npx tsc -b                  # type check: src (tsconfig.app.json), tool configs (tsconfig.node.json)
+cd front && npm run test:e2e             # Playwright against the production server and build (E2E_CHANNEL=chrome: installed Chrome)
+cd front && npm start                    # Vite dev server: https://localhost:3001, proxies /api to 8081
 cd front && npm run gen:api              # back/openapi.json + api/generated/ from the DTOs
 cd front && npm run gen:api:check        # regenerate and fail on drift
 venv/bin/python -m back.test.export_wire_fixtures   # rewrite lib/api/__fixtures__/backendResponses.ts
@@ -146,11 +147,11 @@ cd front && npm run build                # production bundle in front/build/ (ig
 cd front && npm run build:static         # the same into ../static/, where the backend serves it (ignored by git)
 ```
 
-`npm run lint` (ESLint 10, flat config in `eslint.config.mjs`) covers `src/**/*.{ts,tsx}` with
-`--max-warnings 0`; CI runs it, so a warning fails the build. A deliberate exception gets a
+`npm run lint` (ESLint 10, flat config in `eslint.config.mjs`: the recommended type-checked sets of
+`typescript-eslint` and `@eslint-react`, plus `jsx-a11y`) covers `front/` except the generated client,
+with `--max-warnings 0`; CI runs it, so a warning fails the build. A deliberate exception gets a
 one-line `eslint-disable-next-line <rule> -- <why>`, never a file- or rule-wide disable. TypeScript
-stays on 6: TS 7's native compiler has no JS API yet, which `@typescript-eslint`,
-fork-ts-checker and `config/modules.js` need.
+stays on 6: TS 7's native compiler has no JS API yet, which `@typescript-eslint` needs.
 
 `ruff` (config in `pyproject.toml`) lints and formats all Python; CI runs `ruff check` and
 `ruff format --check`. A deliberate exception gets `# noqa: <code>  # <why>` on its line. Commits
@@ -196,8 +197,8 @@ The README has the operator steps. The pieces:
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `dev`, release tags, pull requests and by hand
-(`workflow_dispatch`): `ruff`, the backend suite, `venv/bin/mypy`, `tsc`, `npm run lint`, jest, the
-production build (with `CI=true`, so build warnings fail it), and `npm run gen:api:check`. A push to
+(`workflow_dispatch`): `ruff`, the backend suite, `venv/bin/mypy`, `tsc`, `npm run lint`, Vitest, the
+production build (which type-checks first), `npm run gen:api:check` and the Playwright suite. A push to
 `master` alone runs nothing; its release tag does. Python and Node versions come from
 `.python-version` and `front/.nvmrc`; actions are pinned to commit SHAs. After those pass, for a
 release tag or a manual run only, the `image` job builds the Docker image and smoke-tests it
@@ -214,7 +215,7 @@ images (patch and digest only), pip and npm; Node, Python and TypeScript major l
 | Changed only | Loop with |
 |---|---|
 | `back/` | the touched test module, then the whole backend suite, then `venv/bin/mypy` and `ruff` |
-| `front/src/` | `npx jest <path>`, then `npx tsc --noEmit`, then the whole frontend suite |
+| `front/src/` | `npx vitest run <path>`, then `npx tsc -b`, then the whole frontend suite |
 | both sides | the two rows above; also check the wire contract (below) |
 
 - **Narrowest first.** A single test module before its suite.
@@ -234,10 +235,15 @@ images (patch and digest only), pip and npm; Node, Python and TypeScript major l
   assert what reached the database.
 - **Contract tests** (`test/integration/test_openapi.py`): the committed spec matches the code
   (drift), and every routed endpoint appears in the spec.
-- **Frontend:** jest. Call the generated functions against `FakeTransport` (`setTransport(fake)`,
+- **Frontend:** Vitest (jest-style globals, `vi.*`). Call the generated functions against `FakeTransport` (`setTransport(fake)`,
   `fake.on(...)`, `fake.last(...)`) with fixtures from `lib/api/__fixtures__/backendResponses.ts`,
   not by mocking axios or modules. Views render in a data router through `renderRoutes` /
   `renderRoute` (`src/testUtils.tsx`) and set the Zustand stores with `setState`.
+- **End-to-end:** Playwright in `front/e2e/`, against `back.src.main` serving the production build on
+  port 8091 with a throwaway database and a generated admin password (`playwright.config.ts`), never a
+  dev server. `support.ts`: `t(key)` for UI text (the app runs in German), `createSession`,
+  `addIngredients(page, session, PANTRY)` to seed through the API; every test fails on a page error or
+  a console error it didn't allow (`test.use({ allowedConsoleErrors })`). Each test makes its own session.
 - **Test through the module's interface.** Swap collaborators through constructor arguments
   (`PanRoll(rng=..., achievements=...)`, `Achievements(evaluators=...)`), not `patch`.
 - **Regression tests must be seen red before green.** Revert the fix, confirm the new test

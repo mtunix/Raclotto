@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Avatar, Button, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { initialOf } from "./pictureFile";
@@ -25,9 +25,11 @@ export function EditPictureModal({ open, currentPicture, userName, userId, onSav
   const [draft, setDraft] = useState(currentPicture);
   const { history, loading, choosing, choose } = usePictureHistory(userId, open);
 
-  useEffect(() => {
+  const [draftOf, setDraftOf] = useState({ open, currentPicture });
+  if (draftOf.open !== open || draftOf.currentPicture !== currentPicture) {
+    setDraftOf({ open, currentPicture });
     if (open) setDraft(currentPicture);
-  }, [open, currentPicture]);
+  }
 
   function close() {
     camera.stop();

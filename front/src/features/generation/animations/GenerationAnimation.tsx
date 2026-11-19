@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect } from "react";
+import type { IngredientDto } from "../../../api/generated/model";
 import { ChaoticGenerationAnimation } from "./ChaoticGenerationAnimation";
 import { BlenderSpinAnimation } from "./BlenderSpinAnimation";
 import { ChefHatExplosionAnimation } from "./ChefHatExplosionAnimation";
@@ -7,7 +8,7 @@ import { SlotMachineAnimation } from "./SlotMachineAnimation";
 import { ShootingIngredientsAnimation } from "./ShootingIngredientsAnimation";
 
 interface GenerationAnimationProps {
-    ingredients?: any[];
+    ingredients?: IngredientDto[];
     duration?: number;
     fading?: boolean;
     onDurationChange?: (duration: number) => void;
