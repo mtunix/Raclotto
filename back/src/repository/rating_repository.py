@@ -1,4 +1,5 @@
 from typing import List, Optional
+from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from back.src.repository.base_repository import BaseRepository
 from back.src.entity.rating import Rating
@@ -43,3 +44,10 @@ class RatingRepository(BaseRepository[Rating]):
         :return: Count of ratings
         """
         return db.session.query(Rating).filter_by(user_id=user_id).count()
+
+    def average_for_pans(self, pan_ids: List[int]) -> Optional[float]:
+        """The average of every rating the pans received; None without ratings."""
+        if not pan_ids:
+            return None
+        average = db.session.query(func.avg(Rating.rating)).filter(Rating.pan_id.in_(pan_ids)).scalar()
+        return float(average) if average is not None else None

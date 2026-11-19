@@ -151,6 +151,25 @@ class IngredientRepository(BaseRepository[Ingredient]):
         ).limit(limit).all()
         return rows
     
+    def best_rated_in_pans(self, pan_ids: List[int]) -> Optional[Row[Ingredient, float]]:
+        """The ingredient with the highest average rating over the given pans it was in, and that average."""
+        from sqlalchemy import func
+        from back.src.entity.pan import pan_ingredients
+        from back.src.entity.rating import Rating
+
+        if not pan_ids:
+            return None
+        row: Optional[Row[Ingredient, float]] = (
+            db.session.query(Ingredient, func.avg(Rating.rating))
+            .join(pan_ingredients, pan_ingredients.c.ingredient_id == Ingredient.id)
+            .join(Rating, Rating.pan_id == pan_ingredients.c.pan_id)
+            .filter(pan_ingredients.c.pan_id.in_(pan_ids))
+            .group_by(Ingredient.id)
+            .order_by(func.avg(Rating.rating).desc())
+            .first()
+        )
+        return row
+
     def get_most_used(self, session_id: Optional[int] = None, limit: int = 10) -> List[Row[Ingredient, int]]:
         """
         Get most-used ingredients by pan count.
