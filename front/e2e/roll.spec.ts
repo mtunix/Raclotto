@@ -1,4 +1,4 @@
-import { PANTRY, addIngredients, api, createSession, expect, t, test } from "./support";
+import { ADMIN, PANTRY, addIngredients, api, createSession, expect, t, test } from "./support";
 
 const PANTRY_NAMES = new RegExp(PANTRY.map((ingredient) => ingredient.name).join("|"));
 
@@ -96,4 +96,28 @@ test("levels up a new cook without asking for a picture the server can't make", 
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.getByText(t("image.profilePictureError"))).toBeHidden();
   expect(generationRequests).toEqual([]);
+});
+
+// The server sends identifiers; the table reads the app's German texts.
+test("announces a pan swap and lists achievements in German", async ({ page }) => {
+  const session = await createSession(page);
+  await addIngredients(page, session, PANTRY);
+  const admin = await api(page);
+  const email = `swapper-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@example.test`;
+  const { token } = await admin.post<{ token: string }>("/invites", { email });
+  const name = email.split("@")[0];
+  const swapper = await admin.post<{ token: string }>("/auth/register", { token, email, name, password: "swapper-password-1" });
+  const roll = { num_fill: 1, num_sauce: 1 };
+  await (await api(page, swapper.token)).post("/pans/generate", roll, { session_key: session.key });
+  await admin.post("/pans/generate", roll, { session_key: session.key });
+
+  await page.goto(`/${session.id}`);
+  const swap = t("events.types.pan_swap.message_other")
+    .replace("{{first}}", ADMIN.name)
+    .replace("{{second}}", name)
+    .replace("{{count}}", "10");
+  await expect(page.getByText(swap)).toBeVisible({ timeout: 15_000 });
+
+  await page.goto(`/${session.id}/achievements`);
+  await expect(page.getByText(t("achievements.first_blood.description"))).toBeVisible();
 });
