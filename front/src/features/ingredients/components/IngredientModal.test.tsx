@@ -210,6 +210,7 @@ describe('adding', () => {
     });
 
     it('stays open when creating fails', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
         fake.on('POST', '/ingredients', () => {
             throw Object.assign(new Error('Request failed with status code 400'), { status: 400 });
         });
@@ -335,6 +336,7 @@ describe('editing', () => {
     });
 
     it('stays open when saving fails', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
         onSave.mockRejectedValue(new Error('Request failed with status code 404'));
         renderEdit(pork);
 

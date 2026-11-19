@@ -97,6 +97,7 @@ it('takes token and email from the invite link and locks them', async () => {
 });
 
 it('says when the invite link is not valid and leaves the fields open', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     fake.on('GET', '/auth/invite/spent', failure(400));
     renderRoutes(routes, '/register?token=spent');
 
@@ -116,6 +117,7 @@ it('sends nothing while the passwords differ', async () => {
 });
 
 it('says when registering fails and stays signed out', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     fake.on('POST', '/auth/register', failure(400));
     renderRoutes(routes, '/register');
 
@@ -136,5 +138,4 @@ it('signs the new user in even when the diet cannot be saved', async () => {
 
     await waitFor(() => expect(currentPath()).toBe('/'));
     expect(useAuthStore.getState()).toMatchObject({ token: registration.token, user: registration.user });
-    vi.mocked(console.error).mockRestore();
 });

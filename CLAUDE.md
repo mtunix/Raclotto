@@ -249,8 +249,10 @@ images (patch and digest only), pip and npm; Node, Python and TypeScript major l
   (drift), and every routed endpoint appears in the spec.
 - **Frontend:** Vitest (jest-style globals, `vi.*`). Call the generated functions against `FakeTransport` (`setTransport(fake)`,
   `fake.on(...)`, `fake.last(...)`) with fixtures from `lib/api/__fixtures__/backendResponses.ts`,
-  not by mocking axios or modules. Views render in a data router through `renderRoutes` /
-  `renderRoute` (`src/testUtils.tsx`) and set the Zustand stores with `setState`.
+  not by mocking axios or modules. Every test starts with an empty `FakeTransport` and fails on a
+  `console.error` it didn't silence (`vi.spyOn(console, 'error').mockImplementation(() => {})`).
+  Views render in a data router through `renderRoutes` / `renderRoute` (`src/testUtils.tsx`) and set
+  the Zustand stores with `setState`.
 - **End-to-end:** Playwright in `front/e2e/`, against `back.src.main` serving the production build on
   port 8091 with a throwaway database and a generated admin password (`playwright.config.ts`), never a
   dev server. `support.ts`: `t(key)` for UI text (the app runs in German), `createSession`,

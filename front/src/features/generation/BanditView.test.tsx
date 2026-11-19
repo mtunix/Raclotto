@@ -121,6 +121,7 @@ it("counts what the diet excludes against all available ingredients", async () =
 });
 
 it("reports a failed roll and offers the lever again", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     fake.on("POST", "/pans/generate/bandit", () => {
         throw Object.assign(new Error("Server error"), { status: 500 });
     });

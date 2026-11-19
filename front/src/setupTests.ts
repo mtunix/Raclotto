@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup } from '@testing-library/react';
 import { message } from 'antd';
+import type { MockInstance } from 'vitest';
 
 // Tests see translation keys, and reach the network only through a transport they set or a mock of their own.
 vi.mock('react-i18next', () => {
@@ -10,15 +11,6 @@ vi.mock('react-i18next', () => {
         useTranslation: () => translation,
         initReactI18next: { type: '3rdParty', init: () => {} },
     };
-});
-vi.mock('axios', () => {
-    const axios = {
-        get: vi.fn(() => Promise.resolve({ data: {} })),
-        post: vi.fn(() => Promise.resolve({ data: {}, status: 200 })),
-        patch: vi.fn(() => Promise.resolve({ data: {}, status: 200 })),
-        delete: vi.fn(() => Promise.resolve({ data: {}, status: 200 })),
-    };
-    return { default: axios };
 });
 
 // antd's grid and typography watch media queries and element sizes, which jsdom does not implement.
@@ -36,6 +28,32 @@ Object.defineProperty(window, 'matchMedia', {
         addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => false,
     }),
 });
+// A request no test answered rejects instead of reaching the network. Imported late, so a test file's own
+// `vi.mock('axios')` still reaches the transport.
+beforeEach(async () => {
+    const [{ setTransport }, { FakeTransport }] = await Promise.all([
+        import('./lib/api/transport'),
+        import('./lib/api/fakeTransport'),
+    ]);
+    setTransport(new FakeTransport());
+});
+
+// A console error fails the test; one that expects errors silences them with its own `mockImplementation`.
+let consoleErrors: unknown[][] = [];
+let consoleError: MockInstance<typeof console.error> | undefined;
+beforeEach(() => {
+    consoleErrors = [];
+    consoleError = vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+        consoleErrors.push(args);
+    });
+});
+afterEach(() => {
+    consoleError?.mockRestore();
+    if (consoleErrors.length > 0) {
+        throw new Error(`Unexpected console.error:\n${consoleErrors.map((args) => args.map(String).join(' ')).join('\n')}`);
+    }
+});
+
 const defaultWidth = window.innerWidth;
 afterEach(() => {
     window.innerWidth = defaultWidth;

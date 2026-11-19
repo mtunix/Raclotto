@@ -169,6 +169,7 @@ describe('a session creator', () => {
     });
 
     it('keeps the draft when saving fails', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
         await renderSection(eventConfigs);
         fake.on('POST', '/events/configs', () => {
             throw Object.assign(new Error('Request failed with status code 500'), { status: 500 });
