@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup } from '@testing-library/react';
-import { message } from 'antd';
+import { ConfigProvider, message } from 'antd';
+import { createElement } from 'react';
 import type { MockInstance } from 'vitest';
 
 // Tests see translation keys, and reach the network only through a transport they set or a mock of their own.
@@ -73,6 +74,10 @@ globalThis.ResizeObserver = class {
 // antd's messages live outside the trees Testing Library unmounts, and render on React's scheduler: a
 // render still queued when the file's jsdom is torn down fails the run. The first destroy mounts their
 // holder, which destroys them a microtask later; the macrotask lets the scheduler's queued work run.
+// Without motion a destroyed message leaves at once instead of animating out on animation frames.
+ConfigProvider.config({
+    holderRender: (children) => createElement(ConfigProvider, { theme: { token: { motion: false } } }, children),
+});
 afterEach(async () => {
     cleanup();
     await act(async () => {
