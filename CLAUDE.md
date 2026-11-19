@@ -54,9 +54,17 @@ The deep modules in `interactor/` and what they own:
   all go through it; routes call `roll_into(..., present)` so the response DTO is built
   before the commit.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
-  what happened (`PanRolled`, `PanRated`, `IngredientAdded`, `CatalogChanged`,
-  `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`. Never special-case
-  an achievement by title outside its evaluator. `record` flushes, the caller commits.
+  what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `IngredientAdded`,
+  `CatalogChanged`, `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`.
+  Never special-case an achievement by title outside its evaluator. `record` flushes, the caller
+  commits, together with the change the fact reports.
+- **`events.py` — `Events.record(fact) -> list[Event]`**: session events (pan swap) from the same
+  facts; evaluators declare `event_type`, `reacts_to` and a default `cooldown`. Owns the
+  enabled/frequency config (a session's own overrides the global one). A new event type also goes
+  into `EventType` in `dto/event.py`.
+- **`ingredient_catalog.py`, `profile_pictures.py`, `user_stats.py`**: ingredient changes and
+  imports (with their achievement facts), picture generation behind the `ImageGenerator` seam,
+  profile statistics. Routes map their errors to `ApiError`.
 
 ### Frontend (`front/src/`)
 
