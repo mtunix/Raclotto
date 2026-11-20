@@ -6,8 +6,8 @@
 
 Which evaluators react to which fact, whether an event type is enabled for the
 session, how often it may fire and storing what fired all live behind
-``record``. A session's own config overrides the global one. Callers own the
-transaction: ``record`` flushes but never commits.
+``record``. A session's own config overrides the global one. ``record`` flushes;
+the endpoint commits the request's transaction (ADR 0008).
 """
 
 import logging

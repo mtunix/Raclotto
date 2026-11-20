@@ -6,8 +6,8 @@
     level = Levels().starting()            # where a new user starts
 
 A user without a stored level is shown the level their XP reaches, else the lowest; ``award``
-starts from that shown level, so such a user still sees their first level-up. Callers own the
-transaction: nothing here commits.
+starts from that shown level, so such a user still sees their first level-up. The endpoint commits
+the request's transaction (ADR 0008).
 """
 
 from dataclasses import dataclass

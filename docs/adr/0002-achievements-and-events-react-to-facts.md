@@ -21,6 +21,9 @@ achievement evaluator also declares its `audience` and whether it is `revocable`
 evaluator its `event_type` and default `cooldown`. Achievement evaluators are found by the
 achievement's title.
 
+> Since `9df6463` (2026-11-19) evaluators are registered and found by the achievement's `key`
+> (`AchievementKey`), not its title, here and in the consequences below.
+
 `record` flushes but never commits. The caller commits the fact's change and its consequences
 together; `PanRoll.roll` does the whole roll (ingredients, membership, XP, events, achievements)
 in one transaction and builds the response before the commit (`roll_into`).

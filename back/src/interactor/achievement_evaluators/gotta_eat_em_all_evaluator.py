@@ -98,10 +98,4 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         # Calculate progress as a ratio
         progress = len(used_fills) / len(all_fills)
 
-        # If user has the achievement but progress is less than 1.0,
-        # it means a new FILL ingredient was added and they need to eat it
-        if achievement in user.achievements and progress < 1.0:
-            # Progress will be updated by revocation logic
-            return progress
-
         return min(1.0, progress)

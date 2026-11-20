@@ -4,8 +4,8 @@
     PreparationTypes().delete(prep_type)
 
 A default type belongs to every session and stays: deleting one raises ``DefaultPreparationType``.
-Who may add a default is ``Permissions.change_global``; nothing here checks. Callers own the
-transaction: nothing here commits.
+Who may add a default is ``Permissions.change_global``; nothing here checks. The endpoint commits
+the request's transaction (ADR 0008).
 """
 
 from back.src.driver.database import db

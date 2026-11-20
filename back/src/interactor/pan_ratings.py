@@ -7,7 +7,7 @@
 A rater has one rating per pan, and only the rater can change or withdraw it: anyone else's
 rating is reported as missing. Every rating that changes a pan's stars reports ``PanRated``
 in the same transaction; withdrawing reports nothing, since no achievement can be lost
-through ratings. Callers own the transaction: nothing here commits.
+through ratings. Changes are flushed; the endpoint commits the request's transaction (ADR 0008).
 """
 
 from back.src.driver.database import db

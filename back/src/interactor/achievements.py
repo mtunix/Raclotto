@@ -5,8 +5,8 @@
 
 Which evaluators react to which fact, whom they judge, whether an
 achievement can be lost again, how progress is stored and how evaluation
-context is built all live behind ``record``. Callers own the transaction:
-``record`` flushes but never commits.
+context is built all live behind ``record``. ``record`` flushes; the endpoint
+commits the request's transaction (ADR 0008).
 """
 
 from collections.abc import Mapping

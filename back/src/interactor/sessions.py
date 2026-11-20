@@ -8,9 +8,10 @@
     Sessions().delete(session)
 
 Its creator joins a session as it is created, and anyone who rolls there joins on their first pan;
-the join time counts for achievements such as "Pandler". Creating reports ``SessionOpened`` and closing
-``SessionClosed``, so the achievements that wait for either are judged with it. Who may change a session is
-``Permissions.manage_session``; nothing here checks. Callers own the transaction: nothing here commits.
+the join time counts for achievements such as "Pandler". Creating reports ``SessionOpened`` and
+closing ``SessionClosed``, so the achievements that wait for either are judged with it. Who may
+change a session is ``Permissions.manage_session``; nothing here checks.
+Changes are flushed; the endpoint commits the request's transaction (ADR 0008).
 """
 
 from collections.abc import Callable

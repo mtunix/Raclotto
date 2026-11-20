@@ -13,7 +13,7 @@
 An invite is usable until it is used or expires, and only for its own email, in any case. Only
 its creator can revoke it, until it is used. A new user starts at the lowest level, and their
 first picture is the one generation starts from. A profile change keeps the diet normalized and
-puts a new picture into the history. Callers own the transaction: nothing here commits.
+puts a new picture into the history. The endpoint commits the request's transaction (ADR 0008).
 Changing the password bumps the user's token version, which signs out every other device.
 """
 

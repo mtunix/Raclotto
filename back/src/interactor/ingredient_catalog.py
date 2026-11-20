@@ -5,7 +5,7 @@
     counts = IngredientCatalog().available_counts(session_key, diet)
 
 Every change reports its fact (``IngredientAdded`` or ``CatalogChanged``) to
-achievements in the same transaction. Callers own it: nothing here commits.
+achievements in the same transaction, which the endpoint commits (ADR 0008).
 """
 
 from collections.abc import Sequence
