@@ -20,12 +20,22 @@ class PermissionsTest(unittest.TestCase):
         self.assertFalse(Permissions(BEN).may_manage_session(orphan))
         self.assertTrue(Permissions(ANA).may_manage_session(orphan))
 
-    def test_a_pan_is_its_authors_and_any_admins(self):
+    def test_a_pan_is_its_authors_to_rename_and_any_admins(self):
         pan = Pan(user_id=BEN.id)
 
-        self.assertTrue(Permissions(BEN).may_change_pan(pan))
-        self.assertTrue(Permissions(ANA).may_change_pan(pan))
-        self.assertFalse(Permissions(User(id=4, is_admin=False)).may_change_pan(pan))
+        self.assertTrue(Permissions(BEN).may_rename_pan(pan))
+        self.assertTrue(Permissions(ANA).may_rename_pan(pan))
+        self.assertFalse(Permissions(User(id=4, is_admin=False)).may_rename_pan(pan))
+
+    def test_only_its_author_deletes_a_pan_not_even_an_admin(self):
+        pan = Pan(user_id=BEN.id)
+
+        self.assertTrue(Permissions(BEN).may_delete_pan(pan))
+        self.assertFalse(Permissions(ANA).may_delete_pan(pan))
+        self.assertFalse(Permissions(User(id=4, is_admin=False)).may_delete_pan(pan))
+        with self.assertRaises(Forbidden):
+            Permissions(ANA).delete_pan(pan)
+        Permissions(BEN).delete_pan(pan)
 
     def test_only_admins_see_and_change_admin_rights(self):
         self.assertTrue(Permissions(ANA).may_manage_admins())

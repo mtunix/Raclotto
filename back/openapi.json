@@ -5621,16 +5621,6 @@
               }
             },
             "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Conflict"
           }
         },
         "security": [
@@ -5638,7 +5628,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Delete your own pan.",
+        "summary": "Delete your own pan with its ratings; the XP it earned stays.",
         "tags": [
           "pans"
         ]

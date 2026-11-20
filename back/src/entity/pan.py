@@ -34,7 +34,7 @@ class Pan(DomainMixin, Base):
 
     ingredients: Mapped[list[Ingredient]] = relationship("Ingredient", secondary=pan_ingredients, lazy="selectin")
 
-    ratings: Mapped[list[Rating]] = relationship("Rating", lazy="selectin")
+    ratings: Mapped[list[Rating]] = relationship("Rating", lazy="selectin", cascade="all, delete-orphan")
 
     preparation_type: Mapped[PreparationType | None] = relationship("PreparationType", lazy="selectin")
 

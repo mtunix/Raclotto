@@ -1,7 +1,6 @@
 from collections import Counter
 
 from back.src.entity.achievement import Achievement
-from back.src.entity.pan import Pan
 from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import (
     AchievementEvaluator,
@@ -9,7 +8,7 @@ from back.src.interactor.achievement_evaluator import (
     EvaluationContext,
     EvaluationResult,
 )
-from back.src.interactor.facts import Fact, PanRolled
+from back.src.interactor.facts import Fact, PanDeleted, PanRolled
 
 
 class KingOfTheGrillEvaluator(AchievementEvaluator):
@@ -18,80 +17,32 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
     Description: "Esse am meisten Pfannen in einem Raclotto"
     (Eat the most pans in a raclotto session)
 
-    This achievement is evaluated after each pan creation to check if the user
-    has the most pans in the current session. If multiple users are tied for
-    the most pans, all of them can have the achievement.
+    Every member of the session is judged again whenever a pan is rolled or deleted there, since
+    either can change who has the most pans. Ties share the achievement.
     """
 
-    reacts_to = (PanRolled,)
+    reacts_to = (PanRolled, PanDeleted)
     revocable = True
 
     def audience(self, fact: Fact) -> Audience:
         return "session_members"
 
-    def _count_pans_per_user(self, session_pans: list[Pan]) -> dict[int, int]:
-        user_pan_counts: Counter[int] = Counter()
-        for pan in session_pans:
-            user_pan_counts[pan.user_id] += 1
-        return dict(user_pan_counts)
-
-    def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the user has the most pans in the current session.
-        This is evaluated after each pan creation, so the newly created pan
-        is included in the session_pans list.
-        """
-        # Count pans per user in the session
-        # Note: session_pans should include the newly created pan
-        user_pan_counts = self._count_pans_per_user(context.session_pans)
-
-        if not user_pan_counts:
-            # No pans in session, achievement cannot be unlocked
-            return EvaluationResult(unlocked=False, progress=0.0)
-
-        # Get the user's pan count
-        user_count = user_pan_counts.get(user.id, 0)
-
-        # Find the maximum pan count in the session
-        max_count = max(user_pan_counts.values()) if user_pan_counts else 0
-
-        # User has the achievement if they have the maximum count
-        # (ties are allowed - multiple users can be "King of the Grill")
-        unlocked = user_count == max_count and max_count > 0
-
-        # Calculate progress based on how close the user is to the max
-        # Progress is 1.0 if they're at the max, otherwise it's their count / max_count
-        progress = min(1.0, user_count / max_count) if max_count > 0 else 0.0
-
-        return EvaluationResult(unlocked=unlocked, progress=progress)
+    def judge(
+        self,
+        fact: Fact,
+        subject: User,
+        achievement: Achievement,
+        context: EvaluationContext,
+    ) -> EvaluationResult:
+        progress = self._progress(subject, context)
+        return EvaluationResult(unlocked=progress >= 1.0, progress=progress)
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
-        """
-        Calculate progress based on the user's pan count relative to the max in the session.
-        Progress is 1.0 if the user has the most pans, otherwise it's their count / max_count.
-        """
-        # Count pans per user in the session
-        user_pan_counts = self._count_pans_per_user(context.session_pans)
+        return self._progress(user, context)
 
-        if not user_pan_counts:
-            return 0.0
-
-        # Get the user's pan count
-        user_count = user_pan_counts.get(user.id, 0)
-
-        # Find the maximum pan count in the session
-        max_count = max(user_pan_counts.values()) if user_pan_counts else 0
-
-        if max_count == 0:
-            return 0.0
-
-        # Calculate progress
-        progress = min(1.0, user_count / max_count)
-
-        # If user has the achievement but progress is less than 1.0,
-        # it means someone else has more pans now
-        if achievement in user.achievements and progress < 1.0:
-            # Progress will be updated by revocation logic
-            return progress
-
-        return progress
+    @staticmethod
+    def _progress(user: User, context: EvaluationContext) -> float:
+        """The user's pans in the session against the most anyone has there."""
+        counts = Counter(pan.user_id for pan in context.session_pans)
+        most = max(counts.values(), default=0)
+        return counts[user.id] / most if most else 0.0

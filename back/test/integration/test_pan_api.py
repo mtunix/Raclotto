@@ -1,11 +1,11 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from sqlalchemy import event
+from sqlalchemy import event, select
 
 from back.src.driver.database import db
 from back.src.dto.pan import PanDto, PanPageDto
-from back.src.entity.pan import Pan
+from back.src.entity.pan import Pan, pan_ingredients
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.rating import Rating
 from back.src.entity.user import User
@@ -226,18 +226,55 @@ class TestPanApi(AppTest):
         self.assertEqual(response.get_data(), b"")
         self.assertIsNone(db.session.get(Pan, pan.id))
 
-    def test_only_the_author_or_an_admin_changes_a_pan(self):
+    def test_deleting_a_rated_pan_deletes_its_ratings(self):
+        rated = self.make_pan(self.ana, self.s1, [self.potato])
+        kept = self.make_pan(self.ana, self.s1, [self.potato])
+        db.session.add_all(
+            [
+                Rating(rating=4, user_id=self.ben.id, pan_id=rated.id, session_id=self.s1.id),
+                Rating(rating=2, user_id=self.ana.id, pan_id=rated.id, session_id=self.s1.id),
+                Rating(rating=5, user_id=self.ben.id, pan_id=kept.id, session_id=self.s1.id),
+            ]
+        )
+        db.session.commit()
+
+        response = self.call("DELETE", f"/pans/{rated.id}", self.ana)
+
+        self.assertEqual(response.status_code, 204, response.json)
+        db.session.expire_all()
+        self.assertIsNone(db.session.get(Pan, rated.id))
+        self.assertEqual([r.pan_id for r in db.session.query(Rating)], [kept.id])
+        self.assertEqual(list(db.session.scalars(select(pan_ingredients.c.pan_id))), [kept.id])
+
+    def test_reads_after_a_delete_leave_the_pan_out(self):
+        gone = self.make_pan(self.ana, self.s1, [self.potato])
+        kept = self.make_pan(self.ben, self.s1, [self.potato])
+        db.session.add(Rating(rating=1, user_id=self.ben.id, pan_id=gone.id, session_id=self.s1.id))
+        db.session.commit()
+
+        self.assertEqual(self.call("DELETE", f"/pans/{gone.id}", self.ana).status_code, 204)
+
+        self.assertEqual([p.id for p in self.page(session_key="s1").items], [kept.id])
+        filters = self.call("GET", "/pans/filters", self.ana, query={"session_key": "s1"})
+        self.assertEqual([u["id"] for u in filters.json["users"]], [self.ben.id])
+        recap = self.call("GET", "/sessions/recap", self.ana, query={"session_key": "s1"})
+        self.assertEqual((recap.json["pan_count"], recap.json["rating_count"]), (1, 0), recap.json)
+        stats = self.call("GET", f"/users/{self.ana.id}/stats", self.ana)
+        self.assertEqual(stats.status_code, 200, stats.json)
+        self.assertEqual(self.call("GET", "/stats", self.ana).status_code, 200)
+
+    def test_only_the_author_changes_a_pan_and_an_admin_renames_it(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
         root = self.make_user("root", is_admin=True)
 
         renamed = self.call("PATCH", f"/pans/{pan.id}", self.ben, body={"name": "Mine"})
         deleted = self.call("DELETE", f"/pans/{pan.id}", self.ben)
+        deleted_by_admin = self.call("DELETE", f"/pans/{pan.id}", root)
 
-        self.assertEqual((renamed.status_code, deleted.status_code), (403, 403))
+        self.assertEqual((renamed.status_code, deleted.status_code, deleted_by_admin.status_code), (403, 403, 403))
         db.session.expire_all()
         self.assertEqual(db.session.get_one(Pan, pan.id).name, "pan")
         self.assertEqual(self.call("PATCH", f"/pans/{pan.id}", root, body={"name": "Root's"}).status_code, 200)
-        self.assertEqual(self.call("DELETE", f"/pans/{pan.id}", root).status_code, 204)
 
     def test_pan_routes_require_auth(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])

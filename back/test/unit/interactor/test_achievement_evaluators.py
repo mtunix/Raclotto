@@ -15,6 +15,7 @@ from back.src.interactor.achievement_evaluators.garbage_collector_evaluator impo
 from back.src.interactor.achievement_evaluators.gotta_eat_em_all_evaluator import GottaEatEmAllEvaluator
 from back.src.interactor.achievement_evaluators.japan_evaluator import JapanEvaluator
 from back.src.interactor.achievement_evaluators.king_of_the_grill_evaluator import KingOfTheGrillEvaluator
+from back.src.interactor.achievement_evaluators.king_of_the_sauce_evaluator import KingOfTheSauceEvaluator
 from back.src.interactor.achievement_evaluators.last_pan_standing_evaluator import LastPanStandingEvaluator
 from back.src.interactor.achievement_evaluators.local_host_evaluator import LocalHostEvaluator
 from back.src.interactor.achievement_evaluators.pandler_evaluator import PandlerEvaluator
@@ -25,7 +26,16 @@ from back.src.interactor.achievement_evaluators.survival_of_the_fittest_evaluato
     SurvivalOfTheFittestEvaluator,
 )
 from back.src.interactor.achievement_evaluators.vanilla_evaluator import VanillaEvaluator
-from back.src.interactor.facts import Fact, PanRated, PanRolled, SessionClosed, SessionOpened
+from back.src.interactor.facts import (
+    CatalogChanged,
+    Fact,
+    IngredientAdded,
+    PanDeleted,
+    PanRated,
+    PanRolled,
+    SessionClosed,
+    SessionOpened,
+)
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.session_repository import SessionRepository
@@ -167,11 +177,13 @@ class TestKingOfTheGrill(unittest.TestCase):
         pans = context(pan(ANA), pan(ANA), pan(BEN))
         tied = context(pan(ANA), pan(BEN))
 
-        self.assertTrue(self.evaluator.evaluate(pan(ANA), ANA, pans).unlocked)
-        result = self.evaluator.evaluate(pan(BEN), BEN, pans)
-        self.assertEqual((result.unlocked, result.progress), (False, 0.5))
-        self.assertTrue(self.evaluator.evaluate(pan(BEN), BEN, tied).unlocked)
-        self.assertFalse(self.evaluator.evaluate(pan(ANA), ANA, context()).unlocked)
+        for fact in (rolled(), deleted()):
+            with self.subTest(type(fact).__name__):
+                self.assertTrue(self.evaluator.judge(fact, ANA, ACHIEVEMENT, pans).unlocked)
+                result = self.evaluator.judge(fact, BEN, ACHIEVEMENT, pans)
+                self.assertEqual((result.unlocked, result.progress), (False, 0.5))
+                self.assertTrue(self.evaluator.judge(fact, BEN, ACHIEVEMENT, tied).unlocked)
+                self.assertFalse(self.evaluator.judge(fact, ANA, ACHIEVEMENT, context()).unlocked)
 
     def test_progress_is_the_users_pans_against_the_most(self):
         pans = context(pan(ANA), pan(ANA), pan(ANA), pan(ANA), pan(BEN))
@@ -478,6 +490,10 @@ def rolled() -> PanRolled:
     return PanRolled(pan(ANA), ANA, SESSION)
 
 
+def deleted() -> PanDeleted:
+    return PanDeleted(pan_id=next(_ids), author=ANA, session=SESSION)
+
+
 def rated_fact() -> PanRated:
     p = pan(BEN)
     return PanRated(Rating(user_id=ANA.id, pan_id=p.id, rating=3), p, ANA, SESSION)
@@ -517,6 +533,21 @@ class TestDeclarations(unittest.TestCase):
         for evaluator in (PantasticEvaluator(), SurvivalOfTheFittestEvaluator()):
             with self.subTest(type(evaluator).__name__):
                 self.assert_declares(evaluator, rated_fact(), "pan_owner")
+
+    def test_rolling_or_deleting_a_pan_judges_every_member_again_for_the_most_pans(self):
+        evaluator = KingOfTheGrillEvaluator()
+
+        self.assertEqual(evaluator.reacts_to, (PanRolled, PanDeleted))
+        self.assertEqual({evaluator.audience(rolled()), evaluator.audience(deleted())}, {"session_members"})
+        self.assertTrue(evaluator.revocable)
+
+    def test_rolling_or_deleting_a_pan_judges_its_author_again_for_every_sauce(self):
+        evaluator = KingOfTheSauceEvaluator()
+
+        self.assertEqual(evaluator.reacts_to, (PanRolled, PanDeleted, IngredientAdded, CatalogChanged))
+        self.assertEqual({evaluator.audience(rolled()), evaluator.audience(deleted())}, {"actor"})
+        self.assertEqual(evaluator.audience(CatalogChanged(SESSION)), "session_members")
+        self.assertTrue(evaluator.revocable)
 
     def test_closing_judges_the_last_pans_owner_for_good(self):
         self.assert_declares(LastPanStandingEvaluator(), SessionClosed(SESSION), "last_pan_owner")

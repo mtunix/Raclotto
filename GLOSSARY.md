@@ -36,7 +36,7 @@ Code: the `user_sessions` table (`User.sessions`); `Participant` in the recap.
 _Avoid_: player, guest
 
 **Admin**:
-A user who may change every session and pan, and the global settings: global event configs
+A user who may change every session and rename every pan, and the global settings: global event configs
 and default preparation types.
 Code: `User.is_admin`; the first admin comes from `RACLOTTO_ADMIN_PASSWORD`.
 
@@ -115,8 +115,9 @@ Code: `Pan`, `PanDto`. Without a name given, it gets a random "<Adjective> Raclo
 _Avoid_: dish, plate, result
 
 **Author**:
-The user a pan belongs to: the one who rolled it. It is theirs to rename and delete.
-Code: `Pan.user_id`, `PanDto.author`. UI: "Consumed by".
+The user a pan belongs to: the one who rolled it. It is theirs to rename (an admin may too) and
+theirs alone to delete; its ratings go with it, the XP it earned stays.
+Code: `Pan.user_id`, `PanDto.author`, `Pans`, `PanDeleted`. UI: "Consumed by".
 
 **Roll**:
 Making a pan: choosing its ingredients, optionally rolling preparation type and cheese, joining
@@ -187,8 +188,9 @@ and description from the translations, by key; the stored `title` only names the
 
 **Fact**:
 Something that happened in a session, reported to achievements and events: a pan rolled, a pan
-rated, an ingredient added, the catalog changed, the session opened or closed.
-Code: `PanRolled`, `PanRated`, `IngredientAdded`, `CatalogChanged`, `SessionOpened`, `SessionClosed`
+rated, a pan deleted, an ingredient added, the catalog changed, the session opened or closed.
+Code: `PanRolled`, `PanRated`, `PanDeleted`, `IngredientAdded`, `CatalogChanged`, `SessionOpened`,
+`SessionClosed`
 (`facts.py`).
 _Avoid_: event (that is the session event below), trigger
 
@@ -200,7 +202,7 @@ Code: `AchievementEvaluator`, `EventEvaluator`, keyed by achievement key or `eve
 
 **Revocable**:
 An achievement its holder loses again when the evaluator no longer finds it earned
-("King of the Grill", "King of the Sauce").
+("King of the Grill", "King of the Sauce"), for example after deleting a pan.
 
 **Event**:
 An announcement to a session's table that fires on a fact; each user can dismiss it for themselves.

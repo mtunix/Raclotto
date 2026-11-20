@@ -1,7 +1,6 @@
 from back.src.api.base_api import ApiErrorCode, BaseApi, ErrorSpec, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.driver.database import db
 from back.src.dto.pan import (
     CreatePanBody,
     ListPansQuery,
@@ -18,6 +17,7 @@ from back.src.dto.session import SessionKeyQuery
 from back.src.entity.pan import Pan
 from back.src.interactor.pan_history import PanFilter, PanHistory
 from back.src.interactor.pan_roll import PanRoll, RollError, RollOptions
+from back.src.interactor.pans import Pans
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.user_repository import UserRepository
 
@@ -50,12 +50,6 @@ class PanApi(BaseApi):
 
     def _pan(self, pan_id: int) -> Pan:
         return found(self.repository.by_id(pan_id), "Pan")
-
-    def _changeable(self, pan_id: int) -> Pan:
-        pan = self._pan(pan_id)
-        with guarded():
-            permissions().change_pan(pan)
-        return pan
 
     def _dto(self, pan: Pan) -> PanDto:
         return PanDto.of(pan, self.users.by_id(pan.user_id))
@@ -158,12 +152,17 @@ class PanApi(BaseApi):
     @require_auth
     def update_pan(self, pan_id: int, body: UpdatePanBody) -> PanDto:
         """Rename your own pan."""
-        pan = self._changeable(pan_id)
-        pan.name = body.name
+        pan = self._pan(pan_id)
+        with guarded():
+            permissions().rename_pan(pan)
+        Pans().rename(pan, body.name)
         return self._dto(pan)
 
-    @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(403, 404, 409))
+    @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(403, 404))
     @require_auth
     def delete_pan(self, pan_id: int) -> None:
-        """Delete your own pan."""
-        db.session.delete(self._changeable(pan_id))
+        """Delete your own pan with its ratings; the XP it earned stays."""
+        pan = self._pan(pan_id)
+        with guarded():
+            permissions().delete_pan(pan)
+        Pans().delete(pan)

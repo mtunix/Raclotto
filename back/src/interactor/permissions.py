@@ -1,14 +1,16 @@
 """Permissions: who may change what.
 
     Permissions(user).manage_session(session)   # rename, close, reactivate, delete
-    Permissions(user).change_pan(pan)           # rename, delete
+    Permissions(user).rename_pan(pan)
+    Permissions(user).delete_pan(pan)
     Permissions(user).change_global()           # global event configs, default preparation types
     Permissions(user).manage_admins()           # see who is an admin
     Permissions(user).change_admin(other)       # grant or revoke admin
 
-A session belongs to its creator and a pan to its author; admins may do all of it. A session
-without a creator can only be managed by admins. An admin grants and revokes admin for anyone but
-themselves, so whoever revokes stays an admin and the last admin can't be lost. Everything else,
+A session belongs to its creator and a pan to its author; admins may do all of it, except delete
+someone else's pan, which takes its ratings with it. A session without a creator can only be
+managed by admins. An admin grants and revokes admin for anyone but themselves, so whoever revokes
+stays an admin and the last admin can't be lost. Everything else,
 rolling, rating and a session's ingredients and preparation types, is open to every signed-in user.
 Each check raises ``Forbidden``; the ``may_*`` twins answer without raising.
 """
@@ -29,8 +31,11 @@ class Permissions:
     def may_manage_session(self, session: RaclottoSession) -> bool:
         return self._user.is_admin or session.created_by_user_id == self._user.id
 
-    def may_change_pan(self, pan: Pan) -> bool:
+    def may_rename_pan(self, pan: Pan) -> bool:
         return self._user.is_admin or pan.user_id == self._user.id
+
+    def may_delete_pan(self, pan: Pan) -> bool:
+        return pan.user_id == self._user.id
 
     def may_change_global(self) -> bool:
         return self._user.is_admin
@@ -45,9 +50,13 @@ class Permissions:
         if not self.may_manage_session(session):
             raise Forbidden("Only the session's creator or an admin may change it")
 
-    def change_pan(self, pan: Pan) -> None:
-        if not self.may_change_pan(pan):
-            raise Forbidden("Only the pan's author or an admin may change it")
+    def rename_pan(self, pan: Pan) -> None:
+        if not self.may_rename_pan(pan):
+            raise Forbidden("Only the pan's author or an admin may rename it")
+
+    def delete_pan(self, pan: Pan) -> None:
+        if not self.may_delete_pan(pan):
+            raise Forbidden("Only the pan's author may delete it")
 
     def change_global(self) -> None:
         if not self.may_change_global():

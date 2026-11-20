@@ -64,8 +64,8 @@ The deep modules in `interactor/` and what they own:
   hand-picked pans all go through it; it flushes, and a failure in the route after it still
   rolls the whole roll back.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
-  what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `IngredientAdded`,
-  `CatalogChanged`, `SessionOpened`, `SessionClosed`); evaluators declare `reacts_to`, `audience`
+  what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `PanDeleted`,
+  `IngredientAdded`, `CatalogChanged`, `SessionOpened`, `SessionClosed`); evaluators declare `reacts_to`, `audience`
   and `revocable`, and are registered by the achievement's `key` (`AchievementKey`), which also names its texts in the
   frontend. Never special-case an achievement by key or title outside its evaluator. `record` flushes;
   the request commits it together with the change the fact reports.
@@ -82,8 +82,8 @@ The deep modules in `interactor/` and what they own:
   starts at the lowest level.
 - **`permissions.py` — `Permissions(user)`**: who may change what. A session is its creator's to
   rename, close, reactivate, delete and configure events for; a pan its author's; the global event
-  configs and default preparation types an admin's. Admins may do all of it, and grant or
-  revoke admin for anyone but themselves, so the last admin can't be lost. Rolling,
+  configs and default preparation types an admin's. Admins may do all of it except delete someone
+  else's pan (only its author may, since its ratings go with it), and grant or revoke admin for anyone but themselves, so the last admin can't be lost. Rolling,
   rating and a session's ingredients are open to everyone signed in. Never check ownership in a route.
 - **`sessions.py` — `Sessions`**: a session's lifecycle: create (its creator joins), join (a first
   pan joins too; the first join time stays, achievements count it), rename, close (reports
@@ -98,6 +98,8 @@ The deep modules in `interactor/` and what they own:
   SQL as a whole (never in the browser), and the filter options a session's pans offer.
 - **`pan_ratings.py` — `PanRatings`**: rate a pan, change or withdraw your own rating (anyone
   else's is reported as missing); every change of stars reports `PanRated`.
+- **`pans.py` — `Pans`**: rename a pan, or delete it with its ratings (reports `PanDeleted`, so
+  revocable achievements judge again); the XP it earned stays with its author.
 - **`preparation_types.py` — `PreparationTypes`**: add a session's own preparation type or a
   default one, and delete a session's own; the defaults stay.
 - **`ingredient_catalog.py`, `profile_pictures.py`, `user_stats.py`**: ingredient changes and

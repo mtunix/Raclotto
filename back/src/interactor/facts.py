@@ -33,6 +33,19 @@ class PanRated:
 
 
 @dataclass(frozen=True)
+class PanDeleted:
+    """A pan is gone with its ratings; ``author`` is None when the author's account is gone too."""
+
+    pan_id: int
+    author: User | None
+    session: RaclottoSession
+
+    @property
+    def actor(self) -> User | None:
+        return self.author
+
+
+@dataclass(frozen=True)
 class IngredientAdded:
     ingredient: Ingredient
     user: User
@@ -67,4 +80,4 @@ class SessionClosed:
     actor: User | None = None
 
 
-Fact = PanRolled | PanRated | IngredientAdded | CatalogChanged | SessionOpened | SessionClosed
+Fact = PanRolled | PanRated | PanDeleted | IngredientAdded | CatalogChanged | SessionOpened | SessionClosed

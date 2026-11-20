@@ -10,7 +10,6 @@ from back.src.driver.database import db
 from back.src.dto.base import RequestDto, ResponseDto
 from back.src.entity.preparation_type import PreparationType
 from back.src.entity.profile_picture_history import ProfilePictureHistory
-from back.src.entity.rating import Rating
 from back.src.interactor.profile_pictures import GeminiImageGenerator, set_image_generator
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.test.support import AppTest, get_app
@@ -191,16 +190,12 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         )
 
     def test_delete_pan(self):
-        rated = self.make_pan(self.ana, self.session, [self.potato])
-        db.session.add(Rating(rating=4, user_id=self.ben.id, pan_id=rated.id, session_id=self.session.id))
-        db.session.commit()
+        pan = self.make_pan(self.ana, self.session, [self.potato])
         self.assert_answers(
             "deletePan",
-            self.call("DELETE", f"/pans/{rated.id}"),
+            self.call("DELETE", f"/pans/{pan.id}"),
             self.call("DELETE", "/pans/999", self.ana),
-            self.call("DELETE", f"/pans/{rated.id}", self.ben),
-            # Deleting a rated pan would orphan its ratings.
-            self.call("DELETE", f"/pans/{rated.id}", self.ana),
+            self.call("DELETE", f"/pans/{pan.id}", self.root),
         )
 
     def test_close_session(self):
