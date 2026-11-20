@@ -38,13 +38,6 @@ class PantasticEvaluator(AchievementEvaluator):
         Check if this pan is the best rated pan in the session.
         Only considers pans that have at least MINIMUM_RATINGS_COUNT ratings.
         """
-        # Get unique rating users for this pan
-        pan_rating_users = self._get_unique_rating_users(pan)
-
-        # Pan must have at least MINIMUM_RATINGS_COUNT ratings from different users
-        if len(pan_rating_users) < self.MINIMUM_RATINGS_COUNT:
-            return False
-
         # Get pan's average rating
         pan_rating = pan.rating if pan.rating else 0.0
 

@@ -23,23 +23,8 @@ class FirstBloodEvaluator(AchievementEvaluator):
         if len(other_pans) == 0:
             return EvaluationResult(unlocked=True)
 
-        # Check if this pan's timestamp is earlier than all other pans
-        pan_timestamp = pan.timestamp
-        if pan_timestamp:
-            # Get the earliest timestamp from other pans
-            other_timestamps = [p.timestamp for p in other_pans if p.timestamp]
-            if other_timestamps:
-                earliest_other = min(other_timestamps)
-                # This pan is first if its timestamp is earlier or equal to the earliest other
-                is_first = pan_timestamp <= earliest_other
-            else:
-                # If other pans don't have timestamps, assume this is not first
-                is_first = False
-        else:
-            # If this pan doesn't have a timestamp, we can't determine
-            is_first = False
-
-        return EvaluationResult(unlocked=is_first)
+        # This pan is first if its timestamp is earlier or equal to the earliest other
+        return EvaluationResult(unlocked=pan.timestamp <= min(p.timestamp for p in other_pans))
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
         # Check if user has already unlocked this achievement

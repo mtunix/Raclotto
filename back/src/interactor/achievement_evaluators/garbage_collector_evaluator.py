@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
@@ -27,7 +27,7 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
             return None
 
         # Sort by timestamp descending to get the most recent previous pan
-        user_pans.sort(key=lambda p: p.timestamp if p.timestamp else datetime.min, reverse=True)
+        user_pans.sort(key=lambda p: p.timestamp, reverse=True)
 
         return user_pans[0] if user_pans else None
 
@@ -41,10 +41,6 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
 
         # If this is the user's first pan in the session, they can't have the achievement
         if previous_pan is None:
-            return EvaluationResult(unlocked=False, progress=0.0)
-
-        # Check if both pans have timestamps
-        if not pan.timestamp or not previous_pan.timestamp:
             return EvaluationResult(unlocked=False, progress=0.0)
 
         # Calculate the time difference
@@ -79,14 +75,10 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
             return 0.0
 
         # Sort by timestamp to get the most recent two pans
-        user_pans.sort(key=lambda p: p.timestamp if p.timestamp else datetime.min, reverse=True)
+        user_pans.sort(key=lambda p: p.timestamp, reverse=True)
 
         latest_pan = user_pans[0]
         previous_pan = user_pans[1]
-
-        # Check if both pans have timestamps
-        if not latest_pan.timestamp or not previous_pan.timestamp:
-            return 0.0
 
         # Calculate the time difference
         time_diff = latest_pan.timestamp - previous_pan.timestamp

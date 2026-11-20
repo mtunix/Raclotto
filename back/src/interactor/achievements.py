@@ -157,10 +157,10 @@ class Achievements:
                 ids.add(fact.actor.id)
             return [u for u in (self._users.by_id(i) for i in sorted(ids)) if u]
         if audience == "last_pan_owner":
-            timed = [p for p in self._pans.by_session(fact.session.key) if p.timestamp]
-            if not timed:
+            pans = self._pans.by_session(fact.session.key)
+            if not pans:
                 return []
-            owner = self._users.by_id(max(timed, key=lambda p: p.timestamp).user_id)
+            owner = self._users.by_id(max(pans, key=lambda p: p.timestamp).user_id)
             return [owner] if owner else []
         raise ValueError(f"Unknown audience {audience!r}")
 

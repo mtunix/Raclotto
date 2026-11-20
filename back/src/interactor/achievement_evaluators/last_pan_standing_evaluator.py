@@ -40,7 +40,6 @@ class LastPanStandingEvaluator(AchievementEvaluator):
 
     @staticmethod
     def _owns_last_pan(user: User, session_pans: list[Pan]) -> bool:
-        timed = [p for p in session_pans if p.timestamp]
-        if not timed:
+        if not session_pans:
             return False
-        return max(timed, key=lambda p: p.timestamp).user_id == user.id
+        return max(session_pans, key=lambda p: p.timestamp).user_id == user.id

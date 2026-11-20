@@ -34,14 +34,10 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         fills = self.ingredient_repository.by_type(session.key, IngredientType.FILL)
         return {fill.id for fill in fills}
 
-    def _get_fill_ingredients_used_by_user(self, user: User, session_id: int) -> set[int]:
+    def _get_fill_ingredients_used_by_user(self, user: User, session_key: str) -> set[int]:
         """Get all FILL ingredient IDs that the user has used in their pans in the current session."""
-        session = self.session_repository.by_id(session_id)
-        if not session:
-            return set()
-
         # Get all pans from the session
-        all_session_pans = self.pan_repository.by_session(session.key)
+        all_session_pans = self.pan_repository.by_session(session_key)
         # Filter to only pans created by this user
         user_pans = [pan for pan in all_session_pans if pan.user_id == user.id]
 
@@ -68,7 +64,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
             return EvaluationResult(unlocked=False, progress=0.0)
 
         # Get FILL ingredients the user has used (including from the new pan)
-        used_fills = self._get_fill_ingredients_used_by_user(user, session_id)
+        used_fills = self._get_fill_ingredients_used_by_user(user, context.session.key)
 
         # Check if user has used all FILL ingredients
         unlocked = used_fills >= all_fills
@@ -93,7 +89,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
             return 0.0
 
         # Get FILL ingredients the user has used
-        used_fills = self._get_fill_ingredients_used_by_user(user, session_id)
+        used_fills = self._get_fill_ingredients_used_by_user(user, context.session.key)
 
         # Calculate progress as a ratio
         progress = len(used_fills) / len(all_fills)

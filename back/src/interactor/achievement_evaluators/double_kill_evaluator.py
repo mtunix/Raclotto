@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from back.src.entity.achievement import Achievement
 from back.src.entity.pan import Pan
 from back.src.entity.user import User
@@ -43,7 +41,7 @@ class DoubleKillEvaluator(AchievementEvaluator):
             return None
 
         # Sort by timestamp descending to get the most recent previous pan
-        user_pans.sort(key=lambda p: p.timestamp if p.timestamp else datetime.min, reverse=True)
+        user_pans.sort(key=lambda p: p.timestamp, reverse=True)
 
         return user_pans[0] if user_pans else None
 
@@ -80,7 +78,7 @@ class DoubleKillEvaluator(AchievementEvaluator):
             return 0.0
 
         # Sort by timestamp to get the most recent pans
-        user_pans.sort(key=lambda p: p.timestamp if p.timestamp else datetime.min, reverse=True)
+        user_pans.sort(key=lambda p: p.timestamp, reverse=True)
 
         # Check if the two most recent pans are identical
         latest_pan = user_pans[0]
