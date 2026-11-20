@@ -20,8 +20,8 @@ class PandlerEvaluator(AchievementEvaluator):
     REQUIRED_SESSIONS_COUNT = 2
     TIME_WINDOW_HOURS = 24
 
-    def __init__(self) -> None:
-        self.pan_repository = PanRepository()
+    def __init__(self, pans: PanRepository | None = None) -> None:
+        self.pan_repository = pans or PanRepository()
 
     def _get_user_pans_by_session(self, user: User) -> list[tuple[int, datetime]]:
         """Get the session IDs and timestamps of the earliest pan in each session for the user."""
