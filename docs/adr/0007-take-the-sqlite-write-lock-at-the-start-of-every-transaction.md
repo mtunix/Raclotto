@@ -1,6 +1,6 @@
 # Take SQLite's write lock at the start of every transaction
 
-- Status: accepted
+- Status: accepted; the foreign-key paragraph superseded by [0009](0009-sqlite-enforces-foreign-keys.md)
 - Date: 2026-11-19 (`ad7010b` Configure SQLite for concurrent writes)
 
 ## Context
