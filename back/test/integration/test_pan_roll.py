@@ -9,10 +9,13 @@ from back.src.entity.pan import Pan
 from back.src.entity.user import user_sessions
 from back.src.interactor.achievements import Achievements
 from back.src.interactor.pan_roll import (
+    PAN_NAME_SUFFIX,
     PanRoll,
     RollError,
     RollOptions,
+    _adjectives,
     split_columns,
+    unique_pan_name,
     weighted_sample,
 )
 from back.test.support import AppTest
@@ -56,6 +59,26 @@ class TestWeightedSample(unittest.TestCase):
         self.assertEqual(sorted(weighted_sample(list(weights), 5, weights.__getitem__, rng)), ["heavy", "light"])
 
 
+class TestUniquePanName(unittest.TestCase):
+    def test_takes_an_adjective_no_name_has(self):
+        *taken, free = _adjectives()
+
+        name = unique_pan_name([f"{adjective}{PAN_NAME_SUFFIX}" for adjective in taken], random.Random(0))
+
+        self.assertEqual(name, f"{free}{PAN_NAME_SUFFIX}")
+
+    def test_compares_adjectives_regardless_of_case_and_ignores_renamed_pans(self):
+        *taken, free = _adjectives()
+        names = [f"{adjective.upper()}{PAN_NAME_SUFFIX}" for adjective in taken] + [f"{free} pan, renamed"]
+
+        self.assertEqual(unique_pan_name(names, random.Random(0)), f"{free}{PAN_NAME_SUFFIX}")
+
+    def test_repeats_once_every_adjective_is_used(self):
+        names = [f"{adjective}{PAN_NAME_SUFFIX}" for adjective in _adjectives()]
+
+        self.assertIn(unique_pan_name(names, random.Random(0)), names)
+
+
 class TestPanRoll(AppTest):
     def setUp(self):
         super().setUp()
@@ -65,7 +88,7 @@ class TestPanRoll(AppTest):
         self.salmon = self.make_ingredient(self.session, "Salmon", FILL, fish=True)
         self.potato = self.make_ingredient(self.session, "Potato", FILL, vegan=True)
         self.aioli = self.make_ingredient(self.session, "Aioli", SAUCE, vegetarian=True)
-        self.roll = PanRoll(rng=random.Random(42), name_pan=lambda: "Test Pan")
+        self.roll = PanRoll(rng=random.Random(42), name_pan=lambda taken: "Test Pan")
 
     def test_classic_roll_respects_the_fish_flag(self):
         seen = set()
@@ -151,7 +174,7 @@ class TestPanRoll(AppTest):
         session = self.make_session("s2")
         onion = self.make_ingredient(session, "Onion", FILL)
         self.make_ingredient(session, "Leek", FILL)
-        roll = PanRoll(rng=random.Random(5), name_pan=lambda: "p")
+        roll = PanRoll(rng=random.Random(5), name_pan=lambda taken: "p")
 
         onions = 0
         for _ in range(100):
@@ -169,7 +192,7 @@ class TestPanRoll(AppTest):
         onion = self.make_ingredient(session, "Onion", FILL)
         self.make_ingredient(session, "Leek", FILL)
         ben = self.make_user("ben")
-        roll = PanRoll(rng=random.Random(5), name_pan=lambda: "p")
+        roll = PanRoll(rng=random.Random(5), name_pan=lambda taken: "p")
 
         onions = 0
         for _ in range(100):
@@ -181,6 +204,14 @@ class TestPanRoll(AppTest):
             db.session.flush()
 
         self.assertAlmostEqual(onions / 100, 0.5, delta=0.15)
+
+    def test_generated_names_keep_their_adjectives_unique_in_the_session(self):
+        roll = PanRoll(rng=random.Random(1))
+
+        names = [roll.roll(self.user, "s1", RollOptions(num_fill=1)).pan.name for _ in range(40)]
+
+        self.assertEqual(len(set(names)), 40)
+        self.assertTrue(all(name and name.endswith(PAN_NAME_SUFFIX) for name in names))
 
     def test_unknown_session_is_a_roll_error(self):
         with self.assertRaises(RollError) as raised:

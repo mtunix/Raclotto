@@ -106,6 +106,10 @@ class PanRepository(BaseRepository[Pan]):
             .all()
         )
 
+    def names_in_session(self, session_id: int) -> set[str]:
+        rows = db.session.execute(select(Pan.name).where(Pan.session_id == session_id))
+        return {name for (name,) in rows if name is not None}
+
     def get_recent_pans(self, session_key: str | None = None, limit: int = 10) -> list[Pan]:
         """Get the most recent pans, optionally filtered by session and limited by count."""
         query = db.session.query(Pan)

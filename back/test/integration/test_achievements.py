@@ -36,7 +36,7 @@ class TestAchievements(AppTest):
         self.session = self.make_session("s1", creator=self.ana)
         self.potato = self.make_ingredient(self.session, "Potato", FILL)
         self.aioli = self.make_ingredient(self.session, "Aioli", SAUCE, vegetarian=True)
-        self.roll = PanRoll(rng=random.Random(7), name_pan=lambda: "p")
+        self.roll = PanRoll(rng=random.Random(7), name_pan=lambda taken: "p")
         self.achievements = Achievements()
 
     def roll_pan(self, user, **options):

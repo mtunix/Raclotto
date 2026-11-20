@@ -39,7 +39,7 @@ class PansTest(AppTest):
         self.aioli = self.make_ingredient(self.session, "Aioli", SAUCE, vegetarian=True)
         self.achievements = Recording()
         self.pans = Pans(achievements=self.achievements)
-        self.roll = PanRoll(rng=random.Random(7), name_pan=lambda: "p")
+        self.roll = PanRoll(rng=random.Random(7), name_pan=lambda taken: "p")
 
     def roll_pan(self, user: User, *ingredients) -> Pan:
         ids = [i.id for i in ingredients or (self.potato,)]

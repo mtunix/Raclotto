@@ -115,7 +115,7 @@ class SessionDeletionAchievementsTest(AppTest):
         self.ben = self.make_user("ben", meat=True)
         self.doomed = self.make_session("doomed", creator=self.ana)
         self.kept = self.make_session("kept", creator=self.ben)
-        self.roll = PanRoll(rng=random.Random(7), name_pan=lambda: "p")
+        self.roll = PanRoll(rng=random.Random(7), name_pan=lambda taken: "p")
 
     def roll_pan(self, user: User, session: RaclottoSession, *ingredients: Ingredient) -> None:
         self.roll.roll(user, session.key, RollOptions(ingredient_ids=[i.id for i in ingredients]))

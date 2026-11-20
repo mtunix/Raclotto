@@ -6,15 +6,17 @@
 Behind ``roll``: diet eligibility, the fill/sauce split, sampling, naming,
 preparation type and cheese rolls, session membership, achievements,
 events, XP and level. Sampling makes what the user got in their last pans
-in the session less likely (``RECENT_WEIGHTS``). ``roll`` flushes but never commits: the request's
+in the session less likely (``RECENT_WEIGHTS``), and a generated name's
+adjective is unique within the session while the word list lasts. ``roll`` flushes but never commits: the request's
 transaction holds all of it, so a failure anywhere, building the response
 included, leaves nothing behind. Randomness comes from an injectable
 ``random.Random`` so tests can seed it.
 """
 
 import random
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass, field
+from functools import cache
 
 from wonderwords import RandomWord
 
@@ -105,6 +107,7 @@ def split_columns(total: int, fills_available: int, sauces_available: int, rng: 
 
 # The weight of an ingredient that was in the user's newest pan in the session, and in the one before.
 RECENT_WEIGHTS = (0.2, 0.5)
+PAN_NAME_SUFFIX = " Raclotto Pan"
 
 
 def weighted_sample[T](population: Sequence[T], k: int, weight: Callable[[T], float], rng: random.Random) -> list[T]:
@@ -113,21 +116,29 @@ def weighted_sample[T](population: Sequence[T], k: int, weight: Callable[[T], fl
     return keyed[:k]
 
 
-def _random_pan_name() -> str:
-    adjective = RandomWord().word(include_parts_of_speech=["adjectives"])
-    return f"{adjective.capitalize()} Raclotto Pan"
+@cache
+def _adjectives() -> tuple[str, ...]:
+    words = RandomWord().filter(include_parts_of_speech=["adjectives"])
+    return tuple(sorted({word.capitalize() for word in words}))
+
+
+def unique_pan_name(taken: Collection[str], rng: random.Random) -> str:
+    """A generated name whose adjective no name in ``taken`` has; any adjective once all are used."""
+    used = {name.removesuffix(PAN_NAME_SUFFIX).casefold() for name in taken if name.endswith(PAN_NAME_SUFFIX)}
+    fresh = [adjective for adjective in _adjectives() if adjective.casefold() not in used]
+    return f"{rng.choice(fresh or _adjectives())}{PAN_NAME_SUFFIX}"
 
 
 class PanRoll:
     def __init__(
         self,
         rng: random.Random | None = None,
-        name_pan: Callable[[], str] = _random_pan_name,
+        name_pan: Callable[[Collection[str]], str] | None = None,
         achievements: Achievements | None = None,
         events: Events | None = None,
     ):
         self._rng = rng or random.Random()
-        self._name_pan = name_pan
+        self._name_pan = name_pan or (lambda taken: unique_pan_name(taken, self._rng))
         self._achievements = achievements or Achievements()
         self._events = events or Events()
         self._sessions = SessionRepository()
@@ -148,7 +159,7 @@ class PanRoll:
 
         self._membership.join(user, session)
         pan = Pan(
-            name=options.name or self._name_pan(),
+            name=options.name or self._name_pan(self._pans.names_in_session(session.id)),
             ingredients=ingredients,
             user_id=user.id,
             session_id=session.id,
