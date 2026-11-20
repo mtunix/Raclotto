@@ -190,6 +190,17 @@ describe('adding', () => {
         expect(created()).toBeUndefined();
     });
 
+    it('asks for a name as soon as it is cleared', () => {
+        renderAdd();
+        expect(within(dialog()).queryByText('ingredient.nameRequired')).not.toBeInTheDocument();
+
+        typeName('C');
+        expect(within(dialog()).queryByText('ingredient.nameRequired')).not.toBeInTheDocument();
+        typeName('');
+
+        expect(within(dialog()).getByText('ingredient.nameRequired')).toBeInTheDocument();
+    });
+
     it('asks for a category and sends nothing until one is picked', async () => {
         renderAdd();
         typeName('Corn');

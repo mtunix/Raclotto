@@ -1,44 +1,26 @@
 import { Row, Col, Card, Checkbox, Button } from "antd";
+import { useTranslation } from "react-i18next";
 import { IngredientCountControl } from "./IngredientCountControl";
 import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
 import { useAppStore } from "../../AppSlice";
 import { countOr } from "./countOr";
 import styles from "./GenerateView/GenerateView.module.css";
+import type { RollCount } from "./GenerateView/useClassicRollCounts";
 
 interface LegacyViewProps {
-  t: (key: string) => string;
-  numFill: number;
-  numSauce: number;
-  totalFillCount: number;
-  totalSauceCount: number;
+  fill: RollCount;
+  sauce: RollCount;
   canGenerate: boolean;
   onGenerateClicked: () => void;
   rollPreparationType: boolean;
   setRollPreparationType: (value: boolean) => void;
   rollCheese: boolean;
   setRollCheese: (value: boolean) => void;
-  onUpdateFill: (value: number) => void;
-  onUpdateSauce: (value: number) => void;
-  onFillIncrement: () => void;
-  onFillDecrement: () => void;
-  onSauceIncrement: () => void;
-  onSauceDecrement: () => void;
-  onFillChange: (value: number) => void;
-  onSauceChange: (value: number) => void;
 }
 
 export function LegacyView({
-  t,
-  numFill,
-  numSauce,
-  totalFillCount,
-  totalSauceCount,
-  onFillChange,
-  onSauceChange,
-  onFillIncrement,
-  onFillDecrement,
-  onSauceIncrement,
-  onSauceDecrement,
+  fill,
+  sauce,
   canGenerate,
   onGenerateClicked,
   rollPreparationType,
@@ -46,15 +28,16 @@ export function LegacyView({
   rollCheese,
   setRollCheese,
 }: LegacyViewProps) {
+  const { t } = useTranslation();
   const sessionKey = useAppStore((state) => state.session?.key) ?? "";
   const { data: counts } = useGetAvailableCounts(
     { session_key: sessionKey },
     { swr: { enabled: !!sessionKey } },
   );
-  const availableFillCount = countOr(counts?.fill_count, totalFillCount);
-  const availableSauceCount = countOr(counts?.sauce_count, totalSauceCount);
-  const totalFillCountFromApi = countOr(counts?.total_fill_count, totalFillCount);
-  const totalSauceCountFromApi = countOr(counts?.total_sauce_count, totalSauceCount);
+  const availableFillCount = countOr(counts?.fill_count, fill.total);
+  const availableSauceCount = countOr(counts?.sauce_count, sauce.total);
+  const totalFillCountFromApi = countOr(counts?.total_fill_count, fill.total);
+  const totalSauceCountFromApi = countOr(counts?.total_sauce_count, sauce.total);
   return (
     <div className={`${styles.flexColumn} ${styles.paddingVertical8}`}>
       <Row gutter={[24, 24]}>
@@ -62,24 +45,24 @@ export function LegacyView({
           <IngredientCountControl
             label={t("ingredient.ingredientCount")}
             type="fill"
-            count={numFill}
+            count={fill.count}
             availableCount={availableFillCount}
             totalCount={totalFillCountFromApi}
-            onIncrement={onFillIncrement}
-            onDecrement={onFillDecrement}
-            onChange={onFillChange}
+            onIncrement={fill.increment}
+            onDecrement={fill.decrement}
+            onChange={fill.change}
           />
         </Col>
         <Col xs={24} sm={24} md={12}>
           <IngredientCountControl
             label={t("ingredient.sauceCount")}
             type="sauce"
-            count={numSauce}
+            count={sauce.count}
             availableCount={availableSauceCount}
             totalCount={totalSauceCountFromApi}
-            onIncrement={onSauceIncrement}
-            onDecrement={onSauceDecrement}
-            onChange={onSauceChange}
+            onIncrement={sauce.increment}
+            onDecrement={sauce.decrement}
+            onChange={sauce.change}
           />
         </Col>
       </Row>
