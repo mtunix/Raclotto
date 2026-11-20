@@ -13,9 +13,7 @@ from back.src.dto.invite import CreateInviteBody, InviteDto, InviteLookupDto
 from back.src.dto.user import MeDto, UpdateMeBody
 from back.src.entity.user import User
 from back.src.interactor.accounts import AccountError, Accounts
-from back.src.interactor.diet import Diet
 from back.src.interactor.levels import Levels
-from back.src.interactor.profile_pictures import ProfilePictures
 from back.src.repository.invite_token_repository import InviteTokenRepository
 from back.src.repository.user_repository import UserRepository
 
@@ -131,13 +129,7 @@ class AuthApi(BaseApi):
     def update_me(self, body: UpdateMeBody) -> MeDto:
         """Change the signed-in user's name, diet, language, picture or card decoration."""
         user = get_current_user()
-        for field in body.model_fields_set - {"profile_picture"}:
-            setattr(user, field, getattr(body, field))
-        Diet.of(user).apply_to(user)
-
-        if "profile_picture" in body.model_fields_set:
-            ProfilePictures().add(user, body.profile_picture)
-
+        Accounts().update_profile(user, body.model_dump(include=body.model_fields_set))
         dto = _me(user)
         db.session.commit()
         return dto

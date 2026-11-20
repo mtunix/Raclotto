@@ -2,6 +2,7 @@
 
     ingredient = IngredientCatalog().add(user, session, fields)
     result = IngredientCatalog().reimport(user, session, items)
+    counts = IngredientCatalog().available_counts(session_key, diet)
 
 Every change reports its fact (``IngredientAdded`` or ``CatalogChanged``) to
 achievements in the same transaction. Callers own it: nothing here commits.
@@ -11,10 +12,11 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from back.src.entity.ingredient import Ingredient
+from back.src.entity.ingredient import Ingredient, IngredientType
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User
 from back.src.interactor.achievements import Achievements
+from back.src.interactor.diet import Diet
 from back.src.interactor.facts import CatalogChanged, IngredientAdded
 from back.src.repository.ingredient_repository import IngredientRepository
 
@@ -36,6 +38,16 @@ class Reimported:
     updated: int
     # Unlisted ingredients now unavailable, those that already were included.
     unavailable: int
+
+
+@dataclass(frozen=True)
+class AvailableCounts:
+    """A session's available fills and sauces: those a diet allows, and all of them."""
+
+    fills: int
+    sauces: int
+    total_fills: int
+    total_sauces: int
 
 
 class CatalogError(Exception):
@@ -73,6 +85,13 @@ class IngredientCatalog:
         else:
             self._ingredients.mark_unavailable(ingredient.id)
         self._changed(user, ingredient.session)
+
+    def available_counts(self, session_key: str, diet: Diet) -> AvailableCounts:
+        """Zero for a session that does not exist."""
+        counts = self._ingredients.count_available(session_key, diet)
+        fills = counts.get(IngredientType.FILL, (0, 0))
+        sauces = counts.get(IngredientType.SAUCE, (0, 0))
+        return AvailableCounts(fills=fills[0], sauces=sauces[0], total_fills=fills[1], total_sauces=sauces[1])
 
     def import_new(self, user: User, session: RaclottoSession, items: Sequence[CatalogItem]) -> list[Ingredient]:
         """Add every item as a new ingredient, whatever ``id`` and ``session_id`` it names."""

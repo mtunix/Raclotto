@@ -5,20 +5,24 @@
     user = Accounts().register(token, name, email, password, picture)
     Accounts().revoke(creator, invite_id)
     admin = Accounts().create_user(name, email, password, is_admin=True)
+    Accounts().update_profile(user, {"name": "Ana", "vegan": True, "profile_picture": None})
     Accounts().change_password(user, current, new)
     Accounts().set_admin(user, is_admin=True)
 
 An invite is usable until it is used or expires, and only for its own email, in any case. Only
 its creator can revoke it, until it is used. A new user starts at the lowest level, and their
-first picture is the one generation starts from. Callers own the transaction: nothing here
-commits. Changing the password bumps the user's token version, which signs out every other
-device.
+first picture is the one generation starts from. A profile change keeps the diet normalized and
+puts a new picture into the history. Callers own the transaction: nothing here commits.
+Changing the password bumps the user's token version, which signs out every other device.
 """
+
+from typing import Any
 
 from back.src.auth.password import hash_password, verify_password
 from back.src.driver.database import db
 from back.src.entity.invite_token import InviteToken
 from back.src.entity.user import User
+from back.src.interactor.diet import Diet
 from back.src.interactor.levels import Levels
 from back.src.interactor.profile_pictures import ProfilePictures
 from back.src.repository.invite_token_repository import InviteTokenRepository
@@ -85,6 +89,16 @@ class Accounts:
         if invite.is_used:
             raise AccountError(AccountError.USED_INVITE)
         db.session.delete(invite)
+        db.session.flush()
+
+    def update_profile(self, user: User, changes: dict[str, Any]) -> None:
+        """Set the given profile fields; a ``profile_picture`` among them, None included, replaces the picture."""
+        for field, value in changes.items():
+            if field != "profile_picture":
+                setattr(user, field, value)
+        Diet.of(user).apply_to(user)
+        if "profile_picture" in changes:
+            self._pictures.add(user, changes["profile_picture"])
         db.session.flush()
 
     def change_password(self, user: User, current: str, new: str) -> None:

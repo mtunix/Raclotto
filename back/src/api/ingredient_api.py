@@ -17,7 +17,7 @@ from back.src.dto.ingredient import (
     UpdateIngredientBody,
 )
 from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
-from back.src.entity.ingredient import Ingredient, IngredientType
+from back.src.entity.ingredient import Ingredient
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.interactor.diet import Diet
 from back.src.interactor.ingredient_catalog import CatalogError, CatalogItem, IngredientCatalog
@@ -165,18 +165,12 @@ class IngredientApi(BaseApi):
     @require_auth
     def get_available_counts(self, query: SessionKeyQuery) -> AvailableCountsDto:
         """Count a session's available fills and sauces, all of them and those the user's diet allows."""
-        available = [i for i in self.repository.by_session(query.session_key) if i.available]
-        diet = Diet.of(get_current_user())
-        allowed = [i for i in available if diet.allows(i)]
-
-        def count(ingredients: list[Ingredient], kind: IngredientType) -> int:
-            return sum(1 for i in ingredients if i.type == kind)
-
+        counts = IngredientCatalog().available_counts(query.session_key, Diet.of(get_current_user()))
         return AvailableCountsDto(
-            fill_count=count(allowed, IngredientType.FILL),
-            sauce_count=count(allowed, IngredientType.SAUCE),
-            total_fill_count=count(available, IngredientType.FILL),
-            total_sauce_count=count(available, IngredientType.SAUCE),
+            fill_count=counts.fills,
+            sauce_count=counts.sauces,
+            total_fill_count=counts.total_fills,
+            total_sauce_count=counts.total_sauces,
         )
 
     @BaseApi.endpoint(

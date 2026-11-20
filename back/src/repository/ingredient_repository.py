@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Row
+from sqlalchemy import Row, case, func, select
 from sqlalchemy.exc import NoResultFound
 
 from back.src.driver.database import db
@@ -50,6 +50,16 @@ class IngredientRepository(BaseRepository[Ingredient]):
             .order_by(Ingredient.id)
             .all()
         )
+
+    def count_available(self, session_key: str, diet: Diet) -> dict[IngredientType, tuple[int, int]]:
+        """Per type, how many of a session's available ingredients the diet allows, and how many there are."""
+        rows = db.session.execute(
+            select(Ingredient.type, func.sum(case((diet.ingredient_filter(), 1), else_=0)), func.count())
+            .join(RaclottoSession, Ingredient.session_id == RaclottoSession.id)
+            .where(RaclottoSession.key == session_key, Ingredient.available.is_(True))
+            .group_by(Ingredient.type)
+        )
+        return {kind: (allowed, total) for kind, allowed, total in rows}
 
     def mark_unavailable(self, id: int) -> Ingredient | None:
         ingredient = self.by_id(id)
