@@ -6,7 +6,7 @@ import jsxA11y from "eslint-plugin-jsx-a11y-x";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-    { ignores: ["build/**", "src/api/generated/**"] },
+    { ignores: ["build/**", "coverage/**", "src/api/generated/**"] },
     js.configs.recommended,
     tseslint.configs.recommendedTypeChecked,
     {

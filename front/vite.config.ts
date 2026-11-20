@@ -38,5 +38,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/setupTests.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/api/generated/**", "src/**/__fixtures__/**", "src/**/*.test.{ts,tsx}", "src/setupTests.ts", "src/testUtils.tsx", "src/vite-env.d.ts"],
+      reporter: ["text-summary", "html"],
+    },
   },
 });

@@ -134,10 +134,11 @@ the release number restarts at 01 each year), made by the script, never by hand.
 
 Run from the repo root unless noted. The venv is `venv/`; it has drifted from
 `requirements.txt` before — rebuild it (`pip install -r requirements-dev.txt`: the runtime
-requirements plus ruff, mypy and stubs) if imports fail. Dev-only tools go in `requirements-dev.txt`.
+requirements plus ruff, mypy, coverage and stubs) if imports fail. Dev-only tools go in `requirements-dev.txt`.
 
 ```bash
 venv/bin/python -m unittest discover -s back/test -t .     # whole backend suite
+venv/bin/coverage run -m unittest discover -s back/test -t . && venv/bin/coverage report   # with coverage (report only)
 venv/bin/python -m unittest back.test.integration.test_pan_roll   # one module
 venv/bin/mypy                                              # type check: back/src strict, back/test bodies (pyproject.toml)
 venv/bin/ruff check --fix && venv/bin/ruff format           # lint (autofix what it can) and format the backend

@@ -44,3 +44,11 @@ allowed-confusables = ["×"]
 [tool.ruff.lint.per-file-ignores]
 # Pydantic copies mutable field defaults per instance.
 "back/test/**" = ["RUF012"]
+
+[tool.coverage.run]
+source = ["back/src"]
+branch = true
+
+[tool.coverage.report]
+skip_covered = true
+skip_empty = true

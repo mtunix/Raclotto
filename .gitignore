@@ -11,3 +11,5 @@ front/coverage/
 static/
 VERSION
 .idea/
+.coverage
+htmlcov/

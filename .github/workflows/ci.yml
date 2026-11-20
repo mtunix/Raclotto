@@ -34,7 +34,8 @@ jobs:
       - run: python -m venv venv && venv/bin/pip install -r requirements-dev.txt
       - run: venv/bin/ruff check --output-format github
       - run: venv/bin/ruff format --check
-      - run: venv/bin/python -m unittest discover -s back/test -t .
+      - run: venv/bin/coverage run -m unittest discover -s back/test -t .
+      - run: venv/bin/coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
       - run: venv/bin/mypy
 
   frontend:
@@ -54,7 +55,11 @@ jobs:
       - run: npm ci
       - run: npx tsc -b
       - run: npm run lint
-      - run: npx vitest run
+      - run: npm run test:coverage -- --coverage.reporter=text-summary --coverage.reporter=json-summary
+      - run: >-
+          node -e "const t = require('./coverage/coverage-summary.json').total;
+          console.log('| Frontend | % |\n|---|---|\n' + ['lines', 'statements', 'branches', 'functions'].map(k => '| ' + k + ' | ' + t[k].pct + ' |').join('\n'))"
+          >> "$GITHUB_STEP_SUMMARY"
       - run: npm run build
 
   contract:
