@@ -150,7 +150,7 @@ requirements plus ruff, mypy, coverage and stubs) if imports fail. Dev-only tool
 
 ```bash
 venv/bin/python -m unittest discover -s back/test -t .     # whole backend suite
-venv/bin/coverage run -m unittest discover -s back/test -t . && venv/bin/coverage report   # with coverage (report only)
+venv/bin/coverage run -m unittest discover -s back/test -t . && venv/bin/coverage report   # with coverage; fails below `fail_under` (pyproject.toml), as in CI
 venv/bin/python -m unittest back.test.integration.test_pan_roll   # one module
 venv/bin/mypy                                              # type check: back/src strict, back/test bodies (pyproject.toml)
 venv/bin/ruff check --fix && venv/bin/ruff format           # lint (autofix what it can) and format the backend

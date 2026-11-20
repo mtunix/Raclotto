@@ -50,5 +50,7 @@ source = ["back/src"]
 branch = true
 
 [tool.coverage.report]
+# The whole backend's line and branch coverage, rounded down; raise it as coverage grows.
+fail_under = 96
 skip_covered = true
 skip_empty = true

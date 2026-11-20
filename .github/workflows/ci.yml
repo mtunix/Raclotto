@@ -35,7 +35,9 @@ jobs:
       - run: venv/bin/ruff check --output-format github
       - run: venv/bin/ruff format --check
       - run: venv/bin/coverage run -m unittest discover -s back/test -t .
-      - run: venv/bin/coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      # Fails below fail_under (pyproject.toml); `shell: bash` adds pipefail, so tee doesn't hide that.
+      - run: venv/bin/coverage report --format=markdown | tee -a "$GITHUB_STEP_SUMMARY"
+        shell: bash
       - run: venv/bin/mypy
 
   frontend:
