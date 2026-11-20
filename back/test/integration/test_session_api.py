@@ -3,12 +3,19 @@ from datetime import datetime
 from sqlalchemy import func, select, text
 
 from back.src.driver.database import db
+from back.src.dto.ingredient import IngredientDto
+from back.src.dto.pan import PanDto
 from back.src.dto.session import SessionDto
+from back.src.dto.session_recap import BoldestPanDto, ParticipantRecapDto, SessionRecapDto
+from back.src.dto.stats import IngredientUsageDto
+from back.src.dto.user import UserSummaryDto
 from back.src.entity.achievement import AchievementKey
 from back.src.entity.event import Event
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.raclotto_session import RaclottoSession
+from back.src.entity.rating import Rating
 from back.src.entity.user import User, user_sessions
+from back.src.interactor.levels import Levels
 from back.test.support import AppTest
 
 
@@ -101,6 +108,47 @@ class TestReadSessions(SessionApiTest):
 
     def test_by_key_needs_the_key(self):
         self.assertEqual(self.pointers(self.call("GET", "/sessions/by-key", self.ana)), ["/query/session_key"])
+
+
+class TestSessionRecap(SessionApiTest):
+    def test_the_recap_as_json(self):
+        session = self.make_session("s1", creator=self.ana)
+        chili = self.make_ingredient(session, "Chili", spicy=2, wildcard=True)
+        plain = self.make_pan(self.ana, session, [chili], minutes_ago=10)
+        bold = self.make_pan(self.ben, session, [chili, self.make_ingredient(session, "Leek")], minutes_ago=5)
+        for pan, rater, stars in ((plain, self.ben, 2), (bold, self.ana, 5)):
+            db.session.add(Rating(rating=stars, user_id=rater.id, pan_id=pan.id, session_id=session.id))
+        db.session.commit()
+
+        response = self.call("GET", "/sessions/recap", self.ana, query={"session_key": "s1"})
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(set(response.json), set(SessionRecapDto.model_fields))
+        recap = SessionRecapDto.model_validate(response.json)
+        db.session.expire_all()
+        bold_dto, xp = PanDto.of(bold, self.ben), Levels().xp_for(bold)
+        self.assertEqual(recap.session, SessionDto.model_validate(session))
+        self.assertEqual((recap.pan_count, recap.rating_count), (2, 2))
+        self.assertEqual(response.json["last_pan_at"], bold.timestamp.isoformat())
+        self.assertEqual((recap.best_pan, recap.worst_pan), (bold_dto, PanDto.of(plain, self.ana)))
+        self.assertEqual(recap.boldest_pan, BoldestPanDto(pan=bold_dto, xp=xp))
+        self.assertEqual(
+            recap.favorite_ingredient, IngredientUsageDto(ingredient=IngredientDto.model_validate(chili), pan_count=2)
+        )
+        self.assertEqual(
+            recap.participants[0],
+            ParticipantRecapDto(
+                user=UserSummaryDto.of(self.ben), pan_count=1, xp=xp, average_rating=5.0, ratings_given=1
+            ),
+        )
+
+    def test_the_recap_needs_a_known_session_and_auth(self):
+        missing = self.call("GET", "/sessions/recap", self.ana, query={"session_key": "nope"})
+        self.assertEqual(
+            (missing.status_code, missing.json["errors"][0]["code"]), (404, "api_error_code.resource_not_found")
+        )
+        self.assertEqual(self.pointers(self.call("GET", "/sessions/recap", self.ana)), ["/query/session_key"])
+        self.assertEqual(self.call("GET", "/sessions/recap", query={"session_key": "nope"}).status_code, 401)
 
 
 class TestChangeSession(SessionApiTest):

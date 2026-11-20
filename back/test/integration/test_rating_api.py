@@ -1,7 +1,6 @@
 from back.src.driver.database import db
 from back.src.dto.rating import RatingDto
 from back.src.entity.rating import Rating
-from back.src.entity.user import User
 from back.src.interactor.achievement_evaluator import AchievementEvaluator
 from back.src.interactor.achievement_registry import get_registry
 from back.src.interactor.facts import PanRated
@@ -62,40 +61,27 @@ class TestRatingApi(AppTest):
         self.assertEqual([e["source"]["pointer"] for e in response.json["errors"]], ["/body/user_id"])
         self.assertEqual(self.stored(), [])
 
-    def test_rating_the_same_pan_again_updates_it(self):
-        first = self.rate(self.ben, 2).json
-        second = self.rate(self.ben, 5).json
-
-        self.assertEqual(second["id"], first["id"])
-        self.assertEqual(second["rating"], 5)
-        self.assertEqual(self.stored(), [(self.ben.id, self.pan.id, self.s1.id, 5)])
-
-    def test_half_stars_are_kept(self):
-        response = self.rate(self.ben, 3.5)
-
-        self.assertEqual(response.status_code, 200, response.json)
-        self.assertEqual(response.json["rating"], 3.5)
-        pan = self.call("GET", f"/pans/{self.pan.id}", self.ana).json
-        self.assertEqual((pan["rating"], pan["ratings"][0]["rating"]), (3.5, 3.5))
-
     def test_stars_are_validated(self):
         for stars in (-1, 5.5, 4.2, "five", None):
             with self.subTest(stars=stars):
                 response = self.rate(self.ben, stars)
                 self.assertEqual(response.status_code, 400, response.json)
                 self.assertEqual([e["source"]["pointer"] for e in response.json["errors"]], ["/body/rating"])
-        for stars in (0, 5):
+        for stars in (0, 3.5, 5):
             with self.subTest(stars=stars):
-                self.assertEqual(self.rate(self.ben, stars).status_code, 200)
+                response = self.rate(self.ben, stars)
+                self.assertEqual(response.status_code, 200, response.json)
+                self.assertEqual(response.json["rating"], stars)
 
     def test_rating_a_missing_pan_is_404(self):
         response = self.call("POST", "/ratings", self.ben, body={"pan_id": 999, "rating": 3})
 
         self.assertEqual(response.status_code, 404, response.json)
-        self.assertEqual(response.json["errors"][0]["title"], "Pan not found")
+        error = response.json["errors"][0]
+        self.assertEqual((error["code"], error["title"]), ("api_error_code.resource_not_found", "Pan not found"))
         self.assertEqual(self.stored(), [])
 
-    def test_list_get_update_delete(self):
+    def test_list_ratings_of_everything_or_one_session(self):
         rating_id = self.rate(self.ben, 2).json["id"]
         elsewhere = self.make_pan(self.ben, self.s2, [self.make_ingredient(self.s2, "Leek")])
         self.rate(self.ana, 1, pan=elsewhere)
@@ -103,9 +89,14 @@ class TestRatingApi(AppTest):
         everything = self.call("GET", "/ratings", self.ana)
         in_s1 = self.call("GET", "/ratings", self.ana, query={"session_key": "s1"})
         unknown = self.call("GET", "/ratings", self.ana, query={"session_key": "nope"})
+
         self.assertEqual(len(everything.json), 2)
         self.assertEqual([r["id"] for r in in_s1.json], [rating_id])
         self.assertEqual(unknown.json, [])
+
+    def test_get_change_and_withdraw_a_rating(self):
+        rating_id = self.rate(self.ben, 2).json["id"]
+        elsewhere = self.make_pan(self.ben, self.s2, [self.make_ingredient(self.s2, "Leek")])
 
         self.assertEqual(self.call("GET", f"/ratings/{rating_id}", self.ana).json["rating"], 2)
 
@@ -114,44 +105,26 @@ class TestRatingApi(AppTest):
         self.assertEqual(updated.json["rating"], 4)
         moved = self.call("PATCH", f"/ratings/{rating_id}", self.ben, body={"rating": 4, "pan_id": elsewhere.id})
         self.assertEqual(moved.status_code, 400, moved.json)
+        self.assertEqual([e["source"]["pointer"] for e in moved.json["errors"]], ["/body/pan_id"])
+        self.assertEqual(self.stored(), [(self.ben.id, self.pan.id, self.s1.id, 4)])
 
         deleted = self.call("DELETE", f"/ratings/{rating_id}", self.ben)
         self.assertEqual(deleted.status_code, 204)
         self.assertEqual(deleted.get_data(), b"")
+        self.assertEqual(self.stored(), [])
         self.assertEqual(self.call("GET", f"/ratings/{rating_id}", self.ana).status_code, 404)
-        self.assertEqual(self.call("DELETE", f"/ratings/{rating_id}", self.ana).status_code, 404)
 
-    def test_someone_elses_rating_is_reported_as_missing(self):
+    def test_someone_elses_rating_is_404(self):
         rating_id = self.rate(self.ben, 2).json["id"]
 
-        changed = self.call("PATCH", f"/ratings/{rating_id}", self.ana, body={"rating": 5})
-        withdrawn = self.call("DELETE", f"/ratings/{rating_id}", self.ana)
-
-        self.assertEqual((changed.status_code, withdrawn.status_code), (404, 404))
-        self.assertEqual(changed.json["errors"][0]["title"], "Rating not found")
-        self.assertEqual(self.stored(), [(self.ben.id, self.pan.id, self.s1.id, 2)])
-
-    def best_rated_by_a_change(self, change) -> list:
-        """Ana's pan trails Dan's (3 to 4 stars) until Ben's rating changes from 2 to 5."""
-        cara, dan = self.make_user("cara"), self.make_user("dan")
-        rival = self.make_pan(dan, self.s1, [self.make_ingredient(self.s1, "Leek")])
-        self.rate(self.ben, 4, pan=rival)
-        self.rate(cara, 4, pan=rival)
-        rating_id = self.rate(self.ben, 2).json["id"]
-        self.rate(cara, 4)
-
-        self.assertEqual(change(rating_id).status_code, 200)
-        db.session.rollback()
-        return [a.title for a in db.session.get_one(User, self.ana.id).achievements]
-
-    def test_rating_a_pan_again_lets_achievements_react(self):
-        self.assertIn("Pantastic", self.best_rated_by_a_change(lambda _: self.rate(self.ben, 5)))
-
-    def test_changing_a_rating_lets_achievements_react(self):
-        titles = self.best_rated_by_a_change(
-            lambda rating_id: self.call("PATCH", f"/ratings/{rating_id}", self.ben, body={"rating": 5})
-        )
-        self.assertIn("Pantastic", titles)
+        for method, body in (("PATCH", {"rating": 5}), ("DELETE", None)):
+            with self.subTest(method):
+                response = self.call(method, f"/ratings/{rating_id}", self.ana, body=body)
+                self.assertEqual(response.status_code, 404, response.json)
+                error = response.json["errors"][0]
+                self.assertEqual(
+                    (error["code"], error["title"]), ("api_error_code.resource_not_found", "Rating not found")
+                )
 
     def test_rating_routes_require_auth(self):
         for method, path, body in (

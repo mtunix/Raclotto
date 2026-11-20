@@ -282,6 +282,12 @@ images (patch and digest only), pip and npm; Node, Python and TypeScript major l
   dev server. `support.ts`: `t(key)` for UI text (the app runs in German), `createSession`,
   `addIngredients(page, session, PANTRY)` to seed through the API; every test fails on a page error or
   a console error it didn't allow (`test.use({ allowedConsoleErrors })`). Each test makes its own session.
+- **Test at the closest seam.** A domain rule is tested at its module (`interactor/`, or the
+  frontend's domain module); a route test keeps only what the route owns (auth, DTO validation, error
+  kind → status and `code`, response shape, throttling), and a view test what the view shows and
+  sends. End-to-end tests prove only what no closer seam can: the production build and its serving,
+  browser layout and APIs, and one journey per core flow (roll, guest join). A test that a closer
+  seam can carry moves there.
 - **Test through the module's interface.** Swap collaborators through constructor arguments
   (`PanRoll(rng=..., achievements=...)`, `Achievements(evaluators=...)`), not `patch`.
 - **Regression tests must be seen red before green.** Revert the fix, confirm the new test

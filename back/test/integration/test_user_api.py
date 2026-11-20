@@ -153,21 +153,6 @@ class TestAdminRights(AppTest):
         self.assertEqual(self.admins(), ["ana", "Ben", "cleo"])
         self.assertEqual(self.call("POST", "/preparation_type", self.ben, body={"name": "Grill"}).status_code, 200)
 
-    def test_an_admin_revokes_another_admins_rights(self):
-        response = self.call("PATCH", f"/users/{self.cleo.id}", self.ana, body={"is_admin": False})
-
-        self.assertEqual(response.status_code, 200, response.json)
-        self.assertFalse(response.json["is_admin"])
-        self.assertEqual(self.admins(), ["ana"])
-        self.assertEqual(self.call("GET", "/users", self.cleo).status_code, 403)
-
-    def test_granting_twice_changes_nothing(self):
-        self.call("PATCH", f"/users/{self.ben.id}", self.ana, body={"is_admin": True})
-
-        response = self.call("PATCH", f"/users/{self.ben.id}", self.ana, body={"is_admin": True})
-
-        self.assertEqual((response.status_code, response.json["is_admin"]), (200, True))
-
     def test_a_non_admin_neither_lists_nor_changes_admin_rights(self):
         with self.recorded_writes() as writes:
             responses = [

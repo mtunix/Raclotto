@@ -54,12 +54,16 @@ class TestInviteApi(AppTest):
         self.assertEqual(response.get_data(), b"")
         self.assertEqual(self.stored(), [])
 
-    def test_revoke_refuses_others_used_and_unknown_invites(self):
-        bens = self.make_invite(self.ben)
+    def test_revoking_an_unknown_invite_is_404_a_used_one_400(self):
         used = self.make_invite(self.ana, used=True)
 
-        self.assertEqual(self.call("DELETE", f"/invites/{bens.id}", self.ana).status_code, 404)
-        self.assertEqual(self.call("DELETE", f"/invites/{used.id}", self.ana).status_code, 400)
-        self.assertEqual(self.call("DELETE", "/invites/999", self.ana).status_code, 404)
-        self.assertEqual(self.call("DELETE", f"/invites/{bens.id}").status_code, 401)
-        self.assertEqual(len(self.stored()), 2)
+        unknown, spent = (
+            self.call("DELETE", "/invites/999", self.ana),
+            self.call("DELETE", f"/invites/{used.id}", self.ana),
+        )
+
+        self.assertEqual(
+            [(r.status_code, r.json["errors"][0]["code"]) for r in (unknown, spent)],
+            [(404, "api_error_code.resource_not_found"), (400, "api_error_code.incorrect_parameters")],
+        )
+        self.assertEqual(self.call("DELETE", f"/invites/{used.id}").status_code, 401)

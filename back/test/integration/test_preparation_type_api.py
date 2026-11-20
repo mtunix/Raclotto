@@ -79,18 +79,6 @@ class TestPreparationTypeApi(AppTest):
         self.assertNotIn("Grilled", self.names())
         self.assertEqual(self.call("DELETE", f"/preparation_type/{self.grilled.id}", self.ana).status_code, 404)
 
-    def test_deleting_a_type_pans_were_made_with_leaves_them_without_one(self):
-        ana = self.make_user("cook")
-        pan = self.make_pan(ana, self.s1, [self.make_ingredient(self.s1, "Potato")])
-        pan.preparation_type_id = self.grilled.id
-        db.session.commit()
-
-        response = self.call("DELETE", f"/preparation_type/{self.grilled.id}", self.ana)
-
-        self.assertEqual(response.status_code, 204, response.json)
-        fetched = self.call("GET", f"/pans/{pan.id}", self.ana).json
-        self.assertEqual((fetched["preparation_type_id"], fetched["preparation_type"]), (None, None))
-
     def test_default_types_cannot_be_deleted(self):
         default = PreparationTypeRepository().defaults()[0]
 

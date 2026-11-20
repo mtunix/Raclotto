@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from sqlalchemy import event, select
 
 from back.src.driver.database import db
-from back.src.dto.pan import PanDto, PanPageDto
+from back.src.dto.pan import PanDto, PanFilterOptionsDto, PanPageDto
 from back.src.entity.pan import Pan, pan_ingredients
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.rating import Rating
@@ -67,15 +67,29 @@ class TestPanApi(AppTest):
         self.assertEqual(len(page.items), 2)
         self.assertEqual((page.total, page.limit, page.offset, page.has_more), (2, None, 0, False))
 
-    def test_list_filters_by_session_and_user(self):
-        mine = self.make_pan(self.ana, self.s1, [self.potato])
-        bens_here = self.make_pan(self.ben, self.s1, [self.potato])
-        bens_there = self.make_pan(self.ben, self.s2, [self.leek])
+    def test_list_passes_every_filter_and_the_order_to_the_history(self):
+        sides = [self.make_ingredient(self.s1, name) for name in ("Carrot", "Onion", "Bean")]
+        carl = self.make_user("carl")
+        mine = self.make_pan(self.ana, self.s1, [self.potato], minutes_ago=3)
+        bens = self.make_pan(self.ben, self.s1, [self.potato], minutes_ago=2)
+        too_big = self.make_pan(self.ben, self.s1, [self.potato, *sides], minutes_ago=1)
+        elsewhere = self.make_pan(self.ben, self.s2, [self.leek])
+        by_carl = self.make_pan(carl, self.s1, [self.potato])
+        self.make_pan(self.ana, self.s1, [self.potato])
+        for pan, stars in ((mine, 4), (bens, 2), (too_big, 4), (elsewhere, 4), (by_carl, 2)):
+            db.session.add(Rating(rating=stars, user_id=self.ana.id, pan_id=pan.id, session_id=pan.session_id))
+        db.session.commit()
 
-        self.assertEqual({p.id for p in self.page(session_key="s1").items}, {mine.id, bens_here.id})
-        self.assertEqual({p.id for p in self.page(user_id=self.ben.id).items}, {bens_here.id, bens_there.id})
-        self.assertEqual([p.id for p in self.page(session_key="s1", user_id=self.ben.id).items], [bens_here.id])
-        self.assertEqual(self.page(session_key="nope").items, [])
+        page = self.page(
+            session_key="s1",
+            user_id=[self.ana.id, self.ben.id],
+            rating=[4, 2],
+            ingredient_count=["1-3"],
+            sort="rating",
+            direction="asc",
+        )
+
+        self.assertEqual(([p.id for p in page.items], page.total), ([bens.id, mine.id], 2))
 
     def test_listed_pans_carry_their_author(self):
         db.session.add(ProfilePictureHistory(user_id=self.ana.id, profile_picture="/pics/ana.png"))
@@ -138,11 +152,34 @@ class TestPanApi(AppTest):
             ({"user_id": "ana"}, "/query/user_id/0"),
             ({"session_key": ""}, "/query/session_key"),
             ({"page": 2}, "/query/page"),
+            ({"sort": "name"}, "/query/sort"),
+            ({"direction": "up"}, "/query/direction"),
+            ({"ingredient_count": "2-5"}, "/query/ingredient_count/0"),
+            ({"rating": "good"}, "/query/rating/0"),
         ):
             with self.subTest(query=query):
                 response = self.call("GET", "/pans", self.ana, query=query)
                 self.assertEqual(response.status_code, 400, response.json)
                 self.assertEqual([e["source"]["pointer"] for e in response.json["errors"]], [pointer])
+
+    def test_filter_options(self):
+        rated = self.make_pan(self.ben, self.s1, [self.potato])
+        db.session.add(Rating(rating=3.5, user_id=self.ana.id, pan_id=rated.id, session_id=self.s1.id))
+        db.session.commit()
+
+        response = self.call("GET", "/pans/filters", self.ana, query={"session_key": "s1"})
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(set(response.json), set(PanFilterOptionsDto.model_fields))
+        self.assertEqual([(u["id"], u["name"]) for u in response.json["users"]], [(self.ben.id, "ben")])
+        self.assertEqual((response.json["ratings"], response.json["ingredient_counts"]), ([3.5], ["1-3"]))
+
+    def test_filter_options_need_a_session(self):
+        for query in ({}, {"session_key": ""}):
+            with self.subTest(query=query):
+                response = self.call("GET", "/pans/filters", self.ana, query=query)
+                self.assertEqual(response.status_code, 400, response.json)
+                self.assertEqual([e["source"]["pointer"] for e in response.json["errors"]], ["/query/session_key"])
 
     def test_get_pan(self):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
@@ -267,6 +304,7 @@ class TestPanApi(AppTest):
         pan = self.make_pan(self.ana, self.s1, [self.potato])
         for method, path, body in (
             ("GET", "/pans", None),
+            ("GET", "/pans/filters", None),
             ("GET", f"/pans/{pan.id}", None),
             ("PATCH", f"/pans/{pan.id}", {"user_id": 1}),
             ("DELETE", f"/pans/{pan.id}", None),

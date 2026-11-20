@@ -1,5 +1,3 @@
-import time
-
 import jwt
 
 from back.src.auth.password import hash_password
@@ -49,33 +47,12 @@ class TestLogin(AuthTest):
         self.assertEqual((result.user.id, result.user.name, result.user.email), (self.ana.id, "ana", "ana@example.com"))
         self.assertEqual(self.me_with(result.token).json["id"], self.ana.id)
 
-    def test_login_by_email(self):
-        response = self.login("ana@example.com")
-
-        self.assertEqual(response.status_code, 200, response.json)
-        self.assertEqual(response.json["user"]["id"], self.ana.id)
-
     def test_bad_credentials_are_401(self):
-        for name_or_email, password in (("ana", "wrong"), ("nobody", PASSWORD)):
-            with self.subTest(name_or_email=name_or_email):
-                response = self.login(name_or_email, password)
+        response = self.login("ana", "wrong")
 
-                self.assertEqual(response.status_code, 401, response.json)
-                [error] = response.json["errors"]
-                self.assertEqual(
-                    (error["code"], error["title"]), ("api_error_code.invalid_token", "Invalid credentials")
-                )
-
-    def test_an_unknown_account_takes_as_long_as_a_wrong_password(self):
-        def fastest(name_or_email: str) -> float:
-            timings = []
-            for _ in range(3):
-                start = time.perf_counter()
-                self.assertEqual(self.login(name_or_email, "wrong").status_code, 401)
-                timings.append(time.perf_counter() - start)
-            return min(timings)
-
-        self.assertGreater(fastest("nobody"), fastest("ana") / 2)
+        self.assertEqual(response.status_code, 401, response.json)
+        [error] = response.json["errors"]
+        self.assertEqual((error["code"], error["title"]), ("api_error_code.invalid_token", "Invalid credentials"))
 
     def test_login_body_is_validated(self):
         self.assertEqual(self.pointers(self.login("ana", "")), ["/body/password"])
@@ -186,21 +163,6 @@ class TestUpdateMe(AuthTest):
         stored = self.stored(self.ana.id)
         self.assertEqual((stored.name, stored.border_style, stored.language), ("ana", "dotted", "de"))
 
-    def test_diet_is_normalized(self):
-        cases = (
-            ({"meat": True, "vegetarian": False, "vegan": False}, (True, True, True)),
-            ({"meat": False, "vegetarian": True, "vegan": False}, (False, True, True)),
-            ({"meat": False, "vegetarian": False, "vegan": False}, (False, True, True)),
-            ({"meat": False, "vegetarian": False, "vegan": True}, (False, False, True)),
-        )
-        for diet, expected in cases:
-            with self.subTest(diet=diet):
-                me = self.update(diet).json
-
-                self.assertEqual((me["meat"], me["vegetarian"], me["vegan"]), expected)
-                stored = self.stored(self.ana.id)
-                self.assertEqual((stored.meat, stored.vegetarian, stored.vegan), expected)
-
     def test_border_style_texture_and_language_must_be_offered(self):
         self.assertEqual(self.pointers(self.update({"border_style": "ridge"})), ["/body/border_style"])
         self.assertEqual(self.pointers(self.update({"border_texture": "crispy"})), ["/body/border_texture"])
@@ -219,15 +181,6 @@ class TestUpdateMe(AuthTest):
 
     def test_an_invalid_body_without_token_is_401(self):
         self.assertEqual(self.call("PATCH", "/auth/me", body={"border_style": "ridge"}).status_code, 401)
-
-    def test_profile_picture_is_set_and_removed_through_the_history(self):
-        set_ = self.update({"profile_picture": "/pics/new.png"}).json
-        removed = self.update({"profile_picture": None}).json
-
-        self.assertEqual((set_["profile_picture"], removed["profile_picture"]), ("/pics/new.png", None))
-        history = db.session.query(ProfilePictureHistory).filter_by(user_id=self.ana.id).all()
-        self.assertEqual(sorted(h.profile_picture or "" for h in history), ["", "/pics/new.png"])
-        self.assertEqual({h.level_id for h in history}, {self.levels[1].id})
 
     def test_a_rejected_update_writes_no_picture(self):
         response = self.update({"profile_picture": "/pics/new.png", "border_style": "ridge"})
@@ -260,7 +213,7 @@ class TestChangePassword(AuthTest):
             "POST", "/auth/password", user or self.ana, body={"current_password": current, "new_password": new}
         )
 
-    def test_the_new_password_signs_in_and_other_devices_are_signed_out(self):
+    def test_this_device_gets_a_new_token_and_other_devices_are_signed_out(self):
         other_device = self.login(PASSWORD).json
 
         response = self.change(PASSWORD, "much-longer")
@@ -268,18 +221,14 @@ class TestChangePassword(AuthTest):
         self.assertEqual(response.status_code, 200, response.json)
         self.assertEqual(self.me_with(TokenDto.model_validate(response.json).token).status_code, 200)
         self.assertEqual(self.me_with(other_device["token"]).status_code, 401)
-        self.assertEqual((self.login(PASSWORD).status_code, self.login("much-longer").status_code), (401, 200))
+        self.assertEqual(self.login("much-longer").status_code, 200)
 
-    def test_a_wrong_current_password_changes_nothing(self):
-        before = self.stored(self.ana.id)
-        password, version = before.password, before.token_version
-
+    def test_a_wrong_current_password_is_400(self):
         response = self.change("wrong", "much-longer")
 
         self.assertEqual(response.status_code, 400, response.json)
-        self.assertEqual(response.json["errors"][0]["title"], "Wrong password")
-        after = self.stored(self.ana.id)
-        self.assertEqual((after.password, after.token_version), (password, version))
+        [error] = response.json["errors"]
+        self.assertEqual((error["code"], error["title"]), ("api_error_code.incorrect_parameters", "Wrong password"))
 
     def test_the_new_password_needs_eight_characters(self):
         self.assertEqual(self.pointers(self.change(PASSWORD, "short")), ["/body/new_password"])
@@ -309,69 +258,44 @@ class TestRegister(AuthTest):
         body = {"token": invite.token, "email": "ben@example.com", "name": "ben", "password": "pw-12345", **overrides}
         return self.call("POST", "/auth/register", body=body)
 
-    def error_title(self, response) -> str:
+    def errors(self, response) -> list:
         self.assertEqual(response.status_code, 400, response.json)
-        [error] = response.json["errors"]
-        return error["title"]
+        return response.json["errors"]
 
     def test_register_signs_the_new_user_in(self):
         invite = self.make_invite(self.ana)
 
-        response = self.register(invite, email="Ben@Example.com", profile_picture="/pics/ben.png")
+        response = self.register(invite, profile_picture="/pics/ben.png")
 
         self.assertEqual(response.status_code, 200, response.json)
         result = AuthResultDto.model_validate(response.json)
-        ben = self.stored(result.user.id)
+        self.assertEqual(set(response.json["user"]), set(MeDto.model_fields))
         self.assertEqual(
-            (ben.name, ben.email, ben.experience_points, ben.level_id), ("ben", "Ben@Example.com", 0, self.levels[0].id)
+            (result.user.name, result.user.email, result.user.profile_picture),
+            ("ben", "ben@example.com", "/pics/ben.png"),
         )
-        self.assertEqual((result.user.name, result.user.profile_picture), ("ben", "/pics/ben.png"))
         assert result.user.level is not None and result.user.next_level is not None
         self.assertEqual((result.user.level.id, result.user.next_level.id), (self.levels[0].id, self.levels[1].id))
+        self.assertEqual(self.me_with(result.token).json["id"], result.user.id)
+        db.session.expire_all()
         self.assertTrue(db.session.get_one(InviteToken, invite.id).is_used)
-        self.assertEqual(self.me_with(result.token).json["id"], ben.id)
-        self.assertEqual(
-            self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw-12345"}).status_code, 200
-        )
-
-    def test_the_first_picture_is_the_one_generation_starts_from(self):
-        invite = self.make_invite(self.ana)
-        result = AuthResultDto.model_validate(self.register(invite, profile_picture="/pics/ben.png").json)
-
-        changed = self.call("PATCH", "/auth/me", self.stored(result.user.id), body={"profile_picture": "/pics/new.png"})
-
-        self.assertEqual(changed.status_code, 200, changed.json)
-        history = db.session.query(ProfilePictureHistory).filter_by(user_id=result.user.id)
-        self.assertEqual(
-            sorted((h.profile_picture, h.is_candidate) for h in history),
-            [("/pics/ben.png", True), ("/pics/new.png", False)],
-        )
 
     def test_unusable_invites_are_rejected(self):
         used = self.make_invite(self.ana, used=True)
-        expired = self.make_invite(self.ana, expires_in_days=-1)
 
-        self.assertEqual(self.error_title(self.register(used)), "Invalid invite token")
-        self.assertEqual(self.error_title(self.register(expired)), "Invalid invite token")
-        self.assertEqual(self.error_title(self.register(used, token="nope")), "Invalid invite token")
-        self.assertEqual(db.session.query(User).filter_by(name="ben").count(), 0)
+        for token in (used.token, "nope"):
+            with self.subTest(token=token):
+                [error] = self.errors(self.register(used, token=token))
+                self.assertEqual(
+                    (error["code"], error["title"]), ("api_error_code.invalid_token", "Invalid invite token")
+                )
 
-    def test_any_email_or_none_registers(self):
-        response = self.register(self.make_invite(self.ana), email=None)
+    def test_a_taken_name_is_rejected(self):
+        [error] = self.errors(self.register(self.make_invite(self.ana), name="ana"))
 
-        self.assertEqual(response.status_code, 200, response.json)
-        self.assertIsNone(self.stored(response.json["user"]["id"]).email)
-        second = self.register(self.make_invite(self.ana), name="cleo", email="whoever@example.com")
-        self.assertEqual(second.status_code, 200, second.json)
-
-    def test_name_and_email_must_be_free(self):
-        taken_email = self.make_invite(self.ana)
-        free_email = self.make_invite(self.ana)
-
-        self.assertEqual(self.error_title(self.register(taken_email, email="ana@example.com")), "User already exists")
-        self.assertEqual(self.error_title(self.register(free_email, name="ana")), "User already exists")
-        db.session.expire_all()
-        self.assertFalse(db.session.get_one(InviteToken, free_email.id).is_used)
+        self.assertEqual(
+            (error["code"], error["title"]), ("api_error_code.incorrect_parameters", "User already exists")
+        )
 
     def test_register_body_is_validated(self):
         invite = self.make_invite(self.ana)
@@ -395,9 +319,8 @@ class TestInviteLookup(AuthTest):
 
     def test_unusable_invites_are_400(self):
         used = self.make_invite(self.ana, used=True)
-        expired = self.make_invite(self.ana, expires_in_days=-1)
 
-        for token in (used.token, expired.token, "nope"):
+        for token in (used.token, "nope"):
             with self.subTest(token=token):
                 response = self.call("GET", f"/auth/invite/{token}")
                 self.assertEqual(response.status_code, 400, response.json)
@@ -456,27 +379,25 @@ class TestGuestJoin(AuthTest):
         result = JoinResultDto.model_validate(response.json)
         self.assertEqual((result.session.id, result.user.name, result.user.is_guest), (self.session.id, "ben", True))
         self.assertEqual(result.user.profile_picture, "/pics/ben.png")
-        ben = self.stored(result.user.id)
-        self.assertEqual((ben.password, ben.email, ben.level_id), (None, None, self.levels[0].id))
-        members = db.session.query(user_sessions.c.user_id).filter_by(session_id=self.session.id).all()
-        self.assertIn((ben.id,), members)
         self.assertEqual(self.me_with(result.token).json["is_guest"], True)
-
-    def test_a_guest_cannot_sign_in_with_any_password(self):
-        self.join()
-
-        response = self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "x"})
-
-        self.assertEqual(response.status_code, 401, response.json)
+        db.session.expire_all()
+        members = db.session.query(user_sessions.c.user_id).filter_by(session_id=self.session.id).all()
+        self.assertIn((result.user.id,), members)
 
     def test_a_taken_name_unknown_code_or_closed_session_is_refused(self):
-        self.assertEqual(self.join(name="ana").status_code, 400)
-        self.assertEqual(self.join(join_code="nope").status_code, 400)
+        taken, unknown = self.join(name="ana"), self.join(join_code="nope")
         self.session.active = False
         db.session.commit()
         closed = self.join()
-        self.assertEqual(closed.status_code, 409, closed.json)
-        self.assertEqual(db.session.query(User).filter_by(name="ben").count(), 0)
+
+        self.assertEqual(
+            [(r.status_code, r.json["errors"][0]["code"]) for r in (taken, unknown, closed)],
+            [
+                (400, "api_error_code.incorrect_parameters"),
+                (400, "api_error_code.invalid_token"),
+                (409, "api_error_code.conflict"),
+            ],
+        )
 
     def test_wrong_codes_pause_the_address(self):
         for _ in range(5):
@@ -500,25 +421,27 @@ class TestClaim(AuthTest):
         joined = self.call("POST", "/auth/join", body={"join_code": session.join_code, "name": "ben"})
         return self.stored(joined.json["user"]["id"])
 
-    def test_a_claimed_guest_signs_in_with_name_or_email(self):
+    def test_a_claimed_guest_is_no_guest_and_signs_in(self):
         guest = self.guest()
 
         response = self.call("POST", "/auth/claim", guest, body={"password": "pw-12345", "email": "ben@example.com"})
 
         self.assertEqual(response.status_code, 200, response.json)
-        self.assertFalse(MeDto.model_validate(response.json).is_guest)
-        for name in ("ben", "ben@example.com"):
-            signed_in = self.call("POST", "/auth/login", body={"name_or_email": name, "password": "pw-12345"})
-            self.assertEqual(signed_in.status_code, 200, signed_in.json)
+        me = MeDto.model_validate(response.json)
+        self.assertEqual((me.is_guest, me.email), (False, "ben@example.com"))
+        signed_in = self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "pw-12345"})
+        self.assertEqual(signed_in.status_code, 200, signed_in.json)
 
-    def test_only_a_guest_claims_and_only_with_a_free_email(self):
+    def test_a_taken_email_is_400_a_non_guest_409_and_the_password_validated(self):
         guest = self.guest()
 
         taken = self.call("POST", "/auth/claim", guest, body={"password": "pw-12345", "email": "ana@example.com"})
         not_a_guest = self.call("POST", "/auth/claim", self.ana, body={"password": "pw-12345"})
         short = self.call("POST", "/auth/claim", guest, body={"password": "short"})
 
-        self.assertEqual(taken.status_code, 400, taken.json)
-        self.assertEqual(not_a_guest.status_code, 409, not_a_guest.json)
+        self.assertEqual(
+            [(r.status_code, r.json["errors"][0]["code"]) for r in (taken, not_a_guest)],
+            [(400, "api_error_code.incorrect_parameters"), (409, "api_error_code.conflict")],
+        )
         self.assertEqual(self.pointers(short), ["/body/password"])
-        self.assertIsNone(self.stored(guest.id).password)
+        self.assertEqual(self.call("POST", "/auth/claim", body={"password": "pw-12345"}).status_code, 401)
