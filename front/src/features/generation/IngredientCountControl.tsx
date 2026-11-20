@@ -5,19 +5,14 @@ import styles from "./GenerateView/GenerateView.module.css";
 
 const { Text } = Typography;
 
-export type IngredientType = "fill" | "sauce";
-
 interface IngredientCountControlProps {
   label: string;
-  type: IngredientType;
   count: number;
   availableCount: number;
   totalCount: number;
   onIncrement: () => void;
   onDecrement: () => void;
   onChange: (value: number) => void;
-  min?: number;
-  max?: number;
 }
 
 export function IngredientCountControl({

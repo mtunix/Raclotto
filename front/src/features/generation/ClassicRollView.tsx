@@ -46,7 +46,6 @@ export function ClassicRollView({
         <Col xs={24} sm={24} md={12}>
           <IngredientCountControl
             label={t("ingredient.ingredientCount")}
-            type="fill"
             count={fill.count}
             availableCount={availableFillCount}
             totalCount={totalFillCountFromApi}
@@ -58,7 +57,6 @@ export function ClassicRollView({
         <Col xs={24} sm={24} md={12}>
           <IngredientCountControl
             label={t("ingredient.sauceCount")}
-            type="sauce"
             count={sauce.count}
             availableCount={availableSauceCount}
             totalCount={totalSauceCountFromApi}
