@@ -44,6 +44,24 @@ it.each(Object.entries({ de, en }))("has every key the %s texts nest", (_, trans
   expect([...nested].map((match) => match[1]).filter((key) => !has(locales.de, key) || !has(locales.en, key))).toEqual([]);
 });
 
+function leaves(node: object, prefix = ""): [string, string][] {
+  return Object.entries(node).flatMap(([key, value]: [string, unknown]): [string, string][] =>
+    typeof value === "object" && value !== null
+      ? leaves(value, `${prefix}${key}.`)
+      : [[`${prefix}${key}`, String(value)]],
+  );
+}
+
+const placeholders = (text: string) => [...text.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((match) => match[1]).sort();
+
+it("fills the same placeholders in German and English", () => {
+  const english = new Map(leaves(en));
+  const differing = leaves(de)
+    .filter(([key, text]) => english.has(key) && placeholders(text).join() !== placeholders(english.get(key) ?? "").join())
+    .map(([key]) => key);
+  expect(differing).toEqual([]);
+});
+
 // The backend sends these identifiers for the frontend to translate; the generated client lists every one it can send.
 const serverTexts = {
   achievements: [...Object.values(AchievementKey), "retired"].flatMap((key) => [

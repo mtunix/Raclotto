@@ -93,3 +93,17 @@ it("announces a new ingredient of the hour by its name", () => {
     expect(eventMessage(hour, t)).toBe('events.types.ingredient_of_the_hour.message {"ingredient":"Leek"}');
     expect(eventMessage({ ...hour, data: { ingredient_id: 3 } }, (key: string) => key)).toBe("events.unknown.message");
 });
+
+it("reads in German and English through the real translations, plural and all", async () => {
+    const { default: i18n } = await import("../../i18n");
+    const swap = { event_type: "pan_swap", data: { pan1_user_name: "Ada", pan2_user_name: "Ben", time_window_minutes: 10 } };
+    const hour = { event_type: "ingredient_of_the_hour", data: { ingredient_id: 3, ingredient_name: "Lauch" } };
+
+    expect(eventMessage(swap, i18n.getFixedT("de"))).toBe(
+        "Tauschen Sie Ihre Pfannen! Ada und Ben haben innerhalb von 10 Minuten je eine Pfanne gezogen.",
+    );
+    expect(eventMessage({ ...swap, data: { ...swap.data, time_window_minutes: 1 } }, i18n.getFixedT("en"))).toBe(
+        "Swap your pans! Ada and Ben rolled pans within 1 minute of each other.",
+    );
+    expect(eventMessage(hour, i18n.getFixedT("de"))).toBe("Neue Zutat der Stunde: Lauch. Bonus-XP für jede Pfanne damit!");
+});
