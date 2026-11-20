@@ -15,4 +15,5 @@ export type EventType = typeof EventType[keyof typeof EventType];
 
 export const EventType = {
   pan_swap: 'pan_swap',
+  ingredient_of_the_hour: 'ingredient_of_the_hour',
 } as const;

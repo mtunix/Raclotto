@@ -113,11 +113,11 @@ class PansTest(AppTest):
     def test_an_event_that_named_the_pan_stays_listed(self):
         pan = self.roll_pan(self.ana)
         self.roll_pan(self.ben)
-        [swap] = db.session.query(Event).all()
+        [swap] = db.session.query(Event).filter_by(event_type="pan_swap").all()
         self.assertEqual(swap.data and swap.data["pan2_id"], pan.id)
 
         self.delete(pan)
 
         listed = self.call("GET", "/events", self.ben, query={"session_key": "s1"})
         self.assertEqual(listed.status_code, 200, listed.json)
-        self.assertEqual([e["id"] for e in listed.json], [swap.id])
+        self.assertIn(swap.id, [e["id"] for e in listed.json])

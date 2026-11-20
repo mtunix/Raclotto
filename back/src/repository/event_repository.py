@@ -22,6 +22,14 @@ class EventRepository(BaseRepository[Event]):
             .all()
         )
 
+    def latest(self, session_id: int, event_type: str) -> Event | None:
+        return (
+            db.session.query(Event)
+            .filter(Event.session_id == session_id, Event.event_type == event_type)
+            .order_by(Event.created_at.desc(), Event.id.desc())
+            .first()
+        )
+
     def fired_since(self, session_id: int, event_type: str, since: datetime) -> bool:
         """Whether the event fired in the session after `since`."""
         return (

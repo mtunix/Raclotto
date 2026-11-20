@@ -85,3 +85,11 @@ it("announces events of other types or shapes generically", () => {
     expect(eventMessage({ event_type: "pan_swap", data: { pan1_id: 1 } }, t)).toBe("events.unknown.message");
     expect(eventMessage({ event_type: "pan_swap", data: null }, t)).toBe("events.unknown.message");
 });
+
+it("announces a new ingredient of the hour by its name", () => {
+    const t = (key: string, options?: Record<string, unknown>) => `${key} ${JSON.stringify(options)}`;
+    const hour = { event_type: "ingredient_of_the_hour", data: { ingredient_id: 3, ingredient_name: "Leek" } };
+
+    expect(eventMessage(hour, t)).toBe('events.types.ingredient_of_the_hour.message {"ingredient":"Leek"}');
+    expect(eventMessage({ ...hour, data: { ingredient_id: 3 } }, (key: string) => key)).toBe("events.unknown.message");
+});

@@ -1,0 +1,42 @@
+.ingredient-of-the-hour.ant-card {
+    border-color: var(--ant-color-warning-border);
+    background: linear-gradient(120deg, var(--ant-color-warning-bg) 0%, var(--ant-color-bg-container) 70%);
+}
+
+.ingredient-of-the-hour-body.ant-card-body {
+    padding: 16px 20px;
+}
+
+.ingredient-of-the-hour-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 22px;
+    color: var(--ant-color-warning);
+    background: var(--ant-color-bg-container);
+    box-shadow: 0 0 0 1px var(--ant-color-warning-border);
+}
+
+.ingredient-of-the-hour-text {
+    flex: 1;
+    min-width: 160px;
+}
+
+.ingredient-of-the-hour-label.ant-typography {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ingredient-of-the-hour-name {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.ingredient-of-the-hour-switch {
+    margin-left: auto;
+}

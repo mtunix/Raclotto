@@ -211,8 +211,15 @@ Code: `Event`, `EventDto`, `EventType`, `Events`.
 _Avoid_: notification
 
 **Pan swap**:
-The one event type: two different users rolled pans within 10 minutes of each other and swap them.
+An event: two different users rolled pans within 10 minutes of each other and swap them.
 Code: `pan_swap`, `PanSwapEvaluator`.
+
+**Ingredient of the hour**:
+An event and what it picks: one available fill of the session, chosen again by the first roll after
+its cooldown. A rolled (not hand-picked) pan with it earns bonus XP; users who opt in get it in every
+rolled pan their diet allows, in place of a drawn fill.
+Code: `ingredient_of_the_hour`, `IngredientOfTheHour`, `IngredientOfTheHourEvaluator`,
+`Pan.ingredient_of_the_hour`, `User.add_ingredient_of_the_hour`. UI: "Always put it in my pan".
 
 **Cooldown**:
 How long a session waits before an event type can fire again: the evaluator's default (1 hour)

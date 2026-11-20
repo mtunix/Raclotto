@@ -131,6 +131,7 @@ class _Recorder(AppTest):
         )
         event_configs = self.ok(self.call("GET", "/events/configs", ana, query=query))
         dashboard = self.ok(self.call("GET", "/stats", ana, query=query))
+        ingredient_of_the_hour = self.ok(self.call("GET", "/events/ingredient-of-the-hour", ana, query=query))
         recap = self.ok(self.call("GET", "/sessions/recap", ben, query=query))
         previous = set_image_generator(_FixedImage())
         try:
@@ -175,6 +176,7 @@ class _Recorder(AppTest):
         assert {p["session_id"] for p in prep_types} == {None}, prep_types
         assert prep_type["session_id"] == session.id, prep_type
         assert registered_me["fish"] and not registration["user"]["fish"], registered_me
+        assert ingredient_of_the_hour["ingredient"], ingredient_of_the_hour
         assert {i["applicable"] for i in ingredients} == {True, False}, ingredients
         assert counts["fill_count"] < counts["total_fill_count"], counts
         assert (reimported["created"], reimported["deleted"]) == (1, 2), reimported
@@ -208,6 +210,7 @@ class _Recorder(AppTest):
             "eventConfig": ("EventConfigDto", event_config),
             "eventConfigs": ("EventConfigDto[]", event_configs),
             "stats": ("StatsDto", dashboard),
+            "ingredientOfTheHour": ("IngredientOfTheHourDto", ingredient_of_the_hour),
             "sessionRecap": ("SessionRecapDto", recap),
             "imageGeneration": ("ImageGenerationDto", image_generation),
             "imageGenerationUnavailable": ("ImageGenerationDto", image_generation_unavailable),

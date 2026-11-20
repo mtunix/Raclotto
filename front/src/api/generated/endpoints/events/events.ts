@@ -20,6 +20,8 @@ import type {
   ErrorResponseDto,
   EventConfigDto,
   EventDto,
+  GetIngredientOfTheHourParams,
+  IngredientOfTheHourDto,
   ListEventConfigsParams,
   ListEventsParams,
   SaveEventConfigBody,
@@ -192,6 +194,44 @@ export const useUpdateEventConfig = <TError = ErrorType<ErrorResponseDto>>(
   const swrFn = getUpdateEventConfigMutationFetcher(configId);
 
   const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Get the session's ingredient of the hour, and whether the signed-in user's diet allows it.
+ */
+export const getIngredientOfTheHour = (
+    params: GetIngredientOfTheHourParams,
+ ) => {
+    return orvalMutator<IngredientOfTheHourDto>(
+    {url: `/events/ingredient-of-the-hour`, method: 'GET',
+        params
+    },
+    );
+  }
+
+
+
+export const getGetIngredientOfTheHourKey = (params: GetIngredientOfTheHourParams,) => [`/events/ingredient-of-the-hour`, ...(params ? [params]: [])] as const;
+
+export type GetIngredientOfTheHourQueryResult = NonNullable<Awaited<ReturnType<typeof getIngredientOfTheHour>>>
+
+/**
+ * @summary Get the session's ingredient of the hour, and whether the signed-in user's diet allows it.
+ */
+export const useGetIngredientOfTheHour = <TError = ErrorType<ErrorResponseDto>>(
+  params: GetIngredientOfTheHourParams, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getIngredientOfTheHour>>, TError> & { swrKey?: Key, enabled?: boolean },  }
+) => {
+  const {swr: swrOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetIngredientOfTheHourKey(params) : null);
+  const swrFn = () => getIngredientOfTheHour(params)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 
   return {
     swrKey,

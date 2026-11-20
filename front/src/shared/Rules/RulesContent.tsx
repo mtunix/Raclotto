@@ -5,7 +5,14 @@ const { Title, Paragraph } = Typography;
 
 // Each section is rules.<key>Title and rules.<key>Body; the XP bonuses are a list of their own.
 const SECTIONS = ["join", "roll", "rate", "xp", "levels", "achievements", "events", "end"] as const;
-const XP_BONUSES = ["xpBonusWildcardSpicy", "xpBonusWildcard", "xpBonusSpicySweet", "xpBonusPrepType", "xpBonusCheese"];
+const XP_BONUSES = [
+    "xpBonusWildcardSpicy",
+    "xpBonusWildcard",
+    "xpBonusSpicySweet",
+    "xpBonusPrepType",
+    "xpBonusCheese",
+    "xpBonusIngredientOfTheHour",
+];
 
 /** How a Raclotto evening works, from joining a session to its recap. */
 export function RulesContent() {

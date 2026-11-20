@@ -18,6 +18,8 @@ from back.src.entity.pan import Pan
 from back.src.entity.user import User
 from back.src.repository.level_repository import LevelRepository
 
+INGREDIENT_OF_THE_HOUR_BONUS = 15
+
 
 @dataclass(frozen=True)
 class LevelProgress:
@@ -89,7 +91,8 @@ def _xp_for(pan: Pan) -> int:
     """10 plus 5 to 13 XP per ingredient, more per ingredient the fuller the pan.
 
     One combination multiplier applies, the highest: wildcard with spicy (spice ≥ 2) 1.7, wildcard
-    1.5, spicy with sweet 1.25. A rolled preparation type adds ×1.1, rolled cheese ×1.2.
+    1.5, spicy with sweet 1.25. A rolled preparation type adds ×1.1, rolled cheese ×1.2. The
+    ingredient of the hour adds a flat bonus on top.
     """
     count = len(pan.ingredients)
     if count == 0:
@@ -121,4 +124,5 @@ def _xp_for(pan: Pan) -> int:
     if pan.rolled_cheese:
         multiplier *= 1.2
 
-    return int((count * per_ingredient + 10) * multiplier)
+    bonus = INGREDIENT_OF_THE_HOUR_BONUS if pan.ingredient_of_the_hour else 0
+    return int((count * per_ingredient + 10) * multiplier) + bonus

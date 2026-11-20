@@ -172,6 +172,7 @@ export function EventSettingsSection() {
                                                     checked={enabled}
                                                     onChange={(checked) => handleToggle(event_type, checked)}
                                                     disabled={saving || readOnly}
+                                                    aria-label={displayName}
                                                 />
                                             </div>
                                             
@@ -186,6 +187,7 @@ export function EventSettingsSection() {
                                                         value={frequency}
                                                         onChange={(value) => handleFrequencyChange(event_type, value)}
                                                         disabled={saving || readOnly}
+                                                        aria-label={`${displayName}: ${t("settings.frequencyMinutes")}`}
                                                         size="large"
                                                         className="full-width"
                                                         placeholder={t("settings.optional")}

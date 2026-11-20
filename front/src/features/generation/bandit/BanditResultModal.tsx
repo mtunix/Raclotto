@@ -52,6 +52,9 @@ export function BanditResultModal(props: BanditResultModalProps) {
                                             {t("generate.preparationType")}: {pan.preparation_type.name}
                                         </Text>
                                     )}
+                                    {pan.ingredient_of_the_hour && (
+                                        <Text className="bandit-result-prep">🔥 {t("ingredientOfTheHour.inThisPan")}</Text>
+                                    )}
                                 </Col>
                                 <Col>
                                     <div className="bandit-result-rating">

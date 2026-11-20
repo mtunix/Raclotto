@@ -24,8 +24,16 @@ afterEach(() => {
 
 const configFetches = () => fake.requests.filter((r) => r.method === 'GET' && r.path === '/events/configs').length;
 const saveButton = () => screen.getByText('common.save').closest('button') as HTMLElement;
-const toggle = () => screen.getByRole('switch');
-const frequency = () => screen.getByRole('spinbutton');
+const PAN_SWAP = 'events.types.pan_swap.name';
+const toggle = () => screen.getByRole('switch', { name: PAN_SWAP });
+// Saving posts every event type's config; these tests change the pan swap's.
+const savedPanSwap = () =>
+    fake.requests
+        .filter((r) => r.method === 'POST' && r.path === '/events/configs')
+        .map((r) => r.body as { event_type?: string })
+        .filter((body) => body.event_type === 'pan_swap')
+        .at(-1);
+const frequency = () => screen.getByRole('spinbutton', { name: `${PAN_SWAP}: settings.frequencyMinutes` });
 
 // Saving refetches through SWR's global cache, so every test gets a session key of its own.
 let sessions = 0;
@@ -46,7 +54,7 @@ describe('a session creator', () => {
 
         expect(fake.last('GET', '/events/configs')?.query).toEqual({ session_key: current.key });
         expect(toggle()).not.toBeChecked();
-        expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+        expect(screen.queryByRole('spinbutton', { name: `${PAN_SWAP}: settings.frequencyMinutes` })).not.toBeInTheDocument();
         expect(saveButton()).toBeDisabled();
     });
 
@@ -61,7 +69,7 @@ describe('a session creator', () => {
         fireEvent.click(saveButton());
 
         expect(await screen.findByText('common.saved')).toBeInTheDocument();
-        expect(fake.last('POST', '/events/configs')?.body).toEqual({
+        expect(savedPanSwap()).toEqual({
             event_type: 'pan_swap',
             enabled: false,
             frequency_minutes: 15,
@@ -83,7 +91,7 @@ describe('a session creator', () => {
         fireEvent.click(saveButton());
 
         expect(await screen.findByText('common.saved')).toBeInTheDocument();
-        expect(fake.last('POST', '/events/configs')?.body).toEqual({
+        expect(savedPanSwap()).toEqual({
             event_type: 'pan_swap',
             enabled: true,
             frequency_minutes: 30,
@@ -112,9 +120,9 @@ describe('a session creator', () => {
         let stored = eventConfigs;
         const current = await renderSection(() => stored);
         fake.on('POST', '/events/configs', (request: RecordedRequest) => {
-            const body = request.body as { enabled: boolean; frequency_minutes: number };
-            const saved = { ...eventConfig, enabled: body.enabled, frequency_minutes: body.frequency_minutes };
-            stored = [saved];
+            const body = request.body as { event_type: string; enabled: boolean; frequency_minutes: number };
+            const saved = { ...eventConfig, ...body };
+            stored = [...stored.filter((config) => config.event_type !== body.event_type), saved];
             return saved;
         });
 
@@ -123,7 +131,7 @@ describe('a session creator', () => {
         fireEvent.click(saveButton());
 
         expect(await screen.findByText('common.saved')).toBeInTheDocument();
-        expect(fake.last('POST', '/events/configs')?.body).toEqual({
+        expect(savedPanSwap()).toEqual({
             event_type: 'pan_swap',
             enabled: true,
             frequency_minutes: 15,

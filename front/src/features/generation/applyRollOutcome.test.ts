@@ -2,12 +2,19 @@ import { type ReactNode, createElement } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { useGetMe } from "../../api/generated/endpoints/auth/auth";
+import { useGetIngredientOfTheHour } from "../../api/generated/endpoints/events/events";
 import { rollPan, useListPans } from "../../api/generated/endpoints/pans/pans";
 import { useGetUserProfile } from "../../api/generated/endpoints/users/users";
 import type { MeDto, RollOutcomeDto } from "../../api/generated/model";
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
-import { me, panPage, rollOutcome, userProfile } from "../../lib/api/__fixtures__/backendResponses";
+import {
+    ingredientOfTheHour,
+    me,
+    panPage,
+    rollOutcome,
+    userProfile,
+} from "../../lib/api/__fixtures__/backendResponses";
 import { FakeTransport } from "../../lib/api/fakeTransport";
 import { setTransport, type Transport } from "../../lib/api/transport";
 import { applyRollOutcome } from "./applyRollOutcome";
@@ -135,4 +142,25 @@ it("refetches the signed-in user and their profile", async () => {
     expect(fake.requests.slice(fetched).map((r) => r.path)).toEqual(
         expect.arrayContaining(["/auth/me", `/users/${user.id}`]),
     );
+});
+
+it("refetches the ingredient of the hour when the roll picked a new one", async () => {
+    fake.on("GET", "/events/ingredient-of-the-hour", ingredientOfTheHour);
+    const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(SWRConfig, { value: { dedupingInterval: 0 } }, children);
+    const hour = renderHook(() => useGetIngredientOfTheHour({ session_key: "hour" }), { wrapper });
+    await waitFor(() => expect(hour.result.current.data).toEqual(ingredientOfTheHour));
+    const fetches = () => fake.requests.filter((r) => r.path === "/events/ingredient-of-the-hour").length;
+    const [event] = rollOutcome.events;
+
+    act(() => {
+        applyRollOutcome({ ...rollOutcome, events: [{ ...event, event_type: "pan_swap" }] }, "hour");
+    });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(fetches()).toBe(1);
+
+    act(() => {
+        applyRollOutcome({ ...rollOutcome, events: [{ ...event, event_type: "ingredient_of_the_hour" }] }, "hour");
+    });
+    await waitFor(() => expect(fetches()).toBe(2));
 });

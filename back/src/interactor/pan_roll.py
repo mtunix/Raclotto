@@ -4,10 +4,11 @@
     outcome.pan, outcome.reward, outcome.achievements, outcome.events
 
 Behind ``roll``: diet eligibility, the fill/sauce split, sampling, naming,
-preparation type and cheese rolls, session membership, achievements,
-events, XP and level. Sampling makes what the user got in their last pans
-in the session less likely (``RECENT_WEIGHTS``), and a generated name's
-adjective is unique within the session while the word list lasts. ``roll`` flushes but never commits: the request's
+the ingredient of the hour, preparation type and cheese rolls, session
+membership, achievements, events, XP and level. Sampling makes what the
+user got in their last pans in the session less likely (``RECENT_WEIGHTS``),
+and a generated name's adjective is unique within the session while the
+word list lasts. ``roll`` flushes but never commits: the request's
 transaction holds all of it, so a failure anywhere, building the response
 included, leaves nothing behind. Randomness comes from an injectable
 ``random.Random`` so tests can seed it.
@@ -30,6 +31,7 @@ from back.src.entity.user import User
 from back.src.interactor.achievements import Achievements, PanRolled
 from back.src.interactor.diet import Diet
 from back.src.interactor.events import Events
+from back.src.interactor.ingredient_of_the_hour import IngredientOfTheHour, Pick
 from back.src.interactor.levels import Levels, Reward
 from back.src.interactor.sessions import Sessions
 from back.src.repository.ingredient_repository import IngredientRepository
@@ -144,6 +146,7 @@ class PanRoll:
         self._sessions = SessionRepository()
         self._ingredients = IngredientRepository()
         self._pans = PanRepository()
+        self._ingredient_of_the_hour = IngredientOfTheHour()
         self._prep_types = PreparationTypeRepository()
         self._levels = Levels()
         self._membership = Sessions(achievements=self._achievements)
@@ -153,7 +156,9 @@ class PanRoll:
         if not session:
             raise RollError(RollError.SESSION_NOT_FOUND, "The specified session does not exist")
 
-        ingredients = self._choose_ingredients(user, session, options)
+        pick = self._ingredient_of_the_hour.current(session)
+        ingredients = self._choose_ingredients(user, session, options, pick)
+        with_pick = pick is not None and options.ingredient_ids is None and pick.ingredient in ingredients
         prep_type_id, rolled_prep_type = self._preparation_type(session, options)
         cheese_level = self._rng.randint(0, 9) if options.roll_cheese else None
 
@@ -161,6 +166,7 @@ class PanRoll:
         pan = Pan(
             name=options.name or self._name_pan(self._pans.names_in_session(session.id)),
             ingredients=ingredients,
+            ingredient_of_the_hour=with_pick,
             user_id=user.id,
             session_id=session.id,
             preparation_type_id=prep_type_id,
@@ -184,7 +190,9 @@ class PanRoll:
             events=events,
         )
 
-    def _choose_ingredients(self, user: User, session: RaclottoSession, options: RollOptions) -> list[Ingredient]:
+    def _choose_ingredients(
+        self, user: User, session: RaclottoSession, options: RollOptions, pick: Pick | None
+    ) -> list[Ingredient]:
         if options.ingredient_ids is not None:
             return self._picked(session, options.ingredient_ids)
 
@@ -212,9 +220,16 @@ class PanRoll:
             )
 
         weight = self._recency_weight(user, session)
-        return weighted_sample(fills, num_fill, weight, self._rng) + weighted_sample(
-            sauces, num_sauce, weight, self._rng
-        )
+        chosen_fills = weighted_sample(fills, num_fill, weight, self._rng)
+        chosen_sauces = weighted_sample(sauces, num_sauce, weight, self._rng)
+        wanted = pick.ingredient if pick is not None and user.add_ingredient_of_the_hour else None
+        if wanted is not None and wanted in fills and wanted not in chosen_fills:
+            # It takes a fill's place, so a bandit pan keeps its column count.
+            if chosen_fills:
+                chosen_fills[self._rng.randrange(len(chosen_fills))] = wanted
+            else:
+                chosen_fills.append(wanted)
+        return chosen_fills + chosen_sauces
 
     def _recency_weight(self, user: User, session: RaclottoSession) -> Callable[[Ingredient], float]:
         weights: dict[int, float] = {}

@@ -12,6 +12,7 @@ import { useRollSession } from "../rollSession";
 import styles from "./GenerateView.module.css";
 import { PanResultModal } from "../PanResultModal";
 import { ClassicRollView } from "../ClassicRollView";
+import { IngredientOfTheHourCard } from "../../../shared/IngredientOfTheHour/IngredientOfTheHourCard";
 import { useClassicRollCounts } from "./useClassicRollCounts";
 import { useRollAnimation } from "./useRollAnimation";
 
@@ -89,6 +90,7 @@ export function GenerateView() {
 
       {(state.phase === "idle" || state.phase === "picture") && (
         <div className={styles.paddingVertical8}>
+          <IngredientOfTheHourCard sessionKey={sessionKey} optIn />
           <Tabs
             defaultActiveKey="classic"
             items={[

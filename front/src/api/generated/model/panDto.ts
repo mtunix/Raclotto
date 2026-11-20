@@ -13,6 +13,7 @@ export interface PanDto {
   author: UserSummaryDto | null;
   cheese_level: number | null;
   id: number;
+  ingredient_of_the_hour: boolean;
   ingredients: IngredientDto[];
   name: string | null;
   preparation_type: PrepTypeDto | null;

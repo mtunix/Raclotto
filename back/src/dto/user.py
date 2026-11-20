@@ -118,6 +118,8 @@ class MeDto(_UserCard):
     language: Language
     # Admins may change any session and pan, and the global settings.
     is_admin: bool
+    # Every rolled pan gets the session's ingredient of the hour, where the diet allows it.
+    add_ingredient_of_the_hour: bool
     experience_points: int
     # Null only while no levels exist.
     level: LevelDto | None
@@ -140,6 +142,7 @@ class MeDto(_UserCard):
             gluten=user.gluten,
             language=user.language if _is_language(user.language) else DEFAULT_LANGUAGE,
             is_admin=user.is_admin,
+            add_ingredient_of_the_hour=user.add_ingredient_of_the_hour,
         )
 
 
@@ -163,6 +166,7 @@ class UpdateMeBody(RequestDto):
     border_style: BorderStyle = omittable()
     border_texture: BorderTexture | None = None
     glow_effect: bool = omittable()
+    add_ingredient_of_the_hour: bool = omittable()
 
     @model_validator(mode="after")
     def _changes_something(self) -> UpdateMeBody:

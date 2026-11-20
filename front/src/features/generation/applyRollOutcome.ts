@@ -1,10 +1,11 @@
 import { useAppStore } from "../../AppSlice";
 import { useAuthStore } from "../../AuthSlice";
-import type { RollOutcomeDto } from "../../api/generated/model";
+import { EventType, type RollOutcomeDto } from "../../api/generated/model";
 import {
   mutateAchievements,
   mutateAvailableCounts,
   mutateEvents,
+  mutateIngredientOfTheHour,
   mutateMe,
   mutatePanLists,
   mutateUserProfile,
@@ -47,6 +48,9 @@ export function applyRollOutcome(outcome: RollOutcomeDto, sessionKey: string): L
   }
   if (achievements.length > 0) void mutateAchievements();
   if (events.length > 0) void mutateEvents(sessionKey);
+  if (events.some((event) => event.event_type === EventType.ingredient_of_the_hour)) {
+    void mutateIngredientOfTheHour(sessionKey);
+  }
 
   return reward.leveled_up && reward.level
     ? { leveledUp: true, newLevelId: reward.level.id }

@@ -61,7 +61,8 @@ The deep modules in `interactor/` and what they own:
 - **`pan_roll.py` — `PanRoll.roll(user, session_key, RollOptions) -> RollOutcome`**: the whole
   roll — eligible ingredients, fill/sauce split, naming, prep type/cheese, session membership,
   XP/level, events, achievements — in the request's transaction. Draws weigh down what the roller
-  just had, and generated names keep their adjective unique in the session. Classic, bandit and
+  just had, generated names keep their adjective unique in the session, and opted-in users get the
+  ingredient of the hour. Classic, bandit and
   hand-picked pans all go through it; it flushes, and a failure in the route after it still
   rolls the whole roll back.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
@@ -90,6 +91,9 @@ The deep modules in `interactor/` and what they own:
   pan joins too; the first join time stays, achievements count it), rename, close (reports
   `SessionClosed`), reactivate and delete (with everything in it; reports `SessionDeleted`). Who may is
   `Permissions`'s question, not this module's.
+- **`ingredient_of_the_hour.py` — `IngredientOfTheHour`**: the session's current pick, read from
+  its latest `ingredient_of_the_hour` event (which `Events` fires); `PanRoll` adds it, `Levels`
+  pays its bonus.
 - **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
   worst and boldest pan, favorite ingredient, each participant's pans, XP and stars); read-only.
 - **`stats.py` — `Stats().of(session_key)`**: the dashboard of one session or all (newest pans,

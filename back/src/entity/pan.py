@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, ScalarSelect, Table, func, select
+from sqlalchemy import Column, ForeignKey, ScalarSelect, Table, false, func, select
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -31,6 +31,8 @@ class Pan(DomainMixin, Base):
     cheese_level: Mapped[int | None] = mapped_column(default=0)
     rolled_preparation_type: Mapped[bool] = mapped_column(default=False)
     rolled_cheese: Mapped[bool] = mapped_column(default=False)
+    # Rolled with the session's ingredient of the hour in it; earns bonus XP.
+    ingredient_of_the_hour: Mapped[bool] = mapped_column(default=False, server_default=false())
 
     ingredients: Mapped[list[Ingredient]] = relationship(
         "Ingredient", secondary=pan_ingredients, back_populates="pans", lazy="selectin"

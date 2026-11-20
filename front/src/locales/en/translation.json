@@ -239,6 +239,10 @@
         "name": "Pan swap",
         "message_one": "Swap your pans! {{first}} and {{second}} rolled pans within {{count}} minute of each other.",
         "message_other": "Swap your pans! {{first}} and {{second}} rolled pans within {{count}} minutes of each other."
+      },
+      "ingredient_of_the_hour": {
+        "name": "Ingredient of the hour",
+        "message": "New ingredient of the hour: {{ingredient}}. Bonus XP for every pan with it!"
       }
     },
     "unknown": {
@@ -544,9 +548,10 @@
     "achievementsTitle": "6. Achievements",
     "achievementsBody": "Rolling, rating and adding ingredients unlock achievements, some of them hidden. Some are only decided when the session ends.",
     "eventsTitle": "7. Events",
-    "eventsBody": "Events keep the table moving. A pan swap happens when two people roll within 10 minutes of each other: they swap pans. The session's creator can turn events off or change how often they happen.",
+    "eventsBody": "Events keep the table moving. A pan swap happens when two people roll within 10 minutes of each other: they swap pans. Every hour the first roll picks a new ingredient of the hour; under Shuffle you can have it put into every pan your diet allows. The session’s creator can turn events off or change how often they happen.",
     "endTitle": "8. End of the evening",
-    "endBody": "The person who created the session (or an admin) ends it under Settings. Everyone then sees the recap: the best, worst and boldest pans, the favorite ingredient, and everyone's pans, XP and stars."
+    "endBody": "The person who created the session (or an admin) ends it under Settings. Everyone then sees the recap: the best, worst and boldest pans, the favorite ingredient, and everyone's pans, XP and stars.",
+    "xpBonusIngredientOfTheHour": "The ingredient of the hour in a rolled pan: +15 XP"
   },
   "achievements": {
     "gotta_eat_em_all": {
@@ -713,5 +718,12 @@
       "image_generation_failed": "The picture could not be generated. Please try again.",
       "internal_error": "Something went wrong on the server."
     }
+  },
+  "ingredientOfTheHour": {
+    "title": "Ingredient of the hour",
+    "since": "since {{time}}",
+    "none": "Picked with the next pan",
+    "alwaysAdd": "Always put it in my pan",
+    "inThisPan": "Ingredient of the hour: bonus XP!"
   }
 }

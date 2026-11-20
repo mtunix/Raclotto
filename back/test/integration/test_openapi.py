@@ -141,6 +141,7 @@ class LevelsSpecTest(unittest.TestCase):
                 "/health",
                 "/events",
                 "/events/{event_id}/dismiss",
+                "/events/ingredient-of-the-hour",
                 "/events/configs",
                 "/events/configs/{config_id}",
                 "/images/generation",
@@ -272,6 +273,7 @@ class UsersAndAuthSpecTest(unittest.TestCase):
                 "email",
                 "language",
                 "is_admin",
+                "add_ingredient_of_the_hour",
                 "meat",
                 "vegetarian",
                 "vegan",
@@ -412,6 +414,7 @@ class AchievementsEventsImagesStatsSpecTest(unittest.TestCase):
                 ("/achievements/leaderboard", "get"): ("getLeaderboard", [200, 401]),
                 ("/events", "get"): ("listEvents", [200, 400, 401, 404]),
                 ("/events/{event_id}/dismiss", "post"): ("dismissEvent", [204, 401, 404]),
+                ("/events/ingredient-of-the-hour", "get"): ("getIngredientOfTheHour", [200, 400, 401, 404]),
                 ("/events/configs", "get"): ("listEventConfigs", [200, 400, 401]),
                 ("/events/configs", "post"): ("saveEventConfig", [200, 400, 401, 403, 404]),
                 ("/events/configs/{config_id}", "patch"): ("updateEventConfig", [200, 400, 401, 403, 404]),
@@ -439,7 +442,7 @@ class AchievementsEventsImagesStatsSpecTest(unittest.TestCase):
         self.assertEqual(
             self.schemas["SaveEventConfigBody"]["properties"]["event_type"], {"$ref": "#/components/schemas/EventType"}
         )
-        self.assertEqual(self.schemas["EventType"]["enum"], ["pan_swap"])
+        self.assertEqual(self.schemas["EventType"]["enum"], ["pan_swap", "ingredient_of_the_hour"])
         self.assertEqual(self.schemas["SaveEventConfigBody"]["required"], ["event_type", "enabled"])
         self.assertNotIn("required", self.schemas["UpdateEventConfigBody"])
 

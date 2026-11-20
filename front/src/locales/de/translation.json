@@ -239,6 +239,10 @@
         "name": "Pfannen-Tausch",
         "message_one": "Tauschen Sie Ihre Pfannen! {{first}} und {{second}} haben innerhalb von {{count}} Minute je eine Pfanne gezogen.",
         "message_other": "Tauschen Sie Ihre Pfannen! {{first}} und {{second}} haben innerhalb von {{count}} Minuten je eine Pfanne gezogen."
+      },
+      "ingredient_of_the_hour": {
+        "name": "Zutat der Stunde",
+        "message": "Neue Zutat der Stunde: {{ingredient}}. Bonus-XP für jede Pfanne damit!"
       }
     },
     "unknown": {
@@ -544,9 +548,10 @@
     "achievementsTitle": "6. Erfolge",
     "achievementsBody": "Ziehen, Bewerten und Zutaten hinzufügen schalten Erfolge frei, manche davon versteckt. Einige werden erst entschieden, wenn die Session endet.",
     "eventsTitle": "7. Ereignisse",
-    "eventsBody": "Ereignisse halten den Tisch in Bewegung. Ein Pfannen-Tausch passiert, wenn zwei Personen innerhalb von 10 Minuten eine Pfanne ziehen: Sie tauschen ihre Pfannen. Wer die Session erstellt hat, kann Ereignisse abschalten oder ändern, wie oft sie vorkommen.",
+    "eventsBody": "Ereignisse halten den Tisch in Bewegung. Ein Pfannen-Tausch passiert, wenn zwei Personen innerhalb von 10 Minuten eine Pfanne ziehen: Sie tauschen ihre Pfannen. Jede Stunde wählt die erste gezogene Pfanne eine neue Zutat der Stunde; unter Mischen können Sie sie in jede Pfanne legen lassen, die Ihre Ernährung erlaubt. Wer die Session erstellt hat, kann Ereignisse abschalten oder ändern, wie oft sie vorkommen.",
     "endTitle": "8. Ende des Abends",
-    "endBody": "Wer die Session erstellt hat (oder ein Admin), beendet sie unter Einstellungen. Danach sehen alle den Rückblick: die beste, schlechteste und mutigste Pfanne, die Lieblingszutat und die Pfannen, XP und Sterne aller."
+    "endBody": "Wer die Session erstellt hat (oder ein Admin), beendet sie unter Einstellungen. Danach sehen alle den Rückblick: die beste, schlechteste und mutigste Pfanne, die Lieblingszutat und die Pfannen, XP und Sterne aller.",
+    "xpBonusIngredientOfTheHour": "Die Zutat der Stunde in einer gezogenen Pfanne: +15 XP"
   },
   "achievements": {
     "gotta_eat_em_all": {
@@ -713,5 +718,12 @@
       "image_generation_failed": "Das Bild konnte nicht erzeugt werden. Bitte versuchen Sie es erneut.",
       "internal_error": "Auf dem Server ist etwas schiefgelaufen."
     }
+  },
+  "ingredientOfTheHour": {
+    "title": "Zutat der Stunde",
+    "since": "seit {{time}}",
+    "none": "Wird mit der nächsten Pfanne gezogen",
+    "alwaysAdd": "Immer in meine Pfanne",
+    "inThisPan": "Zutat der Stunde: Bonus-XP!"
   }
 }

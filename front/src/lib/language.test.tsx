@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import { Empty } from "antd";
 import i18n from "../i18n";
 import { AntdLocale } from "../AntdLocale";
-import { formatDate, formatDateTime, formatNumber, formatRating, numberFormatter, useLanguage } from "./language";
+import { formatDate, formatDateTime, formatNumber, formatRating, formatTime, numberFormatter, useLanguage } from "./language";
 
 beforeEach(async () => {
   await i18n.changeLanguage("de");
@@ -46,4 +46,9 @@ it("re-renders dates and antd's texts when the language switches", async () => {
 
   expect(screen.getByText("11/19/2026")).toBeInTheDocument();
   expect(screen.getByText("No data", { selector: ".ant-empty-description" })).toBeInTheDocument();
+});
+
+it("writes a time of day without the date", () => {
+  expect(formatTime("2026-12-24T19:05:00", "de")).toBe("19:05");
+  expect(formatTime("not a date", "de")).toBe("not a date");
 });

@@ -37,6 +37,12 @@ export function formatRating(value: number, language: string | undefined): strin
   return formatNumber(value, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
+/** Hours and minutes as `language` writes them ("19:05", "7:05 PM"); a value that is no date stays as it is. */
+export function formatTime(value: string, language: string | undefined): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" });
+}
+
 /** A day and time as `language` writes it; a value that is no date stays as it is. */
 export function formatDateTime(value: string, language: string | undefined): string {
   const date = new Date(value);

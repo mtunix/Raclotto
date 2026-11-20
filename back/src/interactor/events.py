@@ -21,6 +21,7 @@ from back.src.entity.event_config import EventConfig
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User
 from back.src.interactor.event_evaluator import EventEvaluator
+from back.src.interactor.event_evaluators.ingredient_of_the_hour_evaluator import IngredientOfTheHourEvaluator
 from back.src.interactor.event_evaluators.pan_swap_evaluator import PanSwapEvaluator
 from back.src.interactor.facts import Fact
 from back.src.repository.event_config_repository import EventConfigRepository
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def default_evaluators() -> tuple[EventEvaluator, ...]:
-    return (PanSwapEvaluator(),)
+    return (PanSwapEvaluator(), IngredientOfTheHourEvaluator())
 
 
 class Events:

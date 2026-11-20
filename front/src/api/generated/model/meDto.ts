@@ -13,6 +13,7 @@ import type { MeDtoLanguage } from './meDtoLanguage';
  * The signed-in user, including what only they see.
  */
 export interface MeDto {
+  add_ingredient_of_the_hour: boolean;
   border_style: MeDtoBorderStyle;
   border_texture: MeDtoBorderTexture;
   color: string;

@@ -1,10 +1,18 @@
 from back.src.api.base_api import BaseApi, found, not_found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.dto.event import EventConfigDto, EventDto, SaveEventConfigBody, UpdateEventConfigBody
+from back.src.dto.event import (
+    EventConfigDto,
+    EventDto,
+    IngredientOfTheHourDto,
+    SaveEventConfigBody,
+    UpdateEventConfigBody,
+)
 from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
 from back.src.entity.raclotto_session import RaclottoSession
+from back.src.interactor.diet import Diet
 from back.src.interactor.events import Events
+from back.src.interactor.ingredient_of_the_hour import IngredientOfTheHour
 from back.src.repository.event_config_repository import EventConfigRepository
 from back.src.repository.session_repository import SessionRepository
 
@@ -38,6 +46,20 @@ class EventApi(BaseApi):
         """List a session's events the signed-in user has not dismissed, newest first."""
         events = self.events.pending(self._session(query.session_key), get_current_user())
         return [EventDto.model_validate(event) for event in events]
+
+    @BaseApi.endpoint(
+        "/ingredient-of-the-hour",
+        ["GET"],
+        query=SessionKeyQuery,
+        response=IngredientOfTheHourDto,
+        operation_id="getIngredientOfTheHour",
+        errors=(404,),
+    )
+    @require_auth
+    def get_ingredient_of_the_hour(self, query: SessionKeyQuery) -> IngredientOfTheHourDto:
+        """Get the session's ingredient of the hour, and whether the signed-in user's diet allows it."""
+        pick = IngredientOfTheHour().current(self._session(query.session_key))
+        return IngredientOfTheHourDto.of(pick, Diet.of(get_current_user()))
 
     @BaseApi.endpoint("/<int:event_id>/dismiss", ["POST"], status=204, operation_id="dismissEvent", errors=(404,))
     @require_auth

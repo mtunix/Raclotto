@@ -264,7 +264,8 @@ class TestRollRoutes(AppTest):
         self.assertEqual(outcome.reward.xp_after - outcome.reward.xp_before, outcome.reward.xp_gained)
         self.assertGreater(outcome.reward.xp_gained, 0)
         self.assertIn("first_blood", [a.key for a in outcome.achievements])
-        self.assertEqual(outcome.events, [])
+        # The session's first roll picks its first ingredient of the hour.
+        self.assertEqual([event.event_type for event in outcome.events], ["ingredient_of_the_hour"])
 
     def test_every_roll_route_names_the_author(self):
         for path, body in (

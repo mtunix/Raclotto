@@ -120,6 +120,11 @@ export function PanResultModal({
                     🎉 {t("level.leveledUp")}
                   </Text>
                 )}
+                {pan.ingredient_of_the_hour && (
+                  <Text className={styles.leveledUp}>
+                    🔥 {t("ingredientOfTheHour.inThisPan")}
+                  </Text>
+                )}
               </Col>
               <Col xs={24} sm={24} md={8}>
                 <div className={styles.ratingContainer}>

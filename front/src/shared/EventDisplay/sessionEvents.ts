@@ -1,6 +1,7 @@
 import { dismissEvent, useListEvents } from "../../api/generated/endpoints/events/events";
 import { EventType, type EventDto } from "../../api/generated/model";
 import { mutateEvents, onErrorRetry } from "../../lib/api/swrHooks";
+import { displayName } from "../displayName";
 
 /** The session's events the signed-in user has not dismissed, newest first; polled every 10 seconds. */
 export function useSessionEvents(sessionKey: string) {
@@ -32,6 +33,9 @@ export function eventMessage({ event_type, data }: Pick<EventDto, "event_type" |
         if (isText(first) && isText(second) && typeof count === "number") {
             return t("events.types.pan_swap.message", { first, second, count });
         }
+    }
+    if (event_type === EventType.ingredient_of_the_hour && data && isText(data.ingredient_name)) {
+        return t("events.types.ingredient_of_the_hour.message", { ingredient: displayName(data.ingredient_name, t) });
     }
     return t("events.unknown.message");
 }

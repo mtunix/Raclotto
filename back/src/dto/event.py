@@ -5,6 +5,10 @@ from typing import Any
 from pydantic import Field, model_validator
 
 from back.src.dto.base import RequestDto, ResponseDto, omittable
+from back.src.dto.ingredient import IngredientForUserDto
+from back.src.interactor.diet import Diet
+from back.src.interactor.ingredient_of_the_hour import Pick
+from back.src.interactor.levels import INGREDIENT_OF_THE_HOUR_BONUS
 
 
 class EventType(StrEnum):
@@ -14,6 +18,7 @@ class EventType(StrEnum):
     """
 
     pan_swap = "pan_swap"
+    ingredient_of_the_hour = "ingredient_of_the_hour"
 
 
 class EventDto(ResponseDto):
@@ -21,7 +26,8 @@ class EventDto(ResponseDto):
     session_id: int
     event_type: str
     # Whatever the event's evaluator stored; the frontend fills it into its text for the type. pan_swap:
-    # pan1_id, pan1_user_id, pan1_user_name, pan2_id, pan2_user_id, pan2_user_name, time_window_minutes.
+    # pan1_id, pan1_user_id, pan1_user_name, pan2_id, pan2_user_id, pan2_user_name, time_window_minutes;
+    # ingredient_of_the_hour: ingredient_id, ingredient_name.
     data: dict[str, Any] | None
     created_at: datetime
 
@@ -57,3 +63,22 @@ class UpdateEventConfigBody(RequestDto):
         if not self.model_fields_set:
             raise ValueError("Give at least one field to change")
         return self
+
+
+class IngredientOfTheHourDto(ResponseDto):
+    """A session's ingredient of the hour; null until a roll picks one, and once it runs out."""
+
+    ingredient: IngredientForUserDto | None
+    chosen_at: datetime | None
+    # What a rolled pan with it earns on top.
+    bonus_xp: int
+
+    @classmethod
+    def of(cls, pick: Pick | None, diet: Diet) -> IngredientOfTheHourDto:
+        if pick is None:
+            return cls(ingredient=None, chosen_at=None, bonus_xp=INGREDIENT_OF_THE_HOUR_BONUS)
+        return cls(
+            ingredient=IngredientForUserDto.of(pick.ingredient, diet),
+            chosen_at=pick.chosen_at,
+            bonus_xp=INGREDIENT_OF_THE_HOUR_BONUS,
+        )

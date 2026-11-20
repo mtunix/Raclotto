@@ -30,6 +30,8 @@ class PanDto(ResponseDto):
     cheese_level: int | None
     rolled_preparation_type: bool
     rolled_cheese: bool
+    # Rolled with the session's ingredient of the hour in it, for bonus XP.
+    ingredient_of_the_hour: bool
     # Average of `ratings`, 0 when there are none.
     rating: float
     ratings: list[RatingDto]
@@ -50,6 +52,7 @@ class PanDto(ResponseDto):
             cheese_level=pan.cheese_level,
             rolled_preparation_type=pan.rolled_preparation_type,
             rolled_cheese=pan.rolled_cheese,
+            ingredient_of_the_hour=pan.ingredient_of_the_hour,
             rating=pan.rating,
             ratings=[RatingDto.model_validate(rating) for rating in pan.ratings],
             ingredients=[IngredientDto.model_validate(ingredient) for ingredient in pan.ingredients],

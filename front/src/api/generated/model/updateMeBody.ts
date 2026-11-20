@@ -12,6 +12,7 @@ import type { UpdateMeBodyLanguage } from './updateMeBodyLanguage';
  * Omitted fields are left unchanged; null is only a value where the type says so.
  */
 export interface UpdateMeBody {
+  add_ingredient_of_the_hour?: boolean;
   border_style?: UpdateMeBodyBorderStyle;
   border_texture?: UpdateMeBodyBorderTexture;
   color?: string | null;

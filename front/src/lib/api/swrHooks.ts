@@ -1,7 +1,11 @@
 import { mutate as swrMutate } from "swr";
 import { getListAchievementsKey } from "../../api/generated/endpoints/achievements/achievements";
 import { getGetMeKey } from "../../api/generated/endpoints/auth/auth";
-import { getListEventConfigsKey, getListEventsKey } from "../../api/generated/endpoints/events/events";
+import {
+    getGetIngredientOfTheHourKey,
+    getListEventConfigsKey,
+    getListEventsKey,
+} from "../../api/generated/endpoints/events/events";
 import { getGetProfilePictureHistoryKey } from "../../api/generated/endpoints/images/images";
 import {
     getGetAvailableCountsKey,
@@ -67,6 +71,10 @@ export function mutateEventConfigs(sessionKey: string) {
 
 export function mutateEvents(sessionKey: string) {
     return swrMutate(getListEventsKey({ session_key: sessionKey }));
+}
+
+export function mutateIngredientOfTheHour(sessionKey: string) {
+    return swrMutate(getGetIngredientOfTheHourKey({ session_key: sessionKey }));
 }
 
 /** Every cached page of `listPans`, whatever its filter, and the filter options of every session's pans. */

@@ -641,12 +641,14 @@
       "EventType": {
         "description": "The types the backend evaluates; only these can be configured, and the frontend translates each.\n\nResponses carry any stored type, since the old API saved configs for any.",
         "enum": [
-          "pan_swap"
+          "pan_swap",
+          "ingredient_of_the_hour"
         ],
         "title": "EventType",
         "type": "string",
         "x-enum-varnames": [
-          "pan_swap"
+          "pan_swap",
+          "ingredient_of_the_hour"
         ]
       },
       "GenerateImageBody": {
@@ -1123,6 +1125,44 @@
         "title": "IngredientImportDto",
         "type": "object"
       },
+      "IngredientOfTheHourDto": {
+        "description": "A session's ingredient of the hour; null until a roll picks one, and once it runs out.",
+        "properties": {
+          "bonus_xp": {
+            "title": "Bonus Xp",
+            "type": "integer"
+          },
+          "chosen_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chosen At"
+          },
+          "ingredient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IngredientForUserDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ingredient",
+          "chosen_at",
+          "bonus_xp"
+        ],
+        "title": "IngredientOfTheHourDto",
+        "type": "object"
+      },
       "IngredientRatingDto": {
         "properties": {
           "avg_rating": {
@@ -1358,6 +1398,10 @@
       "MeDto": {
         "description": "The signed-in user, including what only they see.",
         "properties": {
+          "add_ingredient_of_the_hour": {
+            "title": "Add Ingredient Of The Hour",
+            "type": "boolean"
+          },
           "border_style": {
             "enum": [
               "solid",
@@ -1513,6 +1557,7 @@
           "gluten",
           "language",
           "is_admin",
+          "add_ingredient_of_the_hour",
           "experience_points",
           "level",
           "next_level"
@@ -1546,6 +1591,10 @@
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "ingredient_of_the_hour": {
+            "title": "Ingredient Of The Hour",
+            "type": "boolean"
           },
           "ingredients": {
             "items": {
@@ -1630,6 +1679,7 @@
           "cheese_level",
           "rolled_preparation_type",
           "rolled_cheese",
+          "ingredient_of_the_hour",
           "rating",
           "ratings",
           "ingredients",
@@ -2475,6 +2525,11 @@
         "additionalProperties": false,
         "description": "Omitted fields are left unchanged; null is only a value where the type says so.",
         "properties": {
+          "add_ingredient_of_the_hour": {
+            "default": null,
+            "title": "Add Ingredient Of The Hour",
+            "type": "boolean"
+          },
           "border_style": {
             "default": null,
             "enum": [
@@ -3793,6 +3848,74 @@
           }
         ],
         "summary": "Change an event config by id.",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/ingredient-of-the-hour": {
+      "get": {
+        "operationId": "getIngredientOfTheHour",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_key",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngredientOfTheHourDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the session's ingredient of the hour, and whether the signed-in user's diet allows it.",
         "tags": [
           "events"
         ]

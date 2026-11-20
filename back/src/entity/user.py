@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, ForeignKey, Table
+from sqlalchemy import Column, DateTime, ForeignKey, Table, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from back.src.driver.database import Base
@@ -58,6 +58,8 @@ class User(Base):
     language: Mapped[str] = mapped_column(default="de")  # Language preference: 'en' or 'de'
     # Admins may change any session, pan and the global settings.
     is_admin: Mapped[bool] = mapped_column(default=False)
+    # Put the session's ingredient of the hour into every rolled pan the diet allows.
+    add_ingredient_of_the_hour: Mapped[bool] = mapped_column(default=False, server_default=false())
     # Tokens signed with an older version are rejected; a password change bumps it.
     token_version: Mapped[int] = mapped_column(default=0)
 
