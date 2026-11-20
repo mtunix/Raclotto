@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
 import { ChaoticGenerationAnimation } from "./ChaoticGenerationAnimation";
 import { BlenderSpinAnimation } from "./BlenderSpinAnimation";
@@ -12,12 +12,14 @@ interface GenerationAnimationProps {
     duration?: number;
     fading?: boolean;
     onDurationChange?: (duration: number) => void;
+    /** Picks the animation: a number in [0, 1), like `Math.random`. */
+    random?: () => number;
 }
 
-// Default durations for each animation type
-const ANIMATION_DURATIONS: Record<string, number> = {
+const ANIMATION_TYPES = ["chaotic", "blender", "chefHat", "pinata", "slotMachine", "shooting"] as const;
+
+const ANIMATION_DURATIONS: Record<(typeof ANIMATION_TYPES)[number], number> = {
     chaotic: 1000,
-    cloud: 3000,
     blender: 3000,
     chefHat: 3000,
     pinata: 4000,
@@ -25,30 +27,14 @@ const ANIMATION_DURATIONS: Record<string, number> = {
     shooting: 3500,
 };
 
-export function GenerationAnimation(props: GenerationAnimationProps) {
+/** One of the roll animations, picked at random when it mounts; reports how long it plays. */
+export function GenerationAnimation({ random = Math.random, ...props }: GenerationAnimationProps) {
     const { onDurationChange } = props;
-    
-    // Randomly select an animation type
-    const animationType = useMemo(() => {
-        const animations = [
-            "chaotic",
-            "blender",
-            "chefHat",
-            "pinata",
-            "slotMachine",
-            "shooting"
-        ];
-        return animations[Math.floor(Math.random() * animations.length)];
-    }, []);
+    const [animationType] = useState(() => ANIMATION_TYPES[Math.floor(random() * ANIMATION_TYPES.length)]);
+    const actualDuration = props.duration ?? ANIMATION_DURATIONS[animationType];
 
-    // Calculate the actual duration (use prop if provided, otherwise use default for animation type)
-    const actualDuration = props.duration ?? ANIMATION_DURATIONS[animationType] ?? 3000;
-
-    // Notify parent of the duration
     useEffect(() => {
-        if (onDurationChange) {
-            onDurationChange(actualDuration);
-        }
+        onDurationChange?.(actualDuration);
     }, [actualDuration, onDurationChange]);
 
     if (animationType === "blender") {
