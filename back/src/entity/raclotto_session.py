@@ -34,7 +34,5 @@ class RaclottoSession(Base):
     ratings: Mapped[list[Rating]] = relationship(back_populates="session", cascade="all")
     events: Mapped[list[Event]] = relationship(back_populates="session", cascade="all")
     event_configs: Mapped[list[EventConfig]] = relationship(back_populates="session", cascade="all")
-    preparation_types: Mapped[list[PreparationType]] = relationship(
-        primaryjoin="RaclottoSession.id == foreign(PreparationType.session_id)", cascade="all"
-    )
+    preparation_types: Mapped[list[PreparationType]] = relationship(cascade="all")
     members: Mapped[list[User]] = relationship(secondary="user_sessions", back_populates="sessions")

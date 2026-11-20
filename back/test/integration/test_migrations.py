@@ -33,6 +33,30 @@ def _head() -> str:
     return head
 
 
+def old_database(path: Path, rows: str) -> None:
+    """A database as create_all built it at 3d9e6b2f4a10, stamped there, holding `rows`."""
+    with sqlite3.connect(path) as connection:
+        connection.executescript((FIXTURES / "schema_3d9e6b2f4a10.sql").read_text())
+        connection.executescript(
+            """
+            CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY);
+            INSERT INTO alembic_version VALUES ('3d9e6b2f4a10');
+            """
+        )
+        connection.executescript(rows)
+    connection.close()
+
+
+def upgrade(path: Path, revision: str) -> None:
+    engine = create_engine(f"sqlite:///{path}")
+    with engine.begin() as migrating:
+        config = AlembicConfig()
+        config.set_main_option("script_location", str(SCRIPT_LOCATION))
+        config.attributes["connection"] = migrating
+        command.upgrade(config, revision)
+    engine.dispose()
+
+
 class MigrateTest(unittest.TestCase):
     """Each test starts from a SQLite file shaped like a database from some point in history."""
 
@@ -183,31 +207,21 @@ class RetiredColumnsTest(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.path = Path(directory.name) / "raclotto.db"
-        with sqlite3.connect(self.path) as connection:
-            connection.executescript((FIXTURES / "schema_3d9e6b2f4a10.sql").read_text())
-            connection.executescript(
-                """
-                CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY);
-                INSERT INTO alembic_version VALUES ('3d9e6b2f4a10');
-                INSERT INTO user (id, name, password, meat, vegetarian, vegan, fish, histamine, fructose, lactose,
-                    gluten, language, is_admin, token_version, experience_points)
-                    VALUES (1, 'ana', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0, 0, 0);
-                INSERT INTO session (id, key, name, timestamp, active) VALUES (1, 's1', 's1', '2025-12-24', 1);
-                INSERT INTO pan (id, user_id, timestamp, snacked, rolled_preparation_type, rolled_cheese, name,
-                    session_id) VALUES (1, 1, '2025-12-24', 1, 0, 0, 'old', 1);
-                INSERT INTO achievement (title, description, value, hidden, is_global)
-                    VALUES ('King of the Sauce', 'old', 1, 0, 0);
-                INSERT INTO insult (title) VALUES ('Lauch');
-                """
-            )
-        connection.close()
-        engine = create_engine(f"sqlite:///{self.path}")
-        with engine.begin() as migrating:
-            config = AlembicConfig()
-            config.set_main_option("script_location", str(SCRIPT_LOCATION))
-            config.attributes["connection"] = migrating
-            command.upgrade(config, revision)
-        engine.dispose()
+        old_database(
+            self.path,
+            """
+            INSERT INTO user (id, name, password, meat, vegetarian, vegan, fish, histamine, fructose, lactose,
+                gluten, language, is_admin, token_version, experience_points)
+                VALUES (1, 'ana', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0, 0, 0);
+            INSERT INTO session (id, key, name, timestamp, active) VALUES (1, 's1', 's1', '2025-12-24', 1);
+            INSERT INTO pan (id, user_id, timestamp, snacked, rolled_preparation_type, rolled_cheese, name,
+                session_id) VALUES (1, 1, '2025-12-24', 1, 0, 0, 'old', 1);
+            INSERT INTO achievement (title, description, value, hidden, is_global)
+                VALUES ('King of the Sauce', 'old', 1, 0, 0);
+            INSERT INTO insult (title) VALUES ('Lauch');
+            """,
+        )
+        upgrade(self.path, revision)
 
     def start(self) -> App:
         config = type("Config", (ConfigInMemory,), {"SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.path}"})
@@ -262,6 +276,115 @@ class RetiredColumnsTest(unittest.TestCase):
             context = MigrationContext.configure(connection, opts={"include_object": include_object})
             self.assertEqual(compare_metadata(context, db.metadata), [])
         engine.dispose()
+
+
+class OrphanCleanupTest(unittest.TestCase):
+    """Rows the API left pointing at deleted sessions, pans or users go; optional references are cleared."""
+
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.path = Path(directory.name) / "raclotto.db"
+        old_database(
+            self.path,
+            """
+            INSERT INTO level (id, name, label_en, label_de, required_experience) VALUES (1, 'l', 'l', 'l', 0);
+            INSERT INTO user (id, name, password, meat, vegetarian, vegan, fish, histamine, fructose, lactose,
+                gluten, language, is_admin, token_version, experience_points, level_id)
+                VALUES (1, 'ana', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0, 0, 0, 1),
+                       (2, 'ben', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0, 0, 0, 9);
+            INSERT INTO achievement (id, title, value, hidden, is_global) VALUES (1, 'First Blood!', 10, 0, 0);
+            -- Session 2 was deleted through the API, user 9 by hand.
+            INSERT INTO session (id, key, name, timestamp, active, created_by_user_id)
+                VALUES (1, 's1', 's1', '2025-12-24', 1, 1), (3, 's3', 's3', '2025-12-24', 1, 9);
+            INSERT INTO preparation_type (id, name, session_id) VALUES (1, 'default', NULL), (2, 'own', 2);
+            INSERT INTO ingredient (id, type, available, meat, vegetarian, vegan, fish, gluten, histamine, fructose,
+                lactose, spicy, wildcard, sweet, name, session_id)
+                VALUES (1, 'FILL', 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Potato', 1),
+                       (2, 'FILL', 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Onion', 2);
+            INSERT INTO pan (id, user_id, timestamp, snacked, preparation_type_id, rolled_preparation_type,
+                rolled_cheese, name, session_id)
+                VALUES (1, 1, '2025-12-24', 0, 2, 0, 0, 'kept', 1), (2, 1, '2025-12-24', 0, 1, 0, 0, 'orphan', 2),
+                       (3, 9, '2025-12-24', 0, 1, 0, 0, 'authorless', 1);
+            INSERT INTO pan_ingredients (pan_id, ingredient_id) VALUES (1, 1), (1, 7), (2, 2), (3, 1);
+            INSERT INTO rating (id, rating, user_id, pan_id, session_id)
+                VALUES (1, 4, 1, 1, 1), (2, 3, 1, 2, 2), (3, 5, 9, 1, 1), (4, 2, 2, 3, 1);
+            INSERT INTO event (id, session_id, event_type, message, created_at)
+                VALUES (1, 1, 'pan_swap', 'kept', '2025-12-24'), (2, 2, 'pan_swap', 'orphan', '2025-12-24');
+            INSERT INTO user_event_dismissals (user_id, event_id) VALUES (1, 1), (1, 2), (9, 1);
+            INSERT INTO event_config (id, event_type, session_id, enabled)
+                VALUES (1, 'pan_swap', NULL, 1), (2, 'pan_swap', 1, 0), (3, 'pan_swap', 2, 0);
+            INSERT INTO user_sessions (user_id, session_id, joined_at)
+                VALUES (1, 1, '2025-12-24'), (1, 2, '2025-12-24'), (9, 1, '2025-12-24');
+            INSERT INTO user_achievements (user_id, achievement_id) VALUES (1, 1), (9, 1), (1, 5);
+            INSERT INTO user_achievement_progress (user_id, achievement_id, progress_value, updated_at)
+                VALUES (1, 1, 1.0, '2025-12-24'), (9, 1, 1.0, '2025-12-24');
+            INSERT INTO profile_picture_history (id, user_id, level_id, created_at, is_candidate)
+                VALUES (1, 1, 1, '2025-12-24', 0), (2, 1, 9, '2025-12-24', 0), (3, 9, 1, '2025-12-24', 0);
+            INSERT INTO invite_token (id, token, email, created_by_user_id, created_at, expires_at, is_used)
+                VALUES (1, 'a', 'a@x', 1, '2025-12-24', '2025-12-31', 0),
+                       (2, 'b', 'b@x', 9, '2025-12-24', '2025-12-31', 0);
+            """,
+        )
+
+    def query(self, sql: str) -> list:
+        with sqlite3.connect(self.path) as connection:
+            rows = connection.execute(sql).fetchall()
+        connection.close()
+        return rows
+
+    def test_rows_whose_parent_is_gone_are_deleted_with_their_dependants(self):
+        with self.assertLogs("alembic.runtime.migration", "WARNING") as logged:
+            upgrade(self.path, "head")
+
+        self.assertEqual(self.query("PRAGMA foreign_key_check"), [])
+        self.assertEqual(self.query("SELECT id FROM pan"), [(1,)])
+        self.assertEqual(self.query("SELECT * FROM pan_ingredients"), [(1, 1)])
+        self.assertEqual(self.query("SELECT id FROM rating"), [(1,)])
+        self.assertEqual(self.query("SELECT id FROM ingredient"), [(1,)])
+        self.assertEqual(self.query("SELECT id FROM event"), [(1,)])
+        self.assertEqual(self.query("SELECT * FROM user_event_dismissals"), [(1, 1)])
+        self.assertEqual(self.query("SELECT id FROM event_config ORDER BY id"), [(1,), (2,)])
+        self.assertEqual(self.query("SELECT id FROM preparation_type"), [(1,)])
+        self.assertEqual(self.query("SELECT user_id, session_id FROM user_sessions"), [(1, 1)])
+        self.assertEqual(self.query("SELECT * FROM user_achievements"), [(1, 1)])
+        self.assertEqual(self.query("SELECT user_id FROM user_achievement_progress"), [(1,)])
+        self.assertEqual(self.query("SELECT id FROM invite_token"), [(1,)])
+        self.assertEqual(self.query("SELECT id, level_id FROM profile_picture_history"), [(1, 1), (2, None)])
+        self.assertEqual(self.query("SELECT id, level_id FROM user ORDER BY id"), [(1, 1), (2, None)])
+        self.assertEqual(self.query("SELECT id, created_by_user_id FROM session ORDER BY id"), [(1, 1), (3, None)])
+        self.assertEqual(self.query("SELECT preparation_type_id FROM pan"), [(None,)])
+        self.assertIn(
+            "WARNING:alembic.runtime.migration:Deleted 3 rows of pan_ingredients whose parent was gone",
+            logged.output,
+        )
+        self.assertIn(
+            "WARNING:alembic.runtime.migration:Cleared pan.preparation_type_id in 1 rows whose parent was gone",
+            logged.output,
+        )
+
+    def test_a_sessions_preparation_types_get_their_foreign_key(self):
+        upgrade(self.path, "head")
+
+        self.assertEqual(
+            [(row[2], row[3], row[4]) for row in self.query("PRAGMA foreign_key_list(preparation_type)")],
+            [("session", "session_id", "id")],
+        )
+
+    def test_a_clean_database_logs_nothing(self):
+        with sqlite3.connect(self.path) as connection:
+            connection.executescript(
+                "DELETE FROM user_event_dismissals; DELETE FROM user_achievements; "
+                "DELETE FROM user_achievement_progress; DELETE FROM pan_ingredients; DELETE FROM rating; "
+                "DELETE FROM user_sessions; DELETE FROM event; DELETE FROM event_config; DELETE FROM pan; "
+                "DELETE FROM ingredient; DELETE FROM profile_picture_history; DELETE FROM invite_token; "
+                "DELETE FROM preparation_type; UPDATE session SET created_by_user_id = NULL; "
+                "UPDATE user SET level_id = NULL"
+            )
+        connection.close()
+
+        with self.assertNoLogs("alembic.runtime.migration", "WARNING"):
+            upgrade(self.path, "head")
 
 
 if __name__ == "__main__":
