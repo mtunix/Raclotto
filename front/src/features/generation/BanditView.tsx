@@ -2,13 +2,14 @@ import { useState } from "react";
 import type { IngredientForUserDto } from "../../api/generated/model";
 import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
 import { LevelUpPictureModal } from "./LevelUpPictureModal";
+import { RollOptionsCard } from "./RollOptionsCard";
 import { BanditResultModal } from "./bandit/BanditResultModal";
 import { banditLimits } from "./bandit/banditLimits";
 import { ColumnCountControl } from "./bandit/ColumnCountControl";
 import { RestrictionsAlert } from "./bandit/RestrictionsAlert";
-import { RollOptionsCard } from "./bandit/RollOptionsCard";
 import { SlotMachine } from "./bandit/SlotMachine";
 import { useBanditSpin } from "./bandit/useBanditSpin";
+import styles from "./GenerateView/GenerateView.module.css";
 
 interface BanditViewProps {
     ingredients: IngredientForUserDto[];
@@ -39,6 +40,7 @@ export function BanditView(props: BanditViewProps) {
                 rollCheese={rollCheese}
                 onRollCheeseChange={props.onRollCheeseChange}
                 disabled={spinning}
+                className={styles.marginBottom32}
             />
             <SlotMachine columns={columns} canSpin={canSpin} onSpin={bandit.spin} />
 

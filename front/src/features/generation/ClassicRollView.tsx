@@ -1,9 +1,10 @@
-import { Row, Col, Card, Checkbox, Button } from "antd";
+import { Row, Col, Button } from "antd";
 import { useTranslation } from "react-i18next";
 import { IngredientCountControl } from "./IngredientCountControl";
 import { useGetAvailableCounts } from "../../api/generated/endpoints/ingredients/ingredients";
 import { useAppStore } from "../../AppSlice";
 import { countOr } from "./countOr";
+import { RollOptionsCard } from "./RollOptionsCard";
 import styles from "./GenerateView/GenerateView.module.css";
 import type { RollCount } from "./GenerateView/useClassicRollCounts";
 
@@ -67,28 +68,12 @@ export function ClassicRollView({
           />
         </Col>
       </Row>
-      <Row>
-        <Col span={24}>
-          <Card className={styles.cardNoMargin}>
-            <div className={`${styles.flexColumn} ${styles.gap16}`}>
-              <Checkbox
-                checked={rollPreparationType}
-                onChange={(e) => setRollPreparationType(e.target.checked)}
-                className={styles.checkbox}
-              >
-                {t("generate.rollPreparationType")}
-              </Checkbox>
-              <Checkbox
-                checked={rollCheese}
-                onChange={(e) => setRollCheese(e.target.checked)}
-                className={styles.checkbox}
-              >
-                {t("generate.rollCheese")}
-              </Checkbox>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+      <RollOptionsCard
+        rollPreparationType={rollPreparationType}
+        onRollPreparationTypeChange={setRollPreparationType}
+        rollCheese={rollCheese}
+        onRollCheeseChange={setRollCheese}
+      />
       <Row className="mt-24">
         <Col span={24}>
           <Button

@@ -1,19 +1,21 @@
 import { Card, Checkbox, Col, Row } from "antd";
 import { useTranslation } from "react-i18next";
-import styles from "../GenerateView/GenerateView.module.css";
+import styles from "./GenerateView/GenerateView.module.css";
 
 interface RollOptionsCardProps {
     rollPreparationType: boolean;
     onRollPreparationTypeChange: (checked: boolean) => void;
     rollCheese: boolean;
     onRollCheeseChange: (checked: boolean) => void;
-    disabled: boolean;
+    disabled?: boolean;
+    className?: string;
 }
 
+/** Whether a roll also rolls the preparation type and the cheese; both roll modes offer it. */
 export function RollOptionsCard(props: RollOptionsCardProps) {
     const { t } = useTranslation();
     return (
-        <Row className={styles.marginBottom32}>
+        <Row className={props.className}>
             <Col span={24}>
                 <Card className={styles.cardNoMargin} classNames={{ body: styles.optionsCardBody }}>
                     <div className={`${styles.flexColumn} ${styles.gap16}`}>
