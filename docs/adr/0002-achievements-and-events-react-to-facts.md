@@ -1,6 +1,7 @@
 # Achievements and events react to facts, inside the caller's transaction
 
-- Status: accepted
+- Status: accepted; the transaction part superseded by
+  [0008](0008-one-transaction-per-request-committed-at-the-endpoint.md)
 - Date: 2026-11-18 (`158b9f9` Deepen pan roll and achievements), extended to events on
   2026-11-19 (`d35a263` Deepen session events)
 
@@ -23,6 +24,10 @@ achievement's title.
 `record` flushes but never commits. The caller commits the fact's change and its consequences
 together; `PanRoll.roll` does the whole roll (ingredients, membership, XP, events, achievements)
 in one transaction and builds the response before the commit (`roll_into`).
+
+> Superseded by [0008](0008-one-transaction-per-request-committed-at-the-endpoint.md): the
+> request's transaction commits at the endpoint; neither the caller nor `PanRoll` commits, and
+> `roll_into` is gone.
 
 ## Consequences
 
