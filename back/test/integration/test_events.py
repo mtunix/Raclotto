@@ -95,6 +95,19 @@ class EventsTest(AppTest):
 
         self.assertEqual({c.id for c in Events([Always()]).configs(self.session)}, {own.id, rain.id})
 
+    def test_changing_a_config_sets_only_the_given_fields(self):
+        config = self.configure(enabled=True, session=self.session, frequency_minutes=30)
+        events = Events([Always()])
+
+        events.change_config(config, {"enabled": False})
+        self.assertEqual((config.enabled, config.frequency_minutes), (False, 30))
+        events.change_config(config, {"frequency_minutes": None, "session_id": None})
+
+        db.session.commit()
+        db.session.expire_all()
+        stored = db.session.get_one(EventConfig, config.id)
+        self.assertEqual((stored.enabled, stored.frequency_minutes, stored.session_id), (False, None, self.session.id))
+
     def test_an_event_waits_out_its_cooldown(self):
         events = Events([Always()], clock=self.clock)
         events.record(self.rolled())

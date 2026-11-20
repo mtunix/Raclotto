@@ -85,6 +85,5 @@ class EventApi(BaseApi):
         """Change an event config by id."""
         config = found(self.config_repository.by_id(config_id), "Configuration")
         self._configurable(config.session)
-        for field in body.model_fields_set:
-            setattr(config, field, getattr(body, field))
+        self.events.change_config(config, body.model_dump(include=body.model_fields_set))
         return EventConfigDto.model_validate(config)

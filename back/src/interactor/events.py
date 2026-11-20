@@ -1,6 +1,8 @@
 """Session events: tell the module what happened, get back the events it announced.
 
     events = Events().record(PanRolled(pan, user, session))
+    config = Events().configure("pan_swap", enabled=True, frequency_minutes=30, session=session)
+    Events().change_config(config, {"frequency_minutes": None})
 
 Which evaluators react to which fact, whether an event type is enabled for the
 session, how often it may fire and storing what fired all live behind
@@ -9,8 +11,9 @@ transaction: ``record`` flushes but never commits.
 """
 
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timedelta
+from typing import Any
 
 from back.src.driver.database import db
 from back.src.entity.event import Event
@@ -98,6 +101,13 @@ class Events:
     ) -> EventConfig:
         """Save the session's own config, or the global one without a session. A None frequency keeps the stored one."""
         return self._configs.save(event_type, enabled, frequency_minutes, session.id if session else None)
+
+    def change_config(self, config: EventConfig, changes: Mapping[str, Any]) -> None:
+        """Set the given ``enabled`` and ``frequency_minutes``; a None frequency falls back to the event's cooldown."""
+        for field in ("enabled", "frequency_minutes"):
+            if field in changes:
+                setattr(config, field, changes[field])
+        db.session.flush()
 
     def _effective(self, session: RaclottoSession) -> dict[str, EventConfig]:
         """Per event type, the session's own config, else the global one; of duplicates the oldest, as saving does."""

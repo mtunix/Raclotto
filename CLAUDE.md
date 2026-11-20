@@ -71,7 +71,8 @@ The deep modules in `interactor/` and what they own:
   the request commits it together with the change the fact reports.
 - **`events.py` — `Events.record(fact) -> list[Event]`**: session events (pan swap) from the same
   facts; evaluators declare `event_type`, `reacts_to` and a default `cooldown`. Owns the
-  enabled/frequency config (a session's own overrides the global one). A new event type also goes
+  enabled/frequency config, saved (`configure`) and changed (`change_config`) through it (a
+  session's own overrides the global one). A new event type also goes
   into `EventType` in `dto/event.py`, and its name and message, filled from the event's `data`, into
   the frontend's `events.types.<type>`.
 - **`accounts.py` — `Accounts`**: invites (issue, look up, revoke), creating users, by
