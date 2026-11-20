@@ -263,6 +263,18 @@ class TestDeleteSession(SessionApiTest):
         changed = {name for name, count in self.rows().items() if count != before[name]}
         self.assertLessEqual(changed, {"user_achievements", "user_achievement_progress"})
 
+    def test_another_sessions_pan_loses_only_the_deleted_sessions_ingredient(self):
+        doomed, kept = self.make_session("doomed", creator=self.ana), self.make_session("kept", creator=self.ana)
+        potato, onion = self.make_ingredient(doomed, "Potato"), self.make_ingredient(kept, "Onion")
+        # Hand-picked pans take only their session's ingredients now; older rows may mix them.
+        pan = self.make_pan(self.ben, kept, [potato, onion])
+
+        self.assertEqual(self.call("DELETE", f"/sessions/{doomed.id}", self.ana).status_code, 204)
+
+        fetched = self.call("GET", f"/pans/{pan.id}", self.ana).json
+        self.assertEqual([i["name"] for i in fetched["ingredients"]], ["Onion"])
+        self.assertEqual(db.session.execute(text("PRAGMA foreign_key_check")).all(), [])
+
     def test_the_creators_profile_stats_and_pans_still_load_after_deleting_a_session(self):
         doomed = self.furnish("doomed")
 

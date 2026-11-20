@@ -1,10 +1,14 @@
 import enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from back.src.driver.database import Base
 from back.src.entity.mixin import DomainMixin
+
+if TYPE_CHECKING:
+    from back.src.entity.pan import Pan
 
 
 class IngredientType(enum.IntEnum):
@@ -42,6 +46,9 @@ class Ingredient(DomainMixin, Base):
     spicy: Mapped[int] = mapped_column(default=0)  # 0-3 spiciness level
     wildcard: Mapped[bool] = mapped_column(default=False)
     sweet: Mapped[bool] = mapped_column(default=False)
+
+    # A deleted ingredient leaves the pans it was in.
+    pans: Mapped[list[Pan]] = relationship(secondary="pan_ingredients", back_populates="ingredients")
 
     __table_args__ = (
         CheckConstraint("NOT (meat AND (vegetarian OR vegan OR fish))", name="check_not_meat_and_other_categories"),

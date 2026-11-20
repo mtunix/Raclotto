@@ -32,11 +32,15 @@ class Pan(DomainMixin, Base):
     rolled_preparation_type: Mapped[bool] = mapped_column(default=False)
     rolled_cheese: Mapped[bool] = mapped_column(default=False)
 
-    ingredients: Mapped[list[Ingredient]] = relationship("Ingredient", secondary=pan_ingredients, lazy="selectin")
+    ingredients: Mapped[list[Ingredient]] = relationship(
+        "Ingredient", secondary=pan_ingredients, back_populates="pans", lazy="selectin"
+    )
 
     ratings: Mapped[list[Rating]] = relationship("Rating", lazy="selectin", cascade="all, delete-orphan")
 
-    preparation_type: Mapped[PreparationType | None] = relationship("PreparationType", lazy="selectin")
+    preparation_type: Mapped[PreparationType | None] = relationship(
+        "PreparationType", back_populates="pans", lazy="selectin"
+    )
 
     @hybrid_property
     def rating(self) -> float:
