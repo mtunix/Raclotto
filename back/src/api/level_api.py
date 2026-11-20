@@ -1,4 +1,4 @@
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import BaseApi, found
 from back.src.auth.middleware import require_auth
 from back.src.dto.level import LevelDto
 from back.src.repository.level_repository import LevelRepository
@@ -21,12 +21,4 @@ class LevelApi(BaseApi):
     @require_auth
     def get_level(self, level_id: int) -> LevelDto:
         """Get a level by id."""
-        level = self.repository.by_id(level_id)
-        if not level:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Level not found",
-                detail="The specified level does not exist",
-            )
-        return LevelDto.model_validate(level)
+        return LevelDto.model_validate(found(self.repository.by_id(level_id), "Level"))

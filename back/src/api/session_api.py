@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import BaseApi, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
@@ -20,15 +20,6 @@ from back.src.interactor.session_recap import SessionRecaps
 from back.src.repository.session_repository import SessionRepository
 
 
-def _not_found() -> ApiError:
-    return ApiError(
-        ApiErrorCode.resource_not_found,
-        status=404,
-        title="Session not found",
-        detail="The specified session does not exist",
-    )
-
-
 class SessionApi(BaseApi):
     """Anyone signed in may create, list and read sessions; only the creator or an admin may change one."""
 
@@ -39,14 +30,10 @@ class SessionApi(BaseApi):
         self.repository = SessionRepository()
 
     def _session(self, session_id: int) -> RaclottoSession:
-        session = self.repository.by_id(session_id)
-        if not session:
-            raise _not_found()
-        return session
+        return found(self.repository.by_id(session_id), "Session")
 
-    def _managed(self, session: RaclottoSession | None) -> RaclottoSession:
-        if not session:
-            raise _not_found()
+    def _managed(self, record: RaclottoSession | None) -> RaclottoSession:
+        session = found(record, "Session")
         with guarded():
             permissions().manage_session(session)
         return session
@@ -84,10 +71,7 @@ class SessionApi(BaseApi):
     @require_auth
     def get_session_by_key(self, query: SessionKeyQuery) -> SessionDto:
         """Get a session by its key."""
-        session = self.repository.by_key(query.session_key)
-        if not session:
-            raise _not_found()
-        return SessionDto.model_validate(session)
+        return SessionDto.model_validate(found(self.repository.by_key(query.session_key), "Session"))
 
     @BaseApi.endpoint(
         "/recap",
@@ -100,9 +84,7 @@ class SessionApi(BaseApi):
     @require_auth
     def get_recap(self, query: SessionKeyQuery) -> SessionRecapDto:
         """Sum up a session: best, worst and boldest pan, favorite ingredient, and each participant."""
-        session = self.repository.by_key(query.session_key)
-        if not session:
-            raise _not_found()
+        session = found(self.repository.by_key(query.session_key), "Session")
         return SessionRecapDto.of(SessionRecaps().of(session))
 
     @BaseApi.endpoint(

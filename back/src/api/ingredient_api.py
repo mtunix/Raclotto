@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, ErrorSpec, found
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.dto.ingredient import (
@@ -27,6 +27,12 @@ from back.src.repository.session_repository import SessionRepository
 # Where an exported ingredient came from; an import does not set these on the ingredient.
 _NOT_IMPORTED = {"id", "session_id"}
 
+# Each names the field of the list item it rejects.
+_REIMPORT_ERRORS = {
+    CatalogError.OTHER_SESSION: (ErrorSpec(ApiErrorCode.incorrect_parameters, 400, "Mixed sessions"), "session_id"),
+    CatalogError.UNKNOWN_INGREDIENT: (ErrorSpec(ApiErrorCode.resource_not_found, 404, "Ingredient not found"), "id"),
+}
+
 
 def _dtos(ingredients: Iterable[Ingredient]) -> list[IngredientDto]:
     return [IngredientDto.model_validate(ingredient) for ingredient in ingredients]
@@ -48,26 +54,10 @@ class IngredientApi(BaseApi):
         self.session_repository = SessionRepository()
 
     def _session(self, session_key: str) -> RaclottoSession:
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-        return session
+        return found(self.session_repository.by_key(session_key), "Session")
 
     def _ingredient(self, ingredient_id: int) -> Ingredient:
-        ingredient = self.repository.by_id(ingredient_id)
-        if not ingredient:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Ingredient not found",
-                detail="The specified ingredient does not exist",
-            )
-        return ingredient
+        return found(self.repository.by_id(ingredient_id), "Ingredient")
 
     @BaseApi.endpoint(
         "", ["GET"], query=SessionFilterQuery, response=list[IngredientForUserDto], operation_id="listIngredients"
@@ -242,21 +232,8 @@ class IngredientApi(BaseApi):
         try:
             result = IngredientCatalog().reimport(get_current_user(), session, _items(body))
         except CatalogError as e:
-            if e.kind == CatalogError.OTHER_SESSION:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Mixed sessions",
-                    detail=e.detail,
-                    source={"pointer": f"/body/ingredients/{e.index}/session_id"},
-                ) from e
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Ingredient not found",
-                detail=e.detail,
-                source={"pointer": f"/body/ingredients/{e.index}/id"},
-            ) from e
+            spec, field = _REIMPORT_ERRORS[e.kind]
+            raise spec.error(e.detail, source={"pointer": f"/body/ingredients/{e.index}/{field}"}) from e
         dto = IngredientReimportDto(
             created=result.created,
             updated=result.updated,

@@ -1,4 +1,4 @@
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import BaseApi, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
@@ -19,15 +19,7 @@ class UserApi(BaseApi):
         self.user_repository = UserRepository()
 
     def _user(self, user_id: int) -> User:
-        user = self.user_repository.by_id(user_id)
-        if not user:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="User not found",
-                detail=f"User with ID {user_id} does not exist",
-            )
-        return user
+        return found(self.user_repository.by_id(user_id), "User")
 
     @BaseApi.endpoint("", ["GET"], response=list[UserAccountDto], operation_id="listUsers", errors=(403,))
     @require_auth

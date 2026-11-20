@@ -10,6 +10,7 @@ from http import HTTPStatus
 from typing import (
     Any,
     ClassVar,
+    NamedTuple,
     TypeVar,
     Union,
     get_args,
@@ -55,6 +56,35 @@ class ApiError(Exception):
     def to_dicts(self) -> list[dict[str, Any]]:
         """The entries of the response's `errors` list."""
         return [self.to_dict()]
+
+
+def not_found(resource: str, detail: str | None = None) -> ApiError:
+    """The 404 for a record that does not exist; ``resource`` names it as a title would ("Session")."""
+    return ApiError(
+        ApiErrorCode.resource_not_found,
+        status=404,
+        title=f"{resource} not found",
+        detail=detail or f"The specified {resource.lower()} does not exist",
+    )
+
+
+def found[T](record: T | None, resource: str) -> T:
+    """The record, or the 404 for ``resource`` when there is none."""
+    if record is None:
+        raise not_found(resource)
+    return record
+
+
+class ErrorSpec(NamedTuple):
+    """How a route reports one kind of a module's error; a ``detail`` here replaces the module's."""
+
+    code: ApiErrorCode
+    status: int
+    title: str
+    detail: str | None = None
+
+    def error(self, detail: str | None = None, source: dict[str, str] | None = None) -> ApiError:
+        return ApiError(self.code, status=self.status, title=self.title, detail=self.detail or detail, source=source)
 
 
 class ApiValidationError(ApiError):

@@ -1,4 +1,4 @@
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import ApiErrorCode, BaseApi, ErrorSpec, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
@@ -22,11 +22,13 @@ from back.src.repository.pan_repository import PanRepository
 from back.src.repository.user_repository import UserRepository
 
 _ROLL_ERRORS = {
-    RollError.SESSION_NOT_FOUND: (ApiErrorCode.resource_not_found, 404, "Session not found"),
-    RollError.PREPARATION_TYPE_NOT_FOUND: (ApiErrorCode.resource_not_found, 404, "Preparation type not found"),
-    RollError.PREPARATION_TYPE_NOT_IN_SESSION: (ApiErrorCode.incorrect_parameters, 400, "Invalid preparation type"),
-    RollError.NO_INGREDIENTS: (ApiErrorCode.incorrect_parameters, 400, "Invalid ingredient selection"),
-    RollError.INVALID_OPTIONS: (ApiErrorCode.missing_required_body_field, 400, "Invalid roll options"),
+    RollError.SESSION_NOT_FOUND: ErrorSpec(ApiErrorCode.resource_not_found, 404, "Session not found"),
+    RollError.PREPARATION_TYPE_NOT_FOUND: ErrorSpec(ApiErrorCode.resource_not_found, 404, "Preparation type not found"),
+    RollError.PREPARATION_TYPE_NOT_IN_SESSION: ErrorSpec(
+        ApiErrorCode.incorrect_parameters, 400, "Invalid preparation type"
+    ),
+    RollError.NO_INGREDIENTS: ErrorSpec(ApiErrorCode.incorrect_parameters, 400, "Invalid ingredient selection"),
+    RollError.INVALID_OPTIONS: ErrorSpec(ApiErrorCode.missing_required_body_field, 400, "Invalid roll options"),
 }
 
 
@@ -45,19 +47,10 @@ class PanApi(BaseApi):
                 user, query.session_key, options, lambda outcome: RollOutcomeDto.of(outcome, user)
             )
         except RollError as error:
-            code, status, title = _ROLL_ERRORS[error.kind]
-            raise ApiError(code, status=status, title=title, detail=error.detail) from error
+            raise _ROLL_ERRORS[error.kind].error(error.detail) from error
 
     def _pan(self, pan_id: int) -> Pan:
-        pan = self.repository.by_id(pan_id)
-        if not pan:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Pan not found",
-                detail="The specified pan does not exist",
-            )
-        return pan
+        return found(self.repository.by_id(pan_id), "Pan")
 
     def _changeable(self, pan_id: int) -> Pan:
         pan = self._pan(pan_id)

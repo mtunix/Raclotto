@@ -2,7 +2,7 @@ from math import ceil
 
 from flask import current_app, request
 
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, ErrorSpec
 from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.auth.password import verify_password
@@ -28,34 +28,35 @@ def _me(user: User) -> MeDto:
     return MeDto.of(user, Levels().progress_of(user))
 
 
-def _registration_error(error: AccountError) -> ApiError:
-    if error.kind == AccountError.UNKNOWN_INVITE:
-        return ApiError(
-            ApiErrorCode.invalid_token,
-            status=400,
-            title="Invalid invite token",
-            detail="The provided invite token does not exist",
-        )
-    if error.kind == AccountError.SPENT_INVITE:
-        return ApiError(
-            ApiErrorCode.invalid_token,
-            status=400,
-            title="Invalid invite token",
-            detail="The invite token has already been used or has expired",
-        )
-    if error.kind == AccountError.EMAIL_MISMATCH:
-        return ApiError(
-            ApiErrorCode.incorrect_parameters,
-            status=400,
-            title="Email mismatch",
-            detail="The provided email does not match the invite token's email",
-        )
-    return ApiError(
+_INVALID_INVITE = "Invalid invite token"
+_REGISTRATION_ERRORS = {
+    AccountError.UNKNOWN_INVITE: ErrorSpec(
+        ApiErrorCode.invalid_token, 400, _INVALID_INVITE, "The provided invite token does not exist"
+    ),
+    AccountError.SPENT_INVITE: ErrorSpec(
+        ApiErrorCode.invalid_token, 400, _INVALID_INVITE, "The invite token has already been used or has expired"
+    ),
+    AccountError.EMAIL_MISMATCH: ErrorSpec(
         ApiErrorCode.incorrect_parameters,
-        status=400,
-        title="User already exists",
-        detail="A user with this email or name already exists",
-    )
+        400,
+        "Email mismatch",
+        "The provided email does not match the invite token's email",
+    ),
+    AccountError.TAKEN: ErrorSpec(
+        ApiErrorCode.incorrect_parameters, 400, "User already exists", "A user with this email or name already exists"
+    ),
+}
+_REVOKE_ERRORS = {
+    AccountError.USED_INVITE: ErrorSpec(
+        ApiErrorCode.incorrect_parameters, 400, "Cannot revoke used token", "This invite token has already been used"
+    ),
+    AccountError.UNKNOWN_INVITE: ErrorSpec(
+        ApiErrorCode.resource_not_found,
+        404,
+        "Invite token not found",
+        "The specified invite token does not exist or you don't have permission to revoke it",
+    ),
+}
 
 
 class AuthApi(BaseApi):
@@ -71,7 +72,7 @@ class AuthApi(BaseApi):
         try:
             user = Accounts().register(body.token, body.name, body.email, body.password, body.profile_picture)
         except AccountError as e:
-            raise _registration_error(e) from e
+            raise _REGISTRATION_ERRORS[e.kind].error() from e
         dto = AuthResultDto(token=_token(user), user=_me(user))
         db.session.commit()
         return dto
@@ -200,17 +201,5 @@ class InviteApi(BaseApi):
         try:
             Accounts().revoke(get_current_user(), invite_id)
         except AccountError as e:
-            if e.kind == AccountError.USED_INVITE:
-                raise ApiError(
-                    ApiErrorCode.incorrect_parameters,
-                    status=400,
-                    title="Cannot revoke used token",
-                    detail="This invite token has already been used",
-                ) from e
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Invite token not found",
-                detail="The specified invite token does not exist or you don't have permission to revoke it",
-            ) from e
+            raise _REVOKE_ERRORS[e.kind].error() from e
         db.session.commit()

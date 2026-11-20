@@ -1,4 +1,4 @@
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import BaseApi, found
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.dto.achievement import AchievementDto, AchievementStatusDto, LeaderboardEntryDto
 from back.src.interactor.achievements import Achievements
@@ -24,15 +24,7 @@ class AchievementApi(BaseApi):
     @require_auth
     def get_achievement(self, achievement_id: int) -> AchievementDto:
         """Get an achievement by id."""
-        achievement = self.repository.by_id(achievement_id)
-        if not achievement:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Achievement not found",
-                detail="The specified achievement does not exist",
-            )
-        return AchievementDto.model_validate(achievement)
+        return AchievementDto.model_validate(found(self.repository.by_id(achievement_id), "Achievement"))
 
     @BaseApi.endpoint("/leaderboard", ["GET"], response=list[LeaderboardEntryDto], operation_id="getLeaderboard")
     @require_auth

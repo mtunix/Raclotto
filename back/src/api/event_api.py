@@ -1,4 +1,4 @@
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import BaseApi, found, not_found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
@@ -22,15 +22,7 @@ class EventApi(BaseApi):
         self.config_repository = EventConfigRepository()
 
     def _session(self, session_key: str) -> RaclottoSession:
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-        return session
+        return found(self.session_repository.by_key(session_key), "Session")
 
     def _configurable(self, session: RaclottoSession | None) -> None:
         with guarded():
@@ -53,12 +45,7 @@ class EventApi(BaseApi):
     def dismiss_event(self, event_id: int) -> None:
         """Hide an event from the signed-in user; other users still see it."""
         if not self.events.dismiss(event_id, get_current_user()):
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Event not found",
-                detail="The specified event does not exist or has already been dismissed",
-            )
+            raise not_found("Event", "The specified event does not exist or has already been dismissed")
         db.session.commit()
 
     @BaseApi.endpoint(
@@ -100,14 +87,7 @@ class EventApi(BaseApi):
     @require_auth
     def update_event_config(self, config_id: int, body: UpdateEventConfigBody) -> EventConfigDto:
         """Change an event config by id."""
-        config = self.config_repository.by_id(config_id)
-        if not config:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Configuration not found",
-                detail="The specified configuration does not exist",
-            )
+        config = found(self.config_repository.by_id(config_id), "Configuration")
         self._configurable(config.session)
         for field in body.model_fields_set:
             setattr(config, field, getattr(body, field))

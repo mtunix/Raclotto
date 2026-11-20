@@ -1,4 +1,4 @@
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import require_auth
 from back.src.driver.database import db
@@ -20,15 +20,7 @@ class PreparationTypeApi(BaseApi):
     def _session_id(self, session_key: str | None) -> int | None:
         if session_key is None:
             return None
-        session = self.session_repository.by_key(session_key)
-        if not session:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Session not found",
-                detail="The specified session does not exist",
-            )
-        return session.id
+        return found(self.session_repository.by_key(session_key), "Session").id
 
     @BaseApi.endpoint(
         "",
@@ -72,14 +64,7 @@ class PreparationTypeApi(BaseApi):
     @require_auth
     def delete_preparation_type(self, prep_type_id: int) -> None:
         """Delete a session's preparation type; the default types stay."""
-        prep_type: PreparationType | None = self.repository.by_id(prep_type_id)
-        if not prep_type:
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="Preparation type not found",
-                detail="The specified preparation type does not exist",
-            )
+        prep_type: PreparationType = found(self.repository.by_id(prep_type_id), "Preparation type")
         if prep_type.session_id is None:
             raise ApiError(
                 ApiErrorCode.incorrect_parameters,

@@ -1,6 +1,6 @@
 import logging
 
-from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi
+from back.src.api.base_api import ApiErrorCode, BaseApi, ErrorSpec, found
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.driver.database import db
 from back.src.dto.profile_picture import (
@@ -18,10 +18,25 @@ from back.src.repository.user_repository import UserRepository
 logger = logging.getLogger(__name__)
 
 
-def _unavailable(error: PictureError) -> ApiError:
-    return ApiError(
-        ApiErrorCode.image_generation_unavailable, status=503, title="Image generation unavailable", detail=error.detail
-    )
+_UNAVAILABLE = ErrorSpec(ApiErrorCode.image_generation_unavailable, 503, "Image generation unavailable")
+_PROMPT_ERRORS = {
+    PictureError.UNAVAILABLE: _UNAVAILABLE,
+    PictureError.NO_IMAGE: ErrorSpec(ApiErrorCode.image_generation_failed, 500, "No image generated"),
+}
+# The generator's exception is logged; its text stays out of the response.
+_PROMPT_FAILED = ErrorSpec(
+    ApiErrorCode.image_generation_failed, 500, "Image generation failed", "Image generation failed. Please try again."
+)
+_LEVEL_FAILED = ErrorSpec(
+    ApiErrorCode.image_generation_failed,
+    500,
+    "Profile picture generation failed",
+    "Failed to generate profile picture. Please try again.",
+)
+_CANDIDATE_ERRORS = {
+    PictureError.NOT_FOUND: ErrorSpec(ApiErrorCode.resource_not_found, 404, "Picture not found"),
+    PictureError.NOT_YOURS: ErrorSpec(ApiErrorCode.forbidden, 403, "Forbidden"),
+}
 
 
 def _generated(entry: ProfilePictureHistory) -> GeneratedPictureDto:
@@ -59,13 +74,7 @@ class ImageApi(BaseApi):
     @require_auth
     def get_profile_picture_history(self, user_id: int) -> list[ProfilePictureDto]:
         """List any user's profile pictures, newest first."""
-        if not UserRepository().by_id(user_id):
-            raise ApiError(
-                ApiErrorCode.resource_not_found,
-                status=404,
-                title="User not found",
-                detail=f"User with ID {user_id} does not exist",
-            )
+        found(UserRepository().by_id(user_id), "User")
         history = ProfilePictureHistoryRepository().by_user_id(user_id)
         return [ProfilePictureDto.model_validate(entry) for entry in history]
 
@@ -83,19 +92,7 @@ class ImageApi(BaseApi):
         try:
             picture = self.pictures.generate_from_prompt(get_current_user(), body.prompt)
         except PictureError as e:
-            if e.kind == PictureError.UNAVAILABLE:
-                raise _unavailable(e) from e
-            if e.kind == PictureError.NO_IMAGE:
-                raise ApiError(
-                    ApiErrorCode.image_generation_failed, status=500, title="No image generated", detail=e.detail
-                ) from e
-            # The generator's exception is logged; its text stays out of the response.
-            raise ApiError(
-                ApiErrorCode.image_generation_failed,
-                status=500,
-                title="Image generation failed",
-                detail="Image generation failed. Please try again.",
-            ) from e
+            raise _PROMPT_ERRORS.get(e.kind, _PROMPT_FAILED).error(e.detail) from e
         dto = _generated(picture)
         db.session.commit()
         return dto
@@ -115,14 +112,9 @@ class ImageApi(BaseApi):
             picture = self.pictures.generate_for_level(get_current_user(), body.level_id)
         except PictureError as e:
             if e.kind == PictureError.UNAVAILABLE:
-                raise _unavailable(e) from e
+                raise _UNAVAILABLE.error(e.detail) from e
             logger.error("Profile picture generation failed: %s", e.detail)
-            raise ApiError(
-                ApiErrorCode.image_generation_failed,
-                status=500,
-                title="Profile picture generation failed",
-                detail="Failed to generate profile picture. Please try again.",
-            ) from e
+            raise _LEVEL_FAILED.error() from e
         dto = _generated(picture)
         db.session.commit()
         return dto
@@ -140,9 +132,5 @@ class ImageApi(BaseApi):
         try:
             self.pictures.choose_candidate(get_current_user(), picture_id)
         except PictureError as e:
-            if e.kind == PictureError.NOT_FOUND:
-                raise ApiError(
-                    ApiErrorCode.resource_not_found, status=404, title="Picture not found", detail=e.detail
-                ) from e
-            raise ApiError(ApiErrorCode.forbidden, status=403, title="Forbidden", detail=e.detail) from e
+            raise _CANDIDATE_ERRORS[e.kind].error(e.detail) from e
         db.session.commit()
