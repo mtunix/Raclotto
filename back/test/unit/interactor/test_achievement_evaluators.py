@@ -34,6 +34,7 @@ from back.src.interactor.facts import (
     PanRated,
     PanRolled,
     SessionClosed,
+    SessionDeleted,
     SessionOpened,
 )
 from back.src.repository.ingredient_repository import IngredientRepository
@@ -534,19 +535,23 @@ class TestDeclarations(unittest.TestCase):
             with self.subTest(type(evaluator).__name__):
                 self.assert_declares(evaluator, rated_fact(), "pan_owner")
 
-    def test_rolling_or_deleting_a_pan_judges_every_member_again_for_the_most_pans(self):
+    def test_rolling_or_deleting_a_pan_or_the_session_judges_every_member_again_for_the_most_pans(self):
         evaluator = KingOfTheGrillEvaluator()
+        gone = SessionDeleted(SESSION, members=(ANA, BEN))
 
-        self.assertEqual(evaluator.reacts_to, (PanRolled, PanDeleted))
-        self.assertEqual({evaluator.audience(rolled()), evaluator.audience(deleted())}, {"session_members"})
+        self.assertEqual(evaluator.reacts_to, (PanRolled, PanDeleted, SessionDeleted))
+        self.assertEqual(
+            {evaluator.audience(rolled()), evaluator.audience(deleted()), evaluator.audience(gone)}, {"session_members"}
+        )
         self.assertTrue(evaluator.revocable)
 
     def test_rolling_or_deleting_a_pan_judges_its_author_again_for_every_sauce(self):
         evaluator = KingOfTheSauceEvaluator()
 
-        self.assertEqual(evaluator.reacts_to, (PanRolled, PanDeleted, IngredientAdded, CatalogChanged))
+        self.assertEqual(evaluator.reacts_to, (PanRolled, PanDeleted, IngredientAdded, CatalogChanged, SessionDeleted))
         self.assertEqual({evaluator.audience(rolled()), evaluator.audience(deleted())}, {"actor"})
         self.assertEqual(evaluator.audience(CatalogChanged(SESSION)), "session_members")
+        self.assertEqual(evaluator.audience(SessionDeleted(SESSION, members=(ANA,))), "session_members")
         self.assertTrue(evaluator.revocable)
 
     def test_closing_judges_the_last_pans_owner_for_good(self):

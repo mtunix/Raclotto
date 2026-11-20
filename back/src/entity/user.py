@@ -74,7 +74,9 @@ class User(Base):
     experience_points: Mapped[int] = mapped_column(default=0)
     level_id: Mapped[int | None] = mapped_column(ForeignKey("level.id"))
 
-    sessions: Mapped[list[RaclottoSession]] = relationship("RaclottoSession", secondary=user_sessions, lazy="selectin")
+    sessions: Mapped[list[RaclottoSession]] = relationship(
+        "RaclottoSession", secondary=user_sessions, back_populates="members", lazy="selectin"
+    )
 
     achievements: Mapped[list[Achievement]] = relationship("Achievement", secondary=user_achievements, lazy="selectin")
 

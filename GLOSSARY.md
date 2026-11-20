@@ -27,7 +27,7 @@ A session is active until it is closed; a closed session is inactive and can be 
 Code: `active`, `closeSession`, `reactivateSession`. Closing reports `SessionClosed`.
 UI: "End Session", "Evening Over", "(Inactive)"; reactivating is offered as "Join & Reactivate"
 to whoever may manage the session, everyone else sees only its recap.
-_Avoid_: ended, archived, deleted (deleting is separate and removes the session)
+_Avoid_: ended, archived, deleted (deleting is separate and removes the session with everything in it)
 
 **Participant**:
 A user who belongs to a session. A user becomes a member the first time they roll a pan there;
@@ -188,9 +188,9 @@ and description from the translations, by key; the stored `title` only names the
 
 **Fact**:
 Something that happened in a session, reported to achievements and events: a pan rolled, a pan
-rated, a pan deleted, an ingredient added, the catalog changed, the session opened or closed.
+rated, a pan deleted, an ingredient added, the catalog changed, the session opened, closed or deleted.
 Code: `PanRolled`, `PanRated`, `PanDeleted`, `IngredientAdded`, `CatalogChanged`, `SessionOpened`,
-`SessionClosed`
+`SessionClosed`, `SessionDeleted`
 (`facts.py`).
 _Avoid_: event (that is the session event below), trigger
 

@@ -8,7 +8,7 @@ from back.src.interactor.achievement_evaluator import (
     EvaluationContext,
     EvaluationResult,
 )
-from back.src.interactor.facts import Fact, PanDeleted, PanRolled
+from back.src.interactor.facts import Fact, PanDeleted, PanRolled, SessionDeleted
 
 
 class KingOfTheGrillEvaluator(AchievementEvaluator):
@@ -18,10 +18,10 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
     (Eat the most pans in a raclotto session)
 
     Every member of the session is judged again whenever a pan is rolled or deleted there, since
-    either can change who has the most pans. Ties share the achievement.
+    either can change who has the most pans, and when the session is deleted. Ties share the achievement.
     """
 
-    reacts_to = (PanRolled, PanDeleted)
+    reacts_to = (PanRolled, PanDeleted, SessionDeleted)
     revocable = True
 
     def audience(self, fact: Fact) -> Audience:

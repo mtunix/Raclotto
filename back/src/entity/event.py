@@ -8,6 +8,7 @@ from back.src.driver.database import Base
 
 if TYPE_CHECKING:
     from back.src.entity.raclotto_session import RaclottoSession
+    from back.src.entity.user import User
 
 
 class Event(Base):
@@ -20,4 +21,6 @@ class Event(Base):
     data: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # Additional event data (pan IDs, user names, etc.)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    session: Mapped[RaclottoSession] = relationship("RaclottoSession", lazy="selectin")
+    session: Mapped[RaclottoSession] = relationship("RaclottoSession", back_populates="events", lazy="selectin")
+    # Only so that deleting an event deletes its dismissals.
+    dismissed_by: Mapped[list[User]] = relationship(secondary="user_event_dismissals")

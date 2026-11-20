@@ -30,6 +30,7 @@ from back.src.interactor.facts import (
     PanRated,
     PanRolled,
     SessionClosed,
+    SessionDeleted,
     SessionOpened,
 )
 from back.src.repository.achievement_repository import AchievementRepository
@@ -51,6 +52,7 @@ __all__ = [
     "PanRated",
     "PanRolled",
     "SessionClosed",
+    "SessionDeleted",
     "SessionOpened",
 ]
 
@@ -106,7 +108,7 @@ class Achievements:
                     continue
 
                 if subject.id not in contexts:
-                    contexts[subject.id] = self._context(subject, fact.session)
+                    contexts[subject.id] = self._context(subject, self._judged_in(subject, fact))
                 result = evaluator.judge(fact, subject, achievement, contexts[subject.id])
 
                 if result.unlocked and not held:
@@ -154,7 +156,10 @@ class Achievements:
             owner = self._users.by_id(fact.pan.user_id)
             return [owner] if owner else []
         if audience == "session_members":
-            ids = set(self._users.get_users_in_session(fact.session.id))
+            if isinstance(fact, SessionDeleted):
+                ids = {member.id for member in fact.members}
+            else:
+                ids = set(self._users.get_users_in_session(fact.session.id))
             if fact.actor is not None:
                 ids.add(fact.actor.id)
             return [u for u in (self._users.by_id(i) for i in sorted(ids)) if u]
@@ -165,6 +170,12 @@ class Achievements:
             owner = self._users.by_id(max(pans, key=lambda p: p.timestamp).user_id)
             return [owner] if owner else []
         raise ValueError(f"Unknown audience {audience!r}")
+
+    def _judged_in(self, user: User, fact: Fact) -> RaclottoSession:
+        """The fact's session; after a session is deleted, the one the user was last in, else the empty deleted one."""
+        if isinstance(fact, SessionDeleted):
+            return self._latest_session(user) or fact.session
+        return fact.session
 
     def _context(self, user: User, session: RaclottoSession) -> EvaluationContext:
         return EvaluationContext(

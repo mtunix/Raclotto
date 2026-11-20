@@ -94,7 +94,7 @@ class SessionApi(BaseApi):
     @require_auth
     def delete_session(self, session_id: int) -> None:
         """Delete a session."""
-        Sessions().delete(self._managed(self.repository.by_id(session_id)))
+        Sessions().delete(self._managed(self.repository.by_id(session_id)), get_current_user())
 
     @BaseApi.endpoint(
         "/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession", errors=(403, 404)

@@ -5,12 +5,14 @@
     Sessions().rename(session, "Saturday")
     Sessions().close(session, actor)
     Sessions().reactivate(session)
-    Sessions().delete(session)
+    Sessions().delete(session, actor)
 
 Its creator joins a session as it is created, and anyone who rolls there joins on their first pan;
 the join time counts for achievements such as "Pandler". Creating reports ``SessionOpened`` and
-closing ``SessionClosed``, so the achievements that wait for either are judged with it. Who may
-change a session is ``Permissions.manage_session``; nothing here checks.
+closing ``SessionClosed``, so the achievements that wait for either are judged with it. Deleting
+takes everything in the session along (the cascades on ``RaclottoSession``) and reports
+``SessionDeleted``, so the revocable achievements its members held there are judged again; their XP
+stays. Who may change a session is ``Permissions.manage_session``; nothing here checks.
 Changes are flushed; the endpoint commits the request's transaction (ADR 0008).
 """
 
@@ -21,7 +23,7 @@ from back.src.driver.database import db
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.src.interactor.achievements import Achievements
-from back.src.interactor.facts import SessionClosed, SessionOpened
+from back.src.interactor.facts import SessionClosed, SessionDeleted, SessionOpened
 from back.src.repository.session_repository import SessionRepository
 
 
@@ -65,6 +67,7 @@ class Sessions:
         session.active = True
         db.session.flush()
 
-    def delete(self, session: RaclottoSession) -> None:
+    def delete(self, session: RaclottoSession, actor: User) -> None:
+        fact = SessionDeleted(session=session, members=tuple(session.members), actor=actor)
         db.session.delete(session)
-        db.session.flush()
+        self._achievements.record(fact)

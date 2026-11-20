@@ -7,7 +7,7 @@ from back.src.interactor.achievement_evaluator import (
     EvaluationContext,
     EvaluationResult,
 )
-from back.src.interactor.facts import CatalogChanged, Fact, IngredientAdded, PanDeleted, PanRolled
+from back.src.interactor.facts import CatalogChanged, Fact, IngredientAdded, PanDeleted, PanRolled, SessionDeleted
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.pan_repository import PanRepository
 
@@ -16,11 +16,11 @@ class KingOfTheSauceEvaluator(AchievementEvaluator):
     """
     "King of the Sauce": the user has had a pan with every available sauce of the fact's session.
 
-    Lost again when new sauces appear, so catalog changes re-judge every member of the session, or
-    when its author deletes the only pan with a sauce.
+    Lost again when new sauces appear, so catalog changes re-judge every member of the session, when
+    its author deletes the only pan with a sauce, or when the session is deleted.
     """
 
-    reacts_to = (PanRolled, PanDeleted, IngredientAdded, CatalogChanged)
+    reacts_to = (PanRolled, PanDeleted, IngredientAdded, CatalogChanged, SessionDeleted)
     revocable = True
 
     def __init__(self) -> None:

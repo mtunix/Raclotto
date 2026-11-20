@@ -1,8 +1,12 @@
 from datetime import datetime
 
+from sqlalchemy import func, select, text
+
 from back.src.driver.database import db
 from back.src.dto.session import SessionDto
 from back.src.entity.achievement import AchievementKey
+from back.src.entity.event import Event
+from back.src.entity.ingredient import IngredientType
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.test.support import AppTest
@@ -195,3 +199,85 @@ class TestChangeSession(SessionApiTest):
         db.session.commit()
 
         self.assertEqual(self.call("GET", f"/sessions/{session.id}", self.ana).json["timestamp"], "2026-11-18T19:30:05")
+
+
+class TestDeleteSession(SessionApiTest):
+    """Deleting a session takes everything in it along; another session's rows stay."""
+
+    def furnish(self, key: str) -> RaclottoSession:
+        """A session ana created and ben joined, with ingredients, pans, ratings, events and configs."""
+        session = self.make_session(key, creator=self.ana)
+        potato = self.make_ingredient(session, "Potato")
+        self.make_ingredient(session, "Aioli", IngredientType.SAUCE)
+        prep_type = self.call("POST", "/preparation_type", self.ana, body={"name": "Fried"}, query={"session_key": key})
+        rolled = self.call(
+            "POST",
+            "/pans/generate",
+            self.ana,
+            body={"num_fill": 1, "num_sauce": 1, "preparation_type_id": prep_type.json["id"]},
+            query={"session_key": key},
+        )
+        picked = self.call("POST", "/pans", self.ben, body={"ingredients": [potato.id]}, query={"session_key": key})
+        for response in (prep_type, rolled, picked):
+            self.assertEqual(response.status_code, 200, response.json)
+        rated = self.call("POST", "/ratings", self.ben, body={"pan_id": rolled.json["pan"]["id"], "rating": 4})
+        event = Event(session_id=session.id, event_type="pan_swap", message="swap", data={})
+        db.session.add(event)
+        db.session.commit()
+        dismissed = self.call("POST", f"/events/{event.id}/dismiss", self.ben)
+        configured = self.call(
+            "POST", "/events/configs", self.ana, body={"event_type": "pan_swap", "enabled": False, "session_key": key}
+        )
+        self.assertEqual((rated.status_code, dismissed.status_code, configured.status_code), (200, 204, 200))
+        return session
+
+    def rows(self) -> dict[str, int]:
+        db.session.expire_all()
+        return {
+            table.name: db.session.execute(select(func.count()).select_from(table)).scalar_one()
+            for table in db.metadata.sorted_tables
+        }
+
+    def referencing(self, session: RaclottoSession) -> dict[str, int]:
+        """Rows of every table with a session_id column that name the session."""
+        counts = {
+            table.name: db.session.execute(
+                select(func.count()).select_from(table).where(table.c.session_id == session.id)
+            ).scalar_one()
+            for table in db.metadata.sorted_tables
+            if "session_id" in table.c
+        }
+        return {name: count for name, count in counts.items() if count}
+
+    def test_deleting_a_session_removes_everything_in_it(self):
+        self.furnish("kept")
+        before = self.rows()
+        doomed = self.furnish("doomed")
+
+        response = self.call("DELETE", f"/sessions/{doomed.id}", self.ana)
+
+        self.assertEqual(response.status_code, 204, response.json)
+        self.assertEqual(self.referencing(doomed), {})
+        self.assertEqual(db.session.execute(text("PRAGMA foreign_key_check")).all(), [])
+        # Achievements earned in the session may stay, as for a deleted pan.
+        changed = {name for name, count in self.rows().items() if count != before[name]}
+        self.assertLessEqual(changed, {"user_achievements", "user_achievement_progress"})
+
+    def test_the_creators_profile_stats_and_pans_still_load_after_deleting_a_session(self):
+        doomed = self.furnish("doomed")
+
+        self.assertEqual(self.call("DELETE", f"/sessions/{doomed.id}", self.ana).status_code, 204)
+
+        for path, query in (
+            (f"/users/{self.ana.id}", None),
+            (f"/users/{self.ana.id}/stats", None),
+            ("/pans", {"user_id": self.ana.id}),
+            ("/pans", None),
+            ("/stats", None),
+            ("/achievements", None),
+            ("/auth/me", None),
+        ):
+            with self.subTest(path=path, query=query):
+                response = self.call("GET", path, self.ana, query=query)
+                self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(self.call("GET", "/pans", self.ana).json["items"], [])

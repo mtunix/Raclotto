@@ -80,4 +80,22 @@ class SessionClosed:
     actor: User | None = None
 
 
-Fact = PanRolled | PanRated | PanDeleted | IngredientAdded | CatalogChanged | SessionOpened | SessionClosed
+@dataclass(frozen=True)
+class SessionDeleted:
+    """A session is gone with everything in it; ``members`` are those who had joined it."""
+
+    session: RaclottoSession
+    members: tuple[User, ...]
+    actor: User | None = None
+
+
+Fact = (
+    PanRolled
+    | PanRated
+    | PanDeleted
+    | IngredientAdded
+    | CatalogChanged
+    | SessionOpened
+    | SessionClosed
+    | SessionDeleted
+)

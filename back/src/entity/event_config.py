@@ -18,4 +18,6 @@ class EventConfig(Base):
     enabled: Mapped[bool] = mapped_column(default=True)
     frequency_minutes: Mapped[int | None]  # Optional frequency configuration
 
-    session: Mapped[RaclottoSession | None] = relationship("RaclottoSession", lazy="selectin")
+    session: Mapped[RaclottoSession | None] = relationship(
+        "RaclottoSession", back_populates="event_configs", lazy="selectin"
+    )

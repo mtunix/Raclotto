@@ -8,13 +8,16 @@ if TYPE_CHECKING:
 
 
 class SessionMixin:
+    __tablename__: str
+
     @declared_attr
     def session_id(cls) -> Mapped[int]:
         return mapped_column(ForeignKey("session.id"))
 
     @declared_attr
     def session(cls) -> Mapped[RaclottoSession]:
-        return relationship("RaclottoSession", uselist=False, lazy="selectin")
+        # Pairs with the session's collection named after the table: pans, ingredients, ratings.
+        return relationship("RaclottoSession", back_populates=f"{cls.__tablename__}s", lazy="selectin")
 
 
 class DomainMixin(SessionMixin):

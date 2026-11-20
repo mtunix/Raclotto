@@ -65,7 +65,7 @@ The deep modules in `interactor/` and what they own:
   rolls the whole roll back.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
   what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `PanDeleted`,
-  `IngredientAdded`, `CatalogChanged`, `SessionOpened`, `SessionClosed`); evaluators declare `reacts_to`, `audience`
+  `IngredientAdded`, `CatalogChanged`, `SessionOpened`, `SessionClosed`, `SessionDeleted`); evaluators declare `reacts_to`, `audience`
   and `revocable`, and are registered by the achievement's `key` (`AchievementKey`), which also names its texts in the
   frontend. Never special-case an achievement by key or title outside its evaluator. `record` flushes;
   the request commits it together with the change the fact reports.
@@ -87,7 +87,8 @@ The deep modules in `interactor/` and what they own:
   rating and a session's ingredients are open to everyone signed in. Never check ownership in a route.
 - **`sessions.py` — `Sessions`**: a session's lifecycle: create (its creator joins), join (a first
   pan joins too; the first join time stays, achievements count it), rename, close (reports
-  `SessionClosed`), reactivate and delete. Who may is `Permissions`'s question, not this module's.
+  `SessionClosed`), reactivate and delete (with everything in it; reports `SessionDeleted`). Who may is
+  `Permissions`'s question, not this module's.
 - **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
   worst and boldest pan, favorite ingredient, each participant's pans, XP and stars); read-only.
 - **`stats.py` — `Stats().of(session_key)`**: the dashboard of one session or all (newest pans,
