@@ -14,6 +14,7 @@ import {useNavigate} from "react-router";
 import {useTranslation} from "react-i18next";
 import {useAuthStore} from "../../AuthSlice";
 import {canManageSession} from "../../model/permissions";
+import "./StartScreen.css";
 
 export function JoinSession() {
     const { t } = useTranslation();
@@ -78,7 +79,7 @@ export function JoinSession() {
     if (!sortedSessions || sortedSessions.length === 0) {
         return (
             <Card title={t("session.joinExisting")}>
-                <p style={{ margin: 0, color: 'rgba(0, 0, 0, 0.45)' }}>{t("session.noSessionsAvailable")}</p>
+                <p className="start-empty">{t("session.noSessionsAvailable")}</p>
             </Card>
         );
     }
@@ -88,13 +89,13 @@ export function JoinSession() {
     const recapOnly = selected !== undefined && !selected.active && !canManageSession(user, selected);
 
     return (
-        <Card title={t("session.joinExisting")} style={{ height: '100%' }}>
+        <Card title={t("session.joinExisting")} className="start-card">
             <Form layout="vertical">
-                <Form.Item label={t("session.session")} style={{ marginBottom: 24 }}>
+                <Form.Item label={t("session.session")} className="mb-24">
                     <Select 
                         value={selectedIndex} 
                         onChange={onSessionSelected}
-                        style={{ width: '100%' }}
+                        className="full-width"
                         size="large"
                         options={sortedSessions.map((session: SessionDto, i: number) => ({
                             value: i,
@@ -104,13 +105,13 @@ export function JoinSession() {
                         }))}
                     />
                 </Form.Item>
-                <Form.Item style={{ marginBottom: 0 }}>
+                <Form.Item className="mb-0">
                     {selected && !selected.active && (
-                        <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#fff7e6', borderRadius: '8px', border: '1px solid #ffd591' }}>
-                            <Tag color="orange" style={{ marginBottom: '8px' }}>
+                        <div className="start-closed-notice">
+                            <Tag color="orange" className="mb-8">
                                 {t("session.inactive")}
                             </Tag>
-                            <div style={{ fontSize: '14px', color: '#666' }}>
+                            <div className="start-closed-message">
                                 {recapOnly
                                     ? t("session.closedMessage")
                                     : t("session.reactivateMessage")}
@@ -176,12 +177,12 @@ export function SessionSelector() {
     }
 
     return (
-        <div style={{ maxWidth: 1440, margin: '0 auto', padding: '40px 24px' }}>
+        <div className="start-selector">
             <Row gutter={[32, 32]}>
                 <Col xs={24} sm={24} md={12}>
-                    <Card title={t("session.createNew")} style={{ height: '100%' }}>
+                    <Card title={t("session.createNew")} className="start-card">
                         <Form layout="vertical">
-                            <Form.Item label={t("session.sessionName")} style={{ marginBottom: 24 }}>
+                            <Form.Item label={t("session.sessionName")} className="mb-24">
                                 <Input
                                     type="text"
                                     placeholder={t("session.sessionNamePlaceholder")}
@@ -192,7 +193,7 @@ export function SessionSelector() {
                                     onPressEnter={create}
                                 />
                             </Form.Item>
-                            <Form.Item style={{ marginBottom: 0 }}>
+                            <Form.Item className="mb-0">
                                 <Button 
                                     type="primary" 
                                     onClick={create}
@@ -211,7 +212,7 @@ export function SessionSelector() {
                     <JoinSession/>
                 </Col>
             </Row>
-            <Space style={{ width: '100%', justifyContent: 'center', marginTop: 24 }}>
+            <Space className="start-rules-link">
                 <Button type="link" onClick={() => navigate("/rules")}>
                     {t("rules.newHere")}
                 </Button>
@@ -234,9 +235,9 @@ export function StartScreen() {
     }, [session, navigate]);
 
     return (
-        <div style={{margin: "0", padding: "40px 24px"}}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, maxWidth: 1440, marginLeft: 'auto', marginRight: 'auto' }}>
-                <h2 style={{ margin: 0, fontSize: 32, fontWeight: 600, letterSpacing: '-0.022em' }}>{t("session.welcome")} {user?.name}</h2>
+        <div className="start-screen">
+            <div className="start-header">
+                <h2 className="start-welcome">{t("session.welcome")} {user?.name}</h2>
                 <Button size="large" onClick={() => { logout(); void navigate("/login"); }}>
                     {t("auth.logout")}
                 </Button>

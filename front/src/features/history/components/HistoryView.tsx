@@ -1,14 +1,14 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import {createPan, useGetPanFilterOptions} from "../../../api/generated/endpoints/pans/pans";
 import type {ListPansDirection, ListPansIngredientCountItem, ListPansSort, PanDto} from "../../../api/generated/model";
 import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar, Grid} from "antd";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
 import {useAuthStore} from "../../../AuthSlice";
-import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDisplay";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
 import {useNavigate, useParams} from "react-router";
-import {getTextureBorderImage} from "../../../lib/borderTextures";
+import { PanCard, PanCardIngredients } from "../../../shared/PanCard/PanCard";
+import "./HistoryView.css";
 import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
 import { PanResultModal } from "../../generation/PanResultModal";
 import { LevelUpPictureModal } from "../../generation/LevelUpPictureModal";
@@ -22,6 +22,14 @@ import {onErrorRetry} from "../../../lib/api/swrHooks";
 import {formatDateTime, formatRating, useLanguage} from "../../../lib/language";
 
 const {Title, Text} = Typography;
+
+/** Black or white, whichever reads better on `hexColor`. */
+function contrastColor(hexColor: string): string {
+    const color = hexColor.replace('#', '');
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(color.slice(i, i + 2), 16));
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+}
 
 export function HistoryView() {
     const { t } = useTranslation();
@@ -123,23 +131,6 @@ export function HistoryView() {
         setSelectedPan(null);
     }
 
-    // Function to determine if text should be black or white based on background color
-    const getContrastColor = (hexColor: string) => {
-        // Remove # if present
-        const color = hexColor.replace('#', '');
-        
-        // Convert to RGB
-        const r = parseInt(color.substr(0, 2), 16);
-        const g = parseInt(color.substr(2, 2), 16);
-        const b = parseInt(color.substr(4, 2), 16);
-        
-        // Calculate luminance (perceived brightness)
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        
-        // Return black for light colors, white for dark colors
-        return luminance > 0.5 ? '#000000' : '#ffffff';
-    };
-
     function handleProfileClick(userId?: number) {
         if (userId && sessionId) {
             const profileRoute = `/${sessionId}/profile/${userId}`;
@@ -153,92 +144,16 @@ export function HistoryView() {
 
     const renderPanCard = (pan: PanDto) => {
         const author = pan.author;
-        const borderColor = author?.color ?? "#d9d9d9";
-        // All borders are 5px
-        const borderWidth = '5px';
-        const borderStyle = author?.border_style ?? 'solid';
-        const borderTexture = author?.border_texture ?? null;
-        const textureBorderImage = getTextureBorderImage(borderTexture);
-        const glowEffect = author?.glow_effect ?? false;
+        const authorColor = author?.color || undefined;
+        const userRating = currentUser ? pan.ratings.find((r) => r.user_id === currentUser.id)?.rating : undefined;
 
-        // Build border style object
-        // Note: We need to explicitly override the global .ant-card { border: none; } rule
-        const cssBorderStyle = borderStyle as CSSProperties['borderStyle'];
-        const borderStyleObj: CSSProperties = {
-            height: '100%',
-            marginBottom: '16px',
-        };
-        
-        // Wrapper style for textured borders (needed for border-radius with border-image)
-        let wrapperStyle: CSSProperties | undefined = undefined;
-        
-        // Apply texture if available (border-image takes precedence over individual border properties)
-        if (textureBorderImage) {
-            // Workaround for border-image + border-radius: use wrapper with padding
-            // Extract the image URL from the border-image value
-            const imageUrl = textureBorderImage.match(/url\(([^)]+)\)/)?.[1];
-            
-            // Wrapper: has padding (creates border space), background with texture, rounded corners
-            wrapperStyle = {
-                borderRadius: '18px',
-                padding: borderWidth,
-                background: imageUrl ? `url(${imageUrl})` : borderColor,
-                backgroundSize: 'auto',
-                backgroundRepeat: 'repeat',
-                marginBottom: '16px',
-                position: 'relative' as const,
-                overflow: 'hidden' as const, // Ensure rounded corners clip the background
-            };
-            
-            // Card style for textured border - rounded corners, covers center area
-            // The card's background will cover the center, leaving only the padding area (border) visible
-            borderStyleObj.border = 'none';
-            borderStyleObj.borderRadius = '18px';
-            borderStyleObj.height = '100%';
-            borderStyleObj.marginBottom = '0';
-            borderStyleObj.backgroundColor = '#ffffff'; // Cover the center with white
-            borderStyleObj.position = 'relative' as const;
-        } else {
-            // No texture - use individual border properties for custom styling
-            // IMPORTANT: Set all border properties explicitly to override global CSS
-            borderStyleObj.borderTop = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
-            borderStyleObj.borderRight = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
-            borderStyleObj.borderBottom = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
-            borderStyleObj.borderLeft = `${borderWidth} ${cssBorderStyle} ${borderColor}`;
-            borderStyleObj.borderRadius = '18px'; // Also round non-textured borders
-        }
-        
-        // Apply glow effect if enabled
-        if (glowEffect) {
-            const glowColor = borderColor || "#1890ff";
-            
-            // Balanced glow effect
-            const glowStyle = `0 0 10px ${glowColor}50, 0 0 20px ${glowColor}30, 0 0 30px ${glowColor}15`;
-            
-            borderStyleObj.boxShadow = glowStyle;
-            borderStyleObj.position = 'relative';
-            borderStyleObj.zIndex = '10';
-            
-            if (wrapperStyle) {
-                wrapperStyle.boxShadow = glowStyle;
-                wrapperStyle.position = 'relative';
-                wrapperStyle.zIndex = '10';
-            }
-        }
-        
-        // Check if current user has rated this pan
-        let userRatingValue: number | undefined = undefined;
-        
-        if (currentUser) {
-            userRatingValue = pan.ratings.find((r) => r.user_id === currentUser.id)?.rating;
-        }
-        
-        const cardContent = (
-            <Space orientation="vertical" size="small" style={{ width: '100%' }}>
-                        {/* Header with name and rating */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <Space orientation="vertical" size={0} style={{ flex: 1 }}>
-                                <Title level={4} style={{ margin: 0, fontSize: '1rem', marginBottom: '4px' }}>
+        return (
+            <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
+                <PanCard author={author}>
+                    <Space orientation="vertical" size="small" className="full-width">
+                        <div className="pan-card-header">
+                            <Space orientation="vertical" size={0} className="pan-card-heading">
+                                <Title level={4} className="pan-card-title">
                                     {displayName(pan.name, t)}
                                 </Title>
                                 <Space size="small" align="center">
@@ -246,106 +161,56 @@ export function HistoryView() {
                                         <Avatar
                                             src={author.profile_picture}
                                             size={32}
-                                            style={{ 
-                                                cursor: 'pointer',
-                                                border: '2px solid #d9d9d9',
-                                                flexShrink: 0
-                                            }}
+                                            className="history-author-avatar"
                                             onClick={() => handleProfileClick(author.id)}
                                         >
                                             {!author.profile_picture && (
-                                                <span style={{ fontSize: '14px' }}>
+                                                <span className="history-author-initial">
                                                     {author.name.charAt(0).toUpperCase() || 'U'}
                                                 </span>
                                             )}
                                         </Avatar>
                                     )}
-                                    <Text type="secondary" style={{ fontSize: '0.8rem' }}>
+                                    <Text type="secondary" className="history-author">
                                         {t("history.consumedBy")} <strong>{author?.name ?? t("profile.unknownUser")}</strong>
                                     </Text>
                                 </Space>
-                                <Text type="secondary" style={{ fontSize: '0.7rem' }}>
+                                <Text type="secondary" className="pan-card-meta">
                                     {t("history.consumedAt")} {formatDateTime(pan.timestamp, language)}
                                 </Text>
                             </Space>
-                            <div style={{ textAlign: 'right', marginLeft: '8px' }}>
+                            <div className="pan-card-side">
                                 <Rate
-                                    value={userRatingValue ?? 0}
+                                    value={userRating ?? 0}
                                     onChange={(rating: number) => onRating(pan.id, rating)}
                                     allowHalf
-                                    style={{ fontSize: '0.9rem' }}
+                                    className="history-rate"
                                 />
                                 {pan.rating > 0 && (
-                                    <div style={{ marginTop: '2px' }}>
-                                        <Tag color="gold" style={{ fontSize: '0.7rem' }}>
+                                    <div className="history-score">
+                                        <Tag color="gold" className="pan-card-score">
                                             {formatRating(pan.rating, language)}
                                         </Tag>
                                     </div>
                                 )}
                             </div>
                         </div>
-
-                        {/* All Ingredients */}
-                        <div>
-                            {pan.ingredients.length > 0 ? (
-                                <Space wrap size="small">
-                                    {pan.ingredients.map((ingredient) => (
-                                        <IngredientDisplay 
-                                            key={ingredient.id}
-                                            ingredient={ingredient}
-                                            variant="badge"
-                                            showTags={false}
-                                            showIcon={true}
-                                        />
-                                    ))}
-                                </Space>
-                            ) : (
-                                <Text type="secondary" style={{ fontSize: '0.85rem' }}>
-                                    {t("ingredient.noIngredients")}
-                                </Text>
-                            )}
-                        </div>
-
-                        {/* Action button */}
-                        <Button 
-                            type="primary" 
-                            block 
-                            size="small" 
-                            style={{ 
-                                marginTop: '4px',
-                                backgroundColor: borderColor,
-                                borderColor: borderColor,
-                                color: getContrastColor(borderColor)
-                            }}
+                        <PanCardIngredients ingredients={pan.ingredients} />
+                        <Button
+                            type="primary"
+                            block
+                            size="small"
+                            className="history-clone-button"
+                            // The author's colour, as their border has it.
+                            style={authorColor ? { backgroundColor: authorColor, borderColor: authorColor, color: contrastColor(authorColor) } : undefined}
                             onClick={() => handleCloneClick(pan)}
                             loading={cloningPanId === pan.id}
                             disabled={cloningPanId !== null}
                         >
                             {t("history.iWantThisToo")}
                         </Button>
-            </Space>
-        );
-
-        return (
-            <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
-                {textureBorderImage ? (
-                    // Wrapper div for textured borders (allows border-radius with border-image)
-                    <div style={wrapperStyle}>
-                        <Card
-                            style={borderStyleObj}
-                            styles={{ body: { padding: '12px' } }}
-                        >
-                            {cardContent}
-                        </Card>
-                    </div>
-                ) : (
-                    <Card
-                        style={borderStyleObj}
-                        styles={{ body: { padding: '12px' } }}
-                    >
-                        {cardContent}
-                    </Card>
-                )}
+                    </Space>
+                </PanCard>
             </Col>
         );
     };
@@ -385,31 +250,31 @@ export function HistoryView() {
                 <>
                     {isMobile ? (
                         // Mobile view - collapsible
-                        <Card style={{ marginBottom: '16px' }}>
+                        <Card className="mb-16">
                             <Button 
                                 type="default" 
                                 onClick={() => setFiltersExpanded(!filtersExpanded)}
-                                style={{ width: '100%', textAlign: 'left' }}
+                                className="history-filters-toggle"
                             >
                                 {t("history.sortAndFilters")}
-                                <span style={{ float: 'right' }}>
+                                <span className="history-filters-arrow">
                                     {filtersExpanded ? '▲' : '▼'}
                                 </span>
                                 {filterCount > 0 && (
-                                    <Tag style={{ marginLeft: '8px' }}>
+                                    <Tag className="ml-8">
                                         {filterCount}
                                     </Tag>
                                 )}
                             </Button>
                             {filtersExpanded && (
-                                <div style={{ marginTop: '16px' }}>
+                                <div className="mt-16">
                                     <SortingControls
                                         sortField={sortField}
                                         sortDirection={sortDirection}
                                         onSortFieldChange={setSortField}
                                         onSortDirectionChange={setSortDirection}
                                     />
-                                    <div style={{ marginTop: '16px' }}>
+                                    <div className="mt-16">
                                         <FilterControls
                                             selectedUsers={selectedUsers}
                                             selectedRatings={selectedRatings}
@@ -433,7 +298,7 @@ export function HistoryView() {
                     ) : (
                         // Desktop view - always visible
                         <>
-                            <Card style={{ marginBottom: '16px' }}>
+                            <Card className="mb-16">
                                 <SortingControls
                                     sortField={sortField}
                                     sortDirection={sortDirection}
@@ -442,7 +307,7 @@ export function HistoryView() {
                                 />
                             </Card>
 
-                            <Card style={{ marginBottom: '16px' }}>
+                            <Card className="mb-16">
                                 <FilterControls
                                     selectedUsers={selectedUsers}
                                     selectedRatings={selectedRatings}
@@ -466,7 +331,7 @@ export function HistoryView() {
             )}
 
             {waiting && pans.length === 0 ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                <div className="loading-block">
                     <Spin size="large" />
                 </div>
             ) : pans.length > 0 ? (
@@ -475,7 +340,7 @@ export function HistoryView() {
                         {pans.map(renderPanCard)}
                     </Row>
                     {hasMore && (
-                        <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '24px' }}>
+                        <div className="history-more">
                             <Button 
                                 type="primary" 
                                 loading={waiting}
@@ -489,8 +354,8 @@ export function HistoryView() {
                 </>
             ) : (
                 <Card>
-                    <div style={{ textAlign: 'center', padding: '40px' }}>
-                        <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>
+                    <div className="empty-state">
+                        <span className="empty-state-icon">
                             {VectorGraphics.HISTORY}
                         </span>
                         <Text type="secondary">

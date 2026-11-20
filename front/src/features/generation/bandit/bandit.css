@@ -52,3 +52,278 @@
 .bandit-locked-emoji {
     animation: emojiLock 0.5s ease-out;
 }
+
+.bandit-result-modal.ant-modal {
+    max-width: 1200px;
+}
+
+.bandit-result {
+    padding: 20px 0;
+}
+
+/* A banner in the same colours on either theme, so its text stays white. */
+.bandit-result-banner.ant-card {
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.bandit-result-banner-body.ant-card-body {
+    padding: 20px;
+}
+
+.bandit-result-name.ant-typography {
+    color: #ffffff;
+    margin: 0;
+    font-weight: 700;
+}
+
+.bandit-result-prep.ant-typography {
+    color: #ffffff;
+    opacity: 0.9;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 4px;
+}
+
+.bandit-result-rating {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.bandit-result-rate-label.ant-typography {
+    color: #ffffff;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.bandit-result-rate.ant-rate {
+    font-size: 1.2rem;
+}
+
+.bandit-result-again.ant-btn {
+    height: 48px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.bandit-reels {
+    margin-bottom: 16px;
+    min-height: 300px;
+}
+
+/* Two classes: App.css takes every card's border away. */
+.bandit-reel.ant-card {
+    --reel: var(--ant-color-border);
+    height: 100%;
+    border: 1px solid var(--reel);
+    transition: all 0.3s ease;
+}
+
+.bandit-reel-spinning.ant-card {
+    --reel: var(--ant-color-primary);
+    border-width: 2px;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--reel) 50%, transparent);
+    background-color: var(--ant-color-primary-bg);
+}
+
+.bandit-reel-locked.ant-card {
+    --reel: var(--ant-color-success);
+    border-width: 2px;
+    box-shadow: 0 0 15px color-mix(in srgb, var(--reel) 60%, transparent);
+    background-color: var(--ant-color-success-bg);
+}
+
+.bandit-reel-body.ant-card-body {
+    padding: 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+}
+
+.bandit-reel-window {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: var(--ant-color-fill-quaternary);
+    border: 1px solid var(--ant-color-border-secondary);
+    transition: all 0.3s ease;
+}
+
+.bandit-reel-spinning .bandit-reel-window,
+.bandit-reel-locked .bandit-reel-window {
+    border: 2px solid var(--reel);
+    box-shadow: inset 0 0 20px color-mix(in srgb, var(--reel) 25%, transparent);
+}
+
+.bandit-reel-item {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.bandit-reel-emoji {
+    font-size: 80px;
+    line-height: 1;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    margin-bottom: 16px;
+}
+
+.bandit-reel-spinning .bandit-reel-emoji {
+    transform: scale(0.9);
+    opacity: 0.8;
+    filter: blur(2px);
+}
+
+.bandit-reel-locked .bandit-reel-emoji {
+    transform: scale(1.1);
+}
+
+.bandit-reel-ingredient {
+    width: 100%;
+    padding: 0 8px;
+    transition: opacity 0.3s ease;
+    display: flex;
+    justify-content: center;
+}
+
+.bandit-reel-spinning .bandit-reel-ingredient {
+    opacity: 0.6;
+}
+
+/* The machine looks the same on either theme. */
+.slot-machine.ant-card {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+    border: 3px solid #4a5568;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 2px 8px rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-machine-ready.ant-card {
+    cursor: pointer;
+}
+
+.slot-machine-ready.ant-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 2px 8px rgba(255, 255, 255, 0.15);
+}
+
+.slot-machine-body.ant-card-body {
+    padding: 40px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.slot-machine-marquee {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.3) 0%, transparent 100%);
+    border-radius: 8px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-machine-title.ant-typography {
+    color: #ffd700;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    letter-spacing: 4px;
+}
+
+.slot-machine-reels.ant-row {
+    width: 100%;
+    margin-top: 100px;
+    margin-bottom: 40px;
+}
+
+.slot-machine-reel {
+    height: 200px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-machine-mystery {
+    font-size: 60px;
+    opacity: 0.6;
+    animation: mysteryPulse 2s ease-in-out infinite;
+    filter: blur(1px);
+}
+
+.slot-machine-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shine 3s infinite;
+}
+
+.slot-machine-lever {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.slot-machine-button {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+    display: inline-block;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slot-machine-button:disabled {
+    background: linear-gradient(135deg, #666 0%, #555 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    cursor: not-allowed;
+}
+
+.slot-machine-button-label.ant-typography {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    display: block;
+}

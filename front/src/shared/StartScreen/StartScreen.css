@@ -1,0 +1,52 @@
+.start-screen {
+    padding: 40px 24px;
+}
+
+.start-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto 32px;
+    max-width: 1440px;
+}
+
+.start-welcome {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+}
+
+.start-selector {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+.start-card.ant-card {
+    height: 100%;
+}
+
+.start-empty {
+    margin: 0;
+    color: var(--ant-color-text-description);
+}
+
+.start-closed-notice {
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: var(--ant-orange-1);
+    border-radius: 8px;
+    border: 1px solid var(--ant-orange-3);
+}
+
+.start-closed-message {
+    font-size: 14px;
+    color: var(--ant-color-text-secondary);
+}
+
+.start-rules-link.ant-space {
+    width: 100%;
+    justify-content: center;
+    margin-top: 24px;
+}

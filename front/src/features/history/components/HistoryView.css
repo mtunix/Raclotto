@@ -1,0 +1,61 @@
+.history-author-avatar.ant-avatar {
+    cursor: pointer;
+    border: 2px solid var(--ant-color-border);
+    flex-shrink: 0;
+}
+
+.history-author-initial {
+    font-size: 14px;
+}
+
+.history-author.ant-typography {
+    font-size: 0.8rem;
+}
+
+.history-rate.ant-rate {
+    font-size: 0.9rem;
+}
+
+.history-score {
+    margin-top: 2px;
+}
+
+.history-clone-button.ant-btn {
+    margin-top: 4px;
+}
+
+.history-filters-toggle.ant-btn {
+    width: 100%;
+    text-align: left;
+}
+
+.history-filters-arrow {
+    float: right;
+}
+
+.history-more {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.history-filter-options {
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.history-sorting-label.ant-typography {
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.history-sort-field.ant-select {
+    flex: 2;
+    min-width: 150px;
+}
+
+.history-sort-direction.ant-select {
+    flex: 1;
+    min-width: 80px;
+}

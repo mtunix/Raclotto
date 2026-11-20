@@ -1,11 +1,11 @@
-import type { ReactNode, CSSProperties } from "react";
+import type { ReactNode } from "react";
 import { Avatar, Button, Collapse, Spin } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ProfilePictureDto } from "../../api/generated/model";
 import { formatDate, useLanguage } from "../../lib/language";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
+import "./ProfilePictureManager.css";
 
-const CANDIDATE_BLUE = "#1890ff";
 
 const TAKEN_AT: Intl.DateTimeFormatOptions = {
   year: "numeric",
@@ -24,15 +24,15 @@ interface PictureHistoryProps {
   choosing?: number | null;
   /** Shown instead of the list when there are no pictures. */
   whenEmpty?: ReactNode;
-  style?: CSSProperties;
+  className?: string;
 }
 
 /** A user's pictures, newest first, in a collapsed panel. */
-export function PictureHistory({ history, loading, onChoose, choosing = null, whenEmpty = null, style }: PictureHistoryProps) {
+export function PictureHistory({ history, loading, onChoose, choosing = null, whenEmpty = null, className }: PictureHistoryProps) {
   const { t } = useTranslation();
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "20px" }}>
+      <div className="picture-history-loading">
         <Spin />
       </div>
     );
@@ -40,13 +40,13 @@ export function PictureHistory({ history, loading, onChoose, choosing = null, wh
   if (history.length === 0) return whenEmpty;
   return (
     <Collapse
-      style={style}
+      className={className}
       items={[
         {
           key: "1",
           label: `${t("profile.pictureHistory")} (${history.length})`,
           children: (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div className="stack-16">
               {history.map((entry) => (
                 <HistoryEntry key={entry.id} entry={entry} onChoose={onChoose} choosing={choosing} />
               ))}
@@ -69,24 +69,13 @@ function HistoryEntry({ entry, onChoose, choosing }: HistoryEntryProps) {
   const language = useLanguage();
   const highlighted = !!onChoose && entry.is_candidate;
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "8px",
-        padding: "12px",
-        border: highlighted ? `2px solid ${CANDIDATE_BLUE}` : "1px solid #f0f0f0",
-        borderRadius: "4px",
-        backgroundColor: highlighted ? "#f5f7ff" : "transparent",
-      }}
-    >
+    <div className={highlighted ? "picture-history-entry picture-history-candidate" : "picture-history-entry"}>
       <Avatar
         size={200}
         src={getProfilePictureUrl(entry.profile_picture)}
-        style={{ border: highlighted ? `3px solid ${CANDIDATE_BLUE}` : "2px solid #d9d9d9" }}
+        className="picture-history-avatar"
       />
-      <div style={{ textAlign: "center", fontSize: "12px", color: "#666" }}>
+      <div className="picture-history-meta">
         <div>{formatDate(entry.created_at, language, TAKEN_AT)}</div>
         {entry.level && (
           <div>
@@ -94,7 +83,7 @@ function HistoryEntry({ entry, onChoose, choosing }: HistoryEntryProps) {
           </div>
         )}
         {highlighted && (
-          <div style={{ marginTop: "4px", color: CANDIDATE_BLUE, fontWeight: "bold" }}>
+          <div className="picture-history-candidate-label">
             ✓ {t("image.generationCandidate")}
           </div>
         )}

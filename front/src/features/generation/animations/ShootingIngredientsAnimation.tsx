@@ -2,6 +2,7 @@ import { useState, Fragment } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
 import { VectorGraphics } from "../../../lib/vectorGraphics";
 import { Util } from "../../../lib/util";
+import { overlayClassName } from "./overlay";
 
 interface ShootingIngredientsAnimationProps {
     ingredients?: IngredientDto[];
@@ -100,20 +101,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
 
     return (
         <div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 9999,
-                pointerEvents: "none",
-                overflow: "hidden",
-                backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
-                transition: fading ? "opacity 250ms ease-out" : "none",
-                opacity: fading ? 0 : 1
-            }}
+            className={overlayClassName(fading)}
         >
             {/* Rocket exhaust smoke */}
             {exhaustParticles.map((particle) => {

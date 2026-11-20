@@ -119,16 +119,16 @@ export function Toolbar(props: ToolbarProps) {
     <Space
       orientation="vertical"
       size="small"
-      style={{ width: "100%", marginBottom: 0 }}
+      className="full-width mb-0"
     >
       {/* Desktop: Session info above toolbar */}
       <Row align="middle" gutter={16} className="toolbar-session-row-desktop">
         <Col span={24}>
-          <Flex align="center" gap="middle" style={{ width: "100%" }}>
+          <Flex align="center" gap="middle" className="full-width">
             <img
               src={raclotto}
               alt="Raclotto"
-              style={{ maxWidth: 180, height: "auto" }}
+              className="brand-logo toolbar-logo-desktop"
             />
             <Flex vertical gap={4}>
               <Space>
@@ -147,12 +147,7 @@ export function Toolbar(props: ToolbarProps) {
             <Avatar
               src={getProfilePictureUrl(profilePicture)}
               size={64}
-              className="toolbar-profile-avatar"
-              style={{
-                marginLeft: "auto",
-                cursor: "pointer",
-                border: "2px solid #d9d9d9",
-              }}
+              className="toolbar-profile-avatar toolbar-profile-avatar-desktop"
               onClick={handleProfileClick}
             >
               {!profilePicture && (
@@ -167,20 +162,18 @@ export function Toolbar(props: ToolbarProps) {
 
       {/* Mobile: Logo, leave button, and session name */}
       <Flex
-        className="toolbar-session-row-mobile"
+        className="toolbar-session-row-mobile full-width mb-8"
         align="center"
         gap={8}
-        style={{ marginBottom: 8, width: "100%" }}
       >
         <img
           src={raclotto}
           alt="Raclotto"
-          className="toolbar-logo-mobile"
-          style={{ flexShrink: 0 }}
+          className="brand-logo toolbar-logo-mobile"
         />
-        <Flex vertical gap={4} align="flex-start" style={{ flex: 1 }}>
+        <Flex vertical gap={4} align="flex-start" className="flex-1">
           <Space size="small">
-            <Text strong style={{ fontSize: "0.9rem" }}>
+            <Text strong className="toolbar-session-name">
               {sessionName}
             </Text>
           </Space>
@@ -197,15 +190,10 @@ export function Toolbar(props: ToolbarProps) {
           src={getProfilePictureUrl(profilePicture)}
           size={64}
           className="toolbar-profile-avatar"
-          style={{
-            cursor: "pointer",
-            border: "2px solid #d9d9d9",
-            flexShrink: 0,
-          }}
           onClick={handleProfileClick}
         >
           {!profilePicture && (
-            <span style={{ fontSize: "20px" }}>
+            <span className="toolbar-profile-avatar-initial">
               {userName?.charAt(0)?.toUpperCase() || "U"}
             </span>
           )}
@@ -220,8 +208,7 @@ export function Toolbar(props: ToolbarProps) {
             gap="small"
             justify="space-between"
             align="center"
-            className="toolbar-buttons-container"
-            style={{ width: "100%" }}
+            className="toolbar-buttons-container full-width"
           >
             <Space wrap size={[8, 8]} className="toolbar-buttons-space">
               {buttonProps.map(({ id, icon, label }) => (

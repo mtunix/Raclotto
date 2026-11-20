@@ -10,9 +10,59 @@ body {
   letter-spacing: -0.022em;
   color: #1d1d1f;
   background-color: #f5f5f7;
+  color-scheme: light;
+}
+
+/* The body is outside the theme's variables; these match its text and layout colours. */
+@media (prefers-color-scheme: dark) {
+  body {
+    color: rgba(255, 255, 255, 0.85);
+    background-color: #000000;
+    color-scheme: dark;
+  }
+
+  /* The logo's pot is black on transparent: it sits on a light plate. */
+  .brand-logo {
+    background-color: #f5f5f7;
+    border-radius: 16px;
+    padding: 6px;
+    box-sizing: border-box;
+  }
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* antd's App element carries the theme's variables; the type stays the body's. */
+.app-theme.ant-app {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* Spacing and layout helpers. They win over antd's own margins, as the inline styles they replace did. */
+.full-width { width: 100% !important; }
+.flex-1 { flex: 1 !important; }
+.text-center { text-align: center !important; }
+.m-0 { margin: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-4 { margin-bottom: var(--ant-margin-xxs, 4px) !important; }
+.mb-8 { margin-bottom: var(--ant-margin-xs, 8px) !important; }
+.mb-12 { margin-bottom: var(--ant-margin-sm, 12px) !important; }
+.mb-16 { margin-bottom: var(--ant-margin, 16px) !important; }
+.mb-24 { margin-bottom: var(--ant-margin-lg, 24px) !important; }
+.mb-32 { margin-bottom: var(--ant-margin-xl, 32px) !important; }
+.mt-4 { margin-top: var(--ant-margin-xxs, 4px) !important; }
+.mt-8 { margin-top: var(--ant-margin-xs, 8px) !important; }
+.mt-12 { margin-top: var(--ant-margin-sm, 12px) !important; }
+.mt-16 { margin-top: var(--ant-margin, 16px) !important; }
+.mt-24 { margin-top: var(--ant-margin-lg, 24px) !important; }
+.ml-4 { margin-left: var(--ant-margin-xxs, 4px) !important; }
+.ml-8 { margin-left: var(--ant-margin-xs, 8px) !important; }
+.stack-8 { display: flex; flex-direction: column; gap: var(--ant-margin-xs, 8px); }
+.stack-16 { display: flex; flex-direction: column; gap: var(--ant-margin, 16px); }
+.empty-state { text-align: center; padding: 40px; }
+.empty-state-icon { font-size: 3rem; display: block; margin-bottom: 16px; }
+.loading-block { display: flex; justify-content: center; align-items: center; min-height: 200px; }
+.page-title { font-weight: 600; font-size: 24px; letter-spacing: -0.022em; }

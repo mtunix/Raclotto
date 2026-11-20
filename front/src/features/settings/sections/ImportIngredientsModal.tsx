@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Button, Card, Input, message, Modal, Radio, Space } from "antd";
 import { useTranslation } from "react-i18next";
 import type { ImportedIngredient } from "../../../api/generated/model";
@@ -8,30 +8,6 @@ import { type StagedFieldChange, StagedIngredientCard } from "./StagedIngredient
 import "../SettingsView.css";
 
 type ImportMode = "import" | "reimport";
-
-const cardStyle: CSSProperties = {
-    borderRadius: "12px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-    border: "none",
-    marginBottom: "24px",
-};
-const cardTitleStyle: CSSProperties = {
-    fontSize: "17px",
-    fontWeight: 600,
-    letterSpacing: "-0.022em",
-    color: "#1d1d1f",
-    marginBottom: "16px",
-};
-const modeButtonStyle: CSSProperties = {
-    width: "100%",
-    height: "44px",
-    lineHeight: "44px",
-    textAlign: "center",
-    fontSize: "17px",
-    fontWeight: 500,
-    borderRadius: "12px",
-    letterSpacing: "-0.022em",
-};
 
 interface ImportIngredientsModalProps {
     open: boolean;
@@ -141,39 +117,39 @@ export function ImportIngredientsModal({ open, sessionKey, onClose }: ImportIngr
                 </Button>,
             ]}
             width="90%"
-            style={{ maxWidth: "1200px" }}
+            className="settings-import-modal"
         >
-            <Card style={cardStyle} styles={{ body: { padding: "20px" } }}>
-                <div style={cardTitleStyle}>{t("settings.selectImportMode")}</div>
-                <Radio.Group value={mode} onChange={(e) => setMode(e.target.value as ImportMode)} style={{ width: "100%" }}>
-                    <Space orientation="vertical" style={{ width: "100%" }} size="middle">
-                        <Radio.Button value="import" style={modeButtonStyle}>
+            <Card className="settings-import-card" classNames={{ body: "settings-import-card-body" }}>
+                <div className="settings-section-title mb-16">{t("settings.selectImportMode")}</div>
+                <Radio.Group value={mode} onChange={(e) => setMode(e.target.value as ImportMode)} className="full-width">
+                    <Space orientation="vertical" className="full-width" size="middle">
+                        <Radio.Button value="import" className="settings-import-mode">
                             {t("settings.importModeAdd")}
                         </Radio.Button>
-                        <Radio.Button value="reimport" style={modeButtonStyle}>
+                        <Radio.Button value="reimport" className="settings-import-mode">
                             {t("settings.importModeUpdate")}
                         </Radio.Button>
                     </Space>
                 </Radio.Group>
             </Card>
 
-            <Card style={cardStyle} styles={{ body: { padding: "20px" } }}>
-                <div style={cardTitleStyle}>{t("settings.pasteJson")}</div>
+            <Card className="settings-import-card" classNames={{ body: "settings-import-card-body" }}>
+                <div className="settings-section-title mb-16">{t("settings.pasteJson")}</div>
                 <Input.TextArea
                     placeholder={t("settings.pasteJsonHere")}
                     value={json}
                     onChange={onJsonChanged}
                     rows={8}
-                    style={{ fontFamily: "monospace", fontSize: "14px" }}
+                    className="settings-export"
                 />
             </Card>
 
             {staged.length > 0 && (
                 <div>
-                    <div style={{ fontSize: "17px", fontWeight: 600, marginBottom: "16px" }}>
+                    <div className="settings-import-preview-title">
                         {t("settings.stagingArea")} ({staged.length} {t("settings.ingredients")})
                     </div>
-                    <div style={{ maxHeight: "500px", overflowY: "auto", padding: "8px" }}>
+                    <div className="settings-import-preview">
                         {staged.map((ingredient, index) => (
                             <StagedIngredientCard
                                 // eslint-disable-next-line @eslint-react/no-array-index-key -- staged rows have no id until imported, and are never reordered

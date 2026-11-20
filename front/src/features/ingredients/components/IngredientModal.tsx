@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
-import { Modal, Form, Input, Radio, Button, message, Checkbox, Slider, Card, Row, Col } from 'antd';
+import { useState, useEffect, useCallback, type ChangeEvent, type ReactNode } from 'react';
+import { Modal, Form, Input, Radio, Button, message, Checkbox, Slider, Card, type FormItemProps } from 'antd';
 import { useTranslation } from "react-i18next";
 import { IngredientType } from "../../../api/generated/model";
 import type { CreateIngredientBody, IngredientForUserDto, UpdateIngredientBody } from "../../../api/generated/model";
 import { useAppStore } from "../../../AppSlice";
 import { categoryProblem, ingredientCatalog } from "../ingredientCatalog";
-import { ExclusiveTagChipGroup } from "../../../shared/ExclusiveTagChipGroup";
-import { MultiTagChipGroup } from "../../../shared/MultiTagChipGroup";
+import { ExclusiveTagChipGroup, TagChipGroup } from "../../../shared/TagChipGroup";
+import "./IngredientModal.css";
 
 interface IngredientModalProps {
     // Modal props
@@ -34,6 +34,29 @@ interface IngredientFormValues {
     spicy: number;
     wildcard?: boolean;
     sweet?: boolean;
+}
+
+interface SectionProps {
+    title: string;
+    /** The form field the whole section is, when it is one. */
+    field?: Pick<FormItemProps, "name" | "rules">;
+    /** The last section, which has its controls further apart and more space below. */
+    last?: boolean;
+    children: ReactNode;
+}
+
+function Section({ title, field, last = false, children }: SectionProps) {
+    const content = (
+        <div className={last ? "ingredient-modal-section-content ingredient-modal-section-content-wide" : "ingredient-modal-section-content"}>
+            <div className="ingredient-modal-section-title">{title}</div>
+            {children}
+        </div>
+    );
+    return (
+        <Card className={last ? "ingredient-modal-section ingredient-modal-section-last" : "ingredient-modal-section"} classNames={{ body: "ingredient-modal-section-body" }}>
+            {field ? <Form.Item className="mb-0" {...field}>{content}</Form.Item> : content}
+        </Card>
+    );
 }
 
 export function IngredientModal(props: IngredientModalProps) {
@@ -271,202 +294,83 @@ export function IngredientModal(props: IngredientModalProps) {
                 layout="vertical"
                 initialValues={getInitialValues()}
             >
-                <div style={{ padding: '8px 0' }}>
-                <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
-                    <Col span={24}>
-                        <Card 
-                            style={{ 
-                                borderRadius: '18px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                border: 'none'
+                <div className="ingredient-modal-body">
+                <Section title={t("ingredient.ingredientName")} field={{ name: "name", rules: [{ required: true, message: t("ingredient.nameRequired") }] }}>
+                    <Input
+                        size="large"
+                        value={ingredientName}
+                        onChange={handleNameChange}
+                        placeholder={t("common.enterName")}
+                        className="ingredient-modal-name"
+                    />
+                </Section>
+
+                <Section title={t("ingredient.type")} field={{ name: "type", rules: [{ required: true }] }}>
+                    <Radio.Group
+                        size="large"
+                        value={selectedType}
+                        onChange={(e) => handleTypeChange(e.target.value as IngredientType)}
+                    >
+                        <Radio value={IngredientType.FILL} className="ingredient-modal-radio ingredient-modal-radio-first">
+                            {t("ingredient.fill")}
+                        </Radio>
+                        <Radio value={IngredientType.SAUCE} className="ingredient-modal-radio">
+                            {t("ingredient.sauce")}
+                        </Radio>
+                    </Radio.Group>
+                </Section>
+
+                <Section title={t("ingredient.category")}>
+                    <Form.Item
+                        className="mb-0"
+                        validateStatus={categoryMissing ? "error" : undefined}
+                        help={categoryMissing ? t("ingredient.categoryRequired") : undefined}
+                    >
+                        <ExclusiveTagChipGroup
+                            options={categoryOptions}
+                            selectedValue={selectedCategory}
+                            onChange={handleCategoryChange}
+                        />
+                    </Form.Item>
+                </Section>
+
+                <Section title={t("ingredient.allergens")}>
+                    <TagChipGroup
+                        options={allergenOptions}
+                        values={allergenValues}
+                        onChange={handleAllergenChange}
+                    />
+                </Section>
+
+                <Section title={t("ingredient.additionalProperties")} last>
+                    <div>
+                        <div className="ingredient-modal-label">
+                            {t("ingredient.spicy")}
+                        </div>
+                        <Slider
+                            min={0}
+                            max={3}
+                            marks={{ 0: '0', 1: '1', 2: '2', 3: '3' }}
+                            value={spicyLevel}
+                            onChange={(value) => {
+                                setSpicyLevel(value);
+                                form.setFieldsValue({ spicy: value });
                             }}
-                            styles={{ body: { padding: '24px' } }}
-                        >
-                            <Form.Item 
-                                style={{ marginBottom: 0 }}
-                                name="name"
-                                rules={[{ required: true, message: t("ingredient.nameRequired") }]}
-                            >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                        {t("ingredient.ingredientName")}
-                                    </div>
-                                    <Input
-                                        size="large"
-                                        value={ingredientName}
-                                        onChange={handleNameChange}
-                                        placeholder={t("common.enterName")}
-                                        style={{ 
-                                            fontSize: '20px',
-                                            height: '44px'
-                                        }}
-                                    />
-                                </div>
-                            </Form.Item>
-                        </Card>
-                    </Col>
-                </Row>
+                        />
+                    </div>
 
-                <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
-                    <Col span={24}>
-                        <Card 
-                            style={{ 
-                                borderRadius: '18px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                border: 'none'
-                            }}
-                            styles={{ body: { padding: '24px' } }}
-                        >
-                            <Form.Item 
-                                style={{ marginBottom: 0 }}
-                                name="type"
-                                rules={[{ required: true }]}
-                            >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                        {t("ingredient.type")}
-                                    </div>
-                                    <Radio.Group 
-                                        size="large"
-                                        value={selectedType}
-                                        onChange={(e) => handleTypeChange(e.target.value as IngredientType)}
-                                    >
-                                        <Radio 
-                                            value={IngredientType.FILL}
-                                            style={{ 
-                                                fontSize: '17px',
-                                                letterSpacing: '-0.022em',
-                                                marginRight: '24px',
-                                                padding: '8px 0'
-                                            }}
-                                        >
-                                            {t("ingredient.fill")}
-                                        </Radio>
-                                        <Radio 
-                                            value={IngredientType.SAUCE}
-                                            style={{ 
-                                                fontSize: '17px',
-                                                letterSpacing: '-0.022em',
-                                                padding: '8px 0'
-                                            }}
-                                        >
-                                            {t("ingredient.sauce")}
-                                        </Radio>
-                                    </Radio.Group>
-                                </div>
-                            </Form.Item>
-                        </Card>
-                    </Col>
-                </Row>
+                    <Form.Item name="wildcard" valuePropName="checked" className="mb-0">
+                        <Checkbox className="ingredient-modal-check">
+                            {t("ingredient.wildcard")}
+                        </Checkbox>
+                    </Form.Item>
 
-                <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
-                    <Col span={24}>
-                        <Card 
-                            style={{ 
-                                borderRadius: '18px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                border: 'none'
-                            }}
-                            styles={{ body: { padding: '24px' } }}
-                        >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                    {t("ingredient.category")}
-                                </div>
-                                <Form.Item
-                                    style={{ marginBottom: 0 }}
-                                    validateStatus={categoryMissing ? "error" : undefined}
-                                    help={categoryMissing ? t("ingredient.categoryRequired") : undefined}
-                                >
-                                    <ExclusiveTagChipGroup
-                                        options={categoryOptions}
-                                        selectedValue={selectedCategory}
-                                        onChange={handleCategoryChange}
-                                    />
-                                </Form.Item>
-                            </div>
-                        </Card>
-                    </Col>
-                </Row>
-
-                <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
-                    <Col span={24}>
-                        <Card 
-                            style={{ 
-                                borderRadius: '18px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                border: 'none'
-                            }}
-                            styles={{ body: { padding: '24px' } }}
-                        >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                    {t("ingredient.allergens")}
-                                </div>
-                                <MultiTagChipGroup
-                                    options={allergenOptions}
-                                    values={allergenValues}
-                                    onChange={handleAllergenChange}
-                                />
-                            </div>
-                        </Card>
-                    </Col>
-                </Row>
-
-                <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
-                    <Col span={24}>
-                        <Card 
-                            style={{ 
-                                borderRadius: '18px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                border: 'none'
-                            }}
-                            styles={{ body: { padding: '24px' } }}
-                        >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                                <div style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
-                                    {t("ingredient.additionalProperties")}
-                                </div>
-                                
-                                <div>
-                                    <div style={{ marginBottom: '8px', fontSize: '17px', letterSpacing: '-0.022em' }}>
-                                        {t("ingredient.spicy")}
-                                    </div>
-                                    <Slider
-                                        min={0}
-                                        max={3}
-                                        marks={{ 0: '0', 1: '1', 2: '2', 3: '3' }}
-                                        value={spicyLevel}
-                                        onChange={(value) => {
-                                            setSpicyLevel(value);
-                                            form.setFieldsValue({ spicy: value });
-                                        }}
-                                    />
-                                </div>
-
-                                <Form.Item
-                                    name="wildcard"
-                                    valuePropName="checked"
-                                    style={{ marginBottom: 0 }}
-                                >
-                                    <Checkbox style={{ fontSize: '17px', letterSpacing: '-0.022em' }}>
-                                        {t("ingredient.wildcard")}
-                                    </Checkbox>
-                                </Form.Item>
-
-                                <Form.Item
-                                    name="sweet"
-                                    valuePropName="checked"
-                                    style={{ marginBottom: 0 }}
-                                >
-                                    <Checkbox style={{ fontSize: '17px', letterSpacing: '-0.022em' }}>
-                                        {t("ingredient.sweet")}
-                                    </Checkbox>
-                                </Form.Item>
-                            </div>
-                        </Card>
-                    </Col>
-                </Row>
+                    <Form.Item name="sweet" valuePropName="checked" className="mb-0">
+                        <Checkbox className="ingredient-modal-check">
+                            {t("ingredient.sweet")}
+                        </Checkbox>
+                    </Form.Item>
+                </Section>
             </div>
             </Form>
         </Modal>

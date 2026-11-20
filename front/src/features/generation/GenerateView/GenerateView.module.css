@@ -20,11 +20,17 @@
   border: none;
 }
 
-.cardBody {
+.cardBody,
+.cardBody:global(.ant-card-body) {
   padding: 24px;
 }
 
-.cardBodyLarge {
+.optionsCardBody:global(.ant-card-body) {
+  padding: 20px 24px;
+}
+
+.cardBodyLarge,
+.cardBodyLarge:global(.ant-card-body) {
   padding: 28px;
 }
 
@@ -76,9 +82,9 @@
 
 .ingredientCard {
   height: 100%;
-  border: 2px solid #52c41a;
-  box-shadow: 0 4px 16px rgba(82, 196, 26, 0.3);
-  background-color: #f6ffed;
+  border: 2px solid var(--ant-color-success);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--ant-color-success) 30%, transparent);
+  background-color: var(--ant-color-success-bg);
   border-radius: 18px;
 }
 
@@ -110,7 +116,7 @@
   font-size: 17px;
   font-weight: 500;
   letter-spacing: -0.022em;
-  color: #1d1d1f;
+  color: var(--ant-color-text);
   text-align: center;
   margin: 0;
 }
@@ -190,7 +196,7 @@
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.022em;
-  color: #1d1d1f;
+  color: var(--ant-color-text);
 }
 
 .textSecondary {
@@ -218,14 +224,31 @@
   justify-content: center;
   border-radius: 12px;
   font-weight: 500;
-  border: 1px solid #d2d2d7;
-  background: #ffffff;
+  border: 1px solid var(--ant-color-border);
+  background: var(--ant-color-bg-container);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .incrementButton:hover:not(:disabled) {
-  background: #f5f5f7;
-  border-color: #0071e3;
+  background: var(--ant-color-fill-tertiary);
+  border-color: var(--ant-color-primary);
+}
+
+.stepper,
+.stepper:global(.ant-space-compact) {
+  display: flex;
+  gap: 8px;
+}
+
+.optionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.optionHeaderSpaced {
+  padding-bottom: 8px;
 }
 
 /* Input styles */
@@ -290,10 +313,10 @@
 /* Bandit mode styles */
 .banditCard {
   height: 100%;
-  border: 2px solid #52c41a;
-  box-shadow: 0 4px 16px rgba(82, 196, 26, 0.3);
+  border: 2px solid var(--ant-color-success);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--ant-color-success) 30%, transparent);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: #f6ffed;
+  background-color: var(--ant-color-success-bg);
   border-radius: 18px;
 }
 
@@ -317,9 +340,9 @@
   position: relative;
   overflow: hidden;
   border-radius: 8px;
-  background-color: #fafafa;
-  border: 2px solid #52c41a;
-  box-shadow: inset 0 0 20px rgba(82, 196, 26, 0.3);
+  background-color: var(--ant-color-fill-quaternary);
+  border: 2px solid var(--ant-color-success);
+  box-shadow: inset 0 0 20px color-mix(in srgb, var(--ant-color-success) 30%, transparent);
   transition: all 0.3s ease;
 }
 
@@ -495,21 +518,28 @@
 /* Slider overrides */
 .cheeseSliderContainer :global(.ant-slider .ant-slider-track) {
   background: #ffd700 !important;
-  background-color: #ffd700 !important;
   height: 8px !important;
 }
 
 .cheeseSliderContainer :global(.ant-slider .ant-slider-rail) {
-  background: #f0f0f0 !important;
-  background-color: #f0f0f0 !important;
+  background: var(--ant-color-fill-secondary) !important;
   height: 8px !important;
 }
 
+/* The cheese emoji above it is the handle. */
 .cheeseSliderContainer :global(.ant-slider .ant-slider-handle) {
+  opacity: 0 !important;
   pointer-events: none !important;
   cursor: default !important;
 }
 
 .cheeseSliderContainer :global(.ant-slider:hover .ant-slider-handle) {
   border-color: transparent !important;
+}
+
+.leveledUp:global(.ant-typography) {
+  color: #ffffff;
+  font-size: 16px;
+  display: block;
+  margin-top: 8px;
 }

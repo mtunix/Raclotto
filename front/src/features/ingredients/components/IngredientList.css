@@ -1,0 +1,70 @@
+/* Above ItemList's own row selector, whose padding and divider these replace. */
+.item-list .item-list-row.ingredient-list-item {
+    margin-bottom: 8px;
+    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid;
+}
+
+.item-list .item-list-row.ingredient-list-item-fill {
+    background-color: var(--ant-color-primary-bg);
+    border-color: var(--ant-color-primary-border);
+}
+
+.item-list .item-list-row.ingredient-list-item-sauce {
+    background-color: var(--ant-color-fill-secondary);
+    border-color: var(--ant-color-border);
+}
+
+.item-list .item-list-row.ingredient-list-item-unavailable {
+    background-color: var(--ant-color-error-bg);
+    border-color: var(--ant-color-error-border);
+}
+
+.ingredient-list-item-muted {
+    opacity: 0.6;
+}
+
+.ingredient-list-item-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.ingredient-list-item-main {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.ingredient-list-item-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.ingredient-group-label {
+    font-weight: 500;
+    color: #8e8e93;
+    font-size: 15px;
+    letter-spacing: -0.022em;
+}
+
+.ingredient-group-count .ant-badge-count {
+    background-color: #8e8e93;
+}
+
+.ingredient-group-label.ingredient-group-unavailable {
+    color: var(--ant-color-error);
+}
+
+.ingredient-group-count.ingredient-group-unavailable .ant-badge-count {
+    background-color: var(--ant-color-error);
+}
+
+.ingredient-list-empty.ant-empty {
+    padding: 40px 0;
+}

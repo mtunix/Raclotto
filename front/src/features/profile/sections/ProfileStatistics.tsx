@@ -21,7 +21,7 @@ export function ProfileStatistics({ stats }: { stats: Partial<UserStatsDto> }) {
   const language = useLanguage();
   const whole = numberFormatter(language);
   return (
-    <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+    <Row gutter={[16, 16]} className="mb-24">
       <StatisticCard
         title={t("profile.totalPans")}
         value={stats.total_pans || 0}

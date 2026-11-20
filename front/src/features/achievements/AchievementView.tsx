@@ -7,6 +7,8 @@ import { VectorGraphics } from "../../lib/vectorGraphics";
 import { achievementDescription, achievementTitle } from "../../shared/achievementText";
 import { achievementValueColor } from "../../shared/achievementValueColor";
 import {useTranslation} from "react-i18next";
+import { PROGRESS_GRADIENT } from "../../shared/progressGradient";
+import "./AchievementView.css";
 
 const {Title, Text} = Typography;
 
@@ -19,7 +21,7 @@ export function AchievementView() {
 
     if (waiting) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+            <div className="loading-block">
                 <Spin size="large" />
             </div>
         );
@@ -37,56 +39,40 @@ export function AchievementView() {
             <Col xs={24} sm={12} md={8} lg={6} key={achievement.id}>
                 <Card
                     hoverable
-                    style={{
-                        height: '100%',
-                        marginBottom: '16px',
-                        border: isUnlocked 
-                            ? '2px solid #52c41a' 
-                            : isHidden 
-                                ? '2px dashed #d9d9d9' 
-                                : '1px solid #d9d9d9',
-                        backgroundColor: isUnlocked 
-                            ? '#f6ffed' 
-                            : isHidden 
-                                ? '#fafafa' 
-                                : '#ffffff'
-                    }}
-                    styles={{ body: { padding: '16px' } }}
+                    className={`achievement-tile ${isUnlocked ? "achievement-tile-unlocked" : isHidden ? "achievement-tile-hidden" : ""}`}
+                    classNames={{ body: "achievement-tile-body" }}
                 >
-                    <Space orientation="vertical" size="small" style={{ width: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Space orientation="vertical" size="small" className="full-width">
+                        <div className="achievement-tile-header">
                             <Space>
-                                <span style={{ fontSize: '1.5rem' }}>{VectorGraphics.ACHIEVEMENTS}</span>
-                                <Title level={5} style={{ margin: 0, fontSize: '1rem' }}>
+                                <span className="achievement-tile-icon">{VectorGraphics.ACHIEVEMENTS}</span>
+                                <Title level={5} className="achievement-tile-title">
                                     {displayTitle}
                                 </Title>
                             </Space>
-                            <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            <Tag color={achievementValueColor(achievement.value)} className="achievement-tile-points">
                                 {formatNumber(achievement.value, language)} {t("achievement.points")}
                             </Tag>
                         </div>
                         {displayDescription && (
-                            <Text type="secondary" style={{ fontSize: '0.85rem', display: 'block' }}>
+                            <Text type="secondary" className="achievement-tile-description">
                                 {displayDescription}
                             </Text>
                         )}
                         {isUnlocked && (
-                            <Tag color="success" style={{ fontSize: '0.75rem' }}>
+                            <Tag color="success" className="achievement-tile-unlocked-tag">
                                 {t("achievement.unlocked")}
                             </Tag>
                         )}
                         {showProgress && !isUnlocked && (
-                            <div style={{ marginTop: '8px' }}>
+                            <div className="mt-8">
                                 <Progress 
                                     percent={Math.round(progress * 100)}
                                     format={(percent = 0) => formatNumber(percent / 100, language, { style: "percent" })}
                                     size="small"
-                                    strokeColor={{
-                                        '0%': '#108ee9',
-                                        '100%': '#87d068',
-                                    }}
+                                    strokeColor={PROGRESS_GRADIENT}
                                 />
-                                <Text type="secondary" style={{ fontSize: '0.75rem', display: 'block', marginTop: '4px' }}>
+                                <Text type="secondary" className="achievement-tile-progress">
                                     {formatNumber(progress, language, { style: "percent", maximumFractionDigits: 0 })} {t("achievement.complete")}
                                 </Text>
                             </div>
@@ -105,8 +91,8 @@ export function AchievementView() {
                 </Row>
             ) : (
                 <Card>
-                    <div style={{ textAlign: 'center', padding: '40px' }}>
-                        <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>
+                    <div className="empty-state">
+                        <span className="empty-state-icon">
                             {VectorGraphics.ACHIEVEMENTS}
                         </span>
                         <Text type="secondary">

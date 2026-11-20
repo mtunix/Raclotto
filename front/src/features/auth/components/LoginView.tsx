@@ -6,6 +6,7 @@ import { UnauthorizedError } from "../../../lib/api/transport";
 import { failedStatus, failureMessage } from "../../../lib/api/failedRequest";
 import { useAuthStore } from "../../../AuthSlice";
 import { useTranslation } from "react-i18next";
+import "./auth.css";
 
 export function LoginView() {
   const { t } = useTranslation();
@@ -35,23 +36,15 @@ export function LoginView() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "60vh",
-        padding: "40px 24px",
-      }}
-    >
-      <Card title={t("auth.login")} style={{ width: "100%", maxWidth: 420 }}>
+    <div className="auth-page">
+      <Card title={t("auth.login")} className="auth-card">
         {error && (
           <Alert
             title={error}
             type="error"
             showIcon
             closable={{ onClose: () => setError(null) }}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           />
         )}
         <Form
@@ -64,7 +57,7 @@ export function LoginView() {
             label={t("auth.emailOrName")}
             name="email"
             rules={[{ required: true, message: t("auth.emailOrNameRequired") }]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input
               size="large"
@@ -76,7 +69,7 @@ export function LoginView() {
             label={t("auth.password")}
             name="password"
             rules={[{ required: true, message: t("auth.passwordRequired") }]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input.Password
               size="large"
@@ -84,7 +77,7 @@ export function LoginView() {
             />
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 16 }}>
+          <Form.Item className="mb-16">
             <Button
               type="primary"
               htmlType="submit"
@@ -96,13 +89,13 @@ export function LoginView() {
             </Button>
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 0 }}>
+          <Form.Item className="mb-0">
             <Button
               type="link"
               block
               size="large"
               onClick={() => navigate("/register")}
-              style={{ padding: "12px 0" }}
+              className="auth-switch"
             >
               {t("auth.noAccount")} {t("auth.register")}
             </Button>

@@ -1,0 +1,55 @@
+/* Two classes: App.css takes every card's border away. */
+.achievement-tile.ant-card {
+    height: 100%;
+    margin-bottom: 16px;
+    border: 1px solid var(--ant-color-border);
+}
+
+.achievement-tile-unlocked.ant-card {
+    border: 2px solid var(--ant-color-success);
+    background-color: var(--ant-color-success-bg);
+}
+
+.achievement-tile-hidden.ant-card {
+    border: 2px dashed var(--ant-color-border);
+    background-color: var(--ant-color-fill-quaternary);
+}
+
+.achievement-tile-body.ant-card-body {
+    padding: 16px;
+}
+
+.achievement-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.achievement-tile-icon {
+    font-size: 1.5rem;
+}
+
+.achievement-tile-title.ant-typography {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.achievement-tile-points.ant-tag {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.achievement-tile-description.ant-typography {
+    font-size: 0.85rem;
+    display: block;
+}
+
+.achievement-tile-unlocked-tag.ant-tag {
+    font-size: 0.75rem;
+}
+
+.achievement-tile-progress.ant-typography {
+    font-size: 0.75rem;
+    display: block;
+    margin-top: 4px;
+}

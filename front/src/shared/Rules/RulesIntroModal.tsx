@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Modal } from "antd";
 import { useTranslation } from "react-i18next";
 import { RulesContent } from "./RulesContent";
+import "./Rules.css";
 
 const SEEN_KEY = "rules_seen";
 
@@ -44,7 +45,7 @@ export function RulesIntroModal() {
             }
             width={720}
         >
-            <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
+            <div className="rules-intro">
                 <RulesContent />
             </div>
         </Modal>

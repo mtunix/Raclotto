@@ -1,0 +1,116 @@
+.picture-trigger {
+    display: inline-block;
+    text-align: center;
+    cursor: default;
+}
+
+.picture-trigger-opens {
+    cursor: pointer;
+}
+
+.picture-label {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ant-color-text-secondary);
+}
+
+.picture-caption {
+    font-size: 14px;
+    color: var(--ant-color-text-secondary);
+}
+
+.picture-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.picture-column-wide {
+    gap: 16px;
+}
+
+.picture-footer {
+    display: flex;
+    gap: 8px;
+}
+
+.picture-avatar.ant-avatar {
+    border: 3px solid var(--ant-color-border);
+}
+
+.picture-avatar-inline.ant-avatar {
+    display: inline-block;
+}
+
+.picture-avatar-disabled.ant-avatar {
+    opacity: 0.6;
+}
+
+.picture-avatar-draft.ant-avatar {
+    border-color: var(--ant-color-primary);
+}
+
+.picture-avatar-empty.ant-avatar {
+    background-color: var(--ant-color-fill-secondary);
+}
+
+.picture-avatar-initial {
+    font-size: 120px;
+}
+
+.picture-avatar-fill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.picture-camera {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background-color: #000000;
+}
+
+.picture-history-loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.picture-history-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--ant-color-border-secondary);
+    border-radius: 4px;
+}
+
+.picture-history-avatar.ant-avatar {
+    border: 2px solid var(--ant-color-border);
+}
+
+.picture-history-candidate {
+    border: 2px solid var(--ant-color-primary);
+    background-color: var(--ant-color-primary-bg);
+}
+
+.picture-history-candidate .picture-history-avatar.ant-avatar {
+    border: 3px solid var(--ant-color-primary);
+}
+
+.picture-history-meta {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ant-color-text-secondary);
+}
+
+.picture-history-candidate-label {
+    margin-top: 4px;
+    color: var(--ant-color-primary);
+    font-weight: bold;
+}

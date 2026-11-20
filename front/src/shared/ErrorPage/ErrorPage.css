@@ -1,0 +1,11 @@
+.error-page {
+    padding: 20px;
+}
+
+.error-page-row {
+    min-height: 50vh;
+}
+
+.error-page-icon {
+    font-size: 48px;
+}

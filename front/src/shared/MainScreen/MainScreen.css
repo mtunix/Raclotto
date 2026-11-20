@@ -15,37 +15,37 @@
     justify-content: center;
     flex-shrink: 0;
     line-height: 1;
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    background-color: var(--ant-color-bg-container) !important;
+    border: 1px solid var(--ant-color-border) !important;
 }
 
 .ingredient-action-button:hover {
     opacity: 1;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: rgba(0, 0, 0, 0.04) !important;
+    background-color: var(--ant-color-fill-tertiary) !important;
 }
 
 .ingredient-action-button.ant-btn-dangerous {
-    background-color: rgba(255, 77, 79, 0.1) !important;
-    border-color: rgba(255, 77, 79, 0.3) !important;
-    color: #ff4d4f;
+    background-color: color-mix(in srgb, var(--ant-color-error) 10%, transparent) !important;
+    border-color: color-mix(in srgb, var(--ant-color-error) 30%, transparent) !important;
+    color: var(--ant-color-error);
 }
 
 .ingredient-action-button.ant-btn-dangerous:hover {
-    background-color: rgba(255, 77, 79, 0.15) !important;
-    border-color: rgba(255, 77, 79, 0.4) !important;
+    background-color: color-mix(in srgb, var(--ant-color-error) 15%, transparent) !important;
+    border-color: color-mix(in srgb, var(--ant-color-error) 40%, transparent) !important;
 }
 
 .ingredient-action-button:not(.ant-btn-dangerous) {
-    background-color: rgba(24, 144, 255, 0.1) !important;
-    border-color: rgba(24, 144, 255, 0.3) !important;
-    color: #1890ff;
+    background-color: color-mix(in srgb, var(--ant-color-primary) 10%, transparent) !important;
+    border-color: color-mix(in srgb, var(--ant-color-primary) 30%, transparent) !important;
+    color: var(--ant-color-primary);
 }
 
 .ingredient-action-button:not(.ant-btn-dangerous):hover {
-    background-color: rgba(24, 144, 255, 0.15) !important;
-    border-color: rgba(24, 144, 255, 0.4) !important;
+    background-color: color-mix(in srgb, var(--ant-color-primary) 15%, transparent) !important;
+    border-color: color-mix(in srgb, var(--ant-color-primary) 40%, transparent) !important;
 }
 
 .prep-type-action-button {
@@ -64,17 +64,17 @@
     justify-content: center;
     flex-shrink: 0;
     line-height: 1;
-    background-color: rgba(255, 77, 79, 0.1) !important;
-    border: 1px solid rgba(255, 77, 79, 0.25) !important;
-    color: #ff4d4f;
+    background-color: color-mix(in srgb, var(--ant-color-error) 10%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--ant-color-error) 25%, transparent) !important;
+    color: var(--ant-color-error);
 }
 
 .prep-type-action-button:hover {
     opacity: 1;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.2);
-    background-color: rgba(255, 77, 79, 0.15) !important;
-    border-color: rgba(255, 77, 79, 0.4) !important;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--ant-color-error) 20%, transparent);
+    background-color: color-mix(in srgb, var(--ant-color-error) 15%, transparent) !important;
+    border-color: color-mix(in srgb, var(--ant-color-error) 40%, transparent) !important;
 }
 
 /* Circular progress indicator for confirmation */
@@ -106,7 +106,7 @@
 }
 
 .confirm-delete-progress .progress-bg {
-    stroke: rgba(0, 0, 0, 0.1);
+    stroke: var(--ant-color-fill-secondary);
 }
 
 .confirm-delete-progress .progress-fill {
@@ -120,7 +120,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
-    background: #ffffff;
+    background: var(--ant-color-bg-container);
 }
 
 .main-screen-section-card:hover {
@@ -146,7 +146,7 @@
 }
 
 .main-screen-section-card .ant-collapse-content {
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--ant-color-border-secondary);
 }
 
 .main-screen-section-card .ant-collapse-content-box {
@@ -327,9 +327,9 @@
 }
 
 .main-screen-segmented .ant-segmented-item-selected {
-    background: #ffffff !important;
+    background: var(--ant-color-bg-elevated) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    color: #1d1d1f !important;
+    color: var(--ant-color-text) !important;
     font-weight: 500 !important;
 }
 
@@ -338,7 +338,7 @@
 }
 
 .main-screen-segmented .ant-segmented-item:hover:not(.ant-segmented-item-selected) {
-    background: rgba(255, 255, 255, 0.5) !important;
+    background: color-mix(in srgb, var(--ant-color-bg-elevated) 50%, transparent) !important;
 }
 
 .segmented-label {
@@ -399,4 +399,18 @@
         padding: 0 2px !important;
         letter-spacing: -0.011em !important;
     }
+}
+
+.main-screen-page {
+    padding: 40px 24px;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+.main-screen-page-loaded {
+    padding-bottom: 48px;
+}
+
+.main-screen-page-wide {
+    max-width: none;
 }

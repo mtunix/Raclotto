@@ -1,37 +1,21 @@
-/**
- * Utility functions for border textures.
- * Maps texture names to CSS border-image URLs or patterns.
- */
+import type { UserSummaryDtoBorderTexture } from "../api/generated/model";
+import bread from "../assets/textures/bread.webp";
+import cheese from "../assets/textures/cheese.webp";
+import herbs01 from "../assets/textures/herbs-01.webp";
+import herbs02 from "../assets/textures/herbs-02.webp";
+import sauce01 from "../assets/textures/sauce-01.webp";
+import sauce02 from "../assets/textures/sauce-02.webp";
 
-export type TextureName = 'cheese' | 'bread' | 'sauce-01' | 'sauce-02' | 'herbs-01' | 'herbs-02';
+const TEXTURES: Record<NonNullable<UserSummaryDtoBorderTexture>, string> = {
+  cheese,
+  bread,
+  "sauce-01": sauce01,
+  "sauce-02": sauce02,
+  "herbs-01": herbs01,
+  "herbs-02": herbs02,
+};
 
-/**
- * Get the border-image CSS value for a given texture name.
- * @param textureName The name of the texture, or null for no texture
- * @returns CSS border-image value or undefined if no texture
- */
-export function getTextureBorderImage(textureName: string | null | undefined): string | undefined {
-    if (!textureName) {
-        return undefined;
-    }
-
-    // Map texture names to image paths
-    // Texture images should be placed in public/assets/textures/
-    const texturePaths: Record<TextureName, string> = {
-        cheese: '/assets/textures/cheese.png',
-        bread: '/assets/textures/bread.png',
-        'sauce-01': '/assets/textures/sauce-01.png',
-        'sauce-02': '/assets/textures/sauce-02.png',
-        'herbs-01': '/assets/textures/herbs-01.png',
-        'herbs-02': '/assets/textures/herbs-02.png',
-    };
-
-    const path = texturePaths[textureName as TextureName];
-    if (!path) {
-        return undefined;
-    }
-
-    // Return border-image CSS value with slice value for proper tiling
-    // The '30' value controls how the image is sliced for the border
-    return `url(${path}) 30`;
+/** The image of the border texture a user picked, if any. */
+export function textureUrl(textureName: UserSummaryDtoBorderTexture | undefined): string | undefined {
+  return textureName ? TEXTURES[textureName] : undefined;
 }

@@ -1,4 +1,5 @@
 import type { UserSummaryDto } from "../../api/generated/model";
+import { textureUrl } from "../../lib/borderTextures";
 import { panCardStyle } from "./panCardStyle";
 
 const author: UserSummaryDto = {
@@ -12,31 +13,18 @@ const author: UserSummaryDto = {
 };
 
 it("draws a plain border in the author's colour and style", () => {
-  expect(panCardStyle(author)).toEqual({
-    card: {
-      height: "100%",
-      marginBottom: "16px",
-      borderTop: "5px dashed #ff8800",
-      borderRight: "5px dashed #ff8800",
-      borderBottom: "5px dashed #ff8800",
-      borderLeft: "5px dashed #ff8800",
-      borderRadius: "18px",
-    },
-    cardClassName: "",
-    wrapperClassName: "",
-  });
+  expect(panCardStyle(author)).toEqual({ card: { border: "5px dashed #ff8800" }, glow: false });
 });
 
-it("draws a pan without an author in solid grey", () => {
-  expect(panCardStyle(null).card.borderTop).toBe("5px solid #d9d9d9");
+it("draws a pan without an author in the theme's border colour", () => {
+  expect(panCardStyle(null).card.border).toBe("5px solid var(--ant-color-border)");
 });
 
 it("draws a texture with a wrapper around a borderless card", () => {
   const style = panCardStyle({ ...author, border_texture: "cheese" });
 
-  expect(style.wrapper).toMatchObject({ padding: "5px", background: "url(/assets/textures/cheese.png)", marginBottom: "16px" });
-  expect(style.card).toMatchObject({ border: "none", marginBottom: "0", backgroundColor: "#ffffff" });
-  expect(style.card.borderTop).toBeUndefined();
+  expect(style.wrapper).toEqual({ backgroundImage: `url(${textureUrl("cheese")})` });
+  expect(style.card.border).toBeUndefined();
 });
 
 it("lets a glowing author's card glow in their colour", () => {
@@ -46,7 +34,7 @@ it("lets a glowing author's card glow in their colour", () => {
 
   expect(style.card.boxShadow).toBe(shadow);
   expect(style.wrapper?.boxShadow).toBe(shadow);
-  expect([style.cardClassName, style.wrapperClassName]).toEqual(["pan-card-glow-card", "pan-card-glow-wrapper"]);
+  expect(style.glow).toBe(true);
 });
 
 it("glows grey for a colour that is no hex colour", () => {

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import { PictureSource } from "./PictureSource";
 import { useCamera } from "./useCamera";
-import { pictureColumnStyle } from "./styles";
+import "./ProfilePictureManager.css";
 
 interface DirectPictureEditorProps {
   picture: string | null;
@@ -20,9 +20,9 @@ export function DirectPictureEditor({ picture, onChange, disabled, belowAvatar }
   const camera = useCamera();
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: belowAvatar ? "16px" : "0" }}>
+    <div className={belowAvatar ? "stack-16 mt-16" : "stack-16"}>
       {picture ? (
-        <div style={pictureColumnStyle}>
+        <div className="picture-column">
           <Avatar size={120} src={getProfilePictureUrl(picture)} />
           <Button onClick={() => onChange(null)} disabled={disabled} block>
             {t("auth.removePhoto")}

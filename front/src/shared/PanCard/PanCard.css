@@ -1,0 +1,58 @@
+/* Two classes: App.css takes every card's border away. */
+.pan-card.ant-card {
+    height: 100%;
+    margin-bottom: 16px;
+    border-radius: 18px;
+}
+
+.pan-card.pan-card-textured.ant-card {
+    margin-bottom: 0;
+    border: none;
+    position: relative;
+}
+
+.pan-card-body.ant-card-body {
+    padding: 12px;
+}
+
+.pan-card-texture {
+    border-radius: 18px;
+    padding: 5px;
+    background-size: auto;
+    background-repeat: repeat;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pan-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.pan-card-heading {
+    flex: 1;
+}
+
+.pan-card-title.ant-typography {
+    margin: 0 0 4px;
+    font-size: 1rem;
+}
+
+.pan-card-meta.ant-typography {
+    font-size: 0.7rem;
+}
+
+.pan-card-side {
+    text-align: right;
+    margin-left: 8px;
+}
+
+.pan-card-score.ant-tag {
+    font-size: 0.7rem;
+}
+
+.pan-card-empty.ant-typography {
+    font-size: 0.85rem;
+}

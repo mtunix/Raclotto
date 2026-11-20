@@ -1,0 +1,90 @@
+.profile {
+    padding: 24px 0;
+}
+
+.profile-loading {
+    min-height: 400px;
+}
+
+.profile-picture-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-picture {
+    max-width: 180px;
+    width: 100%;
+    aspect-ratio: 1;
+}
+
+.profile-name.ant-typography {
+    margin: 0 0 8px;
+}
+
+.profile-email.ant-typography {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.profile-level-tag.ant-tag {
+    font-size: 14px;
+    padding: 4px 12px;
+}
+
+.profile-level-xp.ant-typography {
+    margin-left: 8px;
+    font-size: 14px;
+}
+
+.profile-level-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.profile-level-label.ant-typography {
+    font-size: 12px;
+}
+
+.profile-level-max.ant-typography {
+    font-style: italic;
+}
+
+.profile-rating.ant-rate {
+    font-size: 14px;
+}
+
+.profile-ingredients-title.ant-typography {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.profile-ingredients.ant-space {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-more {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.profile-achievement.ant-card {
+    border: 2px solid var(--ant-color-success);
+    background-color: var(--ant-color-success-bg);
+}
+
+.profile-achievement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.profile-achievement-title.ant-typography {
+    margin: 0;
+    font-size: 14px;
+}

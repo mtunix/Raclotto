@@ -65,7 +65,7 @@ export function MainScreen(props: MainScreenProps) {
         // This can happen briefly when session is being set in useEffect
         // Show a brief loading state
         return (
-            <div style={{margin: "0", padding: "40px 24px", maxWidth: removeWidthCap ? 'none' : 1440, marginLeft: 'auto', marginRight: 'auto'}}>
+            <div className={removeWidthCap ? "main-screen-page main-screen-page-wide" : "main-screen-page"}>
                 <Card>
                     <p>{t("session.loading")}</p>
                 </Card>
@@ -74,7 +74,7 @@ export function MainScreen(props: MainScreenProps) {
     }
 
     return (
-        <div style={{margin: "0", padding: "40px 24px", paddingBottom: '48px', maxWidth: removeWidthCap ? 'none' : 1440, marginLeft: 'auto', marginRight: 'auto'}}>
+        <div className={removeWidthCap ? "main-screen-page main-screen-page-loaded main-screen-page-wide" : "main-screen-page main-screen-page-loaded"}>
             <RulesIntroModal/>
             <Row gutter={[0, 24]}>
                 <Col span={24}>
@@ -95,7 +95,7 @@ export function MainScreen(props: MainScreenProps) {
                     />
                 </Col>
             </Row>
-            <Row gutter={[0, 24]} style={{ marginTop: '8px' }}>
+            <Row gutter={[0, 24]} className="mt-8">
                 <Col span={24}>
                     {(() => {
                         const path = location.pathname;
@@ -122,7 +122,7 @@ export function MainScreen(props: MainScreenProps) {
                         if (title) {
                             return (
                                 <Card
-                                    title={<span style={{ fontWeight: 600, fontSize: '24px', letterSpacing: '-0.022em' }}>{title}</span>}
+                                    title={<span className="page-title">{title}</span>}
                                 >
                                     <Outlet/>
                                 </Card>

@@ -56,8 +56,8 @@ export function LegacyView({
   const totalFillCountFromApi = countOr(counts?.total_fill_count, totalFillCount);
   const totalSauceCountFromApi = countOr(counts?.total_sauce_count, totalSauceCount);
   return (
-    <div className={styles.flexColumn} style={{ padding: "8px 0" }}>
-      <Row gutter={[24, 24]} className={styles.marginBottom16}>
+    <div className={`${styles.flexColumn} ${styles.paddingVertical8}`}>
+      <Row gutter={[24, 24]}>
         <Col xs={24} sm={24} md={12}>
           <IngredientCountControl
             label={t("ingredient.ingredientCount")}
@@ -86,9 +86,7 @@ export function LegacyView({
       <Row>
         <Col span={24}>
           <Card className={styles.cardNoMargin}>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-            >
+            <div className={`${styles.flexColumn} ${styles.gap16}`}>
               <Checkbox
                 checked={rollPreparationType}
                 onChange={(e) => setRollPreparationType(e.target.checked)}
@@ -107,14 +105,14 @@ export function LegacyView({
           </Card>
         </Col>
       </Row>
-      <Row style={{ marginTop: "24px" }}>
+      <Row className="mt-24">
         <Col span={24}>
           <Button
             type="primary"
             size="large"
             onClick={onGenerateClicked}
             disabled={!canGenerate}
-            style={{ marginTop: "16px" }}
+            className="mt-16"
           >
             {t("generate.generateButton")}
           </Button>

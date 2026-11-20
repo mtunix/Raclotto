@@ -1,24 +1,9 @@
-import type { MouseEvent } from "react";
-import { Button, Card, Col, Form, InputNumber, Row, Space, Typography } from "antd";
+import { Card, Col, Form, Row, Typography } from "antd";
 import { useTranslation } from "react-i18next";
+import { CountStepper } from "../CountStepper";
 import styles from "../GenerateView/GenerateView.module.css";
 
 const { Text } = Typography;
-
-function hoverHighlight(enabled: boolean) {
-    return {
-        onMouseEnter: (e: MouseEvent<HTMLElement>) => {
-            if (!enabled) return;
-            e.currentTarget.style.background = "#f5f5f7";
-            e.currentTarget.style.borderColor = "#0071e3";
-        },
-        onMouseLeave: (e: MouseEvent<HTMLElement>) => {
-            if (!enabled) return;
-            e.currentTarget.style.background = "#ffffff";
-            e.currentTarget.style.borderColor = "#d2d2d7";
-        },
-    };
-}
 
 interface ColumnCountControlProps {
     value: number;
@@ -30,56 +15,30 @@ interface ColumnCountControlProps {
 /** How many reels to spin, from 1 to `max`. */
 export function ColumnCountControl({ value, max, onChange, disabled }: ColumnCountControlProps) {
     const { t } = useTranslation();
-    const canDecrease = value > 1 && !disabled;
-    const canIncrease = value < max && !disabled;
 
     return (
-        <Row gutter={[24, 24]} style={{ marginBottom: "32px" }}>
+        <Row gutter={[24, 24]} className={styles.marginBottom32}>
             <Col span={24}>
-                <Card
-                    style={{ borderRadius: "18px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", border: "none" }}
-                    styles={{ body: { padding: "24px" } }}
-                >
-                    <Form.Item style={{ marginBottom: 0 }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "8px" }}>
-                                <div style={{ fontSize: "17px", fontWeight: 600, letterSpacing: "-0.022em", color: "#1d1d1f" }}>
-                                    {t("generate.banditColumnCount")}
-                                </div>
+                <Card className={styles.cardNoMargin} classNames={{ body: styles.cardBody }}>
+                    <Form.Item className="mb-0">
+                        <div className={`${styles.flexColumn} ${styles.gap16}`}>
+                            <div className={styles.optionHeader}>
+                                <div className={styles.subtitle}>{t("generate.banditColumnCount")}</div>
                                 {max > 0 && (
-                                    <Text type="secondary" style={{ fontSize: "15px" }}>
+                                    <Text type="secondary" className={styles.textSecondary}>
                                         {t("generate.banditColumnCountHelp")} (1-{max})
                                     </Text>
                                 )}
                             </div>
-                            <Space.Compact style={{ display: "flex", gap: "8px" }}>
-                                <Button
-                                    onClick={() => onChange(Math.max(1, value - 1))}
-                                    disabled={!canDecrease}
-                                    className={styles.incrementButton}
-                                    {...hoverHighlight(canDecrease)}
-                                >
-                                    −
-                                </Button>
-                                <InputNumber
-                                    min={1}
-                                    max={max}
-                                    value={value}
-                                    onChange={(next) => onChange(Math.max(1, Math.min(next || 1, max)))}
-                                    size="large"
-                                    className={styles.inputNumber}
-                                    controls={false}
-                                    disabled={disabled}
-                                />
-                                <Button
-                                    onClick={() => onChange(Math.min(max, value + 1))}
-                                    disabled={!canIncrease}
-                                    className={styles.incrementButton}
-                                    {...hoverHighlight(canIncrease)}
-                                >
-                                    +
-                                </Button>
-                            </Space.Compact>
+                            <CountStepper
+                                value={value}
+                                min={1}
+                                max={max}
+                                disabled={disabled}
+                                onDecrement={() => onChange(Math.max(1, value - 1))}
+                                onIncrement={() => onChange(Math.min(max, value + 1))}
+                                onChange={onChange}
+                            />
                         </div>
                     </Form.Item>
                 </Card>

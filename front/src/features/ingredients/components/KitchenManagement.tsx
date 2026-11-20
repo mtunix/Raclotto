@@ -23,6 +23,7 @@ import {EditIngredientModal} from "./EditIngredientModal";
 import {ConfirmDeleteButton} from "../../../shared/ConfirmDeleteButton";
 import {ItemList, ItemRow} from "../../../shared/ItemList/ItemList";
 import "../../../shared/MainScreen/MainScreen.css";
+import "./KitchenManagement.css";
 
 const {Text} = Typography;
 
@@ -128,14 +129,14 @@ export function KitchenManagement() {
         return (
             <>
                 {loadingPrepTypes ? (
-                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <div className="empty-state">
                         <Spin size="large" />
                     </div>
                 ) : prepTypes.length === 0 ? (
                     <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={t("ingredient.noPrepTypes")}
-                        style={{ padding: '40px 0' }}
+                        className="kitchen-empty"
                     />
                 ) : (
                     <>
@@ -144,23 +145,13 @@ export function KitchenManagement() {
                             rowKey={(prepType) => prepType.id}
                             renderItem={(prepType: PrepTypeDto) => (
                                 <ItemRow
-                                    style={{
-                                        backgroundColor: prepType.session_id === null || prepType.session_id === undefined 
-                                            ? 'rgba(142, 142, 147, 0.08)' 
-                                            : 'rgba(0, 113, 227, 0.08)',
-                                        marginBottom: '12px',
-                                        borderRadius: '12px',
-                                        padding: '16px',
-                                        border: `1px solid ${prepType.session_id === null || prepType.session_id === undefined 
-                                            ? 'rgba(142, 142, 147, 0.2)' 
-                                            : 'rgba(0, 113, 227, 0.2)'}`
-                                    }}
+                                    className={prepType.session_id == null ? "kitchen-prep-type kitchen-prep-type-default" : "kitchen-prep-type"}
                                 >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '12px' }}>
-                                        <span style={{fontSize: "17px", flex: 1, minWidth: 0, fontWeight: 500, letterSpacing: '-0.022em'}}>
+                                    <div className="kitchen-prep-type-content">
+                                        <span className="kitchen-prep-type-name">
                                             {prepType.name}
                                             {(prepType.session_id === null || prepType.session_id === undefined) && (
-                                                <Text type="secondary" style={{ fontSize: '15px', marginLeft: '8px' }}>
+                                                <Text type="secondary" className="kitchen-prep-type-default-note">
                                                     ({t("ingredient.default")})
                                                 </Text>
                                             )}
@@ -171,12 +162,6 @@ export function KitchenManagement() {
                                                 label={t("ingredient.deletePreparationType")}
                                                 danger={true}
                                                 className="prep-type-action-button"
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    flexShrink: 0
-                                                }}
                                             />
                                         )}
                                     </div>
@@ -184,14 +169,8 @@ export function KitchenManagement() {
                             )}
                         />
                         {isAddingPrepType && (
-                            <div style={{ 
-                                backgroundColor: 'rgba(0, 113, 227, 0.08)',
-                                marginTop: '16px',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                border: '1px solid rgba(0, 113, 227, 0.2)'
-                            }}>
-                                <Space.Compact style={{ width: '100%' }}>
+                            <div className="kitchen-prep-type-new">
+                                <Space.Compact className="full-width">
                                     <Input
                                         size="large"
                                         placeholder={t("ingredient.preparationTypeName")}
@@ -225,19 +204,14 @@ export function KitchenManagement() {
     };
 
     return (
-        <div style={{ padding: '8px 0' }}>
+        <div className="kitchen">
             <Row gutter={[0, 24]}>
                 <Col span={24}>
                     <Card 
                         variant="borderless"
-                        styles={{ body: { padding: '24px' } }}
+                        classNames={{ body: "kitchen-card-body" }}
                     >
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'center', 
-                            marginBottom: '32px',
-                            width: '100%'
-                        }}>
+                        <div className="kitchen-segments">
                             <Segmented
                                 value={activeSegment}
                                 onChange={(value) => {
@@ -270,20 +244,13 @@ export function KitchenManagement() {
                                     }
                                 ]}
                                 size="large"
-                                className="main-screen-segmented"
-                                style={{
-                                    width: '100%',
-                                    maxWidth: '600px'
-                                }}
+                                className="main-screen-segmented kitchen-segmented"
                             />
                         </div>
-                        <div style={{
-                            transition: 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                            minHeight: '200px'
-                        }}>
+                        <div className="kitchen-panel">
                             {activeSegment === 'ingredients' && (
                                 <>
-                                    <div style={{ marginBottom: '16px' }}>
+                                    <div className="mb-16">
                                         <Button
                                             type="dashed"
                                             size="large"
@@ -305,7 +272,7 @@ export function KitchenManagement() {
                             )}
                             {activeSegment === 'sauces' && (
                                 <>
-                                    <div style={{ marginBottom: '16px' }}>
+                                    <div className="mb-16">
                                         <Button
                                             type="dashed"
                                             size="large"
@@ -328,7 +295,7 @@ export function KitchenManagement() {
                             {activeSegment === 'prepTypes' && (
                                 <>
                                     {!isAddingPrepType && (
-                                        <div style={{ marginBottom: '16px' }}>
+                                        <div className="mb-16">
                                             <Button
                                                 type="dashed"
                                                 size="large"

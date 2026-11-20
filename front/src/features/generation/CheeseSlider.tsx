@@ -80,78 +80,22 @@ export function CheeseSlider({ cheeseLevel }: CheeseSliderProps) {
     const percentage = (animatedValue / 9) * 100;
 
     return (
-        <Card
-            className={styles.card}
-            styles={{ body: { padding: '24px' } }}
-        >
+        <Card className={styles.card} classNames={{ body: styles.cardBody }}>
             <div className={styles.flexColumn}>
                 <Text strong className={styles.subtitle}>
                     {t("generate.cheeseLevel")}
                 </Text>
-                <div 
-                    className="cheese-slider-container"
-                    style={{ 
-                        position: 'relative',
-                        padding: '20px 0',
-                        marginBottom: '8px'
-                    }}
-                >
+                <div className={styles.cheeseSliderContainer}>
                     <Slider
                         min={0}
                         max={9}
                         value={animatedValue}
-                        disabled={false}
                         onChange={() => {}}
                         tooltip={{ formatter: (value) => `${value}` }}
-                        styles={{
-                            track: {
-                                background: '#ffd700',
-                                backgroundColor: '#ffd700'
-                            },
-                            rail: {
-                                background: '#f0f0f0',
-                                backgroundColor: '#f0f0f0'
-                            },
-                            handle: {
-                                borderColor: '#ffd700',
-                                backgroundColor: 'transparent',
-                                width: '40px',
-                                height: '40px',
-                                marginTop: '-16px',
-                                boxShadow: 'none',
-                                border: 'none',
-                                opacity: 0
-                            }
-                        }}
                     />
-                    {/* Custom cheese emoji handle overlay */}
-                    <div
-                        className={styles.cheeseHandle}
-                        style={{
-                            left: `${percentage}%`,
-                        }}
-                    >
+                    <div className={styles.cheeseHandle} style={{ left: `${percentage}%` }}>
                         🧀
                     </div>
-                    <style>{`
-                        .cheese-slider-container .ant-slider .ant-slider-track {
-                            background: #ffd700 !important;
-                            background-color: #ffd700 !important;
-                            height: 8px !important;
-                        }
-                        .cheese-slider-container .ant-slider .ant-slider-rail {
-                            background: #f0f0f0 !important;
-                            background-color: #f0f0f0 !important;
-                            height: 8px !important;
-                        }
-                        .cheese-slider-container .ant-slider .ant-slider-handle {
-                            pointer-events: none !important;
-                            cursor: default !important;
-                        }
-                        .cheese-slider-container .ant-slider:hover .ant-slider-handle {
-                            border-color: transparent !important;
-                        }
-                    `}</style>
                 </div>
             </div>
         </Card>

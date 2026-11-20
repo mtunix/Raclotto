@@ -7,6 +7,7 @@ import {IngredientDisplay} from "../../../shared/IngredientDisplay/IngredientDis
 import {ConfirmDeleteButton} from "../../../shared/ConfirmDeleteButton";
 import {ItemRow} from "../../../shared/ItemList/ItemList";
 import {VectorGraphics} from "../../../lib/vectorGraphics";
+import "./IngredientList.css";
 
 interface IngredientListGroupItemProps {
     ingredient: IngredientForUserDto;
@@ -18,38 +19,15 @@ interface IngredientListGroupItemProps {
 
 export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
     const { t } = useTranslation();
-    const isApplicable = props.ingredient.applicable;
-    const backgroundColor = props.available 
-        ? (props.ingredient.type === IngredientType.FILL ? '#e6f7ff' : '#f0f0f0')
-        : '#fff1f0';
-    
-    // Make non-applicable ingredients more muted
-    const opacity = isApplicable ? 1 : 0.6;
+    const state = !props.available
+        ? "ingredient-list-item-unavailable"
+        : props.ingredient.type === IngredientType.FILL ? "ingredient-list-item-fill" : "ingredient-list-item-sauce";
+    const muted = props.ingredient.applicable ? "" : " ingredient-list-item-muted";
 
     return (
-        <ItemRow
-            className="ingredient-list-item"
-            style={{
-                backgroundColor: backgroundColor,
-                marginBottom: '8px',
-                borderRadius: '6px',
-                padding: '12px',
-                opacity: opacity,
-                border: `1px solid ${props.available 
-                    ? (props.ingredient.type === IngredientType.FILL ? '#91d5ff' : '#d9d9d9')
-                    : '#ffccc7'
-                }`
-            }}
-        >
-            <div style={{ 
-                width: '100%', 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                gap: '12px',
-                flexWrap: 'nowrap'
-            }}>
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+        <ItemRow className={`ingredient-list-item ${state}${muted}`}>
+            <div className="ingredient-list-item-content">
+                <div className="ingredient-list-item-main">
                     <IngredientDisplay 
                         ingredient={props.ingredient}
                         variant="compact"
@@ -57,19 +35,13 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                         showIcon={true}
                     />
                 </div>
-                <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                <div className="ingredient-list-item-actions">
                     {props.onEdit && (
                         <Button
                             type="text"
                             size="small"
                             className="ingredient-action-button"
                             icon={<EditOutlined />}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                            }}
                             onClick={props.onEdit}
                             title={t("common.edit")}
                         />
@@ -80,12 +52,6 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                             label={t("ingredient.markUnavailable")}
                             danger={true}
                             className="ingredient-action-button"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                            }}
                         />
                     )}
                     {!props.available && props.onRefill && (
@@ -94,12 +60,6 @@ export function IngredientListGroupItem(props: IngredientListGroupItemProps) {
                             label={t("ingredient.makeAvailable")}
                             danger={false}
                             className="ingredient-action-button"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                            }}
                             icon={VectorGraphics.REPEAT}
                         />
                     )}

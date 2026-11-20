@@ -14,6 +14,7 @@ import { mutateMe } from "../../../lib/api/swrHooks";
 import { normalizeDiet } from "../../../model/diet";
 import { useDietPreferences } from "../../../shared/useDietPreferences";
 import { MIN_PASSWORD_LENGTH } from "../../../lib/api/failedRequest";
+import "./auth.css";
 
 export function RegisterView() {
   const { t } = useTranslation();
@@ -129,23 +130,15 @@ export function RegisterView() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "60vh",
-        padding: "40px 24px",
-      }}
-    >
-      <Card title={t("auth.register")} style={{ width: "100%", maxWidth: 420 }}>
+    <div className="auth-page">
+      <Card title={t("auth.register")} className="auth-card">
         {error && (
           <Alert
             title={error}
             type="error"
             showIcon
             closable={{ onClose: () => setError(null) }}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           />
         )}
         <Form
@@ -159,7 +152,7 @@ export function RegisterView() {
             label={t("auth.inviteToken")}
             name="token"
             rules={[{ required: true, message: t("auth.inviteTokenRequired") }]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input
               size="large"
@@ -175,7 +168,7 @@ export function RegisterView() {
               { required: true, message: t("auth.emailRequired") },
               { type: "email", message: t("auth.emailInvalid") },
             ]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input
               size="large"
@@ -188,7 +181,7 @@ export function RegisterView() {
             label={t("auth.name")}
             name="name"
             rules={[{ required: true, message: t("auth.nameRequired") }]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input size="large" placeholder={t("auth.namePlaceholder")} />
           </Form.Item>
@@ -200,7 +193,7 @@ export function RegisterView() {
               { required: true, message: t("auth.passwordRequired") },
               { min: MIN_PASSWORD_LENGTH, message: t("auth.passwordTooShort", { count: MIN_PASSWORD_LENGTH }) },
             ]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input.Password
               size="large"
@@ -225,7 +218,7 @@ export function RegisterView() {
                 },
               }),
             ]}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <Input.Password
               size="large"
@@ -235,7 +228,7 @@ export function RegisterView() {
 
           <Form.Item
             label={t("auth.profilePicture")}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <ProfilePictureManager
               currentPicture={profilePicture}
@@ -250,7 +243,7 @@ export function RegisterView() {
 
           <Form.Item
             label={t("settings.allOkToSnack")}
-            style={{ marginBottom: 24 }}
+            className="mb-24"
           >
             <TagChipGroup
               options={options}
@@ -260,7 +253,7 @@ export function RegisterView() {
             />
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 16 }}>
+          <Form.Item className="mb-16">
             <Button
               type="primary"
               htmlType="submit"
@@ -272,13 +265,13 @@ export function RegisterView() {
             </Button>
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 0 }}>
+          <Form.Item className="mb-0">
             <Button
               type="link"
               block
               size="large"
               onClick={() => navigate("/login")}
-              style={{ padding: "12px 0" }}
+              className="auth-switch"
             >
               {t("auth.haveAccount")} {t("auth.login")}
             </Button>

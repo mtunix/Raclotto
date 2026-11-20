@@ -33,8 +33,7 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
 
     return (
         <Card
-            className="settings-editable-ingredient-card"
-            style={{ border: errors && Object.keys(errors).length > 0 ? "1px solid #ff4d4f" : "1px solid #d9d9d9" }}
+            className={errors && Object.keys(errors).length > 0 ? "settings-editable-ingredient-card settings-editable-ingredient-card-invalid" : "settings-editable-ingredient-card"}
         >
             <div className="settings-editable-ingredient-card-body">
                 <Row gutter={[16, 16]}>
@@ -60,7 +59,7 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                             <Select
                                 value={ingredient.type}
                                 onChange={(value) => onChange(index, "type", value)}
-                                style={{ width: "100%" }}
+                                className="full-width"
                                 options={[
                                     { value: IngredientType.FILL, label: t("ingredient.fill") },
                                     { value: IngredientType.SAUCE, label: t("ingredient.sauce") },
@@ -106,9 +105,9 @@ export function StagedIngredientCard({ ingredient, index, onChange, errors }: St
                     </Col>
                     <Col xs={24}>
                         <Form.Item label={t("ingredient.additionalProperties")}>
-                            <Space orientation="vertical" style={{ width: "100%" }}>
+                            <Space orientation="vertical" className="full-width">
                                 <div>
-                                    <div style={{ marginBottom: "8px" }}>
+                                    <div className="mb-8">
                                         {t("ingredient.spicy")} ({ingredient.spicy || 0}/3)
                                     </div>
                                     <Slider

@@ -38,11 +38,10 @@ export function ChangePasswordSection() {
     return (
         <Card
             title={<span className="settings-section-title">{t("settings.changePassword")}</span>}
-            className="settings-card"
-            style={{ marginTop: 24 }}
+            className="settings-card mt-24"
         >
             {error && (
-                <Alert title={error} type="error" showIcon closable={{ onClose: () => setError(null) }} style={{ marginBottom: 16 }} />
+                <Alert title={error} type="error" showIcon closable={{ onClose: () => setError(null) }} className="mb-16" />
             )}
             <Form form={form} layout="vertical" onFinish={onFinish} disabled={saving}>
                 <Form.Item
@@ -78,7 +77,7 @@ export function ChangePasswordSection() {
                 >
                     <Input.Password size="large" autoComplete="new-password" />
                 </Form.Item>
-                <div className="settings-help-text" style={{ marginBottom: 16 }}>
+                <div className="settings-help-text mb-16">
                     {t("settings.changePasswordInfo")}
                 </div>
                 <Button type="primary" htmlType="submit" size="large" block loading={saving}>

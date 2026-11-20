@@ -4,6 +4,7 @@ import type {IngredientForUserDto} from "../../../api/generated/model";
 import {useTranslation} from "react-i18next";
 import {ItemList} from "../../../shared/ItemList/ItemList";
 import {IngredientListGroupItem} from "./IngredientListGroupItem";
+import "./IngredientList.css";
 
 interface IngredientListViewProps {
     ingredients: IngredientForUserDto[];
@@ -38,10 +39,10 @@ export function IngredientListView(props: IngredientListViewProps) {
                 key: `ingredients-${type}-non-applicable`,
                 label: (
                     <Space>
-                        <span style={{fontWeight: 500, color: '#8e8e93', fontSize: '15px', letterSpacing: '-0.022em'}}>
+                        <span className="ingredient-group-label">
                             {t("ingredient.nonApplicable")}
                         </span>
-                        <Badge count={availableNonApplicable.length} showZero style={{ backgroundColor: '#8e8e93' }} />
+                        <Badge count={availableNonApplicable.length} showZero className="ingredient-group-count" />
                     </Space>
                 ),
                 children: (
@@ -67,10 +68,10 @@ export function IngredientListView(props: IngredientListViewProps) {
                 key: `ingredients-${type}-unavailable`,
                 label: (
                     <Space>
-                        <span style={{fontWeight: 500, color: '#ff3b30', fontSize: '15px', letterSpacing: '-0.022em'}}>
+                        <span className="ingredient-group-label ingredient-group-unavailable">
                             {t("ingredient.unavailable")}
                         </span>
-                        <Badge count={unavailableIngredients.length} showZero style={{ backgroundColor: '#ff3b30' }} />
+                        <Badge count={unavailableIngredients.length} showZero className="ingredient-group-count ingredient-group-unavailable" />
                     </Space>
                 ),
                 children: (
@@ -93,7 +94,7 @@ export function IngredientListView(props: IngredientListViewProps) {
         return (
             <>
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <div className="empty-state">
                         <Spin size="large" />
                     </div>
                 ) : availableApplicable.length === 0 && collapseItems.length === 0 ? (
@@ -103,7 +104,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                             ? t("ingredient.noIngredients")
                             : t("ingredient.noSauces")
                         }
-                        style={{ padding: '40px 0' }}
+                        className="ingredient-list-empty"
                     />
                 ) : (
                     <>
@@ -122,7 +123,7 @@ export function IngredientListView(props: IngredientListViewProps) {
                             />
                         )}
                         {collapseItems.length > 0 && (
-                            <Collapse items={collapseItems} style={{ marginTop: availableApplicable.length > 0 ? '16px' : '0' }} />
+                            <Collapse items={collapseItems} className={availableApplicable.length > 0 ? "mt-16" : undefined} />
                         )}
                     </>
                 )}

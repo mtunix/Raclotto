@@ -14,12 +14,12 @@ export function App() {
     const showLogo = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/';
 
     return (
-        <Layout style={{minHeight: '100vh', background: '#f5f5f7'}}>
+        <Layout className="app-layout">
             <Content className={`app-content ${removeWidthCap ? 'no-max-width' : ''}`}>
                 {showLogo && (
-                    <Row justify="center" style={{ marginTop: '60px', marginBottom: '48px' }}>
-                        <Col span={24} style={{textAlign: 'center'}}>
-                            <img width={200} src={raclotto} alt=""/>
+                    <Row justify="center" className="app-logo">
+                        <Col span={24} className="text-center">
+                            <img width={200} src={raclotto} alt="" className="brand-logo"/>
                         </Col>
                     </Row>
                 )}

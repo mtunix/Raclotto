@@ -143,8 +143,8 @@ export function EventSettingsSection() {
         <div className="settings-session-tab">
             {sessionKey ? (
                 <Card>
-                    <Title level={4} style={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.022em', marginBottom: 8 }}>{t("settings.eventSettings")}</Title>
-                    <Text type="secondary" style={{ display: "block", marginBottom: "24px", fontSize: '17px' }}>
+                    <Title level={4} className="settings-events-title">{t("settings.eventSettings")}</Title>
+                    <Text type="secondary" className="settings-events-description">
                         {t("settings.eventSettingsDescription")}
                     </Text>
                     <Divider />
@@ -164,10 +164,10 @@ export function EventSettingsSection() {
                                 const displayName = t(`events.types.${event_type}.name`);
 
                                 return (
-                                    <div key={event_type} style={{ marginBottom: "32px" }}>
-                                        <Space orientation="vertical" style={{ width: "100%" }}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                <Text strong style={{ fontSize: '17px' }}>{displayName}</Text>
+                                    <div key={event_type} className="mb-32">
+                                        <Space orientation="vertical" className="full-width">
+                                            <div className="settings-event-header">
+                                                <Text strong className="settings-event-text">{displayName}</Text>
                                                 <Switch
                                                     checked={enabled}
                                                     onChange={(checked) => handleToggle(event_type, checked)}
@@ -177,8 +177,8 @@ export function EventSettingsSection() {
                                             
                                             {enabled && (
                                                 <div>
-                                                    <div style={{ marginBottom: "8px" }}>
-                                                        <Text style={{ fontSize: '17px' }}>{t("settings.frequencyMinutes")}</Text>
+                                                    <div className="mb-8">
+                                                        <Text className="settings-event-text">{t("settings.frequencyMinutes")}</Text>
                                                     </div>
                                                     <InputNumber
                                                         min={1}
@@ -187,13 +187,13 @@ export function EventSettingsSection() {
                                                         onChange={(value) => handleFrequencyChange(event_type, value)}
                                                         disabled={saving || readOnly}
                                                         size="large"
-                                                        style={{ width: "100%" }}
+                                                        className="full-width"
                                                         placeholder={t("settings.optional")}
                                                     />
                                                 </div>
                                             )}
                                         </Space>
-                                        {event_type !== allConfigs[allConfigs.length - 1].event_type && <Divider style={{ marginTop: 24 }} />}
+                                        {event_type !== allConfigs[allConfigs.length - 1].event_type && <Divider className="mt-24" />}
                                     </div>
                                 );
                             })}
@@ -210,13 +210,7 @@ export function EventSettingsSection() {
                                 loading={saving}
                                 disabled={!isDirty() || saving}
                                 block
-                                style={{ 
-                                    height: '56px',
-                                    fontSize: '19px',
-                                    fontWeight: 500,
-                                    borderRadius: '12px',
-                                    letterSpacing: '-0.022em'
-                                }}
+                                className="settings-save-button-large"
                             >
                                 {t("common.save")}
                             </Button>
@@ -225,12 +219,12 @@ export function EventSettingsSection() {
                     )}
                 </Card>
             ) : (
-                <Card className="settings-card" styles={{ body: { padding: '24px' } }}>
+                <Card className="settings-card" classNames={{ body: "settings-card-body" }}>
                     <Alert
                         title={t("settings.noSession")}
                         type="warning"
                         showIcon
-                        style={{ borderRadius: '12px' }}
+                        className="settings-alert"
                     />
                 </Card>
             )}

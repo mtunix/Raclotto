@@ -1,10 +1,10 @@
-/* antd's List styles with its default theme tokens, so the rows look as they did. */
+/* antd's List styles with its theme tokens, so the rows look as they did. */
 .item-list {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     position: relative;
-    color: rgba(0, 0, 0, 0.88);
+    color: var(--ant-color-text);
     font-size: 14px;
     line-height: 1.5714285714285714;
     list-style: none;
@@ -26,8 +26,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    color: rgba(0, 0, 0, 0.88);
-    border-block-end: 1px solid rgba(5, 5, 5, 0.06);
+    color: var(--ant-color-text);
+    border-block-end: 1px solid var(--ant-color-split);
 }
 
 .item-list .item-list-row:last-child {
@@ -36,7 +36,7 @@
 
 .item-list-empty {
     padding: 16px;
-    color: rgba(0, 0, 0, 0.25);
+    color: var(--ant-color-text-quaternary);
     font-size: 14px;
     text-align: center;
 }
@@ -54,7 +54,7 @@
     position: relative;
     display: inline-block;
     padding: 0 8px 0 0;
-    color: rgba(0, 0, 0, 0.45);
+    color: var(--ant-color-text-description);
     font-size: 14px;
     line-height: 1.5714285714285714;
     text-align: center;
@@ -74,18 +74,18 @@
 .item-list-meta-content {
     flex: 1 0;
     width: 0;
-    color: rgba(0, 0, 0, 0.88);
+    color: var(--ant-color-text);
 }
 
 .item-list .item-list-meta-title {
     margin: 0 0 4px 0;
-    color: rgba(0, 0, 0, 0.88);
+    color: var(--ant-color-text);
     font-size: 14px;
     line-height: 1.5714285714285714;
 }
 
 .item-list-meta-description {
-    color: rgba(0, 0, 0, 0.45);
+    color: var(--ant-color-text-description);
     font-size: 14px;
     line-height: 1.5714285714285714;
 }

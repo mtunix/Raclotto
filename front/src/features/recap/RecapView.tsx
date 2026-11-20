@@ -39,15 +39,15 @@ function PanHighlight({ icon, title, pan, extra }: HighlightProps) {
     const { t } = useTranslation();
     return (
         <Card className="recap-highlight" title={<Flex gap={8} align="center">{icon}{title}</Flex>} extra={extra}>
-            <Title level={5} style={{ marginTop: 0 }}>{displayName(pan.name, t)}</Title>
+            <Title level={5} className="recap-pan-name">{displayName(pan.name, t)}</Title>
             {pan.author && <UserBadge user={pan.author} />}
             {pan.ratings.length > 0 && (
-                <Flex align="center" gap={8} style={{ marginTop: 12 }}>
+                <Flex align="center" gap={8} className="mt-12">
                     <Rate disabled allowHalf value={pan.rating} />
                     <Text type="secondary">{t("recap.ratingCount", { count: pan.ratings.length })}</Text>
                 </Flex>
             )}
-            <Flex wrap="wrap" gap={4} style={{ marginTop: 12 }}>
+            <Flex wrap="wrap" gap={4} className="mt-12">
                 {pan.ingredients.map((ingredient) => (
                     <IngredientDisplay key={ingredient.id} ingredient={ingredient} variant="badge" showTags={false} />
                 ))}
@@ -105,9 +105,9 @@ export function RecapView() {
 
     return (
         <div className="recap-page">
-            <Flex justify="space-between" align="center" wrap="wrap" gap={16} style={{ marginBottom: 24 }}>
+            <Flex justify="space-between" align="center" wrap="wrap" gap={16} className="mb-24">
                 <div>
-                    <Title level={2} style={{ margin: 0 }}>{recap.session.name}</Title>
+                    <Title level={2} className="m-0">{recap.session.name}</Title>
                     <Text type="secondary">
                         {formatDate(recap.session.timestamp, language)}
                         {" · "}
@@ -117,7 +117,7 @@ export function RecapView() {
                 {back}
             </Flex>
 
-            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Row gutter={[16, 16]} className="mb-24">
                 <Col xs={8}>
                     <Card><Statistic title={t("recap.pans")} value={recap.pan_count} formatter={numberFormatter(language)} /></Card>
                 </Col>
@@ -133,7 +133,7 @@ export function RecapView() {
                 <Card><Empty description={t("recap.nothingRolled")} /></Card>
             ) : (
                 <>
-                    <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+                    <Row gutter={[16, 16]} className="mb-24">
                         {recap.best_pan && (
                             <Col xs={24} md={12}>
                                 <PanHighlight icon={<StarOutlined />} title={t("recap.bestPan")} pan={recap.best_pan} />
@@ -169,8 +169,8 @@ export function RecapView() {
                 </>
             )}
 
-            <Card title={t("recap.participants")} style={{ marginTop: 24 }}>
-                <div style={{ overflowX: "auto" }}>
+            <Card title={t("recap.participants")} className="mt-24">
+                <div className="recap-table">
                     <Table
                         rowKey={(p) => p.user.id}
                         columns={columns}

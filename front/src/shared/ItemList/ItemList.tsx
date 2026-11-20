@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties, type Key, type ReactNode } from "react";
+import { Fragment, type Key, type ReactNode } from "react";
 import { Empty, Spin } from "antd";
 import "./ItemList.css";
 
@@ -35,15 +35,14 @@ export function ItemList<T>({ items, rowKey, renderItem, loading = false }: Item
 
 interface ItemRowProps {
     className?: string;
-    style?: CSSProperties;
     /** Controls at the row's end. */
     actions?: ReactNode;
     children: ReactNode;
 }
 
-export function ItemRow({ className, style, actions, children }: ItemRowProps) {
+export function ItemRow({ className, actions, children }: ItemRowProps) {
     return (
-        <li className={className ? `item-list-row ${className}` : "item-list-row"} style={style}>
+        <li className={className ? `item-list-row ${className}` : "item-list-row"}>
             {children}
             {actions !== undefined && (
                 <ul className="item-list-row-actions">

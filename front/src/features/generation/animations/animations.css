@@ -1,0 +1,19 @@
+/* The dimmed layer every roll animation plays on. */
+.generation-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+}
+
+.generation-overlay-lite {
+    backdrop-filter: none;
+}
+
+.generation-overlay-fading {
+    transition: opacity 250ms ease-out;
+    opacity: 0;
+}

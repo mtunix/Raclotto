@@ -1,6 +1,7 @@
 import {Select, Space, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
 import type {ListPansDirection, ListPansSort} from "../../../api/generated/model";
+import "./HistoryView.css";
 
 const {Text} = Typography;
 
@@ -20,14 +21,14 @@ export function SortingControls({
     const {t} = useTranslation();
 
     return (
-        <Space size="middle" align="center" wrap style={{ width: '100%' }}>
-            <Text strong style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+        <Space size="middle" align="center" wrap className="full-width">
+            <Text strong className="history-sorting-label">
                 {t("history.sortBy")}:
             </Text>
             <Select
                 value={sortField}
                 onChange={onSortFieldChange}
-                style={{flex: 2, minWidth: 150}}
+                className="history-sort-field"
                 size="large"
                 options={[
                     { value: "time", label: t("history.time") },
@@ -38,7 +39,7 @@ export function SortingControls({
             <Select
                 value={sortDirection}
                 onChange={onSortDirectionChange}
-                style={{flex: 1, minWidth: 80}}
+                className="history-sort-direction"
                 size="large"
                 options={[
                     { value: "desc", label: t("history.descending") },

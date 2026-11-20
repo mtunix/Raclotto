@@ -1,0 +1,42 @@
+.tag-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.tag-chip {
+    min-height: 44px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    border: 1px solid var(--ant-color-border);
+    background-color: var(--ant-color-fill-tertiary);
+    color: #8e8e93;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+
+.tag-chip:hover:not(:disabled) {
+    background-color: var(--ant-color-fill-secondary);
+    border-color: var(--tag, #8e8e93);
+    color: var(--tag, #8e8e93);
+}
+
+.tag-chip.tag-chip-on,
+.tag-chip.tag-chip-on:hover:not(:disabled) {
+    border-color: var(--tag, #8e8e93);
+    background-color: color-mix(in srgb, var(--tag, #8e8e93) 25%, transparent);
+    color: var(--tag, #8e8e93);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--tag, #8e8e93) 20%, transparent);
+}
+
+.tag-chip:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}

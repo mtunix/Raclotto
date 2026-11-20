@@ -6,7 +6,7 @@ import { PictureHistory } from "./PictureHistory";
 import { PictureSource } from "./PictureSource";
 import { useCamera } from "./useCamera";
 import { usePictureHistory } from "./usePictureHistory";
-import { captionStyle, pictureColumnStyle } from "./styles";
+import "./ProfilePictureManager.css";
 
 interface EditPictureModalProps {
   open: boolean;
@@ -48,7 +48,7 @@ export function EditPictureModal({ open, currentPicture, userName, userId, onSav
     close();
   }
 
-  const caption = <div style={captionStyle}>{t("profile.currentPicture")}</div>;
+  const caption = <div className="picture-caption">{t("profile.currentPicture")}</div>;
 
   return (
     <Modal
@@ -56,31 +56,31 @@ export function EditPictureModal({ open, currentPicture, userName, userId, onSav
       open={open}
       onCancel={cancel}
       footer={
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Button onClick={cancel} style={{ flex: 1 }}>
+        <div className="picture-footer">
+          <Button onClick={cancel} className="flex-1">
             {t("auth.cancel")}
           </Button>
-          <Button type="primary" onClick={save} disabled={draft === currentPicture} style={{ flex: 1 }}>
+          <Button type="primary" onClick={save} disabled={draft === currentPicture} className="flex-1">
             {t("common.save")}
           </Button>
         </div>
       }
       width={600}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div className="stack-16">
         {draft ? (
-          <div style={pictureColumnStyle}>
+          <div className="picture-column">
             {caption}
-            <Avatar size={400} src={draft} style={{ border: "3px solid #1890ff" }} />
+            <Avatar size={400} src={draft} className="picture-avatar picture-avatar-draft" />
             <Button onClick={() => setDraft(null)} block>
               {t("auth.removePhoto")}
             </Button>
           </div>
         ) : (
-          <div style={{ ...pictureColumnStyle, gap: "16px" }}>
+          <div className="picture-column picture-column-wide">
             {caption}
-            <Avatar size={400} style={{ border: "3px solid #d9d9d9", backgroundColor: "#f0f0f0" }}>
-              <span style={{ fontSize: "120px" }}>{initialOf(userName)}</span>
+            <Avatar size={400} className="picture-avatar picture-avatar-empty">
+              <span className="picture-avatar-initial">{initialOf(userName)}</span>
             </Avatar>
             <PictureSource camera={camera} onPicked={setDraft} />
           </div>
@@ -91,7 +91,7 @@ export function EditPictureModal({ open, currentPicture, userName, userId, onSav
         loading={loading}
         onChoose={choose}
         choosing={choosing}
-        style={{ marginTop: "12px" }}
+        className="mt-12"
       />
     </Modal>
   );

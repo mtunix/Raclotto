@@ -1,6 +1,12 @@
-.settings-editable-ingredient-card {
+.settings-editable-ingredient-card,
+.settings-editable-ingredient-card.ant-card {
     margin-bottom: 16px;
     border-radius: 12px;
+    border: 1px solid var(--ant-color-border);
+}
+
+.settings-editable-ingredient-card-invalid.ant-card {
+    border-color: var(--ant-color-error);
 }
 
 .settings-editable-ingredient-card-body {
@@ -12,13 +18,14 @@
     padding: 8px 0;
 }
 
-.settings-card {
+.settings-card,
+.settings-card.ant-card {
     border-radius: 18px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: none;
 }
 
-.settings-card-body {
+.settings-card-body.ant-card-body {
     padding: 24px;
 }
 
@@ -35,14 +42,43 @@
     font-size: 17px;
     font-weight: 600;
     letter-spacing: -0.022em;
-    color: #1d1d1f;
+    color: var(--ant-color-text);
+}
+
+.settings-section-title-disabled,
+.settings-lock {
+    color: var(--ant-color-text-quaternary);
+}
+
+.settings-lock {
+    margin-left: 8px;
+}
+
+.settings-title-note.ant-typography {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.settings-dimmed {
+    opacity: 0.6;
+}
+
+.settings-block {
+    width: 100%;
+    display: block;
+}
+
+.settings-loading-label {
+    margin-right: 8px;
 }
 
 .settings-alert-spacing {
     margin-bottom: 24px;
 }
 
-.settings-form-item-spacing {
+.settings-form-item-spacing,
+.settings-form-item-spacing.ant-form-item {
     margin-bottom: 24px;
 }
 
@@ -50,11 +86,13 @@
     margin-top: 8px;
 }
 
-.settings-help-text-small {
+.settings-help-text-small,
+.settings-help-text-small.ant-typography {
     font-size: 14px;
 }
 
-.settings-save-button-large {
+.settings-save-button-large,
+.settings-save-button-large.ant-btn {
     height: 56px;
     font-size: 19px;
     font-weight: 500;
@@ -62,10 +100,137 @@
     letter-spacing: -0.022em;
 }
 
-.settings-save-button-medium {
+.settings-save-button-medium,
+.settings-save-button-medium.ant-btn {
     height: 44px;
     font-size: 17px;
     font-weight: 500;
     border-radius: 12px;
+    letter-spacing: -0.022em;
+}
+
+.settings-loading {
+    display: flex;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.settings-wide-button.ant-btn {
+    height: 44px;
+    font-size: 17px;
+    font-weight: 500;
+    border-radius: 12px;
+    letter-spacing: -0.022em;
+}
+
+.settings-description {
+    font-size: 15px;
+    color: var(--ant-color-text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.settings-prompt-description {
+    font-size: 14px;
+    color: var(--ant-color-text-secondary);
+}
+
+.settings-prompt.ant-input {
+    font-family: monospace;
+    font-size: 12px;
+    background-color: var(--ant-color-fill-tertiary);
+}
+
+.settings-export-modal.ant-modal {
+    max-width: 1000px;
+}
+
+.settings-export.ant-input {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.settings-events-title.ant-typography {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    margin-bottom: 8px;
+}
+
+.settings-events-description.ant-typography {
+    display: block;
+    margin-bottom: 24px;
+    font-size: 17px;
+}
+
+.settings-event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settings-event-text.ant-typography {
+    font-size: 17px;
+}
+
+.settings-alert.ant-alert {
+    border-radius: 12px;
+}
+
+.settings-card-title {
+    font-size: 20px;
+}
+
+.settings-icon-button.ant-btn {
+    height: 44px;
+    width: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.settings-import-modal.ant-modal {
+    max-width: 1200px;
+}
+
+.settings-import-card.ant-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: none;
+    margin-bottom: 24px;
+}
+
+.settings-import-card-body.ant-card-body {
+    padding: 20px;
+}
+
+.settings-import-mode.ant-radio-button-wrapper {
+    width: 100%;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 500;
+    border-radius: 12px;
+    letter-spacing: -0.022em;
+}
+
+.settings-import-preview-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.settings-import-preview {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.settings-tab-label {
+    font-size: 17px;
+    font-weight: 500;
     letter-spacing: -0.022em;
 }

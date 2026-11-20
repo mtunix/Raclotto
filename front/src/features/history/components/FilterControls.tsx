@@ -1,7 +1,9 @@
+import type {Key, ReactNode} from "react";
 import {Button, Checkbox, Popover, Space, Tag, Typography} from 'antd';
 import {useTranslation} from "react-i18next";
 import type {ListPansIngredientCountItem} from "../../../api/generated/model";
 import {formatNumber, useLanguage} from "../../../lib/language";
+import "./HistoryView.css";
 
 const {Text} = Typography;
 
@@ -16,6 +18,42 @@ interface FilterControlsProps {
     onRatingsChange: (ratings: number[]) => void;
     onIngredientCountsChange: (counts: ListPansIngredientCountItem[]) => void;
     onClearFilters: () => void;
+}
+
+interface FilterPopoverProps<T extends Key> {
+    title: string;
+    label: string;
+    options: { value: T; label: ReactNode }[];
+    selected: T[];
+    onChange: (values: T[]) => void;
+}
+
+/** A button that opens the checkboxes of one filter, and counts how many are ticked. */
+function FilterPopover<T extends Key>({title, label, options, selected, onChange}: FilterPopoverProps<T>) {
+    return (
+        <Popover
+            title={title}
+            trigger="click"
+            content={
+                <div className="history-filter-options">
+                    <Checkbox.Group value={selected} onChange={onChange} className="full-width">
+                        <Space orientation="vertical" size="small" className="full-width">
+                            {options.map((option) => (
+                                <Checkbox key={option.value} value={option.value}>
+                                    {option.label}
+                                </Checkbox>
+                            ))}
+                        </Space>
+                    </Checkbox.Group>
+                </div>
+            }
+        >
+            <Button size="middle" type={selected.length > 0 ? 'primary' : 'default'}>
+                {label}
+                {selected.length > 0 && <Tag className="ml-4">{selected.length}</Tag>}
+            </Button>
+        </Popover>
+    );
 }
 
 export function FilterControls({
@@ -36,119 +74,27 @@ export function FilterControls({
     return (
         <Space size="middle" align="center" wrap>
             <Text strong>{t("history.filters")}:</Text>
-
-            {/* User Filter Popover */}
-            <Popover
+            <FilterPopover
                 title={t("history.filterByUser")}
-                trigger="click"
-                content={
-                    <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
-                        <Space orientation="vertical" style={{width: '100%'}}>
-                            <Checkbox.Group
-                                value={selectedUsers}
-                                onChange={(values) => onUsersChange(values)}
-                                style={{width: '100%'}}
-                            >
-                                <Space orientation="vertical" size="small" style={{width: '100%'}}>
-                                    {uniqueUsers.map(user => (
-                                        <Checkbox key={user.id} value={user.id}>
-                                            {user.name}
-                                        </Checkbox>
-                                    ))}
-                                </Space>
-                            </Checkbox.Group>
-                        </Space>
-                    </div>
-                }
-            >
-                <Button
-                    size="middle"
-                    type={selectedUsers.length > 0 ? 'primary' : 'default'}
-                >
-                    {t("history.users")}
-                    {selectedUsers.length > 0 && (
-                        <Tag style={{marginLeft: '4px'}}>
-                            {selectedUsers.length}
-                        </Tag>
-                    )}
-                </Button>
-            </Popover>
-
-            {/* Rating Filter Popover */}
-            <Popover
+                label={t("history.users")}
+                options={uniqueUsers.map((user) => ({value: user.id, label: user.name}))}
+                selected={selectedUsers}
+                onChange={onUsersChange}
+            />
+            <FilterPopover
                 title={t("history.filterByRating")}
-                trigger="click"
-                content={
-                    <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
-                        <Space orientation="vertical" style={{width: '100%'}}>
-                            <Checkbox.Group
-                                value={selectedRatings}
-                                onChange={(values) => onRatingsChange(values)}
-                                style={{width: '100%'}}
-                            >
-                                <Space orientation="vertical" size="small" style={{width: '100%'}}>
-                                    {uniqueRatings.map(rating => (
-                                        <Checkbox key={rating} value={rating}>
-                                            {formatNumber(rating, language)} {t("history.stars")}
-                                        </Checkbox>
-                                    ))}
-                                </Space>
-                            </Checkbox.Group>
-                        </Space>
-                    </div>
-                }
-            >
-                <Button
-                    size="middle"
-                    type={selectedRatings.length > 0 ? 'primary' : 'default'}
-                >
-                    {t("history.rating")}
-                    {selectedRatings.length > 0 && (
-                        <Tag style={{marginLeft: '4px'}}>
-                            {selectedRatings.length}
-                        </Tag>
-                    )}
-                </Button>
-            </Popover>
-
-            {/* Ingredient Count Filter Popover */}
-            <Popover
+                label={t("history.rating")}
+                options={uniqueRatings.map((rating) => ({value: rating, label: `${formatNumber(rating, language)} ${t("history.stars")}`}))}
+                selected={selectedRatings}
+                onChange={onRatingsChange}
+            />
+            <FilterPopover
                 title={t("history.filterByIngredients")}
-                trigger="click"
-                content={
-                    <div style={{width: 200, maxHeight: '300px', overflowY: 'auto'}}>
-                        <Space orientation="vertical" style={{width: '100%'}}>
-                            <Checkbox.Group
-                                value={selectedIngredientCounts}
-                                onChange={(values) => onIngredientCountsChange(values)}
-                                style={{width: '100%'}}
-                            >
-                                <Space orientation="vertical" size="small" style={{width: '100%'}}>
-                                    {uniqueIngredientRanges.map(range => (
-                                        <Checkbox key={range} value={range}>
-                                            {range} {t("history.ingredients")}
-                                        </Checkbox>
-                                    ))}
-                                </Space>
-                            </Checkbox.Group>
-                        </Space>
-                    </div>
-                }
-            >
-                <Button
-                    size="middle"
-                    type={selectedIngredientCounts.length > 0 ? 'primary' : 'default'}
-                >
-                    {t("history.ingredients")}
-                    {selectedIngredientCounts.length > 0 && (
-                        <Tag style={{marginLeft: '4px'}}>
-                            {selectedIngredientCounts.length}
-                        </Tag>
-                    )}
-                </Button>
-            </Popover>
-
-            {/* Clear Filters Button */}
+                label={t("history.ingredients")}
+                options={uniqueIngredientRanges.map((range) => ({value: range, label: `${range} ${t("history.ingredients")}`}))}
+                selected={selectedIngredientCounts}
+                onChange={onIngredientCountsChange}
+            />
             <Button
                 size="middle"
                 onClick={onClearFilters}

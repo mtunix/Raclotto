@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { Card, Alert, Form, Input, Button, Space, Tag, message } from "antd";
 import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
@@ -11,16 +11,6 @@ import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
 import { ItemList, ItemMeta, ItemRow } from "../../../shared/ItemList/ItemList";
 import { copyToClipboard } from "../copyToClipboard";
 import "../SettingsView.css";
-
-const iconButtonStyle: CSSProperties = {
-    height: '44px',
-    width: '44px',
-    padding: '0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '12px'
-};
 
 const isExpired = (invite: InviteDto) => new Date(invite.expires_at) < new Date();
 
@@ -61,10 +51,9 @@ export function InvitesSection() {
     return (
         <div className="settings-session-tab">
             <Card 
-                title={<span className="settings-section-title" style={{ fontSize: '20px' }}>{t("invite.generateToken")}</span>} 
-                className="settings-card"
-                styles={{ body: { padding: '24px' } }}
-                style={{ marginBottom: '24px' }}
+                title={<span className="settings-section-title settings-card-title">{t("invite.generateToken")}</span>} 
+                className="settings-card mb-24"
+                classNames={{ body: "settings-card-body" }}
             >
                 {error && (
                     <Alert
@@ -72,7 +61,7 @@ export function InvitesSection() {
                         type="error"
                         showIcon
                         closable={{ onClose: () => setError(null) }}
-                        style={{ marginBottom: 16, borderRadius: '12px' }}
+                        className="settings-alert mb-16"
                     />
                 )}
                 <Form
@@ -92,7 +81,7 @@ export function InvitesSection() {
                         <Input size="large" placeholder={t("invite.emailPlaceholder")} />
                     </Form.Item>
 
-                    <Form.Item style={{ marginBottom: 0 }}>
+                    <Form.Item className="mb-0">
                         <Button 
                             type="primary" 
                             size="large" 
@@ -107,9 +96,9 @@ export function InvitesSection() {
             </Card>
 
             <Card 
-                title={<span className="settings-section-title" style={{ fontSize: '20px' }}>{t("invite.myInvites")}</span>}
+                title={<span className="settings-section-title settings-card-title">{t("invite.myInvites")}</span>}
                 className="settings-card"
-                styles={{ body: { padding: '24px' } }}
+                classNames={{ body: "settings-card-body" }}
             >
                 <ItemList
                     loading={isLoading}
@@ -130,7 +119,7 @@ export function InvitesSection() {
                                             )
                                         }
                                         size="large"
-                                        style={iconButtonStyle}
+                                        className="settings-icon-button"
                                     />
                                     {!invite.is_used && !isExpired(invite) && (
                                         <ConfirmDeleteButton
@@ -138,7 +127,7 @@ export function InvitesSection() {
                                             label={t("invite.revoke")}
                                             danger={true}
                                             icon={<CloseOutlined />}
-                                            style={iconButtonStyle}
+                                            className="settings-icon-button"
                                         />
                                     )}
                                 </Space>

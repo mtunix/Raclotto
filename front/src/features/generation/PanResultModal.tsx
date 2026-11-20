@@ -109,21 +109,14 @@ export function PanResultModal({
         }}
       >
         <div>
-          <Card className={styles.gradientCard} styles={{ body: { padding: "28px" } }}>
+          <Card className={styles.gradientCard} classNames={{ body: styles.cardBodyLarge }}>
             <Row align="middle" justify="space-between" gutter={[16, 16]}>
               <Col flex="auto" xs={24} sm={24} md={16}>
                 <Title level={2} className={styles.whiteTitle}>
                   {displayName(pan.name, t)}
                 </Title>
                 {hasLeveledUp && (
-                  <Text
-                    style={{
-                      color: "#fff",
-                      fontSize: "16px",
-                      display: "block",
-                      marginTop: "8px",
-                    }}
-                  >
+                  <Text className={styles.leveledUp}>
                     🎉 {t("level.leveledUp")}
                   </Text>
                 )}

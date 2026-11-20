@@ -4,6 +4,7 @@ import type { AchievementDto } from "../../../api/generated/model";
 import { formatNumber, useLanguage } from "../../../lib/language";
 import { achievementDescription, achievementTitle } from "../../../shared/achievementText";
 import { achievementValueColor } from "../../../shared/achievementValueColor";
+import "../profile.css";
 
 const { Title, Text } = Typography;
 
@@ -12,18 +13,18 @@ export function AchievementList({ achievements }: { achievements: AchievementDto
   const { t } = useTranslation();
   const language = useLanguage();
   return (
-    <Card title={t("profile.achievements")} style={{ marginBottom: "24px" }}>
+    <Card title={t("profile.achievements")} className="mb-24">
       {achievements.length > 0 ? (
         <Row gutter={[16, 16]}>
           {achievements.map((achievement) => (
             <Col xs={24} sm={12} md={8} lg={6} key={achievement.id}>
-              <Card size="small" style={{ border: "2px solid #52c41a", backgroundColor: "#f6ffed" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <Card size="small" className="profile-achievement">
+                <div className="profile-achievement-header">
                   <div>
-                    <Title level={5} style={{ margin: 0, fontSize: "14px" }}>
+                    <Title level={5} className="profile-achievement-title">
                       {achievementTitle(achievement, t)}
                     </Title>
-                    <Text type="secondary" style={{ fontSize: "12px" }}>
+                    <Text type="secondary" className="profile-level-label">
                       {achievementDescription(achievement, t)}
                     </Text>
                   </div>

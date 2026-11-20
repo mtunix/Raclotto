@@ -1,7 +1,52 @@
+.dashboard-toolbar {
+    margin-bottom: 24px;
+}
+
+.dashboard-toolbar-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-card-body.ant-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-card-body-scroll.ant-card-body {
+    max-height: 600px;
+    overflow: auto;
+}
+
+.dashboard-card-title.ant-typography {
+    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+}
+
+.dashboard-card-subtitle.ant-typography {
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.dashboard-rating.ant-rate {
+    font-size: 1rem;
+}
+
 .dashboard-ingredient-item {
     margin-bottom: 4px;
     border-radius: 4px;
     padding: 8px 10px;
+}
+
+.dashboard-ingredient-fill {
+    background-color: var(--ant-color-primary-bg);
+}
+
+.dashboard-ingredient-sauce {
+    background-color: var(--ant-color-fill-quaternary);
 }
 
 .dashboard-ingredient-item-content {
@@ -16,6 +61,10 @@
     font-size: 0.9rem;
 }
 
+.dashboard-ingredient-icon {
+    margin-right: 8px;
+}
+
 .dashboard-ingredient-count {
     font-size: 0.9rem;
     font-weight: 600;
@@ -27,11 +76,19 @@
     padding: 8px 10px;
 }
 
+.dashboard-pan-body {
+    width: 100%;
+}
+
 .dashboard-pan-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 6px;
+}
+
+.dashboard-pan-heading {
+    flex: 1;
 }
 
 .dashboard-pan-title {
@@ -43,9 +100,98 @@
 .dashboard-pan-subtitle {
     font-style: italic;
     font-size: 0.75rem;
-    color: #8c8c8c;
+    color: var(--ant-color-text-tertiary);
 }
 
 .dashboard-pan-rating {
     margin-left: 8px;
+}
+
+/* Above ItemList's own row selector, whose padding and divider these replace. */
+.item-list .item-list-row.dashboard-leader {
+    margin-bottom: 4px;
+    border-radius: 4px;
+    padding: 8px;
+    border: none;
+}
+
+.item-list .item-list-row.dashboard-leader-top {
+    padding: 10px;
+    background-color: var(--ant-color-fill-quaternary);
+    border: 1px solid var(--medal);
+    border-left: 3px solid var(--medal);
+}
+
+.item-list .item-list-row.dashboard-leader-me {
+    background-color: var(--ant-color-primary-bg);
+}
+
+.dashboard-leader-rank-1 {
+    --medal: #d4af37;
+}
+
+.dashboard-leader-rank-2 {
+    --medal: #c0c0c0;
+}
+
+.dashboard-leader-rank-3 {
+    --medal: #cd7f32;
+}
+
+.dashboard-leader-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.dashboard-leader-who {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-leader-rank.ant-typography {
+    font-size: 0.8rem;
+    min-width: 24px;
+    text-align: center;
+}
+
+.dashboard-leader-top .dashboard-leader-rank.ant-typography {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.dashboard-leader-name.ant-typography {
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.dashboard-leader-top .dashboard-leader-name.ant-typography {
+    font-size: 0.95rem;
+}
+
+.dashboard-leader-you.ant-tag {
+    margin-left: 6px;
+    font-size: 0.75rem;
+    padding: 0 4px;
+    line-height: 16px;
+}
+
+.dashboard-leader-points {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+}
+
+.dashboard-leader-points-icon {
+    font-size: 0.9rem;
+}
+
+.dashboard-leader-points-value.ant-typography {
+    font-size: 0.8rem;
+    font-weight: 500;
 }

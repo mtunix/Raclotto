@@ -16,7 +16,6 @@ import { copyToClipboard } from "../copyToClipboard";
 import { INGREDIENT_PROMPT } from "../ingredientPrompt";
 import { ExportIngredientsButton } from "./ExportIngredientsButton";
 import { ImportIngredientsModal } from "./ImportIngredientsModal";
-import { descriptionStyle, wideButtonStyle } from "./sessionSettingsStyles";
 import "../SettingsView.css";
 
 /** The current session: its name, its ingredient catalog as a file, its recap and its end. */
@@ -76,7 +75,7 @@ export function SessionSettingsSection() {
 
     if (isLoading) {
         return (
-            <div className="settings-session-tab" style={{ display: "flex", justifyContent: "center", minHeight: "200px" }}>
+            <div className="settings-session-tab settings-loading">
                 <Spin size="large" />
             </div>
         );
@@ -89,11 +88,11 @@ export function SessionSettingsSection() {
                     type="info"
                     showIcon
                     title={t("settings.onlyCreatorManages")}
-                    style={{ marginBottom: 24 }}
+                    className="mb-24"
                 />
             )}
 
-            <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
+            <Card className="settings-card mb-24" classNames={{ body: "settings-card-body" }}>
                 <Form.Item
                     label={<span className="settings-section-title">{t("session.sessionName")}</span>}
                     className="settings-form-item-spacing"
@@ -110,7 +109,7 @@ export function SessionSettingsSection() {
                     />
                 </Form.Item>
                 {canManage && (
-                    <Form.Item style={{ marginBottom: 0 }}>
+                    <Form.Item className="mb-0">
                         <Button
                             type="primary"
                             size="large"
@@ -125,34 +124,34 @@ export function SessionSettingsSection() {
                 )}
             </Card>
 
-            <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
-                <div style={{ marginBottom: "32px" }}>
-                    <div className="settings-section-title" style={{ marginBottom: "8px" }}>
+            <Card className="settings-card mb-24" classNames={{ body: "settings-card-body" }}>
+                <div className="mb-32">
+                    <div className="settings-section-title mb-8">
                         {t("settings.prompt")}
                     </div>
-                    <div style={descriptionStyle}>
+                    <div className="settings-description">
                         {t("settings.promptDescription")}
                     </div>
-                    <Button size="large" icon={<BgColorsOutlined />} onClick={() => setPromptOpen(true)} block style={wideButtonStyle}>
+                    <Button size="large" icon={<BgColorsOutlined />} onClick={() => setPromptOpen(true)} block className="settings-wide-button">
                         {t("settings.viewPrompt")}
                     </Button>
                 </div>
 
-                <div style={{ marginBottom: "32px" }}>
-                    <div className="settings-section-title" style={{ marginBottom: "8px" }}>
+                <div className="mb-32">
+                    <div className="settings-section-title mb-8">
                         {t("settings.export")}
                     </div>
-                    <div style={descriptionStyle}>
+                    <div className="settings-description">
                         {t("settings.exportDescription")}
                     </div>
                     <ExportIngredientsButton sessionKey={sessionKey} />
                 </div>
 
                 <div>
-                    <div className="settings-section-title" style={{ marginBottom: "8px" }}>
+                    <div className="settings-section-title mb-8">
                         {t("settings.import")}
                     </div>
-                    <div style={descriptionStyle}>
+                    <div className="settings-description">
                         {t("settings.importDescription")}
                     </div>
                     <Button
@@ -161,36 +160,36 @@ export function SessionSettingsSection() {
                         onClick={() => setImportOpen(true)}
                         disabled={!sessionKey}
                         block
-                        style={wideButtonStyle}
+                        className="settings-wide-button"
                     >
                         {t("settings.import")}
                     </Button>
                 </div>
             </Card>
 
-            <Card className="settings-card" styles={{ body: { padding: "24px" } }} style={{ marginBottom: "24px" }}>
-                <div className="settings-section-title" style={{ marginBottom: "8px" }}>
+            <Card className="settings-card mb-24" classNames={{ body: "settings-card-body" }}>
+                <div className="settings-section-title mb-8">
                     {t("recap.title")}
                 </div>
-                <div style={descriptionStyle}>{t("recap.description")}</div>
+                <div className="settings-description">{t("recap.description")}</div>
                 <Button
                     size="large"
                     icon={<BarChartOutlined />}
                     onClick={() => navigate(`/recap/${encodeURIComponent(sessionKey)}`)}
                     disabled={!sessionKey}
                     block
-                    style={wideButtonStyle}
+                    className="settings-wide-button"
                 >
                     {t("recap.show")}
                 </Button>
             </Card>
 
             {canManage && (
-                <Card className="settings-card" styles={{ body: { padding: "24px" } }}>
-                    <div className="settings-section-title" style={{ marginBottom: "16px" }}>
+                <Card className="settings-card" classNames={{ body: "settings-card-body" }}>
+                    <div className="settings-section-title mb-16">
                         {t("session.eveningOver")}
                     </div>
-                    <Button type="primary" danger block size="large" onClick={() => setConfirmingEnd(true)} style={wideButtonStyle}>
+                    <Button type="primary" danger block size="large" onClick={() => setConfirmingEnd(true)} className="settings-wide-button">
                         {t("session.endSession")}
                     </Button>
                 </Card>
@@ -219,24 +218,24 @@ export function SessionSettingsSection() {
                 open={promptOpen}
                 onCancel={() => setPromptOpen(false)}
                 footer={[
-                    <Button key="copy" icon={<CopyOutlined />} onClick={() => copyToClipboard(INGREDIENT_PROMPT, t)} style={{ width: "100%" }}>
+                    <Button key="copy" icon={<CopyOutlined />} onClick={() => copyToClipboard(INGREDIENT_PROMPT, t)} className="full-width">
                         {t("settings.copyPrompt")}
                     </Button>,
-                    <Button key="close" onClick={() => setPromptOpen(false)} style={{ width: "100%", marginTop: "8px" }}>
+                    <Button key="close" onClick={() => setPromptOpen(false)} className="full-width mt-8">
                         {t("auth.close")}
                     </Button>,
                 ]}
                 width={700}
             >
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div style={{ fontSize: "14px", color: "#666" }}>
+                <div className="stack-16">
+                    <div className="settings-prompt-description">
                         {t("settings.promptModalDescription")}
                     </div>
                     <Input.TextArea
                         value={INGREDIENT_PROMPT}
                         readOnly
                         rows={20}
-                        style={{ fontFamily: "monospace", fontSize: "12px", backgroundColor: "#f5f5f5" }}
+                        className="settings-prompt"
                     />
                 </div>
             </Modal>

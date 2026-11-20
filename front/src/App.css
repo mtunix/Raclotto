@@ -2,22 +2,13 @@
     text-align: center;
 }
 
-.achievement-done button {
-    background: #e9ffe0;
+.app-layout {
+    min-height: 100vh;
 }
 
-.achievement-done button:not(.collapsed) {
-    background: #d1ffbc;
-    color: #00ad07;
-}
-
-.achievement button {
-    background: #ffcdcd;
-}
-
-.achievement button:not(.collapsed) {
-    background: #ffa4a4;
-    color: #a50000;
+.app-logo {
+    margin-top: 60px;
+    margin-bottom: 48px;
 }
 
 .app-content {
@@ -38,7 +29,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     letter-spacing: -0.022em;
     line-height: 1.1;
-    color: #1d1d1f;
+    color: var(--ant-color-text);
 }
 
 h1 {
@@ -97,17 +88,17 @@ h6 {
 }
 
 .ant-btn-primary {
-    background: #0071e3;
-    border-color: #0071e3;
+    background: var(--ant-color-primary);
+    border-color: var(--ant-color-primary);
     font-weight: 400;
 }
 
 .ant-btn-primary:hover,
 .ant-btn-primary:focus {
-    background: #0077ed;
-    border-color: #0077ed;
+    background: var(--ant-color-primary-hover);
+    border-color: var(--ant-color-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--ant-color-primary) 30%, transparent);
 }
 
 /* Apple-like card improvements */
@@ -115,11 +106,11 @@ h6 {
     border-radius: 18px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: none;
-    background: #ffffff;
+    background: var(--ant-color-bg-container);
 }
 
 .ant-card-head {
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--ant-color-border-secondary);
     padding: 20px 24px;
 }
 
@@ -127,7 +118,7 @@ h6 {
     font-size: 24px;
     font-weight: 600;
     letter-spacing: -0.022em;
-    color: #1d1d1f;
+    color: var(--ant-color-text);
 }
 
 .ant-card-body {
@@ -140,7 +131,7 @@ h6 {
     min-height: 44px;
     font-size: 17px;
     border-radius: 12px;
-    border: 1px solid #d2d2d7;
+    border: 1px solid var(--ant-color-border);
     padding: 0 16px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -149,8 +140,8 @@ h6 {
 .ant-input-password:focus,
 .ant-input-focused,
 .ant-input-password-focused {
-    border-color: #0071e3;
-    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+    border-color: var(--ant-color-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ant-color-primary) 10%, transparent);
 }
 
 .ant-input-lg {
@@ -163,7 +154,7 @@ h6 {
 .ant-select-selector {
     min-height: 44px !important;
     border-radius: 12px !important;
-    border: 1px solid #d2d2d7 !important;
+    border: 1px solid var(--ant-color-border) !important;
     font-size: 17px !important;
 }
 
@@ -173,8 +164,8 @@ h6 {
 }
 
 .ant-select-focused .ant-select-selector {
-    border-color: #0071e3 !important;
-    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1) !important;
+    border-color: var(--ant-color-primary) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ant-color-primary) 10%, transparent) !important;
 }
 
 /* Responsive max-width adjustments */
@@ -188,7 +179,7 @@ h6 {
 .ant-form-item-label > label {
     font-size: 17px;
     font-weight: 500;
-    color: #1d1d1f;
+    color: var(--ant-color-text);
     letter-spacing: -0.022em;
 }
 
@@ -204,7 +195,7 @@ h6 {
 }
 
 .item-list-row:hover {
-    background-color: #f5f5f7;
+    background-color: var(--ant-color-bg-layout);
 }
 
 /* Apple-like modal improvements */

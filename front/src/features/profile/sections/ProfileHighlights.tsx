@@ -4,6 +4,7 @@ import type { UserStatsDto } from "../../../api/generated/model";
 import { formatNumber, numberFormatter, useLanguage } from "../../../lib/language";
 import { displayName } from "../../../shared/displayName";
 import { IngredientDisplay } from "../../../shared/IngredientDisplay/IngredientDisplay";
+import "../profile.css";
 
 const { Text } = Typography;
 
@@ -21,7 +22,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
   return (
     <>
       {bestSession && (
-        <Card title={t("profile.bestSession")} style={{ marginBottom: "24px" }}>
+        <Card title={t("profile.bestSession")} className="mb-24">
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={8}>
               <Statistic title={t("profile.sessionName")} value={bestSession.session_name || t("common.notAvailable")} />
@@ -34,7 +35,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
       )}
 
       {(favorite || bestRated) && (
-        <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+        <Row gutter={[16, 16]} className="mb-24">
           {favorite && (
             <Col xs={24} md={12}>
               <Card title={t("profile.mostUsedIngredient")}>
@@ -48,9 +49,9 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
                 <div>
                   <IngredientDisplay ingredient={bestRated.ingredient} variant="badge" showTags={false} showIcon={true} />
                   {bestRated.avg_rating > 0 && (
-                    <div style={{ marginTop: "8px" }}>
-                      <Rate disabled allowHalf value={bestRated.avg_rating} style={{ fontSize: "14px" }} />
-                      <Text type="secondary" style={{ marginLeft: "8px" }}>
+                    <div className="mt-8">
+                      <Rate disabled allowHalf value={bestRated.avg_rating} className="profile-rating" />
+                      <Text type="secondary" className="ml-8">
                         {formatNumber(bestRated.avg_rating, language, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Text>
                     </div>
@@ -63,7 +64,7 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
       )}
 
       {biggestPan && (
-        <Card title={t("profile.biggestPan")} style={{ marginBottom: "24px" }}>
+        <Card title={t("profile.biggestPan")} className="mb-24">
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12}>
               <Statistic title={t("profile.panName")} value={displayName(biggestPan.name, t)} />
@@ -77,13 +78,13 @@ export function ProfileHighlights({ stats }: { stats: Partial<UserStatsDto> }) {
             </Col>
           </Row>
           {biggestPan.ingredients.length > 0 && (
-            <div style={{ marginTop: "16px" }}>
-              <Text strong style={{ display: "block", marginBottom: "12px" }}>
+            <div className="mt-16">
+              <Text strong className="profile-ingredients-title">
                 {t("profile.ingredients")}
               </Text>
-              <Space wrap style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              <Space wrap className="profile-ingredients">
                 {biggestPan.ingredients.map((ingredient) => (
-                  <div key={ingredient.id} style={{ marginBottom: "8px" }}>
+                  <div key={ingredient.id} className="mb-8">
                     <IngredientDisplay ingredient={ingredient} variant="badge" showTags={true} showIcon={true} />
                   </div>
                 ))}

@@ -3,6 +3,7 @@ import { Button, Card, Col, Empty, Row, Spin } from "antd";
 import { useTranslation } from "react-i18next";
 import type { PanDto } from "../../../api/generated/model";
 import { ProfilePanCard } from "./ProfilePanCard";
+import "../profile.css";
 
 interface PanHistoryProps {
   pans: PanDto[];
@@ -18,7 +19,7 @@ export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps
   let content: ReactNode;
   if (loading && pans.length === 0) {
     content = (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}>
+      <div className="loading-block">
         <Spin size="large" />
       </div>
     );
@@ -37,7 +38,7 @@ export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps
           ))}
         </Row>
         {hasMore && (
-          <div style={{ textAlign: "center", marginTop: "24px", marginBottom: "24px" }}>
+          <div className="profile-more">
             <Button type="primary" loading={loading} onClick={loadMore} size="large">
               {t("history.loadMore")}
             </Button>

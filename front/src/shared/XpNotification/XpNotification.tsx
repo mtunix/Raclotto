@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Card, Progress, Tag, Typography } from "antd";
 import { useAppStore } from "../../AppSlice";
@@ -11,10 +11,10 @@ import { achievementDescription, achievementTitle } from "../achievementText";
 import { achievementValueColor } from "../achievementValueColor";
 import { skipTo, xpNotificationFrame, type XpStage } from "./xpNotificationTimeline";
 import "./XpNotification.css";
+import { PROGRESS_GRADIENT } from "../progressGradient";
 
 const { Text, Title } = Typography;
 
-const STROKE_COLOR = { '0%': '#108ee9', '100%': '#87d068' };
 
 export function XpNotification() {
     const { t } = useTranslation();
@@ -62,17 +62,17 @@ export function XpNotification() {
             level: typeof level === "string" ? level : t(level.name, { defaultValue: level.name }),
         });
 
-    const progress = (label: string, bar: LevelProgress, style?: CSSProperties) => (
-        <div className="xp-progress-container" style={{ marginTop: '12px', ...style }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
+    const progress = (label: string, bar: LevelProgress, className = "") => (
+        <div className={`xp-progress-container ${className}`}>
+            <div className="xp-progress-labels">
+                <Text type="secondary" className="xp-progress-label">
                     {label}
                 </Text>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
+                <Text type="secondary" className="xp-progress-label">
                     {formatNumber(bar.xpInLevel, language)} / {formatNumber(bar.xpNeeded, language)} XP
                 </Text>
             </div>
-            <Progress percent={bar.percent} strokeColor={STROKE_COLOR} showInfo={false} size="small" />
+            <Progress percent={bar.percent} strokeColor={PROGRESS_GRADIENT} showInfo={false} size="small" />
         </div>
     );
 
@@ -82,7 +82,7 @@ export function XpNotification() {
                 {t("xpNotification.earned", { amount: formatNumber(shown.xp_gained, language) })}
             </Text>
             {levelTag && (
-                <Tag color="blue" style={{ fontSize: '14px', padding: '4px 12px', marginTop: '4px' }}>
+                <Tag color="blue" className="xp-tag">
                     {levelName}
                 </Tag>
             )}
@@ -91,13 +91,13 @@ export function XpNotification() {
 
     const levelUp = (
         <div className="xp-level-up">
-            <span style={{ fontSize: '3rem', display: 'block', marginBottom: '8px', animation: 'pulse 2s ease-in-out infinite' }}>
+            <span className="xp-level-up-star">
                 ⭐
             </span>
             <Text strong className="xp-level-up-text">
                 {t("xpNotification.levelUp")}
             </Text>
-            <Tag color="gold" style={{ fontSize: '14px', padding: '4px 12px', marginTop: '4px' }}>
+            <Tag color="gold" className="xp-tag">
                 <strong>{levelName}</strong>
             </Tag>
         </div>
@@ -123,13 +123,13 @@ export function XpNotification() {
                     <>
                         {levelUp}
                         {/* Kept in the DOM, hidden, so the new level's bar appears without a jump. */}
-                        {next && progress(progressTo(next), bar, { opacity: 0, height: 0, overflow: 'hidden' })}
+                        {next && progress(progressTo(next), bar, "xp-progress-hidden")}
                     </>
                 )}
                 {stage === "new-level-progress" && (
                     <>
                         {levelUp}
-                        {next && progress(progressTo(next), bar, { transition: 'opacity 0.2s ease-in' })}
+                        {next && progress(progressTo(next), bar, "xp-progress-appearing")}
                     </>
                 )}
             </div>
@@ -139,19 +139,19 @@ export function XpNotification() {
     const renderAchievementPage = (achievement: AchievementDto, opacity: number) => (
         <div className="xp-notification-page achievement-page" style={{ opacity }}>
             <div className="achievement-unlocked">
-                <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '8px' }}>
+                <span className="achievement-unlocked-icon">
                     {VectorGraphics.ACHIEVEMENTS}
                 </span>
                 <Text strong className="achievement-unlocked-text">
                     {t("achievement.unlocked")}
                 </Text>
-                <Title level={4} style={{ margin: '12px 0 8px 0', fontSize: '1.2rem' }}>
+                <Title level={4} className="achievement-unlocked-title">
                     {achievementTitle(achievement, t)}
                 </Title>
-                <Text type="secondary" style={{ fontSize: '0.9rem', display: 'block', marginBottom: '12px' }}>
+                <Text type="secondary" className="achievement-unlocked-description">
                     {achievementDescription(achievement, t)}
                 </Text>
-                <Tag color={achievementValueColor(achievement.value)} style={{ fontSize: '14px', padding: '4px 12px', fontWeight: 600 }}>
+                <Tag color={achievementValueColor(achievement.value)} className="xp-tag achievement-unlocked-points">
                     {formatNumber(achievement.value, language)} {t("achievement.points")}
                 </Tag>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   Card,
   Row,
@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { useGetStats } from "../../../api/generated/endpoints/stats/stats";
 import { IngredientType } from "../../../api/generated/model";
 import type {
+  IngredientDto,
   IngredientRatingDto,
   IngredientUsageDto,
   LeaderboardEntryDto,
@@ -34,246 +35,96 @@ import "./Dashboard.css";
 
 const { Title, Text } = Typography;
 
-interface RatingViewerProps {
-  rating: number;
+function RatingViewer({ rating }: { rating: number }) {
+  return <Rate value={rating} disabled allowHalf className="dashboard-rating" />;
 }
 
-function RatingViewer(props: RatingViewerProps) {
-  return (
-    <Rate
-      value={props.rating}
-      disabled
-      allowHalf
-      style={{ fontSize: "1rem" }}
-    />
-  );
-}
-
-interface IngredientListGroupItemRatingProps {
-  entry: IngredientRatingDto;
-}
-
-function IngredientListGroupItemRating(
-  props: IngredientListGroupItemRatingProps,
-) {
+/** An ingredient in one of the ingredient lists, with its score at the end. */
+function IngredientStatRow({ ingredient, children }: { ingredient: IngredientDto; children: ReactNode }) {
   const { t } = useTranslation();
-  const { ingredient } = props.entry;
-  const backgroundColor =
-    ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
-  const icon =
-    ingredient.type === IngredientType.FILL
-      ? VectorGraphics.INGREDIENT
-      : VectorGraphics.SAUCE;
+  const fill = ingredient.type === IngredientType.FILL;
 
   return (
-    <ItemRow
-      className="dashboard-ingredient-item"
-      style={{ backgroundColor: backgroundColor }}
-    >
+    <ItemRow className={`dashboard-ingredient-item ${fill ? "dashboard-ingredient-fill" : "dashboard-ingredient-sauce"}`}>
       <div className="dashboard-ingredient-item-content">
         <span className="dashboard-ingredient-name">
-          <span style={{ marginRight: "8px" }}>{icon}</span>
+          <span className="dashboard-ingredient-icon">{fill ? VectorGraphics.INGREDIENT : VectorGraphics.SAUCE}</span>
           {displayName(ingredient.name, t)}
         </span>
-        <RatingViewer rating={props.entry.avg_rating} />
+        {children}
       </div>
     </ItemRow>
   );
 }
 
-interface IngredientListGroupItemCountProps {
-  entry: IngredientUsageDto;
-}
-
-function IngredientListGroupItemCount(
-  props: IngredientListGroupItemCountProps,
-) {
+function PanListItem({ pan }: { pan: PanDto }) {
   const { t } = useTranslation();
-  const language = useLanguage();
-  const { ingredient } = props.entry;
-  const backgroundColor =
-    ingredient.type === IngredientType.FILL ? "#f0f7ff" : "#fafafa";
-  const icon =
-    ingredient.type === IngredientType.FILL
-      ? VectorGraphics.INGREDIENT
-      : VectorGraphics.SAUCE;
-
-  return (
-    <ItemRow
-      className="dashboard-ingredient-item"
-      style={{ backgroundColor: backgroundColor }}
-    >
-      <div className="dashboard-ingredient-item-content">
-        <span className="dashboard-ingredient-name">
-          <span style={{ marginRight: "8px" }}>{icon}</span>
-          {displayName(ingredient.name, t)}
-        </span>
-        <span className="dashboard-ingredient-count">
-          {formatNumber(props.entry.pan_count, language)}
-        </span>
-      </div>
-    </ItemRow>
-  );
-}
-
-interface PanListItemProps {
-  pan: PanDto;
-}
-
-function PanListItem(props: PanListItemProps) {
-  const { t } = useTranslation();
+  const fills = pan.ingredients.filter((ingredient) => ingredient.type === IngredientType.FILL);
+  const sauces = pan.ingredients.filter((ingredient) => ingredient.type === IngredientType.SAUCE);
 
   return (
     <ItemRow className="dashboard-pan-item">
-      <div style={{ width: "100%" }}>
+      <div className="dashboard-pan-body">
         <div className="dashboard-pan-header">
-          <div style={{ flex: 1 }}>
-            <div className="dashboard-pan-title">{displayName(props.pan.name, t)}</div>
+          <div className="dashboard-pan-heading">
+            <div className="dashboard-pan-title">{displayName(pan.name, t)}</div>
             <div className="dashboard-pan-subtitle">
-              {t("history.consumedBy")} {props.pan.author?.name}
+              {t("history.consumedBy")} {pan.author?.name}
             </div>
           </div>
           <div className="dashboard-pan-rating">
-            <RatingViewer rating={props.pan.rating} />
+            <RatingViewer rating={pan.rating} />
           </div>
         </div>
-        <div>
-          <Space wrap size={[4, 4]}>
-            {props.pan.ingredients
-              .filter((ingredient) => ingredient.type === IngredientType.FILL)
-              .map((ingredient) => (
-                <IngredientDisplay
-                  key={`fill-${ingredient.id}`}
-                  ingredient={ingredient}
-                  variant="badge"
-                  showTags={false}
-                  showIcon={true}
-                />
-              ))}
-            {props.pan.ingredients
-              .filter((ingredient) => ingredient.type === IngredientType.SAUCE)
-              .map((ingredient) => (
-                <IngredientDisplay
-                  key={`sauce-${ingredient.id}`}
-                  ingredient={ingredient}
-                  variant="badge"
-                  showTags={false}
-                  showIcon={true}
-                />
-              ))}
-          </Space>
-        </div>
+        <Space wrap size={[4, 4]}>
+          {[...fills, ...sauces].map((ingredient) => (
+            <IngredientDisplay
+              key={`${ingredient.type}-${ingredient.id}`}
+              ingredient={ingredient}
+              variant="badge"
+              showTags={false}
+              showIcon={true}
+            />
+          ))}
+        </Space>
       </div>
     </ItemRow>
   );
 }
 
-interface LeaderboardListItemProps {
-  entry: LeaderboardEntryDto;
-  currentUserId?: number;
-}
-
-function LeaderboardListItem(props: LeaderboardListItemProps) {
+function LeaderboardListItem({ entry, currentUserId }: { entry: LeaderboardEntryDto; currentUserId?: number }) {
   const { t } = useTranslation();
   const language = useLanguage();
-  const isTopThree = props.entry.rank <= 3;
-  const isCurrentUser = props.currentUserId === props.entry.user_id;
-
-  // Subtle styling for top 3, normal for others
-  const backgroundColor = isTopThree
-    ? isCurrentUser
-      ? "#f0f7ff"
-      : "#fafafa"
-    : isCurrentUser
-      ? "#f0f7ff"
-      : "#ffffff";
-  const borderColor = isTopThree
-    ? props.entry.rank === 1
-      ? "#d4af37"
-      : props.entry.rank === 2
-        ? "#c0c0c0"
-        : "#cd7f32"
-    : "transparent";
-  const borderWidth = isTopThree ? "1px" : "0px";
-  const padding = isTopThree ? "10px" : "8px";
-  const fontSize = isTopThree ? "0.95rem" : "0.9rem";
+  const isTopThree = entry.rank <= 3;
+  const isCurrentUser = currentUserId === entry.user_id;
+  const className = [
+    "dashboard-leader",
+    isTopThree && `dashboard-leader-top dashboard-leader-rank-${entry.rank}`,
+    isCurrentUser && "dashboard-leader-me",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <ItemRow
-      style={{
-        backgroundColor: backgroundColor,
-        marginBottom: "4px",
-        borderRadius: "4px",
-        padding: padding,
-        border: `${borderWidth} solid ${borderColor}`,
-        borderLeft: isTopThree ? `3px solid ${borderColor}` : "none",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            flex: 1,
-            minWidth: 0,
-          }}
-        >
-          <Text
-            type="secondary"
-            style={{
-              fontSize: isTopThree ? "0.9rem" : "0.8rem",
-              minWidth: "24px",
-              textAlign: "center",
-              fontWeight: isTopThree ? 600 : 400,
-            }}
-          >
-            {props.entry.rank}
+    <ItemRow className={className}>
+      <div className="dashboard-leader-content">
+        <div className="dashboard-leader-who">
+          <Text type="secondary" className="dashboard-leader-rank">
+            {entry.rank}
           </Text>
-          <Text
-            ellipsis
-            strong={isCurrentUser || isTopThree}
-            style={{ fontSize: fontSize, flex: 1 }}
-          >
-            {props.entry.name}
+          <Text ellipsis strong={isCurrentUser || isTopThree} className="dashboard-leader-name">
+            {entry.name}
             {isCurrentUser && (
-              <Tag
-                color="default"
-                style={{
-                  marginLeft: "6px",
-                  fontSize: "0.75rem",
-                  padding: "0 4px",
-                  lineHeight: "16px",
-                }}
-              >
+              <Tag color="default" className="dashboard-leader-you">
                 {t("dashboard.you")}
               </Tag>
             )}
           </Text>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            marginLeft: "8px",
-          }}
-        >
-          <span style={{ fontSize: "0.9rem" }}>
-            {VectorGraphics.ACHIEVEMENTS}
-          </span>
-          <Text
-            type="secondary"
-            style={{ fontSize: "0.8rem", fontWeight: 500 }}
-          >
-            {formatNumber(props.entry.total_points, language)}
+        <div className="dashboard-leader-points">
+          <span className="dashboard-leader-points-icon">{VectorGraphics.ACHIEVEMENTS}</span>
+          <Text type="secondary" className="dashboard-leader-points-value">
+            {formatNumber(entry.total_points, language)}
           </Text>
         </div>
       </div>
@@ -281,8 +132,22 @@ function LeaderboardListItem(props: LeaderboardListItemProps) {
   );
 }
 
+function DashboardCard({ title, scroll = true, children }: { title: ReactNode; scroll?: boolean; children: ReactNode }) {
+  return (
+    <Col xs={24} sm={12} md={12} lg={6}>
+      <Card classNames={{ body: scroll ? "dashboard-card-body dashboard-card-body-scroll" : "dashboard-card-body" }}>
+        <Title level={5} className="dashboard-card-title">
+          {title}
+        </Title>
+        {children}
+      </Card>
+    </Col>
+  );
+}
+
 export function Dashboard() {
   const { t } = useTranslation();
+  const language = useLanguage();
   const session = useAppStore((state) => state.session);
   const currentUser = useAuthStore((state) => state.user);
   const removeWidthCap = useAppStore((state) => state.removeWidthCap);
@@ -323,16 +188,9 @@ export function Dashboard() {
   const limitedLeaderboard = leaderboard.slice(0, 8);
 
   return (
-    <div style={{ margin: "0", padding: "0" }}>
-      <Row style={{ marginBottom: "24px" }}>
-        <Col
-          span={24}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+    <div>
+      <Row className="dashboard-toolbar">
+        <Col span={24} className="dashboard-toolbar-buttons">
           <Button
             type={isGlobal ? "primary" : "default"}
             onClick={() => setIsGlobal(!isGlobal)}
@@ -353,142 +211,50 @@ export function Dashboard() {
         </Col>
       </Row>
       <Row gutter={[24, 24]}>
-        <Col xs={24} sm={12} md={12} lg={6}>
-          <Card
-            styles={{
-              body: {
-                padding: "20px",
-                display: "flex",
-                flexDirection: "column",
-              },
-            }}
-          >
-            <Title
-              level={5}
-              style={{
-                marginBottom: "16px",
-                fontSize: "20px",
-                fontWeight: 600,
-                letterSpacing: "-0.022em",
-                color: "#1d1d1f",
-              }}
-            >
-              {t("dashboard.pans")}
-            </Title>
-            <ItemList
-              items={pans}
-              rowKey={(pan) => pan.id}
-              renderItem={(pan: PanDto) => <PanListItem pan={pan} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={6}>
-          <Card
-            styles={{
-              body: {
-                padding: "20px",
-                maxHeight: "600px",
-                overflow: "auto",
-                display: "flex",
-                flexDirection: "column",
-              },
-            }}
-          >
-            <Title
-              level={5}
-              style={{
-                marginBottom: "16px",
-                fontSize: "20px",
-                fontWeight: 600,
-                letterSpacing: "-0.022em",
-                color: "#1d1d1f",
-              }}
-            >
-              {t("ingredient.ingredients")}{" "}
-              <Text
-                type="secondary"
-                style={{ fontSize: "15px", fontWeight: 400 }}
-              >
-                ({t("dashboard.rating")})
-              </Text>
-            </Title>
-            <ItemList
-              items={limitedIngredientsRating}
-              rowKey={(entry) => entry.ingredient.id}
-              renderItem={(entry) => <IngredientListGroupItemRating entry={entry} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={6}>
-          <Card
-            styles={{
-              body: {
-                padding: "20px",
-                maxHeight: "600px",
-                overflow: "auto",
-                display: "flex",
-                flexDirection: "column",
-              },
-            }}
-          >
-            <Title
-              level={5}
-              style={{
-                marginBottom: "16px",
-                fontSize: "20px",
-                fontWeight: 600,
-                letterSpacing: "-0.022em",
-                color: "#1d1d1f",
-              }}
-            >
-              {t("ingredient.ingredients")}{" "}
-              <Text
-                type="secondary"
-                style={{ fontSize: "15px", fontWeight: 400 }}
-              >
-                ({t("dashboard.usage")})
-              </Text>
-            </Title>
-            <ItemList
-              items={limitedIngredientsUsage}
-              rowKey={(entry) => entry.ingredient.id}
-              renderItem={(entry) => <IngredientListGroupItemCount entry={entry} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={12} lg={6}>
-          <Card
-            styles={{
-              body: {
-                padding: "20px",
-                maxHeight: "600px",
-                overflow: "auto",
-                display: "flex",
-                flexDirection: "column",
-              },
-            }}
-          >
-            <Title
-              level={5}
-              style={{
-                marginBottom: "16px",
-                fontSize: "20px",
-                fontWeight: 600,
-                letterSpacing: "-0.022em",
-                color: "#1d1d1f",
-              }}
-            >
-              {t("dashboard.leaderboard")}
-            </Title>
-            <ItemList
-              items={limitedLeaderboard}
-              rowKey={(entry) => entry.user_id}
-              renderItem={(entry) => (
-                <LeaderboardListItem entry={entry} currentUserId={currentUser?.id} />
-              )}
-            />
-          </Card>
-        </Col>
+        <DashboardCard title={t("dashboard.pans")} scroll={false}>
+          <ItemList items={pans} rowKey={(pan) => pan.id} renderItem={(pan: PanDto) => <PanListItem pan={pan} />} />
+        </DashboardCard>
+        <DashboardCard
+          title={
+            <>
+              {t("ingredient.ingredients")} <Text type="secondary" className="dashboard-card-subtitle">({t("dashboard.rating")})</Text>
+            </>
+          }
+        >
+          <ItemList
+            items={limitedIngredientsRating}
+            rowKey={(entry) => entry.ingredient.id}
+            renderItem={(entry: IngredientRatingDto) => (
+              <IngredientStatRow ingredient={entry.ingredient}>
+                <RatingViewer rating={entry.avg_rating} />
+              </IngredientStatRow>
+            )}
+          />
+        </DashboardCard>
+        <DashboardCard
+          title={
+            <>
+              {t("ingredient.ingredients")} <Text type="secondary" className="dashboard-card-subtitle">({t("dashboard.usage")})</Text>
+            </>
+          }
+        >
+          <ItemList
+            items={limitedIngredientsUsage}
+            rowKey={(entry) => entry.ingredient.id}
+            renderItem={(entry: IngredientUsageDto) => (
+              <IngredientStatRow ingredient={entry.ingredient}>
+                <span className="dashboard-ingredient-count">{formatNumber(entry.pan_count, language)}</span>
+              </IngredientStatRow>
+            )}
+          />
+        </DashboardCard>
+        <DashboardCard title={t("dashboard.leaderboard")}>
+          <ItemList
+            items={limitedLeaderboard}
+            rowKey={(entry) => entry.user_id}
+            renderItem={(entry) => <LeaderboardListItem entry={entry} currentUserId={currentUser?.id} />}
+          />
+        </DashboardCard>
       </Row>
     </div>
   );

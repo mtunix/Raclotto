@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import type { LevelDto } from "../../../api/generated/model";
 import { formatNumber, useLanguage } from "../../../lib/language";
 import { levelProgress } from "../../../model/levelProgress";
+import { PROGRESS_GRADIENT } from "../../../shared/progressGradient";
+import "../profile.css";
 
 const { Text } = Typography;
 
@@ -20,37 +22,37 @@ export function LevelSummary({ level, nextLevel, experiencePoints }: LevelSummar
   const { xpInLevel, xpNeeded, percent } = levelProgress(experiencePoints, level, nextLevel);
 
   return (
-    <div style={{ marginTop: "12px" }}>
-      <div style={{ marginBottom: "8px" }}>
-        <Tag color="blue" style={{ fontSize: "14px", padding: "4px 12px" }}>
+    <div className="mt-12">
+      <div className="mb-8">
+        <Tag color="blue" className="profile-level-tag">
           <strong>
             {t("profile.level")} {level.id}: {levelName(level)}
           </strong>
         </Tag>
-        <Text type="secondary" style={{ marginLeft: "8px", fontSize: "14px" }}>
+        <Text type="secondary" className="profile-level-xp">
           {formatNumber(experiencePoints, language)} XP
         </Text>
       </div>
       {nextLevel ? (
-        <div style={{ marginTop: "8px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
+        <div className="mt-8">
+          <div className="profile-level-labels">
+            <Text type="secondary" className="profile-level-label">
               {t("level.progressTo")} {levelName(nextLevel)}
             </Text>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
+            <Text type="secondary" className="profile-level-label">
               {formatNumber(xpInLevel, language)} / {formatNumber(xpNeeded, language)} XP
             </Text>
           </div>
           <Progress
             percent={percent}
-            strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
+            strokeColor={PROGRESS_GRADIENT}
             showInfo={false}
             size="small"
           />
         </div>
       ) : (
-        <div style={{ marginTop: "8px" }}>
-          <Text type="secondary" style={{ fontSize: "12px", fontStyle: "italic" }}>
+        <div className="mt-8">
+          <Text type="secondary" className="profile-level-label profile-level-max">
             {t("level.maximumLevelReached")}
           </Text>
         </div>

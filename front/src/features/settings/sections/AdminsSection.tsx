@@ -39,9 +39,9 @@ export function AdminsSection() {
     return (
         <div className="settings-session-tab">
             <Card
-                title={<span className="settings-section-title" style={{ fontSize: '20px' }}>{t("settings.adminRights")}</span>}
+                title={<span className="settings-section-title settings-card-title">{t("settings.adminRights")}</span>}
                 className="settings-card"
-                styles={{ body: { padding: '24px' } }}
+                classNames={{ body: "settings-card-body" }}
             >
                 <Text type="secondary" className="settings-help-text">{t("settings.adminsDescription")}</Text>
                 <ItemList

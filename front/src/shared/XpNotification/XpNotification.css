@@ -18,7 +18,7 @@
     max-width: 500px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
-    background: #fff;
+    background: var(--ant-color-bg-elevated);
     border: 2px solid transparent;
     transition: border-color 0.3s ease;
 }
@@ -110,7 +110,7 @@
 
 .xp-level-up-text {
     font-size: 18px;
-    color: #faad14;
+    color: var(--ant-color-warning);
 }
 
 .xp-gained {
@@ -122,11 +122,67 @@
 
 .xp-gained-text {
     font-size: 18px;
-    color: #1890ff;
+    color: var(--ant-color-primary);
 }
 
 .xp-progress-container {
     width: 100%;
+    margin-top: 12px;
+}
+
+.xp-progress-hidden {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.xp-progress-appearing {
+    transition: opacity 0.2s ease-in;
+}
+
+.xp-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.xp-progress-label.ant-typography {
+    font-size: 12px;
+}
+
+.xp-tag.ant-tag {
+    font-size: 14px;
+    padding: 4px 12px;
+    margin-top: 4px;
+}
+
+.xp-level-up-star {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 8px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.achievement-unlocked-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.achievement-unlocked-title.ant-typography {
+    margin: 12px 0 8px;
+    font-size: 1.2rem;
+}
+
+.achievement-unlocked-description.ant-typography {
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.xp-tag.achievement-unlocked-points.ant-tag {
+    margin-top: 0;
+    font-weight: 600;
 }
 
 .xp-notification-page {
@@ -152,7 +208,7 @@
 
 .achievement-unlocked-text {
     font-size: 18px;
-    color: #52c41a;
+    color: var(--ant-color-success);
     margin-bottom: 8px;
 }
 

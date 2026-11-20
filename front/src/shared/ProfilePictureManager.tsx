@@ -6,6 +6,7 @@ import { DirectPictureEditor } from "./ProfilePictureManager/DirectPictureEditor
 import { EditPictureModal } from "./ProfilePictureManager/EditPictureModal";
 import { initialOf } from "./ProfilePictureManager/pictureFile";
 import { ViewPictureModal } from "./ProfilePictureManager/ViewPictureModal";
+import "./ProfilePictureManager/ProfilePictureManager.css";
 
 interface ProfilePictureManagerProps {
   currentPicture?: string | null;
@@ -58,36 +59,25 @@ export function ProfilePictureManager({
               setOpen(true);
             }
           } : undefined}
-          style={{
-            cursor: opensDialog ? "pointer" : "default",
-            display: "inline-block",
-            minWidth: size,
-            minHeight: size,
-            textAlign: "center",
-          }}
+          className={opensDialog ? "picture-trigger picture-trigger-opens" : "picture-trigger"}
+          style={{ minWidth: size, minHeight: size }}
         >
           <Avatar
             size={size}
             src={getProfilePictureUrl(picture)}
-            style={{ border: "3px solid #d9d9d9", opacity: disabled ? 0.6 : 1, display: "inline-block" }}
+            className={disabled ? "picture-avatar picture-avatar-inline picture-avatar-disabled" : "picture-avatar picture-avatar-inline"}
           >
             {!picture && (
               <span
-                style={{
-                  fontSize: size * 0.4,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  width: "100%",
-                }}
+                className="picture-avatar-fill"
+                style={{ fontSize: size * 0.4 }}
               >
                 {initialOf(userName)}
               </span>
             )}
           </Avatar>
           {showLabel && !disabled && (
-            <div style={{ textAlign: "center", marginTop: "8px", fontSize: "12px", color: "#666" }}>
+            <div className="picture-label">
               {directMode
                 ? t("auth.profilePicture")
                 : t("profile.clickToChange")}

@@ -10,6 +10,7 @@ import { PanHistory } from "./sections/PanHistory";
 import { ProfileHeader } from "./sections/ProfileHeader";
 import { ProfileHighlights } from "./sections/ProfileHighlights";
 import { ProfileStatistics } from "./sections/ProfileStatistics";
+import "./profile.css";
 
 export function ProfileView() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export function ProfileView() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
+      <div className="loading-block profile-loading">
         <Spin size="large" />
       </div>
     );
@@ -37,7 +38,7 @@ export function ProfileView() {
   }
 
   return (
-    <div style={{ padding: "24px 0" }}>
+    <div className="profile">
       <ProfileHeader
         profile={profile}
         userId={userId}

@@ -276,3 +276,31 @@
         font-size: 20px !important;
     }
 }
+
+/* Two classes: as wide as the inline style it replaces allowed, above the narrow-screen rule for its row's img. */
+.toolbar-session-row-desktop .toolbar-logo-desktop {
+    max-width: 180px;
+    height: auto;
+}
+
+.toolbar-logo-mobile {
+    flex-shrink: 0;
+}
+
+.toolbar-session-name.ant-typography {
+    font-size: 0.9rem;
+}
+
+.toolbar-profile-avatar.ant-avatar {
+    cursor: pointer;
+    border: 2px solid var(--ant-color-border);
+    flex-shrink: 0;
+}
+
+.toolbar-profile-avatar-desktop.ant-avatar {
+    margin-left: auto;
+}
+
+.toolbar-profile-avatar-initial {
+    font-size: 20px;
+}

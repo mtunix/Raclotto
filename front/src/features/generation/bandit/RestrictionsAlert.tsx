@@ -27,7 +27,7 @@ export function RestrictionsAlert({ fills, sauces }: { fills: Availability; sauc
                     {isRestricted(sauces) && line(t("generate.availableSauces"), sauces)}
                 </div>
             }
-            style={{ marginBottom: "16px" }}
+            className="mb-16"
             showIcon
         />
     );

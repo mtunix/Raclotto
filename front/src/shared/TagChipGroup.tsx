@@ -1,9 +1,32 @@
 import {useTranslation} from "react-i18next";
-import {getTagColors} from "../lib/tagColors";
+import "./tagColors.css";
+import "./TagChipGroup.css";
 
 interface TagOption {
     name: string;
     key: string;
+}
+
+interface TagChipProps {
+    option: TagOption;
+    on: boolean;
+    disabled: boolean;
+    onClick: () => void;
+}
+
+/** A toggle in the colour of the tag it stands for. */
+function TagChip({option, on, disabled, onClick}: TagChipProps) {
+    const { t } = useTranslation();
+    return (
+        <button
+            type="button"
+            className={`tag-chip tag-color-${option.name}${on ? " tag-chip-on" : ""}`}
+            onClick={onClick}
+            disabled={disabled}
+        >
+            {t(option.key)}
+        </button>
+    );
 }
 
 interface TagChipGroupProps {
@@ -11,83 +34,36 @@ interface TagChipGroupProps {
     values: Record<string, boolean>;
     onChange: (optionName: string, checked: boolean) => void;
     disabled?: boolean;
-    allowWrap?: boolean; // If false, forces single line
 }
 
-export function TagChipGroup(props: TagChipGroupProps) {
-    const { t } = useTranslation();
-    const { options, values, onChange, disabled = false, allowWrap = true } = props;
-
-    const getValue = (optionName: string): boolean => {
-        return values[optionName] || false;
-    };
-
+/** Tags that are each on or off. */
+export function TagChipGroup({ options, values, onChange, disabled = false }: TagChipGroupProps) {
     return (
-        <div style={{ 
-            display: 'flex', 
-            flexWrap: allowWrap ? 'wrap' : 'nowrap',
-            gap: '16px',
-            alignItems: 'center',
-            overflowX: allowWrap ? 'visible' : 'auto',
-            ...(allowWrap ? {} : { 
-                WebkitOverflowScrolling: 'touch',
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(142, 142, 147, 0.3) transparent'
-            })
-        }}>
+        <div className="tag-chip-group">
             {options.map((option) => {
-                const isChecked = getValue(option.name);
-                const tagColors = getTagColors(option.name);
-                return (
-                    <button
-                        key={option.name}
-                        type="button"
-                        onClick={() => !disabled && onChange(option.name, !isChecked)}
-                        disabled={disabled}
-                        style={{
-                            minHeight: '44px',
-                            padding: '12px 20px',
-                            borderRadius: '12px',
-                            fontSize: '15px',
-                            fontWeight: 500,
-                            letterSpacing: '-0.022em',
-                            border: isChecked ? `1px solid ${tagColors.color}` : '1px solid #d2d2d7',
-                            backgroundColor: isChecked ? tagColors.backgroundColorSelected || tagColors.backgroundColor : '#f5f5f7',
-                            color: isChecked ? tagColors.color : '#8e8e93',
-                            cursor: disabled ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                            boxShadow: isChecked ? `0 2px 8px ${tagColors.color}33` : 'none',
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            opacity: disabled ? 0.6 : 1,
-                            flexShrink: 0
-                        }}
-                        onMouseEnter={(e) => {
-                            if (disabled) return;
-                            if (!isChecked) {
-                                e.currentTarget.style.backgroundColor = '#e8e8ed';
-                                e.currentTarget.style.borderColor = tagColors.color;
-                                e.currentTarget.style.color = tagColors.color;
-                            } else {
-                                e.currentTarget.style.backgroundColor = tagColors.backgroundColorSelected || tagColors.backgroundColor;
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (disabled) return;
-                            if (!isChecked) {
-                                e.currentTarget.style.backgroundColor = '#f5f5f7';
-                                e.currentTarget.style.borderColor = '#d2d2d7';
-                                e.currentTarget.style.color = '#8e8e93';
-                            } else {
-                                e.currentTarget.style.backgroundColor = tagColors.backgroundColorSelected || tagColors.backgroundColor;
-                            }
-                        }}
-                    >
-                        {t(option.key)}
-                    </button>
-                );
+                const on = values[option.name] || false;
+                return <TagChip key={option.name} option={option} on={on} disabled={disabled} onClick={() => onChange(option.name, !on)} />;
             })}
         </div>
     );
 }
 
+interface ExclusiveTagChipGroupProps {
+    options: TagOption[];
+    selectedValue: string | null;
+    /** The tag chosen, or null when the chosen one was clicked again. */
+    onChange: (optionName: string | null) => void;
+    disabled?: boolean;
+}
+
+/** Tags of which at most one is on. */
+export function ExclusiveTagChipGroup({ options, selectedValue, onChange, disabled = false }: ExclusiveTagChipGroupProps) {
+    return (
+        <div className="tag-chip-group">
+            {options.map((option) => {
+                const on = selectedValue === option.name;
+                return <TagChip key={option.name} option={option} on={on} disabled={disabled} onClick={() => onChange(on ? null : option.name)} />;
+            })}
+        </div>
+    );
+}

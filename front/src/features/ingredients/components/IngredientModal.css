@@ -1,0 +1,60 @@
+.ingredient-modal-body {
+    padding: 8px 0;
+}
+
+.ingredient-modal-section.ant-card {
+    margin-bottom: 24px;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.ingredient-modal-section-last.ant-card {
+    margin-bottom: 32px;
+}
+
+.ingredient-modal-section-body.ant-card-body {
+    padding: 24px;
+}
+
+.ingredient-modal-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ingredient-modal-section-content-wide {
+    gap: 24px;
+}
+
+.ingredient-modal-section-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    color: var(--ant-color-text);
+}
+
+.ingredient-modal-name.ant-input {
+    font-size: 20px;
+    height: 44px;
+}
+
+.ingredient-modal-radio.ant-radio-wrapper,
+.ingredient-modal-check.ant-checkbox-wrapper {
+    font-size: 17px;
+    letter-spacing: -0.022em;
+}
+
+.ingredient-modal-radio.ant-radio-wrapper {
+    padding: 8px 0;
+}
+
+.ingredient-modal-radio-first.ant-radio-wrapper {
+    margin-right: 24px;
+}
+
+.ingredient-modal-label {
+    margin-bottom: 8px;
+    font-size: 17px;
+    letter-spacing: -0.022em;
+}

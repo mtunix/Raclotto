@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
 import { PictureHistory } from "./PictureHistory";
 import { usePictureHistory } from "./usePictureHistory";
-import { captionStyle, pictureColumnStyle } from "./styles";
+import "./ProfilePictureManager.css";
 
 interface ViewPictureModalProps {
   open: boolean;
@@ -23,17 +23,17 @@ export function ViewPictureModal({ open, currentPicture, userId, onClose }: View
       open={open}
       onCancel={onClose}
       footer={
-        <Button onClick={onClose} style={{ width: "100%" }}>
+        <Button onClick={onClose} className="full-width">
           {t("auth.close")}
         </Button>
       }
       width={600}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div className="stack-16">
         {currentPicture && (
-          <div style={{ ...pictureColumnStyle, marginBottom: "16px" }}>
-            <div style={captionStyle}>{t("profile.currentPicture")}</div>
-            <Avatar size={400} src={getProfilePictureUrl(currentPicture)} style={{ border: "3px solid #d9d9d9" }} />
+          <div className="picture-column mb-16">
+            <div className="picture-caption">{t("profile.currentPicture")}</div>
+            <Avatar size={400} src={getProfilePictureUrl(currentPicture)} className="picture-avatar" />
           </div>
         )}
         <PictureHistory

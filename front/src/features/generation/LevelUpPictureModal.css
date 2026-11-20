@@ -1,0 +1,75 @@
+.level-up-generating.ant-modal-body {
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.level-up-generating-sparkles {
+    margin-bottom: 24px;
+    font-size: 48px;
+}
+
+.level-up-generating-message {
+    margin-top: 32px;
+    font-size: 14px;
+    color: #ffffff;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+.level-up-generating-icons {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.level-up-generating-icons span {
+    font-size: 20px;
+    animation: level-up-pulse 1s infinite;
+}
+
+.level-up-generating-icons span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.level-up-generating-icons span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes level-up-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+.level-up-picture.ant-modal-body {
+    padding: 32px;
+}
+
+.level-up-picture-updated.ant-typography {
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.level-up-picture-frame.ant-card {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.level-up-picture-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+}

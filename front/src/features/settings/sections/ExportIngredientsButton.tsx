@@ -4,7 +4,7 @@ import { CopyOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { exportIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
 import { copyToClipboard } from "../copyToClipboard";
-import { wideButtonStyle } from "./sessionSettingsStyles";
+import "../SettingsView.css";
 
 /** Shows the session's ingredients as an export file and copies it right away. */
 export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) {
@@ -36,7 +36,7 @@ export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) 
                 loading={exporting}
                 disabled={!sessionKey}
                 block
-                style={wideButtonStyle}
+                className="settings-wide-button"
             >
                 {t("settings.export")}
             </Button>
@@ -53,9 +53,9 @@ export function ExportIngredientsButton({ sessionKey }: { sessionKey: string }) 
                     </Button>,
                 ]}
                 width="80%"
-                style={{ maxWidth: "1000px" }}
+                className="settings-export-modal"
             >
-                <Input.TextArea value={json ?? ""} readOnly rows={20} style={{ fontFamily: "monospace", fontSize: "14px" }} />
+                <Input.TextArea value={json ?? ""} readOnly rows={20} className="settings-export" />
             </Modal>
         </>
     );

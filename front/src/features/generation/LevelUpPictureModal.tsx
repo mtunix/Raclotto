@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import type { GeneratedPictureDto } from "../../api/generated/model";
 import { generateMyPicture } from "../../shared/myProfilePicture";
 import styles from "./GenerateView/GenerateView.module.css";
+import "./LevelUpPictureModal.css";
 
 const { Title, Text } = Typography;
 
@@ -78,82 +79,25 @@ export function LevelUpPictureModal({
         className={`${styles.modalContainer} profile-picture-spinner-modal`}
         centered
         closable={false}
-        styles={{
-          body: {
-            padding: "32px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          },
-        }}
+        classNames={{ body: "level-up-generating" }}
       >
-        <div style={{ textAlign: "center", width: "100%" }}>
-          <div style={{ marginBottom: "24px", fontSize: "48px" }}>✨🎨✨</div>
+        <div className="text-center full-width">
+          <div className="level-up-generating-sparkles">✨🎨✨</div>
           <Spin
             description={
               t("image.generatingProfilePicture")
             }
             size="large"
           />
-          <div
-            style={{
-              marginTop: "32px",
-              fontSize: "14px",
-              color: "#fff",
-              opacity: 0.9,
-              fontStyle: "italic",
-            }}
-          >
+          <div className="level-up-generating-message">
             {t("image.generatingMessage")}
           </div>
-          <div
-            style={{
-              marginTop: "24px",
-              display: "flex",
-              justifyContent: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "20px",
-                animation: "pulse 1s infinite",
-              }}
-            >
-              🌟
-            </span>
-            <span
-              style={{
-                fontSize: "20px",
-                animation: "pulse 1s infinite 0.2s",
-              }}
-            >
-              🎭
-            </span>
-            <span
-              style={{
-                fontSize: "20px",
-                animation: "pulse 1s infinite 0.4s",
-              }}
-            >
-              🖼️
-            </span>
+          <div className="level-up-generating-icons">
+            <span>🌟</span>
+            <span>🎭</span>
+            <span>🖼️</span>
           </div>
         </div>
-        <style>{`
-          @keyframes pulse {
-            0%, 100% {
-              opacity: 1;
-              transform: scale(1);
-            }
-            50% {
-              opacity: 0.6;
-              transform: scale(1.2);
-            }
-          }
-        `}</style>
       </Modal>
 
       {/* Profile Picture Display Modal */}
@@ -166,42 +110,23 @@ export function LevelUpPictureModal({
           className={`${styles.modalContainer} profile-picture-modal`}
           centered
           closable
-          styles={{
-            body: {
-              padding: "32px",
-            },
-          }}
+          classNames={{ body: "level-up-picture" }}
         >
-          <div style={{ textAlign: "center" }}>
-            <Card
-              className={styles.gradientCard}
-              styles={{ body: { padding: "28px" } }}
-            >
+          <div className="text-center">
+            <Card className={styles.gradientCard} classNames={{ body: styles.cardBodyLarge }}>
               <Title level={2} className={styles.whiteTitle}>
                 {t("image.yourNewProfilePicture")}
               </Title>
-              <Text style={{ color: "#fff", fontSize: "16px" }}>
+              <Text className="level-up-picture-updated">
                 {t("image.profilePictureUpdated")}
               </Text>
             </Card>
 
-            <Card
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                minHeight: "400px",
-              }}
-            >
+            <Card className="level-up-picture-frame">
               <img
                 src={`data:${newProfilePicture.mime_type};base64,${newProfilePicture.image_base64}`}
                 alt={t("image.newAvatarAlt")}
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  borderRadius: "8px",
-                }}
+                className="level-up-picture-image"
               />
             </Card>
 

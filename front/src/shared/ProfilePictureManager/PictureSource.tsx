@@ -1,11 +1,11 @@
-import { useRef, type CSSProperties, type ChangeEvent } from "react";
+import { useRef, type ChangeEvent } from "react";
 import { Button, Space, message } from "antd";
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import type { Camera } from "./useCamera";
 import { pictureFileProblem, readAsDataUrl } from "./pictureFile";
+import "./ProfilePictureManager.css";
 
-const columnStyle: CSSProperties = { display: "flex", flexDirection: "column", gap: "8px", width: "100%" };
 
 interface PictureSourceProps {
   camera: Camera;
@@ -43,21 +43,21 @@ export function PictureSource({ camera, onPicked, disabled }: PictureSourceProps
   }
 
   return (
-    <div style={columnStyle}>
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
+    <div className="stack-8 full-width">
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={onFile} hidden />
       <Button icon={<UploadOutlined />} disabled={disabled} onClick={() => fileInputRef.current?.click()} block>
         {t("auth.selectImage")}
       </Button>
       {active ? (
-        <div style={columnStyle}>
+        <div className="stack-8 full-width">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            style={{ width: "100%", height: "auto", borderRadius: "8px", backgroundColor: "#000" }}
+            className="picture-camera"
           />
-          <Space orientation="vertical" style={{ width: "100%" }}>
+          <Space orientation="vertical" className="full-width">
             <Button onClick={takePicture} type="primary" size="large" disabled={disabled} block>
               {t("auth.capture")}
             </Button>

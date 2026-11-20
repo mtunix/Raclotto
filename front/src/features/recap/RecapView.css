@@ -9,6 +9,14 @@
     border-radius: 18px;
 }
 
+.recap-pan-name.ant-typography {
+    margin-top: 0;
+}
+
+.recap-table {
+    overflow-x: auto;
+}
+
 @media (max-width: 576px) {
     .recap-page {
         padding: 24px 16px 32px;

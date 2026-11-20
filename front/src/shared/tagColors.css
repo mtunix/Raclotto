@@ -1,0 +1,12 @@
+/* Each ingredient tag's colour; tags and chips tint their background with it. */
+.tag-color-meat { --tag: #ff3b30; }
+.tag-color-vegan { --tag: #32cd32; }
+.tag-color-vegetarian { --tag: #228b22; }
+.tag-color-fish { --tag: #0077be; }
+.tag-color-histamine { --tag: #ff9500; }
+.tag-color-gluten { --tag: #ffcc00; }
+.tag-color-lactose { --tag: #5ac8fa; }
+.tag-color-fructose { --tag: #af52de; }
+.tag-color-spicy { --tag: #ff453a; }
+.tag-color-wildcard { --tag: #ff9f0a; }
+.tag-color-sweet { --tag: #ff2d55; }

@@ -1,0 +1,71 @@
+.kitchen {
+    padding: 8px 0;
+}
+
+.kitchen-card-body.ant-card-body {
+    padding: 24px;
+}
+
+.kitchen-segments {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+    width: 100%;
+}
+
+.kitchen-segmented.ant-segmented {
+    width: 100%;
+    max-width: 600px;
+}
+
+.kitchen-panel {
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 200px;
+}
+
+.kitchen-empty.ant-empty {
+    padding: 40px 0;
+}
+
+/* Above ItemList's own row selector, whose padding and divider these replace. */
+.item-list .item-list-row.kitchen-prep-type {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 16px;
+    background-color: color-mix(in srgb, var(--ant-color-primary) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ant-color-primary) 20%, transparent);
+}
+
+.item-list .item-list-row.kitchen-prep-type-default {
+    background-color: rgba(142, 142, 147, 0.08);
+    border-color: rgba(142, 142, 147, 0.2);
+}
+
+.kitchen-prep-type-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.kitchen-prep-type-name {
+    font-size: 17px;
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+}
+
+.kitchen-prep-type-default-note.ant-typography {
+    font-size: 15px;
+    margin-left: 8px;
+}
+
+.kitchen-prep-type-new {
+    margin-top: 16px;
+    border-radius: 12px;
+    padding: 16px;
+    background-color: color-mix(in srgb, var(--ant-color-primary) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ant-color-primary) 20%, transparent);
+}

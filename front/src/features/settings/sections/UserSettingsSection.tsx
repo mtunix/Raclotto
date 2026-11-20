@@ -35,9 +35,9 @@ export function UserSettingsSection() {
     return (
         <div className="settings-user-tab">
             {loading || !profile ? (
-                <div style={{ textAlign: 'center', padding: '40px' }}>
+                <div className="empty-state">
                     <Button type="text" disabled>
-                        <span style={{ marginRight: 8 }}>
+                        <span className="settings-loading-label">
                             <Text>{t("common.loading")}</Text>
                         </span>
                     </Button>
@@ -45,7 +45,7 @@ export function UserSettingsSection() {
             ) : (
                 <Card 
                     className="settings-card"
-                    styles={{ body: { padding: '24px' } }}
+                    classNames={{ body: "settings-card-body" }}
                 >
                     <Form.Item 
                         label={<span className="settings-section-title">{t("settings.iAm")}</span>} 
@@ -83,46 +83,46 @@ export function UserSettingsSection() {
                         label={<span className="settings-section-title">
                             {t("settings.color")}
                         </span>} 
-                        style={{ marginBottom: 24 }}
+                        className="settings-form-item-spacing"
                         labelCol={{ span: 24 }}
                         wrapperCol={{ span: 24 }}
                     >
-                        <div style={{ width: '100%', display: 'block' }}>
+                        <div className="settings-block">
                             <ColorPicker
                                 value={profile.color}
                                 onChangeComplete={(color) => change("color", color.toHexString())}
                                 disabled={saving}
                                 showText
                                 format="hex"
-                                style={{ width: '100%', display: 'block' }}
+                                className="settings-block"
                             />
                         </div>
                     </Form.Item>
 
                     {/* Border Style - disabled when texture is selected */}
                     <Form.Item 
-                        label={<span style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: profile.border_texture ? '#d9d9d9' : '#1d1d1f' }}>
+                        label={<span className={profile.border_texture ? "settings-section-title settings-section-title-disabled" : "settings-section-title"}>
                             {t("settings.borderStyle")}
                             {!styleUnlocked && (
-                                <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
+                                <LockOutlined className="settings-lock" />
                             )}
                             {profile.border_texture && styleUnlocked && (
-                                <Text type="secondary" style={{ marginLeft: '8px', fontSize: '14px', fontWeight: 'normal' }}>
+                                <Text type="secondary" className="settings-title-note">
                                     ({t("settings.disabledWithTexture")})
                                 </Text>
                             )}
                         </span>} 
-                        style={{ marginBottom: 24 }}
+                        className="settings-form-item-spacing"
                         labelCol={{ span: 24 }}
                         wrapperCol={{ span: 24 }}
                     >
-                        <div style={{ opacity: profile.border_texture ? 0.6 : 1 }}>
+                        <div className={profile.border_texture ? "settings-dimmed" : undefined}>
                             <Select
                                 value={profile.border_style}
                                 onChange={(value) => change("border_style", value)}
                                 disabled={saving || !styleUnlocked || !!profile.border_texture}
                                 size="large"
-                                style={{ width: '100%' }}
+                                className="full-width"
                                 options={[
                                     { value: "solid", label: t("borderStyle.solid") },
                                     { value: "dashed", label: t("borderStyle.dashed") },
@@ -131,17 +131,17 @@ export function UserSettingsSection() {
                                 ]}
                             />
                         </div>
-                        <div style={{ marginTop: '8px' }}>
+                        <div className="settings-help-text">
                             {profile.border_texture ? (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.styleDisabledInfo")}
                                 </Text>
                             ) : styleUnlocked ? (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.borderStyleUnlocked")}
                                 </Text>
                             ) : (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.borderStyleLocked")}
                                 </Text>
                             )}
@@ -153,10 +153,10 @@ export function UserSettingsSection() {
                         label={<span className="settings-section-title">
                             {t("settings.borderTexture")}
                             {!textureUnlocked && (
-                                <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
+                                <LockOutlined className="settings-lock" />
                             )}
                         </span>} 
-                        style={{ marginBottom: 24 }}
+                        className="settings-form-item-spacing"
                         labelCol={{ span: 24 }}
                         wrapperCol={{ span: 24 }}
                     >
@@ -165,7 +165,7 @@ export function UserSettingsSection() {
                             onChange={(value) => change("border_texture", value || null)}
                             disabled={saving || !textureUnlocked}
                             size="large"
-                            style={{ width: '100%' }}
+                            className="full-width"
                             allowClear
                             placeholder={t("settings.noTexture")}
                             options={[
@@ -178,13 +178,13 @@ export function UserSettingsSection() {
                                 { value: "herbs-02", label: t("texture.herbs02") },
                             ]}
                         />
-                        <div style={{ marginTop: '8px' }}>
+                        <div className="settings-help-text">
                             {textureUnlocked ? (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.borderTextureUnlocked")}
                                 </Text>
                             ) : (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.borderTextureLocked")}
                                 </Text>
                             )}
@@ -193,17 +193,17 @@ export function UserSettingsSection() {
 
                     {/* Glow Effect - unlocked at level 7 */}
                     <Form.Item 
-                        label={<span style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.022em', color: '#1d1d1f' }}>
+                        label={<span className="settings-section-title">
                             {t("settings.glowEffect")}
                             {!glowUnlocked && (
-                                <LockOutlined style={{ marginLeft: '8px', color: '#d9d9d9' }} />
+                                <LockOutlined className="settings-lock" />
                             )}
                         </span>} 
-                        style={{ marginBottom: 24 }}
+                        className="settings-form-item-spacing"
                         labelCol={{ span: 24 }}
                         wrapperCol={{ span: 24 }}
                     >
-                        <div style={{ opacity: glowUnlocked ? 1 : 0.6 }}>
+                        <div className={glowUnlocked ? undefined : "settings-dimmed"}>
                             <Switch
                                 checked={profile.glow_effect}
                                 onChange={(checked) => change("glow_effect", checked)}
@@ -211,13 +211,13 @@ export function UserSettingsSection() {
                                 size="medium"
                             />
                         </div>
-                        <div style={{ marginTop: '8px' }}>
+                        <div className="settings-help-text">
                             {glowUnlocked ? (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.glowEffectUnlocked")}
                                 </Text>
                             ) : (
-                                <Text type="secondary" style={{ fontSize: '14px' }}>
+                                <Text type="secondary" className="settings-help-text-small">
                                     {t("settings.glowEffectLocked")}
                                 </Text>
                             )}
@@ -235,7 +235,7 @@ export function UserSettingsSection() {
                             onChange={(value) => change("language", value)}
                             disabled={saving}
                             size="large"
-                            style={{ width: '100%' }}
+                            className="full-width"
                             options={[
                                 { value: "en", label: "English" },
                                 { value: "de", label: "Deutsch" },
@@ -258,10 +258,9 @@ export function UserSettingsSection() {
                             values={diet}
                             onChange={setChecked}
                             disabled={saving}
-                            allowWrap
                         />
                     </Form.Item>
-                    <Form.Item style={{ marginBottom: 0 }}>
+                    <Form.Item className="mb-0">
                         <Button
                             type="primary"
                             size="large"

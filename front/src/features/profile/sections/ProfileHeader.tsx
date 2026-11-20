@@ -6,6 +6,7 @@ import { useImageGeneration } from "../../../shared/imageGeneration";
 import { ProfilePictureManager } from "../../../shared/ProfilePictureManager";
 import { useMyPictureActions } from "../useMyPictureActions";
 import { LevelSummary } from "./LevelSummary";
+import "../profile.css";
 
 const { Title, Text } = Typography;
 
@@ -24,12 +25,12 @@ export function ProfileHeader({ profile, userId, isOwnProfile, email }: ProfileH
   const canGenerate = useImageGeneration();
 
   return (
-    <Card style={{ marginBottom: "24px" }}>
+    <Card className="mb-24">
       <Row gutter={[24, 24]} align="middle">
-        <Col xs={24} sm={12} md="auto" style={{ width: "100%" }}>
-          <Space orientation="vertical" align="center" size="middle" style={{ width: "100%" }}>
-            <div style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <div style={{ maxWidth: "180px", width: "100%", aspectRatio: "1" }}>
+        <Col xs={24} sm={12} md="auto" className="full-width">
+          <Space orientation="vertical" align="center" size="middle" className="full-width">
+            <div className="profile-picture-row">
+              <div className="profile-picture">
                 <ProfilePictureManager
                   currentPicture={profile.profile_picture}
                   onPictureChange={change}
@@ -49,24 +50,24 @@ export function ProfileHeader({ profile, userId, isOwnProfile, email }: ProfileH
                 loading={generating}
                 disabled={changing || !canGenerate}
                 size="small"
-                style={{ width: "100%" }}
+                className="full-width"
               >
                 {generating ? t("image.regenerating") : t("image.regeneratePicture")}
               </Button>
             )}
             {isOwnProfile && !canGenerate && (
-              <Text type="secondary" style={{ fontSize: "12px" }}>
+              <Text type="secondary" className="profile-level-label">
                 {t("image.generationUnavailable")}
               </Text>
             )}
           </Space>
         </Col>
-        <Col xs={24} sm={12} md="auto" flex={1} style={{ textAlign: "center" }}>
-          <Title level={2} style={{ margin: 0, marginBottom: "8px" }}>
+        <Col xs={24} sm={12} md="auto" flex={1} className="text-center">
+          <Title level={2} className="profile-name">
             {profile.name || t("profile.unknownUser")}
           </Title>
           {email && (
-            <Text type="secondary" style={{ fontSize: "16px", display: "block", marginBottom: "8px" }}>
+            <Text type="secondary" className="profile-email">
               {email}
             </Text>
           )}

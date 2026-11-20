@@ -2,6 +2,7 @@ import {useRouteError} from "react-router";
 import {t} from "i18next";
 import {Row, Col, Typography} from "antd";
 import {failureMessage} from "../../lib/api/failedRequest";
+import "./ErrorPage.css";
 
 export class RaclottoError extends Error {
     public title: string;
@@ -81,12 +82,12 @@ export default function ErrorPage(props: ErrorPageProps) {
     }
 
     return (
-        <div id="error-page" style={{padding: '20px'}}>
-            <Row justify="center" align="middle" style={{minHeight: '50vh'}}>
-                <Col span={2} style={{textAlign: 'center'}}>
-                    <span style={{fontSize: '48px'}}>🐛</span>
+        <div id="error-page" className="error-page">
+            <Row justify="center" align="middle" className="error-page-row">
+                <Col span={2} className="text-center">
+                    <span className="error-page-icon">🐛</span>
                 </Col>
-                <Col span={18} style={{textAlign: 'left'}}>
+                <Col span={18}>
                     {renderError()}
                 </Col>
             </Row>

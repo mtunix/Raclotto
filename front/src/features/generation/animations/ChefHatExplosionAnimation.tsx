@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { IngredientDto } from "../../../api/generated/model";
 import { Util } from "../../../lib/util";
+import { overlayClassName } from "./overlay";
 
 interface ChefHatExplosionAnimationProps {
     ingredients?: IngredientDto[]; // Optional, not used but kept for API compatibility
@@ -88,21 +89,7 @@ export function ChefHatExplosionAnimation(props: ChefHatExplosionAnimationProps)
 
     return (
         <div
-            className={fading ? "chef-hat-animation-fading" : ""}
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 9999,
-                pointerEvents: "none",
-                overflow: "hidden",
-                backgroundColor: "rgba(0, 0, 0, 0.3)",
-                backdropFilter: Util.isMobile() ? "none" : "blur(2px)",
-                transition: fading ? "opacity 250ms ease-out" : "none",
-                opacity: fading ? 0 : 1
-            }}
+            className={overlayClassName(fading)}
         >
             {/* Chef hat element in center */}
             <div
