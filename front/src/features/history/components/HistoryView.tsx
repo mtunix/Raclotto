@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {createPan, useGetPanFilterOptions} from "../../../api/generated/endpoints/pans/pans";
-import type {ListPansDirection, ListPansIngredientCountItem, ListPansSort, PanDto} from "../../../api/generated/model";
+import type {PanDto} from "../../../api/generated/model";
 import {Card, Row, Col, Rate, Spin, Button, Typography, Space, Tag, message, Avatar, Grid} from "antd";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "../../../AppSlice";
@@ -14,6 +14,7 @@ import { PanResultModal } from "../../generation/PanResultModal";
 import { LevelUpPictureModal } from "../../generation/LevelUpPictureModal";
 import { useRollSession } from "../../generation/rollSession";
 import { usePanPages } from "../usePanPages";
+import { useHistoryFilters } from "../useHistoryFilters";
 import { ratePan } from "../../rating/ratePan";
 import {SortingControls} from "./SortingControls";
 import {FilterControls} from "./FilterControls";
@@ -45,38 +46,25 @@ export function HistoryView() {
     const [selectedPan, setSelectedPan] = useState<PanDto | null>(null);
     const cloneRoll = useRollSession(sessionKey);
     const clone = cloneRoll.state.phase === "result" ? cloneRoll.state : null;
-    const [sortField, setSortField] = useState<ListPansSort>('time');
-    const [sortDirection, setSortDirection] = useState<ListPansDirection>('desc');
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-    const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-    const [selectedIngredientCounts, setSelectedIngredientCounts] = useState<ListPansIngredientCountItem[]>([]);
+    const { filters, filterCount, setSort, setDirection, setUsers, setRatings, setIngredientCounts, clearFilters } = useHistoryFilters();
     const [filtersExpanded, setFiltersExpanded] = useState(false);
     const screens = Grid.useBreakpoint();
     // antd's breakpoints are minimum widths: anything narrower than md (768px) is a phone.
     const isMobile = !screens.md;
     const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({
         session_key: sessionKey,
-        user_id: selectedUsers,
-        rating: selectedRatings,
-        ingredient_count: selectedIngredientCounts,
-        sort: sortField,
-        direction: sortDirection,
+        user_id: filters.users,
+        rating: filters.ratings,
+        ingredient_count: filters.ingredientCounts,
+        sort: filters.sort,
+        direction: filters.direction,
     });
     const { data: filterOptions } = useGetPanFilterOptions(
         { session_key: sessionKey },
         { swr: { enabled: Boolean(sessionKey), onErrorRetry, revalidateOnFocus: false } },
     );
-    const filterCount = selectedUsers.length + selectedRatings.length + selectedIngredientCounts.length;
     // A filter that matches nothing leaves its controls in place to clear it.
     const showControls = pans.length > 0 || filterCount > 0 || Boolean(filterOptions?.users.length);
-
-    const [filteredSession, setFilteredSession] = useState(sessionKey);
-    if (filteredSession !== sessionKey) {
-        setFilteredSession(sessionKey);
-        setSelectedUsers([]);
-        setSelectedRatings([]);
-        setSelectedIngredientCounts([]);
-    }
 
     function onRating(id: number, rating: number) {
         if (!sessionKey) return;
@@ -138,9 +126,28 @@ export function HistoryView() {
         }
     }
 
-    const uniqueUsers = filterOptions?.users ?? [];
-    const uniqueRatings = filterOptions?.ratings ?? [];
-    const uniqueIngredientRanges = filterOptions?.ingredient_counts ?? [];
+    const sortingControls = (
+        <SortingControls
+            sortField={filters.sort}
+            sortDirection={filters.direction}
+            onSortFieldChange={setSort}
+            onSortDirectionChange={setDirection}
+        />
+    );
+    const filterControls = (
+        <FilterControls
+            selectedUsers={filters.users}
+            selectedRatings={filters.ratings}
+            selectedIngredientCounts={filters.ingredientCounts}
+            uniqueUsers={filterOptions?.users ?? []}
+            uniqueRatings={filterOptions?.ratings ?? []}
+            uniqueIngredientRanges={filterOptions?.ingredient_counts ?? []}
+            onUsersChange={setUsers}
+            onRatingsChange={setRatings}
+            onIngredientCountsChange={setIngredientCounts}
+            onClearFilters={clearFilters}
+        />
+    );
 
     const renderPanCard = (pan: PanDto) => {
         const author = pan.author;
@@ -268,29 +275,9 @@ export function HistoryView() {
                             </Button>
                             {filtersExpanded && (
                                 <div className="mt-16">
-                                    <SortingControls
-                                        sortField={sortField}
-                                        sortDirection={sortDirection}
-                                        onSortFieldChange={setSortField}
-                                        onSortDirectionChange={setSortDirection}
-                                    />
+                                    {sortingControls}
                                     <div className="mt-16">
-                                        <FilterControls
-                                            selectedUsers={selectedUsers}
-                                            selectedRatings={selectedRatings}
-                                            selectedIngredientCounts={selectedIngredientCounts}
-                                            uniqueUsers={uniqueUsers}
-                                            uniqueRatings={uniqueRatings}
-                                            uniqueIngredientRanges={uniqueIngredientRanges}
-                                            onUsersChange={setSelectedUsers}
-                                            onRatingsChange={setSelectedRatings}
-                                            onIngredientCountsChange={setSelectedIngredientCounts}
-                                            onClearFilters={() => {
-                                                setSelectedUsers([]);
-                                                setSelectedRatings([]);
-                                                setSelectedIngredientCounts([]);
-                                            }}
-                                        />
+                                        {filterControls}
                                     </div>
                                 </div>
                             )}
@@ -299,31 +286,11 @@ export function HistoryView() {
                         // Desktop view - always visible
                         <>
                             <Card className="mb-16">
-                                <SortingControls
-                                    sortField={sortField}
-                                    sortDirection={sortDirection}
-                                    onSortFieldChange={setSortField}
-                                    onSortDirectionChange={setSortDirection}
-                                />
+                                {sortingControls}
                             </Card>
 
                             <Card className="mb-16">
-                                <FilterControls
-                                    selectedUsers={selectedUsers}
-                                    selectedRatings={selectedRatings}
-                                    selectedIngredientCounts={selectedIngredientCounts}
-                                    uniqueUsers={uniqueUsers}
-                                    uniqueRatings={uniqueRatings}
-                                    uniqueIngredientRanges={uniqueIngredientRanges}
-                                    onUsersChange={setSelectedUsers}
-                                    onRatingsChange={setSelectedRatings}
-                                    onIngredientCountsChange={setSelectedIngredientCounts}
-                                    onClearFilters={() => {
-                                        setSelectedUsers([]);
-                                        setSelectedRatings([]);
-                                        setSelectedIngredientCounts([]);
-                                    }}
-                                />
+                                {filterControls}
                             </Card>
                         </>
                     )}

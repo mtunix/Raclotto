@@ -41,12 +41,12 @@ const routes: RouteObject[] = [{ path: '/:sessionId/history', element: <HistoryV
 
 // Pan lists are invalidated through SWR's global cache, so every test gets a session key of its own.
 let sessions = 0;
-function renderHistory(): SessionDto {
+function renderHistory(search = ''): SessionDto & { router: ReturnType<typeof renderRoutes>['router'] } {
     sessions += 1;
     const current = { ...session, key: `history-${sessions}` };
     useAppStore.setState({ session: current });
-    renderRoutes(routes, `/${current.id}/history`, { sharedCache: true });
-    return current;
+    const { router } = renderRoutes(routes, `/${current.id}/history${search}`, { sharedCache: true });
+    return { ...current, router };
 }
 
 const cardOf = (name: string) => screen.getByText(name).closest('.ant-card') as HTMLElement;
@@ -228,4 +228,37 @@ it("offers every user of the session to filter by, and keeps the filters when no
     expect(fake.last('GET', '/pans')?.query).toMatchObject({ session_key: current.key, user_id: [ben.id], offset: 0 });
     expect(fake.last('GET', '/pans/filters')?.query).toEqual({ session_key: current.key });
     expect(screen.getByText('history.users')).toBeInTheDocument();
+});
+
+it('keeps the sort and filters in the URL', async () => {
+    const [, ben] = panFilterOptions.users;
+    fake.on('GET', '/pans', { ...panPage, has_more: false });
+    const { router } = renderHistory();
+    await screen.findByText(newest.name as string);
+
+    choose('history.time', 'history.rating');
+    fireEvent.click(screen.getByText('history.users'));
+    fireEvent.click(await screen.findByText(ben.name));
+
+    await waitFor(() => expect(router.state.location.search).toBe(`?sort=rating&user=${ben.id}`));
+    fireEvent.click(screen.getByText('history.clearFilters'));
+    await waitFor(() => expect(router.state.location.search).toBe('?sort=rating'));
+});
+
+it('opens with the sort and filters a link names, ignoring what it does not know', async () => {
+    const [ada] = panFilterOptions.users;
+    fake.on('GET', '/pans', { ...panPage, has_more: false });
+    const current = renderHistory(`?sort=counts&direction=sideways&user=${ada.id}&ingredients=4-6&ingredients=2-5`);
+
+    await screen.findByText(newest.name as string);
+    expect(fake.last('GET', '/pans')?.query).toEqual({
+        session_key: current.key,
+        user_id: [ada.id],
+        ingredient_count: ['4-6'],
+        sort: 'counts',
+        direction: 'desc',
+        limit: 12,
+        offset: 0,
+    });
+    expect(screen.getByText('history.ingredientCounts')).toBeInTheDocument();
 });
