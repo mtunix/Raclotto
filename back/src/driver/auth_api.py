@@ -5,7 +5,6 @@ from flask import current_app, request
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, ErrorSpec
 from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.auth.password import verify_password
 from back.src.auth.throttle import login_throttle
 from back.src.dto.auth import AuthResultDto, ChangePasswordBody, LoginBody, RegisterBody, TokenDto
 from back.src.dto.invite import CreateInviteBody, InviteDto, InviteLookupDto
@@ -14,7 +13,6 @@ from back.src.entity.user import User
 from back.src.interactor.accounts import AccountError, Accounts
 from back.src.interactor.levels import Levels
 from back.src.repository.invite_token_repository import InviteTokenRepository
-from back.src.repository.user_repository import UserRepository
 
 
 def _token(user: User) -> str:
@@ -77,10 +75,6 @@ _REVOKE_ERRORS = {
 class AuthApi(BaseApi):
     url_prefix = "/auth"
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.user_repository = UserRepository()
-
     @BaseApi.endpoint(
         "/register", ["POST"], body=RegisterBody, response=AuthResultDto, operation_id="register", errors=(429,)
     )
@@ -103,15 +97,16 @@ class AuthApi(BaseApi):
         throttle = login_throttle()
         key = f"{request.remote_addr}|{body.name_or_email.casefold()}"
         _refuse_if_paused(key, "sign-ins")
-        user = self.user_repository.by_email_or_name(body.name_or_email)
-        if not verify_password(body.password, user.password if user else None) or not user:
+        try:
+            user = Accounts().sign_in(body.name_or_email, body.password)
+        except AccountError as e:
             throttle.failed(key)
             raise ApiError(
                 ApiErrorCode.invalid_token,
                 status=401,
                 title="Invalid credentials",
                 detail="Invalid email/name or password",
-            )
+            ) from e
         throttle.succeeded(key)
         return AuthResultDto(token=_token(user), user=_me(user))
 

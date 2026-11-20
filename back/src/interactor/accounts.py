@@ -3,6 +3,7 @@
     invite = Accounts().invite(creator, email, valid_days=7)
     invite = Accounts().usable_invite(token)
     user = Accounts().register(token, name, email, password, picture)
+    user = Accounts().sign_in(name_or_email, password)
     Accounts().revoke(creator, invite_id)
     admin = Accounts().create_user(name, email, password, is_admin=True)
     Accounts().update_profile(user, {"name": "Ana", "vegan": True, "profile_picture": None})
@@ -40,6 +41,8 @@ class AccountError(Exception):
     # Revoking: someone else's invite is reported as unknown.
     USED_INVITE = "used_invite"
     WRONG_PASSWORD = "wrong_password"
+    # Signing in: an unknown account and a wrong password alike.
+    BAD_CREDENTIALS = "bad_credentials"
 
     def __init__(self, kind: str):
         super().__init__(kind)
@@ -80,6 +83,13 @@ class Accounts:
         if picture:
             self._pictures.add(user, picture)
         invite.mark_as_used()
+        return user
+
+    def sign_in(self, name_or_email: str, password: str) -> User:
+        """The account named by its name or email, if ``password`` is its; an unknown one takes as long to refuse."""
+        user = self._users.by_email_or_name(name_or_email)
+        if not verify_password(password, user.password if user else None) or user is None:
+            raise AccountError(AccountError.BAD_CREDENTIALS)
         return user
 
     def revoke(self, creator: User, invite_id: int) -> None:
