@@ -155,6 +155,29 @@ it("shows the copy, and offers the level-up picture once it closes", async () =>
         .toEqual({ level_id: rollOutcome.reward.level?.id }));
 });
 
+it("lets the author delete their own pan after confirming, and drops it from the list", async () => {
+    const mine = pan(2, { user_id: me.id, name: 'Mine' });
+    const theirs = pan(1, { user_id: me.id + 1, name: 'Theirs' });
+    let stored = [mine, theirs];
+    fake.on('GET', '/pans', () => ({ ...panPage, items: stored, total: stored.length, has_more: false }))
+        .on('DELETE', `/pans/${mine.id}`, () => {
+            stored = [theirs];
+        });
+    renderHistory();
+    await screen.findByText('Mine');
+
+    expect(within(cardOf('Theirs')).queryByRole('button', { name: 'history.panActions' })).not.toBeInTheDocument();
+    fireEvent.click(within(cardOf('Mine')).getByRole('button', { name: 'history.panActions' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /history.deletePan/ }));
+    const confirm = await screen.findByRole('dialog');
+    expect(fake.last('DELETE', `/pans/${mine.id}`)).toBeUndefined();
+    fireEvent.click(within(confirm).getByRole('button', { name: 'history.deleteConfirm' }));
+
+    await waitFor(() => expect(screen.queryByText('Mine')).not.toBeInTheDocument());
+    expect(screen.getByText('Theirs')).toBeInTheDocument();
+    expect(await screen.findByText('history.panDeleted')).toBeInTheDocument();
+});
+
 it("opens the author's profile from their avatar", async () => {
     fake.on('GET', '/pans', { ...panPage, has_more: false });
     renderHistory();

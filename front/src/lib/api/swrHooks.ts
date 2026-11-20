@@ -9,8 +9,9 @@ import {
 } from "../../api/generated/endpoints/ingredients/ingredients";
 import { getGetPanFilterOptionsKey, getListPansKey } from "../../api/generated/endpoints/pans/pans";
 import { getListPreparationTypesKey } from "../../api/generated/endpoints/preparation-type/preparation-type";
-import { getGetSessionByKeyKey } from "../../api/generated/endpoints/sessions/sessions";
-import { getGetUserProfileKey } from "../../api/generated/endpoints/users/users";
+import { getGetSessionByKeyKey, getGetSessionRecapKey } from "../../api/generated/endpoints/sessions/sessions";
+import { getGetStatsKey } from "../../api/generated/endpoints/stats/stats";
+import { getGetUserProfileKey, getGetUserStatsKey } from "../../api/generated/endpoints/users/users";
 
 /** What SWR's retry sees of a failed request; only the status matters. */
 interface FailedRequest {
@@ -72,6 +73,22 @@ export function mutateEvents(sessionKey: string) {
 export function mutatePanLists() {
     const paths: unknown[] = [getListPansKey()[0], getGetPanFilterOptionsKey({ session_key: "" })[0]];
     return swrMutate((key) => Array.isArray(key) && paths.includes(key[0]));
+}
+
+/** The filter options of every session's pans, without refetching the pan lists themselves. */
+export function mutatePanFilterOptions() {
+    const path = getGetPanFilterOptionsKey({ session_key: "" })[0];
+    return swrMutate((key) => Array.isArray(key) && key[0] === path);
+}
+
+/** The dashboard's statistics and the recap of every session, whatever their parameters. */
+export function mutateSessionFigures() {
+    const paths: unknown[] = [getGetStatsKey()[0], getGetSessionRecapKey({ session_key: "" })[0]];
+    return swrMutate((key) => Array.isArray(key) && paths.includes(key[0]));
+}
+
+export function mutateUserStats(userId: number) {
+    return swrMutate(getGetUserStatsKey(userId));
 }
 
 export function mutateUserProfile(userId?: number) {

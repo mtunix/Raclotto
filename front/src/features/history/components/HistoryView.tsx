@@ -10,6 +10,7 @@ import {useNavigate, useParams} from "react-router";
 import { PanCard, PanCardIngredients } from "../../../shared/PanCard/PanCard";
 import "./HistoryView.css";
 import { HistoryCloneConfirmModal } from "./HistoryCloneConfirmModal";
+import { PanActionsMenu } from "./PanActionsMenu";
 import { PanResultModal } from "../../generation/PanResultModal";
 import { LevelUpPictureModal } from "../../generation/LevelUpPictureModal";
 import { useRollSession } from "../../generation/rollSession";
@@ -51,7 +52,7 @@ export function HistoryView() {
     const screens = Grid.useBreakpoint();
     // antd's breakpoints are minimum widths: anything narrower than md (768px) is a phone.
     const isMobile = !screens.md;
-    const { pans, hasMore, loadMore, replacePan, isLoading: waiting } = usePanPages({
+    const { pans, hasMore, loadMore, replacePan, removePan, isLoading: waiting } = usePanPages({
         session_key: sessionKey,
         user_id: filters.users,
         rating: filters.ratings,
@@ -201,6 +202,7 @@ export function HistoryView() {
                                     </div>
                                 )}
                             </div>
+                            <PanActionsMenu pan={pan} onDeleted={removePan} />
                         </div>
                         <PanCardIngredients ingredients={pan.ingredients} />
                         <Button

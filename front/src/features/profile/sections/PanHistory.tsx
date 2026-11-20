@@ -10,10 +10,11 @@ interface PanHistoryProps {
   hasMore: boolean;
   loadMore: () => void;
   loading: boolean;
+  onDeleted: (panId: number) => void;
 }
 
 /** The pans the user rolled, newest first, a page at a time. */
-export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps) {
+export function PanHistory({ pans, hasMore, loadMore, loading, onDeleted }: PanHistoryProps) {
   const { t } = useTranslation();
 
   let content: ReactNode;
@@ -33,7 +34,7 @@ export function PanHistory({ pans, hasMore, loadMore, loading }: PanHistoryProps
         <Row gutter={[16, 16]}>
           {pans.map((pan) => (
             <Col xs={24} sm={24} md={12} lg={8} key={pan.id}>
-              <ProfilePanCard pan={pan} />
+              <ProfilePanCard pan={pan} onDeleted={onDeleted} />
             </Col>
           ))}
         </Row>

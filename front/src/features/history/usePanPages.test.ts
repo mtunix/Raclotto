@@ -88,6 +88,45 @@ it("replaces a pan on an earlier page", async () => {
   expect(result.current.pans.map((p) => p.rating)).toEqual([3.5, 0, 0, 0]);
 });
 
+/** A backend listing `stored` (newest first) that a test can delete from. */
+function deletable(stored: number[]) {
+  return (request: RecordedRequest): PanPageDto => {
+    const { limit, offset } = request.query as { limit: number; offset: number };
+    const items = stored.slice(offset, offset + limit).map((id) => pan(id));
+    return { items, total: stored.length, limit, offset, has_more: offset + items.length < stored.length };
+  };
+}
+
+it("drops a deleted pan, and loads the next page without skipping the pan that moved up", async () => {
+  const stored = [6, 5, 4, 3, 2, 1];
+  fake.on("GET", "/pans", deletable(stored));
+  const { result } = render({ session_key: "removed" });
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([6, 5]));
+  act(() => result.current.loadMore());
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([6, 5, 4, 3]));
+
+  stored.splice(stored.indexOf(5), 1);
+  act(() => result.current.removePan(5));
+  expect(ids(result.current.pans)).toEqual([6, 4, 3]);
+
+  act(() => result.current.loadMore());
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([6, 4, 3, 2, 1]));
+  expect(fake.last("GET", "/pans")?.query).toMatchObject({ offset: 3 });
+  expect(result.current.hasMore).toBe(false);
+});
+
+it("forgets deleted pans when the filter changes", async () => {
+  fake.on("GET", "/pans", backend(3));
+  const { result, rerender } = render({ session_key: "forget-before" });
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([3, 2]));
+
+  act(() => result.current.removePan(3));
+  rerender({ session_key: "forget-after" });
+
+  await waitFor(() => expect(fake.last("GET", "/pans")?.query).toMatchObject({ session_key: "forget-after" }));
+  await waitFor(() => expect(ids(result.current.pans)).toEqual([3, 2]));
+});
+
 it("drops a pan pushed onto the next page by a newer roll", async () => {
   let total = 3;
   fake.on("GET", "/pans", (request: RecordedRequest) => backend(total)(request));

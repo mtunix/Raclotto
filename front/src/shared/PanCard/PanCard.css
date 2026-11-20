@@ -56,3 +56,8 @@
 .pan-card-empty.ant-typography {
     font-size: 0.85rem;
 }
+
+.pan-card-header .pan-actions-button {
+    flex: none;
+    margin-left: 4px;
+}

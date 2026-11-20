@@ -269,7 +269,14 @@
     "filterByRating": "Filter by Rating",
     "filterByIngredients": "Filter by Ingredient Count",
     "stars": "stars",
-    "sortAndFilters": "Sort & Filters"
+    "sortAndFilters": "Sort & Filters",
+    "panActions": "More for this pan",
+    "deletePan": "Delete pan…",
+    "deleteConfirmTitle": "Delete “{{name}}”?",
+    "deleteConfirmMessage": "Its ratings are deleted with it, and this can't be undone. You keep the XP it earned.",
+    "deleteConfirm": "Delete",
+    "panDeleted": "Pan deleted",
+    "panDeleteFailed": "Failed to delete pan"
   },
   "dashboard": {
     "rating": "Rating",

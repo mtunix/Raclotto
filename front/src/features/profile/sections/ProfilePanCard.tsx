@@ -4,11 +4,12 @@ import type { PanDto } from "../../../api/generated/model";
 import { displayName } from "../../../shared/displayName";
 import { formatDateTime, formatRating, useLanguage } from "../../../lib/language";
 import { PanCard, PanCardIngredients } from "../../../shared/PanCard/PanCard";
+import { PanActionsMenu } from "../../history/components/PanActionsMenu";
 
 const { Title, Text } = Typography;
 
-/** One of the user's pans, framed in their border. */
-export function ProfilePanCard({ pan }: { pan: PanDto }) {
+/** One of the user's pans, framed in their border; its author can delete it from its menu. */
+export function ProfilePanCard({ pan, onDeleted }: { pan: PanDto; onDeleted: (panId: number) => void }) {
   const { t } = useTranslation();
   const language = useLanguage();
 
@@ -31,6 +32,7 @@ export function ProfilePanCard({ pan }: { pan: PanDto }) {
               </Tag>
             </div>
           )}
+          <PanActionsMenu pan={pan} onDeleted={onDeleted} />
         </div>
         <PanCardIngredients ingredients={pan.ingredients} />
       </Space>

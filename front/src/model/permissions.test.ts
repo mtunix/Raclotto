@@ -1,5 +1,5 @@
-import { me, session } from "../lib/api/__fixtures__/backendResponses";
-import { canChangeAdmin, canManageAdmins, canManageSession } from "./permissions";
+import { me, panPage, session } from "../lib/api/__fixtures__/backendResponses";
+import { canChangeAdmin, canDeletePan, canManageAdmins, canManageSession } from "./permissions";
 
 const other = { ...me, id: me.id + 100 };
 
@@ -22,6 +22,20 @@ describe("canManageSession", () => {
   it("answers no while the user or the session is unknown", () => {
     expect(canManageSession(null, session)).toBe(false);
     expect(canManageSession(me, null)).toBe(false);
+  });
+});
+
+describe("canDeletePan", () => {
+  const own = { ...panPage.items[0], user_id: me.id };
+
+  it("lets only the author delete a pan, not even an admin", () => {
+    expect(canDeletePan(me, own)).toBe(true);
+    expect(canDeletePan(other, own)).toBe(false);
+    expect(canDeletePan({ ...other, is_admin: true }, own)).toBe(false);
+  });
+
+  it("answers no while the user is unknown", () => {
+    expect(canDeletePan(null, own)).toBe(false);
   });
 });
 

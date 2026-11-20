@@ -109,3 +109,24 @@ it("offers no regenerating when the server can't generate pictures, and says why
     expect(screen.getByText("image.regeneratePicture").closest("button")).toBeDisabled();
     expect(fake.last("POST", "/images/generate-profile-picture")).toBeUndefined();
 });
+
+it("lets the user delete one of their pans from their profile", async () => {
+    const [mine] = panPage.items;
+    fake.on("GET", "/pans", { ...panPage, items: [{ ...mine, user_id: me.id }], total: 1, has_more: false })
+        .on("DELETE", `/pans/${mine.id}`, undefined);
+    // Deleting refreshes the statistics through SWR's global cache.
+    renderRoutes([{ path: "/profile/:userId?", element: <ProfileView /> }], "/profile", { sharedCache: true });
+    const name = mine.name ?? "";
+    await screen.findByRole("heading", { level: 4, name });
+    const stats = fake.requests.filter((r) => r.path === `/users/${me.id}/stats`).length;
+
+    fireEvent.click(screen.getByRole("button", { name: "history.panActions" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /history.deletePan/ }));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "history.deleteConfirm" }));
+
+    await waitFor(() => expect(screen.queryByRole("heading", { level: 4, name })).not.toBeInTheDocument());
+    expect(fake.last("DELETE", `/pans/${mine.id}`)).toBeDefined();
+    await waitFor(() =>
+        expect(fake.requests.filter((r) => r.path === `/users/${me.id}/stats`).length).toBeGreaterThan(stats),
+    );
+});

@@ -269,7 +269,14 @@
     "filterByRating": "Nach Bewertung filtern",
     "filterByIngredients": "Nach Zutatenanzahl filtern",
     "stars": "Sterne",
-    "sortAndFilters": "Sortieren & Filter"
+    "sortAndFilters": "Sortieren & Filter",
+    "panActions": "Mehr zu dieser Pfanne",
+    "deletePan": "Pfanne löschen…",
+    "deleteConfirmTitle": "„{{name}}“ löschen?",
+    "deleteConfirmMessage": "Ihre Bewertungen werden mit ihr gelöscht, und das lässt sich nicht rückgängig machen. Die XP, die sie Ihnen gebracht hat, behalten Sie.",
+    "deleteConfirm": "Löschen",
+    "panDeleted": "Pfanne gelöscht",
+    "panDeleteFailed": "Fehler beim Löschen der Pfanne"
   },
   "dashboard": {
     "rating": "Bewertung",

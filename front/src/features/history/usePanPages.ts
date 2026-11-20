@@ -10,7 +10,8 @@ export type PanFilter = Omit<ListPansParams, "session_key" | "limit" | "offset">
  * The pans matching `filter`, in its order (newest first by default), fetched a page at a time.
  *
  * `loadMore` appends the next page. Only the newest page is refetched when the pan lists are
- * invalidated, so `replacePan` swaps in a fresh copy of a pan on an earlier page.
+ * invalidated, so `replacePan` swaps in a fresh copy of a pan on an earlier page, and `removePan`
+ * drops a deleted one, asking for the next page that much earlier.
  */
 export function usePanPages(
   { session_key, user_id = [], rating = [], ingredient_count = [], sort, direction }: PanFilter,
@@ -32,7 +33,7 @@ export function usePanPages(
     pages = startOver(filter);
     setStored(pages);
   }
-  const { offset, loaded } = pages;
+  const { offset, loaded, removed } = pages;
 
   const { data: page, isLoading } = useListPans({ ...filtered, limit: pageSize, offset }, {
     swr: {
@@ -55,8 +56,11 @@ export function usePanPages(
 
   const loadMore = () => {
     if (page?.has_more) {
-      const next = page.offset + pageSize;
-      setStored((previous) => (previous.filter === filter ? { ...previous, offset: next } : previous));
+      setStored((previous) =>
+        previous.filter === filter
+          ? { ...previous, offset: page.offset + pageSize - previous.shift, shift: 0 }
+          : previous,
+      );
     }
   };
 
@@ -68,15 +72,20 @@ export function usePanPages(
     });
   };
 
+  const removePan = (gone: number) => {
+    setStored((previous) => ({ ...previous, removed: [...previous.removed, gone], shift: previous.shift + 1 }));
+  };
+
   // The current page is read from SWR directly: right after a reset it is cached but not yet in `loaded`.
   const shown = new Map(loaded);
   if (page) shown.set(page.offset, page.items);
 
   return {
-    pans: inPageOrder(shown),
+    pans: inPageOrder(shown).filter((pan) => !removed.includes(pan.id)),
     hasMore: page?.has_more ?? false,
     loadMore,
     replacePan,
+    removePan,
     isLoading,
   };
 }
@@ -85,10 +94,14 @@ interface Pages {
   filter: string;
   offset: number;
   loaded: ReadonlyMap<number, PanDto[]>;
+  /** Pans deleted since the filter was set; the pages loaded before still list them. */
+  removed: readonly number[];
+  /** Pans deleted since the newest page loaded: each moved a later pan up onto a loaded page. */
+  shift: number;
 }
 
 function startOver(filter: string): Pages {
-  return { filter, offset: 0, loaded: new Map() };
+  return { filter, offset: 0, loaded: new Map(), removed: [], shift: 0 };
 }
 
 function inPageOrder(pages: ReadonlyMap<number, PanDto[]>): PanDto[] {

@@ -1,4 +1,4 @@
-import type { MeDto, SessionDto } from "../api/generated/model";
+import type { MeDto, PanDto, SessionDto } from "../api/generated/model";
 
 /**
  * Rename, close, reactivate, delete and configure events: the session's creator or an admin, as
@@ -7,6 +7,11 @@ import type { MeDto, SessionDto } from "../api/generated/model";
 export function canManageSession(user: MeDto | null, session: SessionDto | null): boolean {
   if (!user || !session) return false;
   return user.is_admin || session.created_by_user_id === user.id;
+}
+
+/** Delete a pan, with its ratings: its author alone, not even an admin. */
+export function canDeletePan(user: MeDto | null, pan: Pick<PanDto, "user_id">): boolean {
+  return user !== null && pan.user_id === user.id;
 }
 
 /** See who is an admin: admins only. */

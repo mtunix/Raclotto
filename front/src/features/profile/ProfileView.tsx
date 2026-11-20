@@ -19,7 +19,7 @@ export function ProfileView() {
   const { userId, isOwnProfile } = profileTarget(userIdParam, currentUser?.id);
   const { profile, stats, loading, error } = useProfile(userId);
   // Asked for alongside the profile rather than once it has loaded.
-  const { pans, hasMore, loadMore, isLoading: loadingPans } = usePanPages({ user_id: userId ? [userId] : [] });
+  const { pans, hasMore, loadMore, removePan, isLoading: loadingPans } = usePanPages({ user_id: userId ? [userId] : [] });
 
   if (loading) {
     return (
@@ -48,7 +48,7 @@ export function ProfileView() {
       <ProfileStatistics stats={stats} />
       <ProfileHighlights stats={stats} />
       <AchievementList achievements={profile.achievements} />
-      <PanHistory pans={pans} hasMore={hasMore} loadMore={loadMore} loading={loadingPans} />
+      <PanHistory pans={pans} hasMore={hasMore} loadMore={loadMore} loading={loadingPans} onDeleted={removePan} />
     </div>
   );
 }
