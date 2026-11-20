@@ -11,7 +11,7 @@ class RaclottoSession(Base):
     __tablename__ = "session"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    key: Mapped[str] = mapped_column(unique=True, default=uuid.uuid4)
+    key: Mapped[str] = mapped_column(unique=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str]
     timestamp: Mapped[datetime] = mapped_column(default=datetime.now)
     active: Mapped[bool] = mapped_column(default=True)

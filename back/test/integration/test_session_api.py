@@ -41,6 +41,13 @@ class TestCreateSession(SessionApiTest):
         members = db.session.execute(user_sessions.select().where(user_sessions.c.session_id == session.id)).all()
         self.assertEqual([m.user_id for m in members], [self.ana.id])
 
+    def test_a_session_without_a_key_gets_a_generated_one(self):
+        session = RaclottoSession(name="Friday")
+        db.session.add(session)
+        db.session.commit()
+
+        self.assertIsInstance(self.stored(session.id).key, str)
+
     def test_create_needs_a_name_and_a_token(self):
         self.assertEqual(self.pointers(self.call("POST", "/sessions", self.ana, body={"name": ""})), ["/body/name"])
         self.assertEqual(self.pointers(self.call("POST", "/sessions", self.ana, body={})), ["/body/name"])
