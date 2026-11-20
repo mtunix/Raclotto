@@ -15,10 +15,15 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
     (Eat all ingredients (FILL, not sauces) of the current session)
     """
 
-    def __init__(self) -> None:
-        self.ingredient_repository = IngredientRepository()
-        self.session_repository = SessionRepository()
-        self.pan_repository = PanRepository()
+    def __init__(
+        self,
+        ingredients: IngredientRepository | None = None,
+        sessions: SessionRepository | None = None,
+        pans: PanRepository | None = None,
+    ) -> None:
+        self.ingredient_repository = ingredients or IngredientRepository()
+        self.session_repository = sessions or SessionRepository()
+        self.pan_repository = pans or PanRepository()
 
     def _get_all_fill_ingredients_in_session(self, session_id: int) -> set[int]:
         """Get all FILL ingredient IDs from the current session."""
