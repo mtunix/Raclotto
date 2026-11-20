@@ -173,12 +173,9 @@ class App(Flask):
             self.db.session.commit()
             logging.info(f"Initialized {len(new_levels)} levels")
 
-        # Also update existing levels if their data changed
+        # The seeds are unsaved rows without an id; a stored level is the one with the seed's name.
         for level_data in LEVELS:
-            existing = level_repository.by_id(level_data.id) if hasattr(level_data, "id") else None
-            if not existing:
-                # Try to find by name
-                existing = next((level for level in existing_levels if level.name == level_data.name), None)
+            existing = next((level for level in existing_levels if level.name == level_data.name), None)
             if existing and existing.required_experience != level_data.required_experience:
                 existing.required_experience = level_data.required_experience
                 self.db.session.commit()

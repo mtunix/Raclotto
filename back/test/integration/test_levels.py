@@ -1,4 +1,6 @@
 from back.src.driver.database import db
+from back.src.driver.seed_data import LEVELS
+from back.src.entity.level import Level
 from back.src.interactor.levels import Levels
 from back.src.repository.level_repository import LevelRepository
 from back.test.support import AppTest
@@ -68,3 +70,16 @@ class TestLevels(AppTest):
 
     def test_new_users_start_at_the_lowest_level(self):
         self.assertEqual(Levels().starting(), LevelRepository().all_ordered()[0])
+
+
+class TestLevelSeeding(AppTest):
+    def test_seeding_again_brings_a_levels_required_experience_back_to_the_seed(self):
+        seed = LEVELS[1]
+        level = db.session.query(Level).filter_by(name=seed.name).one()
+        level.required_experience = 1
+        db.session.commit()
+
+        self.app.init_levels()
+
+        db.session.expire_all()
+        self.assertEqual(db.session.get_one(Level, level.id).required_experience, seed.required_experience)
