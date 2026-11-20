@@ -161,6 +161,13 @@ describe('ShootingIngredientsAnimation', () => {
         expect(screen.getAllByText('🍯')).toHaveLength(1);
     });
 
+    test('ejects a single available ingredient mid-flight', () => {
+        const { container } = render(<ShootingIngredientsAnimation ingredients={[fill]} />);
+
+        expect(screen.getAllByText('🥗')).toHaveLength(1);
+        expect(container.innerHTML).not.toContain('NaN');
+    });
+
     test('ejects food of its own when given no ingredients', () => {
         render(<ShootingIngredientsAnimation />);
 

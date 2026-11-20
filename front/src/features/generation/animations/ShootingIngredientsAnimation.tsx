@@ -64,7 +64,7 @@ export function ShootingIngredientsAnimation(props: ShootingIngredientsAnimation
             }
 
             // Eject ingredients throughout the flight (from 10% to 90% of flight)
-            const rocketTime = 0.1 + (i / (ejectionCount - 1)) * 0.8;
+            const rocketTime = ejectionCount > 1 ? 0.1 + (i / (ejectionCount - 1)) * 0.8 : 0.5;
             
             // Ejection angle - behind the rocket (opposite direction + some spread)
             const baseEjectionAngle = rocketAngle + 180; // Behind rocket
