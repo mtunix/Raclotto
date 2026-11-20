@@ -97,6 +97,8 @@ The deep modules in `interactor/` and what they own:
   SQL as a whole (never in the browser), and the filter options a session's pans offer.
 - **`pan_ratings.py` — `PanRatings`**: rate a pan, change or withdraw your own rating (anyone
   else's is reported as missing); every change of stars reports `PanRated`.
+- **`preparation_types.py` — `PreparationTypes`**: add a session's own preparation type or a
+  default one, and delete a session's own; the defaults stay.
 - **`ingredient_catalog.py`, `profile_pictures.py`, `user_stats.py`**: ingredient changes and
   imports (with their achievement facts), pictures added or generated (behind the `ImageGenerator`
   seam) and the candidate generation starts from, profile statistics. Routes map their errors to
