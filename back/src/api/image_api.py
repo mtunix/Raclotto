@@ -2,7 +2,6 @@ import logging
 
 from back.src.api.base_api import ApiErrorCode, BaseApi, ErrorSpec, found
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.driver.database import db
 from back.src.dto.profile_picture import (
     GeneratedPictureDto,
     GenerateImageBody,
@@ -93,9 +92,7 @@ class ImageApi(BaseApi):
             picture = self.pictures.generate_from_prompt(get_current_user(), body.prompt)
         except PictureError as e:
             raise _PROMPT_ERRORS.get(e.kind, _PROMPT_FAILED).error(e.detail) from e
-        dto = _generated(picture)
-        db.session.commit()
-        return dto
+        return _generated(picture)
 
     @BaseApi.endpoint(
         "/generate-profile-picture",
@@ -115,9 +112,7 @@ class ImageApi(BaseApi):
                 raise _UNAVAILABLE.error(e.detail) from e
             logger.error("Profile picture generation failed: %s", e.detail)
             raise _LEVEL_FAILED.error() from e
-        dto = _generated(picture)
-        db.session.commit()
-        return dto
+        return _generated(picture)
 
     @BaseApi.endpoint(
         "/set-candidate-picture/<int:picture_id>",
@@ -133,4 +128,3 @@ class ImageApi(BaseApi):
             self.pictures.choose_candidate(get_current_user(), picture_id)
         except PictureError as e:
             raise _CANDIDATE_ERRORS[e.kind].error(e.detail) from e
-        db.session.commit()

@@ -1,7 +1,6 @@
 from back.src.api.base_api import BaseApi, found, not_found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.driver.database import db
 from back.src.dto.event import EventConfigDto, EventDto, SaveEventConfigBody, UpdateEventConfigBody
 from back.src.dto.session import SessionFilterQuery, SessionKeyQuery
 from back.src.entity.raclotto_session import RaclottoSession
@@ -46,7 +45,6 @@ class EventApi(BaseApi):
         """Hide an event from the signed-in user; other users still see it."""
         if not self.events.dismiss(event_id, get_current_user()):
             raise not_found("Event", "The specified event does not exist or has already been dismissed")
-        db.session.commit()
 
     @BaseApi.endpoint(
         "/configs", ["GET"], query=SessionFilterQuery, response=list[EventConfigDto], operation_id="listEventConfigs"
@@ -72,9 +70,7 @@ class EventApi(BaseApi):
         session = self._session(body.session_key) if body.session_key is not None else None
         self._configurable(session)
         config = self.events.configure(body.event_type, body.enabled, body.frequency_minutes, session)
-        dto = EventConfigDto.model_validate(config)
-        db.session.commit()
-        return dto
+        return EventConfigDto.model_validate(config)
 
     @BaseApi.endpoint(
         "/configs/<int:config_id>",
@@ -91,6 +87,4 @@ class EventApi(BaseApi):
         self._configurable(config.session)
         for field in body.model_fields_set:
             setattr(config, field, getattr(body, field))
-        dto = EventConfigDto.model_validate(config)
-        db.session.commit()
-        return dto
+        return EventConfigDto.model_validate(config)

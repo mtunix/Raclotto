@@ -5,10 +5,9 @@
 
 Behind ``roll``: diet eligibility, the fill/sauce split, sampling, naming,
 preparation type and cheese rolls, session membership, achievements,
-events, XP and level, all inside one transaction. ``roll`` commits on
-success and rolls back on failure. ``roll_into`` also turns the outcome
-into something else (a response) before committing, so a failure there
-rolls the roll back too. Randomness comes from an injectable
+events, XP and level. ``roll`` flushes but never commits: the request's
+transaction holds all of it, so a failure anywhere, building the response
+included, leaves nothing behind. Randomness comes from an injectable
 ``random.Random`` so tests can seed it.
 """
 
@@ -16,7 +15,6 @@ import random
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TypeVar
 
 from wonderwords import RandomWord
 
@@ -34,8 +32,6 @@ from back.src.interactor.levels import Levels, Reward
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.src.repository.session_repository import SessionRepository
-
-T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -128,18 +124,6 @@ class PanRoll:
         self._levels = Levels()
 
     def roll(self, user: User, session_key: str, options: RollOptions) -> RollOutcome:
-        return self.roll_into(user, session_key, options, lambda outcome: outcome)
-
-    def roll_into(self, user: User, session_key: str, options: RollOptions, present: Callable[[RollOutcome], T]) -> T:
-        try:
-            result = present(self._roll(user, session_key, options))
-            db.session.commit()
-            return result
-        except Exception:
-            db.session.rollback()
-            raise
-
-    def _roll(self, user: User, session_key: str, options: RollOptions) -> RollOutcome:
         session = self._sessions.by_key(session_key)
         if not session:
             raise RollError(RollError.SESSION_NOT_FOUND, "The specified session does not exist")

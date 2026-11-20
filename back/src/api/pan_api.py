@@ -43,11 +43,10 @@ class PanApi(BaseApi):
     def _roll(self, query: RollQuery, options: RollOptions) -> RollOutcomeDto:
         user = get_current_user()
         try:
-            return PanRoll().roll_into(
-                user, query.session_key, options, lambda outcome: RollOutcomeDto.of(outcome, user)
-            )
+            outcome = PanRoll().roll(user, query.session_key, options)
         except RollError as error:
             raise _ROLL_ERRORS[error.kind].error(error.detail) from error
+        return RollOutcomeDto.of(outcome, user)
 
     def _pan(self, pan_id: int) -> Pan:
         return found(self.repository.by_id(pan_id), "Pan")
@@ -161,13 +160,10 @@ class PanApi(BaseApi):
         """Rename your own pan."""
         pan = self._changeable(pan_id)
         pan.name = body.name
-        dto = self._dto(pan)
-        db.session.commit()
-        return dto
+        return self._dto(pan)
 
     @BaseApi.endpoint("/<int:pan_id>", ["DELETE"], status=204, operation_id="deletePan", errors=(403, 404, 409))
     @require_auth
     def delete_pan(self, pan_id: int) -> None:
         """Delete your own pan."""
         db.session.delete(self._changeable(pan_id))
-        db.session.commit()

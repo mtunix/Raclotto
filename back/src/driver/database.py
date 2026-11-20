@@ -59,3 +59,11 @@ class _SQLAlchemy(SQLAlchemy):
 
 
 db = _SQLAlchemy(model_class=Base)
+
+
+def commit_before_slow_work() -> None:
+    """Commit the request's transaction early, so slow work (a network call) runs without the write lock.
+
+    The one exception to the endpoint committing at the end; it commits whatever is written after this.
+    """
+    db.session.commit()

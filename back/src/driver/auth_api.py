@@ -7,7 +7,6 @@ from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.auth.password import verify_password
 from back.src.auth.throttle import login_throttle
-from back.src.driver.database import db
 from back.src.dto.auth import AuthResultDto, ChangePasswordBody, LoginBody, RegisterBody, TokenDto
 from back.src.dto.invite import CreateInviteBody, InviteDto, InviteLookupDto
 from back.src.dto.user import MeDto, UpdateMeBody
@@ -94,9 +93,7 @@ class AuthApi(BaseApi):
             if e.kind in _INVITE_GUESSES:
                 login_throttle().failed(_invite_key())
             raise _REGISTRATION_ERRORS[e.kind].error() from e
-        dto = AuthResultDto(token=_token(user), user=_me(user))
-        db.session.commit()
-        return dto
+        return AuthResultDto(token=_token(user), user=_me(user))
 
     @BaseApi.endpoint(
         "/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login", errors=(401, 429)
@@ -148,9 +145,7 @@ class AuthApi(BaseApi):
         """Change the signed-in user's name, diet, language, picture or card decoration."""
         user = get_current_user()
         Accounts().update_profile(user, body.model_dump(include=body.model_fields_set))
-        dto = _me(user)
-        db.session.commit()
-        return dto
+        return _me(user)
 
     @BaseApi.endpoint(
         "/password", ["POST"], body=ChangePasswordBody, response=TokenDto, operation_id="changePassword", errors=(400,)
@@ -169,9 +164,7 @@ class AuthApi(BaseApi):
                 title="Wrong password",
                 detail="The current password is wrong",
             ) from e
-        dto = TokenDto(token=_token(user))
-        db.session.commit()
-        return dto
+        return TokenDto(token=_token(user))
 
     @BaseApi.endpoint("/refresh", ["POST"], response=TokenDto, operation_id="refreshToken")
     @require_auth
@@ -193,9 +186,7 @@ class InviteApi(BaseApi):
         """Invite someone by email; any signed-in user may."""
         valid_days = current_app.config.get("INVITE_TOKEN_EXPIRATION_DAYS", 7)
         invite = Accounts().invite(get_current_user(), body.email, valid_days)
-        dto = InviteDto.model_validate(invite)
-        db.session.commit()
-        return dto
+        return InviteDto.model_validate(invite)
 
     @BaseApi.endpoint("", ["GET"], response=list[InviteDto], operation_id="listInvites")
     @require_auth
@@ -212,4 +203,3 @@ class InviteApi(BaseApi):
             Accounts().revoke(get_current_user(), invite_id)
         except AccountError as e:
             raise _REVOKE_ERRORS[e.kind].error() from e
-        db.session.commit()

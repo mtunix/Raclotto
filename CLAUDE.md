@@ -44,6 +44,9 @@ Every endpoint is typed: `BaseApi.endpoint(route, methods, query=, body=, respon
 - `errors=` lists every error status the handler and its callees raise; 400 (invalid DTO) and 401
   (`@require_auth`) are implied. A permission check runs inside `with guarded():` (`api/guard.py`),
   which turns `Forbidden` into a 403.
+- One transaction per request: the machinery commits after the handler returns (a GET's rolls
+  back) and rolls back if it raises; handlers and modules flush, never commit, except
+  `commit_before_slow_work()` (`driver/database.py`) ahead of slow work.
 - `operation_id` names the generated client function (`rollPan`); unique across the app.
 - Responses are plain JSON (`application/json` only, 406/415 otherwise). Errors are
   `{"errors": [ApiErrorDto, …]}` (`ErrorResponseDto`); raise `ApiError` to produce one. Its `code`
@@ -57,15 +60,15 @@ The deep modules in `interactor/` and what they own:
   (meat ⇒ vegetarian ⇒ vegan; fish independent). Never re-implement this check.
 - **`pan_roll.py` — `PanRoll.roll(user, session_key, RollOptions) -> RollOutcome`**: the whole
   roll — eligible ingredients, fill/sauce split, naming, prep type/cheese, session membership,
-  XP/level, events, achievements — in one transaction. Classic, bandit and hand-picked pans
-  all go through it; routes call `roll_into(..., present)` so the response DTO is built
-  before the commit.
+  XP/level, events, achievements — in the request's transaction. Classic, bandit and
+  hand-picked pans all go through it; it flushes, and a failure in the route after it still
+  rolls the whole roll back.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
   what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `IngredientAdded`,
   `CatalogChanged`, `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`,
   and are registered by the achievement's `key` (`AchievementKey`), which also names its texts in the
-  frontend. Never special-case an achievement by key or title outside its evaluator. `record` flushes, the caller
-  commits, together with the change the fact reports.
+  frontend. Never special-case an achievement by key or title outside its evaluator. `record` flushes;
+  the request commits it together with the change the fact reports.
 - **`events.py` — `Events.record(fact) -> list[Event]`**: session events (pan swap) from the same
   facts; evaluators declare `event_type`, `reacts_to` and a default `cooldown`. Owns the
   enabled/frequency config (a session's own overrides the global one). A new event type also goes
@@ -294,7 +297,7 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
   annotation is the schema; relationships are `Mapped[list[X]]` / `Mapped[X | None]`.
 - **Nothing slow inside a transaction.** File-backed SQLite runs every transaction as `BEGIN IMMEDIATE`
   (ADR 0007), so a request holds the database's one write lock from its first query to its commit:
-  commit before calling out (image model, network) or doing slow work.
+  call `commit_before_slow_work()` before calling out (image model, network) or doing slow work.
 - **React Compiler 1.x skips** a component or hook with `try/finally`, or a conditional, `&&`/`||`
   or `?.` inside `try/catch`: write the request as a promise chain (`.then/.catch/.finally`).
   Memoize by hand only where identity matters (an effect's dependency, a value compared by identity).

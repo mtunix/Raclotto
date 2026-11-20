@@ -139,6 +139,12 @@ class TestPanRoll(AppTest):
             self.roll.roll(self.user, "nope", RollOptions(num_fill=1))
         self.assertEqual(raised.exception.kind, RollError.SESSION_NOT_FOUND)
 
+    def test_roll_leaves_the_commit_to_the_request(self):
+        self.roll.roll(self.user, "s1", RollOptions(num_fill=1, num_sauce=1))
+        db.session.rollback()
+
+        self.assertEqual(db.session.query(Pan).count(), 0)
+
     def test_failure_after_the_pan_is_built_leaves_nothing_behind(self):
         class Exploding(Achievements):
             def record(self, fact):
@@ -147,6 +153,8 @@ class TestPanRoll(AppTest):
         roll = PanRoll(rng=random.Random(0), achievements=Exploding())
         with self.assertRaises(RuntimeError):
             roll.roll(self.user, "s1", RollOptions(num_fill=1, num_sauce=1))
+        # What the request's transaction does when its handler raises.
+        db.session.rollback()
 
         self.assertEqual(db.session.query(Pan).count(), 0)
         db.session.refresh(self.user)

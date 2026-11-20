@@ -5,8 +5,8 @@
 
 Behind it: the image model (Gemini, unless ``set_image_generator`` replaced it),
 the level prompt, the candidate picture sent along as a reference and the new
-history entry. Callers commit the picture. Generating commits the caller's transaction before the
-model is called, so the database isn't locked while it draws (ADR 0007).
+history entry. Nothing here commits but generation: it commits the request's transaction before the
+model is called, so the database isn't locked while it draws (ADR 0007); the request commits the picture.
 """
 
 import base64
@@ -14,7 +14,7 @@ import logging
 import os
 from typing import Any, Protocol
 
-from back.src.driver.database import db
+from back.src.driver.database import commit_before_slow_work
 from back.src.entity.profile_picture_history import ProfilePictureHistory
 from back.src.entity.user import User
 from back.src.repository.level_repository import LevelRepository
@@ -163,7 +163,7 @@ class ProfilePictures:
 
     @staticmethod
     def _generate(generator: ImageGenerator, contents: list[Any]) -> str:
-        db.session.commit()
+        commit_before_slow_work()
         try:
             image = generator.generate(contents)
         except Exception as e:

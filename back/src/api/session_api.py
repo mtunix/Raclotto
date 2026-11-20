@@ -48,9 +48,7 @@ class SessionApi(BaseApi):
         db.session.execute(
             user_sessions.insert().values(user_id=user.id, session_id=session.id, joined_at=datetime.now())
         )
-        dto = SessionDto.model_validate(session)
-        db.session.commit()
-        return dto
+        return SessionDto.model_validate(session)
 
     @BaseApi.endpoint("", ["GET"], query=ListSessionsQuery, response=list[SessionDto], operation_id="listSessions")
     @require_auth
@@ -100,16 +98,13 @@ class SessionApi(BaseApi):
         """Rename a session."""
         session = self._managed(self.repository.by_id(session_id))
         session.name = body.name
-        dto = SessionDto.model_validate(session)
-        db.session.commit()
-        return dto
+        return SessionDto.model_validate(session)
 
     @BaseApi.endpoint("/<int:session_id>", ["DELETE"], status=204, operation_id="deleteSession", errors=(403, 404))
     @require_auth
     def delete_session(self, session_id: int) -> None:
         """Delete a session."""
         db.session.delete(self._managed(self.repository.by_id(session_id)))
-        db.session.commit()
 
     @BaseApi.endpoint(
         "/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession", errors=(403, 404)
@@ -120,9 +115,7 @@ class SessionApi(BaseApi):
         session = self._managed(self.repository.by_key(body.key))
         session.active = False
         Achievements().record(SessionClosed(session=session, actor=get_current_user()))
-        dto = SessionDto.model_validate(session)
-        db.session.commit()
-        return dto
+        return SessionDto.model_validate(session)
 
     @BaseApi.endpoint(
         "/reactivate",
@@ -137,6 +130,4 @@ class SessionApi(BaseApi):
         """Reopen a closed session."""
         session = self._managed(self.repository.by_key(body.key))
         session.active = True
-        dto = SessionDto.model_validate(session)
-        db.session.commit()
-        return dto
+        return SessionDto.model_validate(session)

@@ -54,9 +54,7 @@ class PreparationTypeApi(BaseApi):
             with guarded():
                 permissions().change_global()
         prep_type = self.repository.create({"name": body.name, "session_id": session_id})
-        dto = PrepTypeDto.model_validate(prep_type)
-        db.session.commit()
-        return dto
+        return PrepTypeDto.model_validate(prep_type)
 
     @BaseApi.endpoint(
         "/<int:prep_type_id>", ["DELETE"], status=204, operation_id="deletePreparationType", errors=(400, 404)
@@ -73,4 +71,3 @@ class PreparationTypeApi(BaseApi):
                 detail="Default preparation types cannot be deleted",
             )
         db.session.delete(prep_type)
-        db.session.commit()

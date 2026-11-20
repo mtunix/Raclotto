@@ -2,7 +2,6 @@ from collections.abc import Iterable
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, ErrorSpec, found
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.driver.database import db
 from back.src.dto.ingredient import (
     AvailableCountsDto,
     CreateIngredientBody,
@@ -86,9 +85,7 @@ class IngredientApi(BaseApi):
         """Add an ingredient to a session."""
         session = self._session(query.session_key)
         ingredient = IngredientCatalog().add(get_current_user(), session, body.model_dump())
-        dto = IngredientDto.model_validate(ingredient)
-        db.session.commit()
-        return dto
+        return IngredientDto.model_validate(ingredient)
 
     @BaseApi.endpoint(
         "/<int:ingredient_id>", ["GET"], response=IngredientDto, operation_id="getIngredient", errors=(404,)
@@ -111,9 +108,7 @@ class IngredientApi(BaseApi):
         """Change an ingredient's name, type, category or properties."""
         ingredient = self._ingredient(ingredient_id)
         IngredientCatalog().update(get_current_user(), ingredient, body.model_dump(include=body.model_fields_set))
-        dto = IngredientDto.model_validate(ingredient)
-        db.session.commit()
-        return dto
+        return IngredientDto.model_validate(ingredient)
 
     @BaseApi.endpoint(
         "/<int:ingredient_id>",
@@ -136,7 +131,6 @@ class IngredientApi(BaseApi):
                 source={"pointer": "/query/session_key"},
             )
         IngredientCatalog().set_available(get_current_user(), ingredient, False)
-        db.session.commit()
 
     @BaseApi.endpoint(
         "/refill",
@@ -151,9 +145,7 @@ class IngredientApi(BaseApi):
         """Mark an ingredient available again."""
         ingredient = self._ingredient(body.id)
         IngredientCatalog().set_available(get_current_user(), ingredient, True)
-        dto = IngredientDto.model_validate(ingredient)
-        db.session.commit()
-        return dto
+        return IngredientDto.model_validate(ingredient)
 
     @BaseApi.endpoint(
         "/available-counts",
@@ -206,9 +198,7 @@ class IngredientApi(BaseApi):
         """Add every listed ingredient to a session as a new one."""
         session = self._session(query.session_key)
         created = IngredientCatalog().import_new(get_current_user(), session, _items(body))
-        dto = IngredientImportDto(created=len(created), ingredients=_dtos(created))
-        db.session.commit()
-        return dto
+        return IngredientImportDto(created=len(created), ingredients=_dtos(created))
 
     @BaseApi.endpoint(
         "/reimport",
@@ -228,11 +218,9 @@ class IngredientApi(BaseApi):
         except CatalogError as e:
             spec, field = _REIMPORT_ERRORS[e.kind]
             raise spec.error(e.detail, source={"pointer": f"/body/ingredients/{e.index}/{field}"}) from e
-        dto = IngredientReimportDto(
+        return IngredientReimportDto(
             created=result.created,
             updated=result.updated,
             deleted=result.unavailable,
             ingredients=_dtos(self.repository.by_session(session.key)),
         )
-        db.session.commit()
-        return dto

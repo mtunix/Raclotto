@@ -292,29 +292,50 @@ def _routed_endpoint() -> Callable[..., Any]:
     return BaseApi.endpoints[f"{blueprint_name}.{endpoint}"]
 
 
-def catch_integrity_errors[**P, R](session: scoped_session[Any]) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    """Answer 409 when a write breaks a database constraint (a taken name, a duplicate)."""
+def one_transaction[**P, R](session: scoped_session[Any], commit: bool) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """The request's transaction: committed once the response is rendered, rolled back if anything raises.
+
+    With ``commit=False`` (GET) it ends with a rollback too, so a read never writes.
+    """
 
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             try:
-                return func(*args, **kwargs)
-            except IntegrityError as e:
+                result = func(*args, **kwargs)
+                if commit:
+                    session.commit()
+                else:
+                    session.rollback()
+                return result
+            except BaseException:
                 session.rollback()
-                error = ApiError(
-                    ApiErrorCode.conflict,
-                    status=409,
-                    title="Conflict",
-                    detail="The change conflicts with existing data",
-                )
-                # The database's message names tables and values; only the log gets it.
-                logging.warning("Integrity error %s: %s", error.id_, e)
-                raise error from e
+                raise
 
         return wrapper
 
     return decorator
+
+
+def catch_integrity_errors[**P, R](func: Callable[P, R]) -> Callable[P, R]:
+    """Answer 409 when a write breaks a database constraint (a taken name, a duplicate)."""
+
+    @wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        try:
+            return func(*args, **kwargs)
+        except IntegrityError as e:
+            error = ApiError(
+                ApiErrorCode.conflict,
+                status=409,
+                title="Conflict",
+                detail="The change conflicts with existing data",
+            )
+            # The database's message names tables and values; only the log gets it.
+            logging.warning("Integrity error %s: %s", error.id_, e)
+            raise error from e
+
+    return wrapper
 
 
 def catch_processing_exceptions[**P, R](func: Callable[P, R]) -> Callable[P, R]:
@@ -358,7 +379,8 @@ class BaseApi(View):
     def dispatch_request(self, **kwargs: Any) -> ft.ResponseReturnValue:
         endpoint = self.get_endpoint()
         meth = self.typed_wrapper(endpoint, typed_endpoint(endpoint))
-        meth = catch_integrity_errors(self.session)(meth)
+        meth = one_transaction(self.session, commit=request.method != "GET")(meth)
+        meth = catch_integrity_errors(meth)
         meth = catch_processing_exceptions(meth)
 
         return meth(self, **kwargs)

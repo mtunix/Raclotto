@@ -1,6 +1,5 @@
 from back.src.api.base_api import BaseApi, found, not_found
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.driver.database import db
 from back.src.dto.rating import CreateRatingBody, ListRatingsQuery, RatingDto, UpdateRatingBody
 from back.src.entity.rating import Rating
 from back.src.interactor.pan_ratings import PanRatings, RatingNotFound
@@ -36,9 +35,7 @@ class RatingApi(BaseApi):
         """Rate a pan as the signed-in user, or change the rating they gave it."""
         pan = found(PanRepository().by_id(body.pan_id), "Pan")
         rating = PanRatings().rate(get_current_user(), pan, body.rating)
-        dto = RatingDto.model_validate(rating)
-        db.session.commit()
-        return dto
+        return RatingDto.model_validate(rating)
 
     @BaseApi.endpoint("/<int:rating_id>", ["GET"], response=RatingDto, operation_id="getRating", errors=(404,))
     @require_auth
@@ -61,9 +58,7 @@ class RatingApi(BaseApi):
             rating = PanRatings().change(get_current_user(), rating_id, body.rating)
         except RatingNotFound as e:
             raise not_found("Rating") from e
-        dto = RatingDto.model_validate(rating)
-        db.session.commit()
-        return dto
+        return RatingDto.model_validate(rating)
 
     @BaseApi.endpoint("/<int:rating_id>", ["DELETE"], status=204, operation_id="deleteRating", errors=(404,))
     @require_auth
@@ -73,4 +68,3 @@ class RatingApi(BaseApi):
             PanRatings().withdraw(get_current_user(), rating_id)
         except RatingNotFound as e:
             raise not_found("Rating") from e
-        db.session.commit()

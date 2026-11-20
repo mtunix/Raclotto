@@ -1,7 +1,6 @@
 from back.src.api.base_api import BaseApi, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import require_auth
-from back.src.driver.database import db
 from back.src.dto.user import UpdateUserBody, UserAccountDto, UserProfileDto
 from back.src.dto.user_stats import UserStatsDto
 from back.src.entity.user import User
@@ -44,9 +43,7 @@ class UserApi(BaseApi):
         with guarded():
             permissions().change_admin(user)
         Accounts().set_admin(user, body.is_admin)
-        dto = UserAccountDto.of(user)
-        db.session.commit()
-        return dto
+        return UserAccountDto.of(user)
 
     @BaseApi.endpoint("/<int:user_id>", ["GET"], response=UserProfileDto, operation_id="getUserProfile", errors=(404,))
     @require_auth
