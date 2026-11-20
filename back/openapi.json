@@ -2475,6 +2475,13 @@
       "StatsDto": {
         "description": "The dashboard: of one session, or of all sessions; the leaderboard is always global.",
         "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventDto"
+            },
+            "title": "Events",
+            "type": "array"
+          },
           "ingredients_most_used": {
             "items": {
               "$ref": "#/components/schemas/IngredientUsageDto"
@@ -2508,7 +2515,8 @@
           "pans",
           "ingredients_top_rated",
           "ingredients_most_used",
-          "leaderboard"
+          "leaderboard",
+          "events"
         ],
         "title": "StatsDto",
         "type": "object"

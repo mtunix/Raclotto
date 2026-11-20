@@ -4,6 +4,7 @@
  * Raclotto API
  * OpenAPI spec version: 1.0.0
  */
+import type { EventDto } from './eventDto';
 import type { IngredientRatingDto } from './ingredientRatingDto';
 import type { IngredientUsageDto } from './ingredientUsageDto';
 import type { LeaderboardEntryDto } from './leaderboardEntryDto';
@@ -13,6 +14,7 @@ import type { PanDto } from './panDto';
  * The dashboard: of one session, or of all sessions; the leaderboard is always global.
  */
 export interface StatsDto {
+  events: EventDto[];
   ingredients_most_used: IngredientUsageDto[];
   ingredients_top_rated: IngredientRatingDto[];
   leaderboard: LeaderboardEntryDto[];

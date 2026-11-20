@@ -43,6 +43,20 @@ export function formatTime(value: string, language: string | undefined): string 
   return Number.isNaN(date.getTime()) ? value : date.toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" });
 }
 
+/** How long ago `value` was, as `language` says it ("vor 3 Minuten", "just now"); a value that is no date stays as it is. */
+export function formatTimeAgo(value: string, language: string | undefined, now: number = Date.now()): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const seconds = Math.round((date.getTime() - now) / 1000);
+  const format = new Intl.RelativeTimeFormat(language, { numeric: "auto" });
+  if (Math.abs(seconds) < 60) return format.format(0, "second");
+  const minutes = Math.round(seconds / 60);
+  if (Math.abs(minutes) < 60) return format.format(minutes, "minute");
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 24) return format.format(hours, "hour");
+  return format.format(Math.round(hours / 24), "day");
+}
+
 /** A day and time as `language` writes it; a value that is no date stays as it is. */
 export function formatDateTime(value: string, language: string | undefined): string {
   const date = new Date(value);

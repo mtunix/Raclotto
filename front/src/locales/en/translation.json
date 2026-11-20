@@ -289,11 +289,27 @@
     "you": "You",
     "points": "Points",
     "achievements": "Achievements",
-    "global": "Global",
-    "session": "Session",
+    "global": "All sessions",
+    "session": "This session",
     "pans": "Pans",
     "removeWidthCap": "Remove Width Cap",
-    "capWidth": "Cap Width"
+    "capWidth": "Cap Width",
+    "rolled": "{{name}} rolled",
+    "notRatedYet": "Not rated yet",
+    "feedEmpty": "No pans yet. Roll the first one!",
+    "nobodyYet": "Nobody has rolled yet",
+    "panCount_one": "{{count}} pan",
+    "panCount_other": "{{count}} pans",
+    "pansTonight": "Pans",
+    "atTheTable": "At the table",
+    "ratings": "Ratings",
+    "favorite_one": "Favorite so far: {{ingredient}}, in {{count}} pan",
+    "favorite_other": "Favorite so far: {{ingredient}}, in {{count}} pans",
+    "liveFeed": "Live",
+    "live": "Updates live",
+    "tonight": "Tonight",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen"
   },
   "auth": {
     "login": "Login",
@@ -716,13 +732,6 @@
       "internal_error": "Something went wrong on the server."
     }
   },
-  "ingredientOfTheHour": {
-    "title": "Ingredient of the hour",
-    "since": "since {{time}}",
-    "none": "Picked with the next pan",
-    "alwaysAdd": "Always put it in my pan",
-    "inThisPan": "Ingredient of the hour: bonus XP!"
-  },
   "join": {
     "inviteToTable": "Invite to the table",
     "scanToJoin": "Scan to join",
@@ -742,5 +751,12 @@
     "keepAccountExplanation": "You joined as a guest, so you can’t sign in again yet. Set a password (and an email, if you like) to keep your account, XP and achievements.",
     "kept": "Your account is kept. Sign in with your name and password next time.",
     "logoutWarning": "You are a guest: once you log out, you can’t sign in to this account again. Log out anyway?"
+  },
+  "ingredientOfTheHour": {
+    "title": "Ingredient of the hour",
+    "since": "since {{time}}",
+    "none": "Picked with the next pan",
+    "alwaysAdd": "Always put it in my pan",
+    "inThisPan": "Ingredient of the hour: bonus XP!"
   }
 }

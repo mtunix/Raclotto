@@ -98,7 +98,8 @@ The deep modules in `interactor/` and what they own:
 - **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
   worst and boldest pan, favorite ingredient, each participant's pans, XP and stars); read-only.
 - **`stats.py` — `Stats().of(session_key)`**: the dashboard of one session or all (newest pans,
-  best rated and most used ingredients, ten each) and the global leaderboard; read-only.
+  best rated and most used ingredients, a session's recent events for its feed) and the global
+  leaderboard; read-only.
 - **`levels.py` — `Levels`**: the XP a pan earns and the level it reaches (`award -> Reward`),
   the progress a profile shows, and the level new users start at.
 - **`pan_history.py` — `PanHistory`**: the pans of a session or user, sorted, filtered and paged in

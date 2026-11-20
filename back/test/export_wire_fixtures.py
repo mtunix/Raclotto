@@ -181,7 +181,7 @@ class _Recorder(AppTest):
         assert prep_type["session_id"] == session.id, prep_type
         assert registered_me["fish"] and not registration["user"]["fish"], registered_me
         assert joined["user"]["is_guest"] and not claimed_me["is_guest"], claimed_me
-        assert ingredient_of_the_hour["ingredient"], ingredient_of_the_hour
+        assert ingredient_of_the_hour["ingredient"] and dashboard["events"], ingredient_of_the_hour
         assert {i["applicable"] for i in ingredients} == {True, False}, ingredients
         assert counts["fill_count"] < counts["total_fill_count"], counts
         assert (reimported["created"], reimported["deleted"]) == (1, 2), reimported

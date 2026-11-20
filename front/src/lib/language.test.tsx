@@ -2,7 +2,16 @@ import { act, render, screen } from "@testing-library/react";
 import { Empty } from "antd";
 import i18n from "../i18n";
 import { AntdLocale } from "../AntdLocale";
-import { formatDate, formatDateTime, formatNumber, formatRating, formatTime, numberFormatter, useLanguage } from "./language";
+import {
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatRating,
+  formatTime,
+  formatTimeAgo,
+  numberFormatter,
+  useLanguage,
+} from "./language";
 
 beforeEach(async () => {
   await i18n.changeLanguage("de");
@@ -46,6 +55,18 @@ it("re-renders dates and antd's texts when the language switches", async () => {
 
   expect(screen.getByText("11/19/2026")).toBeInTheDocument();
   expect(screen.getByText("No data", { selector: ".ant-empty-description" })).toBeInTheDocument();
+});
+
+const NOW = new Date("2026-12-24T20:00:00").getTime();
+const ago = (minutes: number) => new Date(NOW - minutes * 60000).toISOString();
+
+it("says how long ago something was, in the language's words", () => {
+  expect(formatTimeAgo(ago(0.5), "en", NOW)).toBe("now");
+  expect(formatTimeAgo(ago(3), "en", NOW)).toBe("3 minutes ago");
+  expect(formatTimeAgo(ago(3), "de", NOW)).toBe("vor 3 Minuten");
+  expect(formatTimeAgo(ago(120), "en", NOW)).toBe("2 hours ago");
+  expect(formatTimeAgo(ago(60 * 24 * 2), "en", NOW)).toBe("2 days ago");
+  expect(formatTimeAgo("not a date", "en", NOW)).toBe("not a date");
 });
 
 it("writes a time of day without the date", () => {

@@ -289,11 +289,27 @@
     "you": "Du",
     "points": "Punkte",
     "achievements": "Errungenschaften",
-    "global": "Global",
-    "session": "Session",
+    "global": "Alle Sessions",
+    "session": "Diese Session",
     "pans": "Pfannen",
     "removeWidthCap": "Volle Breite",
-    "capWidth": "Breite begrenzen"
+    "capWidth": "Breite begrenzen",
+    "rolled": "{{name}} hat gezogen:",
+    "notRatedYet": "Noch nicht bewertet",
+    "feedEmpty": "Noch keine Pfannen. Zieh die erste!",
+    "nobodyYet": "Noch hat niemand gezogen",
+    "panCount_one": "{{count}} Pfanne",
+    "panCount_other": "{{count}} Pfannen",
+    "pansTonight": "Pfannen",
+    "atTheTable": "Am Tisch",
+    "ratings": "Bewertungen",
+    "favorite_one": "Bisheriger Favorit: {{ingredient}}, in {{count}} Pfanne",
+    "favorite_other": "Bisheriger Favorit: {{ingredient}}, in {{count}} Pfannen",
+    "liveFeed": "Live",
+    "live": "Aktualisiert sich live",
+    "tonight": "Heute Abend",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden"
   },
   "auth": {
     "login": "Anmelden",
@@ -716,13 +732,6 @@
       "internal_error": "Auf dem Server ist etwas schiefgelaufen."
     }
   },
-  "ingredientOfTheHour": {
-    "title": "Zutat der Stunde",
-    "since": "seit {{time}}",
-    "none": "Wird mit der nächsten Pfanne gezogen",
-    "alwaysAdd": "Immer in meine Pfanne",
-    "inThisPan": "Zutat der Stunde: Bonus-XP!"
-  },
   "join": {
     "inviteToTable": "An den Tisch einladen",
     "scanToJoin": "Scannen und mitmachen",
@@ -742,5 +751,12 @@
     "keepAccountExplanation": "Sie sind als Gast beigetreten und können sich deshalb noch nicht wieder anmelden. Legen Sie ein Passwort (und gern eine E-Mail) fest, um Konto, XP und Erfolge zu behalten.",
     "kept": "Ihr Konto bleibt. Melden Sie sich nächstes Mal mit Name und Passwort an.",
     "logoutWarning": "Sie sind Gast: Nach dem Abmelden können Sie sich nicht mehr bei diesem Konto anmelden. Trotzdem abmelden?"
+  },
+  "ingredientOfTheHour": {
+    "title": "Zutat der Stunde",
+    "since": "seit {{time}}",
+    "none": "Wird mit der nächsten Pfanne gezogen",
+    "alwaysAdd": "Immer in meine Pfanne",
+    "inThisPan": "Zutat der Stunde: Bonus-XP!"
   }
 }

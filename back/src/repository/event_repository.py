@@ -30,6 +30,16 @@ class EventRepository(BaseRepository[Event]):
             .first()
         )
 
+    def recent(self, session_id: int, limit: int) -> list[Event]:
+        """The session's newest events, whoever dismissed them, newest first."""
+        return (
+            db.session.query(Event)
+            .filter(Event.session_id == session_id)
+            .order_by(Event.created_at.desc(), Event.id.desc())
+            .limit(limit)
+            .all()
+        )
+
     def fired_since(self, session_id: int, event_type: str, since: datetime) -> bool:
         """Whether the event fired in the session after `since`."""
         return (

@@ -65,14 +65,15 @@ class StatsApiTest(AppTest):
         self.assertIn("Corn", {r.ingredient.name for r in stats.ingredients_top_rated})
         self.assertIn("Corn", {u.ingredient.name for u in stats.ingredients_most_used})
 
-    def test_only_the_ten_newest_pans(self):
-        for minutes in range(20, 30):
+    def test_only_the_thirty_newest_pans_of_a_session_and_ten_of_all(self):
+        for minutes in range(20, 50):
             self.make_pan(self.ana, self.s1, [self.leek], minutes_ago=minutes)
 
         pans = self.stats(session_key="s1").pans
 
-        self.assertEqual(len(pans), 10)
+        self.assertEqual(len(pans), 30)
         self.assertEqual(pans[:2], [p for p in pans if p.id in (self.new.id, self.old.id)])
+        self.assertEqual(len(self.stats().pans), 10)
 
     def test_an_unknown_session_has_only_the_leaderboard(self):
         stats = self.stats(session_key="nope")

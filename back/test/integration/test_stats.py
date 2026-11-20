@@ -1,8 +1,12 @@
+from datetime import datetime, timedelta
+
 from back.src.driver.database import db
+from back.src.entity.event import Event
 from back.src.entity.ingredient import IngredientType
 from back.src.entity.rating import Rating
 from back.src.interactor.stats import Stats
 from back.src.repository.achievement_repository import AchievementRepository
+from back.src.repository.event_repository import EventRepository
 from back.test.support import AppTest
 
 
@@ -38,6 +42,24 @@ class StatsTest(AppTest):
 
         self.assertEqual(dashboard.pans, [self.new, self.other, self.old])
         self.assertIn((self.corn, 1), dashboard.most_used)
+
+    def test_a_sessions_feed_has_its_newest_events_even_dismissed_ones(self):
+        events = [
+            Event(
+                session_id=session_id,
+                event_type="pan_swap",
+                message="",
+                created_at=datetime.now() - timedelta(minutes=m),
+            )
+            for session_id, m in ((self.s1.id, 3), (self.s1.id, 1), (self.other.session_id, 2))
+        ]
+        db.session.add_all(events)
+        db.session.flush()
+        EventRepository().dismiss_for_user(events[1].id, self.ana.id)
+        db.session.commit()
+
+        self.assertEqual(Stats().of("s1").events, [events[1], events[0]])
+        self.assertEqual(Stats().of(None).events, [])
 
     def test_an_unknown_session_has_only_the_leaderboard(self):
         dashboard = Stats().of("nope")
