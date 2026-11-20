@@ -60,7 +60,8 @@ The deep modules in `interactor/` and what they own:
   (meat ⇒ vegetarian ⇒ vegan; fish independent). Never re-implement this check.
 - **`pan_roll.py` — `PanRoll.roll(user, session_key, RollOptions) -> RollOutcome`**: the whole
   roll — eligible ingredients, fill/sauce split, naming, prep type/cheese, session membership,
-  XP/level, events, achievements — in the request's transaction. Classic, bandit and
+  XP/level, events, achievements — in the request's transaction. Draws weigh down what the roller
+  just had. Classic, bandit and
   hand-picked pans all go through it; it flushes, and a failure in the route after it still
   rolls the whole roll back.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report

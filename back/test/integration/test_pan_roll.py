@@ -13,6 +13,7 @@ from back.src.interactor.pan_roll import (
     RollError,
     RollOptions,
     split_columns,
+    weighted_sample,
 )
 from back.test.support import AppTest
 
@@ -41,6 +42,18 @@ class TestSplitColumns(unittest.TestCase):
         for _ in range(50):
             f, s = split_columns(6, 5, 1, rng)
             self.assertEqual((f, s), (5, 1))
+
+
+class TestWeightedSample(unittest.TestCase):
+    def test_draws_distinct_items_in_proportion_to_their_weight(self):
+        rng = random.Random(3)
+        weights = {"light": 0.2, "heavy": 1.0}
+
+        draws = [weighted_sample(list(weights), 1, weights.__getitem__, rng)[0] for _ in range(2000)]
+
+        # 1 / 1.2 of the draws, give or take.
+        self.assertAlmostEqual(draws.count("heavy") / len(draws), 0.83, delta=0.03)
+        self.assertEqual(sorted(weighted_sample(list(weights), 5, weights.__getitem__, rng)), ["heavy", "light"])
 
 
 class TestPanRoll(AppTest):
@@ -133,6 +146,41 @@ class TestPanRoll(AppTest):
         outcome = self.roll.roll(self.user, "s1", RollOptions(ingredient_ids=[self.pork.id, foreign.id], name="Mine"))
         self.assertEqual([i.name for i in outcome.pan.ingredients], ["Pork"])
         self.assertEqual(outcome.pan.name, "Mine")
+
+    def test_what_the_user_just_had_comes_up_less(self):
+        session = self.make_session("s2")
+        onion = self.make_ingredient(session, "Onion", FILL)
+        self.make_ingredient(session, "Leek", FILL)
+        roll = PanRoll(rng=random.Random(5), name_pan=lambda: "p")
+
+        onions = 0
+        for _ in range(100):
+            # The newest pan had onion; whatever the last roll drew is the one before.
+            self.make_pan(self.user, session, [onion])
+            outcome = roll.roll(self.user, "s2", RollOptions(num_fill=1, num_sauce=0))
+            onions += outcome.pan.ingredients == [onion]
+
+        # Unweighted, half of them.
+        self.assertLess(onions, 30)
+        self.assertGreater(onions, 5, "a recent ingredient stays possible")
+
+    def test_someone_elses_pans_dont_count_as_recent(self):
+        session = self.make_session("s2")
+        onion = self.make_ingredient(session, "Onion", FILL)
+        self.make_ingredient(session, "Leek", FILL)
+        ben = self.make_user("ben")
+        roll = PanRoll(rng=random.Random(5), name_pan=lambda: "p")
+
+        onions = 0
+        for _ in range(100):
+            self.make_pan(ben, session, [onion])
+            outcome = roll.roll(self.user, "s2", RollOptions(num_fill=1, num_sauce=0))
+            onions += outcome.pan.ingredients == [onion]
+            # So the user never has a pan of their own.
+            db.session.delete(outcome.pan)
+            db.session.flush()
+
+        self.assertAlmostEqual(onions / 100, 0.5, delta=0.15)
 
     def test_unknown_session_is_a_roll_error(self):
         with self.assertRaises(RollError) as raised:

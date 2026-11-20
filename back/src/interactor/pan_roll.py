@@ -5,7 +5,8 @@
 
 Behind ``roll``: diet eligibility, the fill/sauce split, sampling, naming,
 preparation type and cheese rolls, session membership, achievements,
-events, XP and level. ``roll`` flushes but never commits: the request's
+events, XP and level. Sampling makes what the user got in their last pans
+in the session less likely (``RECENT_WEIGHTS``). ``roll`` flushes but never commits: the request's
 transaction holds all of it, so a failure anywhere, building the response
 included, leaves nothing behind. Randomness comes from an injectable
 ``random.Random`` so tests can seed it.
@@ -30,6 +31,7 @@ from back.src.interactor.events import Events
 from back.src.interactor.levels import Levels, Reward
 from back.src.interactor.sessions import Sessions
 from back.src.repository.ingredient_repository import IngredientRepository
+from back.src.repository.pan_repository import PanRepository
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.src.repository.session_repository import SessionRepository
 
@@ -101,6 +103,16 @@ def split_columns(total: int, fills_available: int, sauces_available: int, rng: 
     return fills, sauces
 
 
+# The weight of an ingredient that was in the user's newest pan in the session, and in the one before.
+RECENT_WEIGHTS = (0.2, 0.5)
+
+
+def weighted_sample[T](population: Sequence[T], k: int, weight: Callable[[T], float], rng: random.Random) -> list[T]:
+    """``k`` distinct items, each drawn with a chance proportional to its weight (Efraimidis-Spirakis)."""
+    keyed = sorted(population, key=lambda item: rng.random() ** (1 / weight(item)), reverse=True)
+    return keyed[:k]
+
+
 def _random_pan_name() -> str:
     adjective = RandomWord().word(include_parts_of_speech=["adjectives"])
     return f"{adjective.capitalize()} Raclotto Pan"
@@ -120,6 +132,7 @@ class PanRoll:
         self._events = events or Events()
         self._sessions = SessionRepository()
         self._ingredients = IngredientRepository()
+        self._pans = PanRepository()
         self._prep_types = PreparationTypeRepository()
         self._levels = Levels()
         self._membership = Sessions(achievements=self._achievements)
@@ -186,7 +199,19 @@ class PanRoll:
                 RollError.NO_INGREDIENTS,
                 "At least one fill or sauce ingredient must be selected",
             )
-        return self._rng.sample(fills, num_fill) + self._rng.sample(sauces, num_sauce)
+
+        weight = self._recency_weight(user, session)
+        return weighted_sample(fills, num_fill, weight, self._rng) + weighted_sample(
+            sauces, num_sauce, weight, self._rng
+        )
+
+    def _recency_weight(self, user: User, session: RaclottoSession) -> Callable[[Ingredient], float]:
+        weights: dict[int, float] = {}
+        recent = self._pans.latest_of_user(session.id, user.id, limit=len(RECENT_WEIGHTS))
+        for pan, pan_weight in reversed(list(zip(recent, RECENT_WEIGHTS, strict=False))):
+            for ingredient in pan.ingredients:
+                weights[ingredient.id] = pan_weight
+        return lambda ingredient: weights.get(ingredient.id, 1.0)
 
     @staticmethod
     def _picked(session: RaclottoSession, ids: Sequence[int]) -> list[Ingredient]:

@@ -96,6 +96,16 @@ class PanRepository(BaseRepository[Pan]):
 
         return query.all()
 
+    def latest_of_user(self, session_id: int, user_id: int, limit: int) -> list[Pan]:
+        """The user's newest pans in the session, newest first."""
+        return (
+            db.session.query(Pan)
+            .filter(Pan.session_id == session_id, Pan.user_id == user_id)
+            .order_by(Pan.timestamp.desc(), Pan.id.desc())
+            .limit(limit)
+            .all()
+        )
+
     def get_recent_pans(self, session_key: str | None = None, limit: int = 10) -> list[Pan]:
         """Get the most recent pans, optionally filtered by session and limited by count."""
         query = db.session.query(Pan)
