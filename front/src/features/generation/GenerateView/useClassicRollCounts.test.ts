@@ -16,23 +16,13 @@ function render(ingredients: IngredientDto[] = ingredientsForUser) {
   return renderHook(() => useClassicRollCounts(ingredients));
 }
 
-it("starts from the counts saved by the last roll when the store has none", () => {
-  localStorage.setItem("numFill", "2");
-  localStorage.setItem("numSauce", "1");
+it("starts from the remembered counts", () => {
+  useIngredientStore.setState({ ingredientCount: 2, sauceCount: 1 });
 
   const { result } = render();
 
   expect(result.current.fill.count).toBe(2);
   expect(result.current.sauce.count).toBe(1);
-});
-
-it("prefers the store's counts to the saved ones", () => {
-  useIngredientStore.setState({ ingredientCount: 1 });
-  localStorage.setItem("numFill", "3");
-
-  const { result } = render();
-
-  expect(result.current.fill.count).toBe(1);
 });
 
 it("caps each count at the session's ingredients of its type", () => {
@@ -48,7 +38,7 @@ it("caps each count at the session's ingredients of its type", () => {
   act(() => result.current.fill.decrement());
 
   expect(result.current.fill.count).toBe(fills.length - 1);
-  expect(localStorage.getItem("numFill")).toBe(String(fills.length - 1));
+  expect(useIngredientStore.getState().ingredientCount).toBe(fills.length - 1);
 });
 
 it("rolls only once something is asked for", () => {

@@ -1,7 +1,6 @@
-import { useEffect } from "react";
 import { type IngredientDto, IngredientType, type PanDto } from "../../../api/generated/model";
 import { getTotalIngredientTypeCount } from "./generateViewUtils";
-import { getLocalStorageNumber, type IngredientType as CountType, useIngredientStore } from "./ingredientStore";
+import { type IngredientType as CountType, useIngredientStore } from "./ingredientStore";
 
 /** One of the classic roll's counts and the controls that change it. */
 export interface RollCount {
@@ -16,15 +15,6 @@ export interface RollCount {
 /** How many fills and sauces the next classic roll asks for, remembered across visits. */
 export function useClassicRollCounts(ingredients: IngredientDto[]) {
   const { ingredientCount, sauceCount, updateCount, increment, decrement } = useIngredientStore();
-
-  useEffect(() => {
-    // The store may be empty while the counts of the last roll are still saved on their own.
-    const fill = ingredientCount || getLocalStorageNumber("numFill");
-    if (fill > 0) updateCount("fill", fill);
-    const sauce = sauceCount || getLocalStorageNumber("numSauce");
-    if (sauce > 0) updateCount("sauce", sauce);
-    // eslint-disable-next-line @eslint-react/exhaustive-deps -- seeds the counts once on mount; later changes go through the store
-  }, []);
 
   const rollCount = (type: CountType, count: number, total: number): RollCount => ({
     count,

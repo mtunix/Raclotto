@@ -1,102 +1,89 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 
 export type IngredientType = 'fill' | 'sauce';
 
-interface IngredientState {
+interface Counts {
     ingredientCount: number;
     sauceCount: number;
-    selectedFills: string[];
-    selectedSauces: string[];
-    
-    // Actions
-    setIngredientCount: (count: number, availableCount?: number) => void;
-    setSauceCount: (count: number, availableCount?: number) => void;
+}
+
+interface IngredientState extends Counts {
     updateCount: (type: IngredientType, newCount: number, availableCount?: number) => void;
     increment: (type: IngredientType, availableCount?: number) => void;
     decrement: (type: IngredientType) => void;
-    getCount: (type: IngredientType) => number;
+}
+
+const countOf = { fill: 'ingredientCount', sauce: 'sauceCount' } as const satisfies Record<IngredientType, keyof Counts>;
+
+/** Where the counts were saved before this store kept them. */
+const legacyKeys = { ingredientCount: 'numFill', sauceCount: 'numSauce' } as const satisfies Record<keyof Counts, string>;
+
+function attempt<T>(access: () => T, fallback: T): T {
+    try {
+        return access();
+    } catch {
+        // Storage can be unavailable (private windows); the counts then last as long as the page.
+        return fallback;
+    }
+}
+
+const storage: StateStorage = {
+    getItem: (name) => attempt(() => localStorage.getItem(name), null),
+    setItem: (name, value) => attempt(() => localStorage.setItem(name, value), undefined),
+    removeItem: (name) => attempt(() => localStorage.removeItem(name), undefined),
+};
+
+function asCount(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : undefined;
+}
+
+function countsWhere(countFor: (field: keyof Counts) => unknown): Partial<Counts> {
+    const counts: Partial<Counts> = {};
+    for (const field of ['ingredientCount', 'sauceCount'] as const) {
+        const count = asCount(countFor(field));
+        if (count !== undefined) counts[field] = count;
+    }
+    return counts;
+}
+
+function savedCounts(persisted: unknown): Partial<Counts> {
+    const saved: Record<string, unknown> = typeof persisted === 'object' && persisted !== null ? { ...persisted } : {};
+    return countsWhere((field) => saved[field]);
+}
+
+/** Reads the counts from their old keys once and drops the keys. */
+function takeLegacyCounts(): Partial<Counts> {
+    return countsWhere((field) => {
+        const key = legacyKeys[field];
+        const saved = attempt(() => localStorage.getItem(key), null);
+        attempt(() => localStorage.removeItem(key), undefined);
+        return saved === null ? undefined : Number(saved);
+    });
+}
+
+/** Never below zero, nor above `availableCount` when there is one. */
+function cap(count: number, availableCount?: number): number {
+    return Math.max(0, availableCount ? Math.min(count, availableCount) : count);
 }
 
 export const useIngredientStore = create<IngredientState>()(
     persist(
-        (set, get) => ({
-            ingredientCount: 0,
-            sauceCount: 0,
-            selectedFills: [],
-            selectedSauces: [],
-            
-            setIngredientCount: (count: number, availableCount?: number) => {
-                const clampedCount = Math.max(0, availableCount ? Math.min(count, availableCount) : count);
-                set({ ingredientCount: clampedCount });
-                localStorage.setItem('numFill', String(clampedCount));
-            },
-            
-            setSauceCount: (count: number, availableCount?: number) => {
-                const clampedCount = Math.max(0, availableCount ? Math.min(count, availableCount) : count);
-                set({ sauceCount: clampedCount });
-                localStorage.setItem('numSauce', String(clampedCount));
-            },
-            
-            updateCount: (type: IngredientType, newCount: number, availableCount?: number) => {
-                const clampedCount = availableCount ? Math.min(newCount, availableCount) : newCount;
-                
-                if (type === 'fill') {
-                    set({ 
-                        ingredientCount: Math.max(0, clampedCount) 
-                    });
-                    localStorage.setItem('numFill', String(Math.max(0, clampedCount)));
-                } else {
-                    set({ 
-                        sauceCount: Math.max(0, clampedCount) 
-                    });
-                    localStorage.setItem('numSauce', String(Math.max(0, clampedCount)));
-                }
-            },
-            
-            increment: (type: IngredientType, availableCount?: number) => {
-                const currentCount = type === 'fill' ? get().ingredientCount : get().sauceCount;
-                const canIncrement = availableCount ? currentCount < availableCount : true;
-                
-                if (canIncrement) {
-                    const newCount = currentCount + 1;
-                    if (type === 'fill') {
-                        set({ ingredientCount: newCount });
-                        localStorage.setItem('numFill', String(newCount));
-                    } else {
-                        set({ sauceCount: newCount });
-                        localStorage.setItem('numSauce', String(newCount));
-                    }
-                }
-            },
-            
-            decrement: (type: IngredientType) => {
-                const currentCount = type === 'fill' ? get().ingredientCount : get().sauceCount;
-                if (currentCount > 0) {
-                    const newCount = currentCount - 1;
-                    if (type === 'fill') {
-                        set({ ingredientCount: newCount });
-                        localStorage.setItem('numFill', String(newCount));
-                    } else {
-                        set({ sauceCount: newCount });
-                        localStorage.setItem('numSauce', String(newCount));
-                    }
-                }
-            },
-            
-            getCount: (type: IngredientType) => {
-                return type === 'fill' ? get().ingredientCount : get().sauceCount;
-            }
-        }),
+        (set, get) => {
+            const updateCount = (type: IngredientType, newCount: number, availableCount?: number) =>
+                set({ [countOf[type]]: cap(newCount, availableCount) });
+            return {
+                ingredientCount: 0,
+                sauceCount: 0,
+                updateCount,
+                increment: (type, availableCount) => updateCount(type, get()[countOf[type]] + 1, availableCount),
+                decrement: (type) => updateCount(type, get()[countOf[type]] - 1),
+            };
+        },
         {
             name: 'ingredient-storage',
-        }
-    )
+            storage: createJSONStorage(() => storage),
+            merge: (persisted, current) => ({ ...current, ...takeLegacyCounts(), ...savedCounts(persisted) }),
+        },
+    ),
 );
-
-// Helper function to get a number from localStorage with a default value
-export function getLocalStorageNumber(key: string, defaultValue: number = 0): number {
-    if (typeof window === 'undefined') return defaultValue;
-    const value = localStorage.getItem(key);
-    return value ? parseInt(value, 10) : defaultValue;
-}

@@ -71,7 +71,7 @@ it('shows how many fills and sauces are available in the session', async () => {
 });
 
 it('starts from the counts of the last roll', async () => {
-    localStorage.setItem('numFill', '2');
+    useIngredientStore.setState({ ingredientCount: 2 });
     await renderView();
 
     expect(countInputs()[0]).toHaveValue('2');
@@ -88,7 +88,7 @@ it('generates only once something is asked for', async () => {
 });
 
 it('rolls a pan with the chosen counts, shows it and applies the reward', async () => {
-    localStorage.setItem('numFill', '2');
+    useIngredientStore.setState({ ingredientCount: 2 });
     await renderView();
 
     await generate();
@@ -98,11 +98,11 @@ it('rolls a pan with the chosen counts, shows it and applies the reward', async 
     expect(fake.last('POST', '/pans/generate')?.query).toEqual({ session_key: session.key });
     expect(fake.last('POST', '/pans/generate')?.body).toEqual({ num_fill: 2, num_sauce: 0, roll_cheese: false });
     expect(useAuthStore.getState().user?.experience_points).toBe(rollOutcome.reward.xp_after);
-    expect(localStorage.getItem('numFill')).toBe('2');
+    expect(useIngredientStore.getState().ingredientCount).toBe(2);
 });
 
 it('rolls a preparation type and cheese level when asked to', async () => {
-    localStorage.setItem('numFill', '1');
+    useIngredientStore.setState({ ingredientCount: 1 });
     await renderView();
 
     fireEvent.click(screen.getByText('generate.rollPreparationType'));
@@ -121,7 +121,7 @@ it('rolls a preparation type and cheese level when asked to', async () => {
 
 it('rates the rolled pan and returns to the controls on close', async () => {
     fake.on('POST', '/ratings', rating).on('GET', `/pans/${pan.id}`, pan);
-    localStorage.setItem('numFill', '1');
+    useIngredientStore.setState({ ingredientCount: 1 });
     await renderView();
     await generate();
     const dialog = await screen.findByRole('dialog');
@@ -138,7 +138,7 @@ it('offers the level-up picture once the result of a level-up closes', async () 
     fake.on('POST', '/pans/generate', rollOutcome)
         .on('POST', '/images/generate-profile-picture', generatedPicture)
         .on('GET', '/auth/me', me);
-    localStorage.setItem('numFill', '1');
+    useIngredientStore.setState({ ingredientCount: 1 });
     await renderView();
     await generate();
     const dialog = await screen.findByRole('dialog');
@@ -154,7 +154,7 @@ it('offers the level-up picture once the result of a level-up closes', async () 
 it("levels up without a picture when the server can't generate one", async () => {
     fake.on('POST', '/pans/generate', rollOutcome).on('GET', '/images/generation', imageGenerationUnavailable);
     const consoleError = vi.spyOn(console, 'error');
-    localStorage.setItem('numFill', '1');
+    useIngredientStore.setState({ ingredientCount: 1 });
     await renderView();
     await waitFor(() => expect(fake.last('GET', '/images/generation')).toBeDefined());
     await generate();
@@ -176,7 +176,7 @@ it('returns to the controls when the roll fails', async () => {
         throw new Error('no ingredients left');
     });
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    localStorage.setItem('numFill', '1');
+    useIngredientStore.setState({ ingredientCount: 1 });
     await renderView();
 
     await generate();
