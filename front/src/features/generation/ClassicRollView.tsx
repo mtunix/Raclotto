@@ -7,7 +7,7 @@ import { countOr } from "./countOr";
 import styles from "./GenerateView/GenerateView.module.css";
 import type { RollCount } from "./GenerateView/useClassicRollCounts";
 
-interface LegacyViewProps {
+interface ClassicRollViewProps {
   fill: RollCount;
   sauce: RollCount;
   canGenerate: boolean;
@@ -18,7 +18,8 @@ interface LegacyViewProps {
   setRollCheese: (value: boolean) => void;
 }
 
-export function LegacyView({
+/** The controls of a classic roll: how many fills and sauces, and whether to roll preparation type and cheese. */
+export function ClassicRollView({
   fill,
   sauce,
   canGenerate,
@@ -27,7 +28,7 @@ export function LegacyView({
   setRollPreparationType,
   rollCheese,
   setRollCheese,
-}: LegacyViewProps) {
+}: ClassicRollViewProps) {
   const { t } = useTranslation();
   const sessionKey = useAppStore((state) => state.session?.key) ?? "";
   const { data: counts } = useGetAvailableCounts(

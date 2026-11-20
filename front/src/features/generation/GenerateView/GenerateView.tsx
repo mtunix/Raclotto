@@ -11,7 +11,7 @@ import { LevelUpPictureModal } from "../LevelUpPictureModal";
 import { useRollSession } from "../rollSession";
 import styles from "./GenerateView.module.css";
 import { PanResultModal } from "../PanResultModal";
-import { LegacyView } from "../LegacyView";
+import { ClassicRollView } from "../ClassicRollView";
 import { useClassicRollCounts } from "./useClassicRollCounts";
 import { useRollAnimation } from "./useRollAnimation";
 
@@ -90,13 +90,13 @@ export function GenerateView() {
       {(state.phase === "idle" || state.phase === "picture") && (
         <div className={styles.paddingVertical8}>
           <Tabs
-            defaultActiveKey="legacy"
+            defaultActiveKey="classic"
             items={[
               {
-                key: "legacy",
-                label: <span className={styles.tabLabel}>{t("generate.legacyMode")}</span>,
+                key: "classic",
+                label: <span className={styles.tabLabel}>{t("generate.classicMode")}</span>,
                 children: (
-                  <LegacyView
+                  <ClassicRollView
                     fill={counts.fill}
                     sauce={counts.sauce}
                     canGenerate={counts.canRoll}

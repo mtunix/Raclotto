@@ -126,7 +126,7 @@
     "excluded": "ausgeschlossen",
     "rollPreparationType": "Zubereitungsart würfeln",
     "preparationType": "Zubereitungsart",
-    "legacyMode": "Legacy",
+    "classicMode": "Legacy",
     "banditMode": "Bandit",
     "banditColumnCount": "Anzahl der Spalten",
     "banditColumnCountHelp": "Wählen Sie, wie viele Spalten gedreht werden sollen",

@@ -126,7 +126,7 @@
     "excluded": "excluded",
     "rollPreparationType": "Roll preparation type",
     "preparationType": "Preparation Type",
-    "legacyMode": "Legacy",
+    "classicMode": "Legacy",
     "banditMode": "Bandit",
     "banditColumnCount": "Number of Columns",
     "banditColumnCountHelp": "Choose how many columns to spin",
