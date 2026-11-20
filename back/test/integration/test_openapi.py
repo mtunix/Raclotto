@@ -6,11 +6,11 @@ from typing import Any
 from flask import Flask
 
 from back.src.api.base_api import BaseApi, init_api_rules
+from back.src.api.naming import un_camel_case
 from back.src.api.openapi import SPEC_PATH, build_openapi, render_openapi
-from back.src.driver.api_custom import apis_custom
+from back.src.api.registry import APIS
 from back.src.driver.database import db
 from back.src.dto.base import RequestDto, ResponseDto
-from back.src.utils import un_camel_case
 from back.test.integration.probe_api import ProbeApi
 from back.test.support import get_app
 
@@ -469,7 +469,7 @@ class AchievementsEventsImagesStatsSpecTest(unittest.TestCase):
 class EveryEndpointTypedTest(unittest.TestCase):
     def test_every_endpoint_is_in_the_spec(self):
         app = get_app()
-        production = {un_camel_case(api.__name__) for api in apis_custom}
+        production = {un_camel_case(api.__name__) for api in APIS}
         routes = set()
         for rule in app.url_map.iter_rules():
             name = ".".join(rule.endpoint.split(".")[-2:])
@@ -478,7 +478,7 @@ class EveryEndpointTypedTest(unittest.TestCase):
                 routes |= {(path, method.lower()) for method in getattr(BaseApi.endpoints[name], BaseApi.method_marker)}
         operations = {(path, method) for path, item in build_openapi(app)["paths"].items() for method in item}
 
-        self.assertEqual({path.split("/")[1] for path, _ in routes}, {api.url_prefix.strip("/") for api in apis_custom})
+        self.assertEqual({path.split("/")[1] for path, _ in routes}, {api.url_prefix.strip("/") for api in APIS})
         self.assertEqual(routes, operations)
 
 

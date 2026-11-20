@@ -17,10 +17,10 @@ from back.src.driver.app import App
 from back.src.driver.config import ConfigInMemory
 from back.src.driver.database import db
 from back.src.driver.migrations import SCRIPT_LOCATION, SchemaDriftError, include_object, migrate
+from back.src.driver.seed_data import ACHIEVEMENTS
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User
-from back.src.model.default_data import ACHIEVEMENTS
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 

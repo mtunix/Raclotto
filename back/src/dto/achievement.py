@@ -6,10 +6,10 @@ from back.src.interactor.achievements import AchievementStatus
 
 
 class AchievementDto(ResponseDto):
-    # The columns are nullable, but every achievement is seeded from default_data with all of them set.
+    # The columns are nullable, but every achievement is seeded (driver/seed_data.py) with all of them set.
     id: int
     # The frontend shows the title and description it translates by the key. Null: an achievement
-    # default_data no longer seeds, which some users may still hold.
+    # the seed data no longer has, which some users may still hold.
     key: AchievementKey | None
     value: int
     hidden: bool

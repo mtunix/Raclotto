@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import NotFound
 
 from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, init_api_rules, serialize_error
-from back.src.driver.api_custom import apis_custom
+from back.src.api.registry import APIS
 from back.src.driver.migrations import migrate
 
 
@@ -34,7 +34,7 @@ class App(Flask):
         # No Flask static route: it would answer every path before `serve` can fall back to index.html.
         super().__init__(name, static_folder=None)
         self.frontend_folder = Path(self.root_path) / "static" if frontend_folder is None else frontend_folder
-        self.apis = apis_custom if apis is None else apis
+        self.apis = APIS if apis is None else apis
         self.db = db
         self.config.from_object(config)
         self.db.init_app(self)
@@ -126,9 +126,9 @@ class App(Flask):
             logging.info(f"Default preparation type '{default_name}' created successfully")
 
     def init_achievements(self) -> None:
-        """Create the achievements of default_data that don't exist, by key, and update the others."""
+        """Create the seeded achievements that don't exist, by key, and update the others."""
+        from back.src.driver.seed_data import ACHIEVEMENTS
         from back.src.entity.achievement import Achievement
-        from back.src.model.default_data import ACHIEVEMENTS
         from back.src.repository.achievement_repository import AchievementRepository
 
         existing = {achievement.key: achievement for achievement in AchievementRepository().all()}
@@ -147,9 +147,9 @@ class App(Flask):
             logging.info(f"Initialized {created} achievements")
 
     def init_levels(self) -> None:
-        """Initialize levels from default_data if they don't exist."""
+        """Create the seeded levels if they don't exist."""
+        from back.src.driver.seed_data import LEVELS
         from back.src.entity.level import Level
-        from back.src.model.default_data import LEVELS
         from back.src.repository.level_repository import LevelRepository
 
         level_repository = LevelRepository()

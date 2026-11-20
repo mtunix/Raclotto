@@ -8,9 +8,9 @@ from datetime import datetime, timedelta
 from sqlalchemy import event
 
 from back.src.api.base_api import BaseApi
+from back.src.api.registry import APIS
 from back.src.auth.jwt import generate_token
 from back.src.auth.throttle import LoginThrottle
-from back.src.driver.api_custom import apis_custom
 from back.src.driver.app import App
 from back.src.driver.config import ConfigInMemory
 from back.src.driver.database import db
@@ -34,7 +34,7 @@ def get_app(extra_apis: Sequence[type[BaseApi]] = ()) -> App:
     """The test app, built once per set of extra API classes mounted next to the real ones."""
     key = tuple(extra_apis)
     if key not in _apps:
-        _apps[key] = App("raclotto-test", db, ConfigTest, apis=apis_custom + list(key))
+        _apps[key] = App("raclotto-test", db, ConfigTest, apis=APIS + list(key))
     return _apps[key]
 
 

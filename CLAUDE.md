@@ -18,12 +18,12 @@ patterns from its neighbours.
 
 | Layer | Path | Role |
 |---|---|---|
-| Routes | `api/*_api.py`, `driver/auth_api.py` | Take DTOs, call a module, return a DTO. Keep thin. |
+| Routes | `api/*_api.py` | Take DTOs, call a module, return a DTO. Keep thin. |
 | DTOs | `dto/` | Pydantic request/response shapes; one canonical DTO per resource (`PanDto`, `LevelDto`, …). |
 | Domain modules | `interactor/` | Behaviour behind small interfaces (below). |
 | Repositories | `repository/` | Queries over the global `db.session`. Thin on purpose. |
 | Entities | `entity/` | SQLAlchemy models. |
-| App wiring | `driver/app.py`, `driver/api_custom.py`, `api/base_api.py` | Flask app, seeding, route registry, error handlers. |
+| App wiring | `driver/app.py`, `driver/seed_data.py`, `api/registry.py`, `api/base_api.py` | Flask app, seeding and its data, route registry (`APIS`), error handlers. |
 | Spec | `api/openapi.py` | Builds `back/openapi.json` from the endpoint declarations. |
 | Migrations | `driver/migrations.py`, `back/migrations/` | Alembic; the app migrates its database at startup (below). |
 | Frontend serving | `driver/app.py` (`App.serve`) | Files of the frontend build in `static/`; any other non-API path gets `index.html` for the browser router. |

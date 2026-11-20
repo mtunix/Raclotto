@@ -27,7 +27,7 @@ from werkzeug.datastructures import MultiDict
 
 from ..driver.database import db
 from ..dto.base import ApiErrorCode as ApiErrorCode  # routes raise ApiError with it from here
-from ..utils import un_camel_case
+from .naming import un_camel_case
 
 ERROR_FIELDS = ("id_", "status", "code", "title", "detail", "source")
 

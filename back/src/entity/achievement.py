@@ -49,7 +49,7 @@ class Achievement(Base):
     __tablename__ = "achievement"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # An AchievementKey; null only on rows of achievements default_data no longer seeds.
+    # An AchievementKey; null only on rows of achievements the seed data no longer has.
     key: Mapped[str | None] = mapped_column(unique=True, index=True)
     # The seed's name for the row in the database and logs; the UI shows the translation of `key`.
     title: Mapped[str | None]

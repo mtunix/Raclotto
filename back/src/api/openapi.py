@@ -19,8 +19,8 @@ from pydantic.json_schema import GenerateJsonSchema, JsonSchemaMode, JsonSchemaV
 from pydantic_core import core_schema
 
 from back.src.api.base_api import AUTH_GUARD, BaseApi, TypedEndpoint, typed_endpoint
+from back.src.api.naming import to_camel_case
 from back.src.dto.base import ErrorResponseDto
-from back.src.utils import to_camel_case
 
 API_PREFIX = "/api"
 SPEC_PATH = Path(__file__).resolve().parents[2] / "openapi.json"
