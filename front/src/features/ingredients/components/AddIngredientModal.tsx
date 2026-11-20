@@ -12,19 +12,12 @@ interface AddIngredientModalProps {
 export function AddIngredientModal(props: AddIngredientModalProps) {
     const { visible, onCancel, onSuccess, initialType, context } = props;
 
-    const handleSuccess = () => {
-        if (onSuccess) {
-            onSuccess();
-        }
-        onCancel();
-    };
-
     return (
         <IngredientModal
             visible={visible}
             onCancel={onCancel}
             mode="add"
-            onSuccess={handleSuccess}
+            onSuccess={onSuccess}
             initialType={initialType}
             context={context}
         />
