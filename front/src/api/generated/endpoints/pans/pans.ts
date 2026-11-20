@@ -255,7 +255,7 @@ export const useRollBanditPan = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Delete your own pan.
+ * @summary Delete your own pan with its ratings; the XP it earned stays.
  */
 export const deletePan = (
     panId: number,
@@ -278,7 +278,7 @@ export const getDeletePanMutationKey = (panId: number,) => [`/pans/${panId}`] as
 export type DeletePanMutationResult = NonNullable<Awaited<ReturnType<typeof deletePan>>>
 
 /**
- * @summary Delete your own pan.
+ * @summary Delete your own pan with its ratings; the XP it earned stays.
  */
 export const useDeletePan = <TError = ErrorType<ErrorResponseDto>>(
   panId: number, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deletePan>>, TError, Key, Arguments, Awaited<ReturnType<typeof deletePan>>> & { swrKey?: string }, }
