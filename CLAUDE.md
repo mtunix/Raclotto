@@ -311,6 +311,8 @@ an ordering that matters, a deliberate deviation. Never restate *what* the line 
 - **Nothing slow inside a transaction.** File-backed SQLite runs every transaction as `BEGIN IMMEDIATE`
   (ADR 0007), so a request holds the database's one write lock from its first query to its commit:
   call `commit_before_slow_work()` before calling out (image model, network) or doing slow work.
+- **SQLite enforces foreign keys** (ADR 0009): a delete declares what happens to the rows that reference
+  it (a cascade or `back_populates` relationship on the model), or the request ends in a 409.
 - **React Compiler 1.x skips** a component or hook with `try/finally`, or a conditional, `&&`/`||`
   or `?.` inside `try/catch`: write the request as a promise chain (`.then/.catch/.finally`).
   Memoize by hand only where identity matters (an effect's dependency, a value compared by identity).

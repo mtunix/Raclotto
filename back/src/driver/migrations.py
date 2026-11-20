@@ -20,21 +20,57 @@ class SchemaDriftError(RuntimeError):
     """The database lacks tables or columns the models need, even after migrating."""
 
 
+class ForeignKeyViolationError(RuntimeError):
+    """After migrating, rows reference rows that don't exist."""
+
+
 def migrate(db: SQLAlchemy) -> None:
-    """A new database is created and stamped at head; an existing one is upgraded to head."""
-    with db.engine.begin() as connection:
-        alembic = _alembic_config(connection)
-        if not inspect(connection).get_table_names():
-            db.metadata.create_all(connection)
-            command.stamp(alembic, "head")
-        else:
-            command.upgrade(alembic, "head")
-            # Tables added to the models before migrations existed still appear on their own.
-            db.metadata.create_all(connection)
-        missing = missing_columns(db, connection)
+    """A new database is created and stamped at head; an existing one is upgraded to head.
+
+    Foreign keys are off meanwhile: batch operations rebuild a table by dropping and renaming it,
+    which enforcement would refuse or cascade. `PRAGMA foreign_key_check` after the revisions
+    (``migrations/env.py``) refuses a result that violates one (ADR 0009).
+    """
+    with db.engine.connect() as connection:
+        # Before the transaction begins: inside one, SQLite ignores the pragma.
+        _set_foreign_keys(connection, False)
+        try:
+            with connection.begin():
+                missing = _migrate(db, connection)
+        finally:
+            _set_foreign_keys(connection, True)
     if missing:
         raise SchemaDriftError(
             "The database is missing columns the models need; add a migration for: " + ", ".join(missing)
+        )
+
+
+def _migrate(db: SQLAlchemy, connection: Connection) -> list[str]:
+    alembic = _alembic_config(connection)
+    if not inspect(connection).get_table_names():
+        db.metadata.create_all(connection)
+        command.stamp(alembic, "head")
+    else:
+        command.upgrade(alembic, "head")
+        # Tables added to the models before migrations existed still appear on their own.
+        db.metadata.create_all(connection)
+    return missing_columns(db, connection)
+
+
+def _set_foreign_keys(connection: Connection, enforced: bool) -> None:
+    # On the driver's connection: SQLAlchemy's would begin the transaction first.
+    cursor = connection.connection.cursor()
+    cursor.execute(f"PRAGMA foreign_keys = {'ON' if enforced else 'OFF'}")
+    cursor.close()
+
+
+def raise_on_foreign_key_violations(connection: Connection) -> None:
+    """Fail when a row references one that doesn't exist."""
+    violations = connection.exec_driver_sql("PRAGMA foreign_key_check").all()
+    if violations:
+        tables = sorted({row[0] for row in violations})
+        raise ForeignKeyViolationError(
+            f"{len(violations)} rows reference rows that don't exist, in: {', '.join(tables)}"
         )
 
 

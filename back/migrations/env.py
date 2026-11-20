@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 
 import back.src.entity  # noqa: F401  registers every model on the metadata
 from back.src.driver.database import Base
-from back.src.driver.migrations import include_object
+from back.src.driver.migrations import include_object, raise_on_foreign_key_violations
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("connection") is None:
@@ -32,6 +32,8 @@ def _run(connection) -> None:
     )
     with context.begin_transaction():
         context.run_migrations()
+        # Revisions run with foreign keys off (`migrate()`, or the CLI's plain connection); none may leave a violation.
+        raise_on_foreign_key_violations(connection)
 
 
 if context.is_offline_mode():

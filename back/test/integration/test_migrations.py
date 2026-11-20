@@ -11,12 +11,19 @@ from alembic.script import ScriptDirectory
 from flask import Flask
 from flask.globals import app_ctx
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import IntegrityError
 
 import back.src.entity  # noqa: F401  registers every model on the metadata
 from back.src.driver.app import App
 from back.src.driver.config import ConfigInMemory
 from back.src.driver.database import db
-from back.src.driver.migrations import SCRIPT_LOCATION, SchemaDriftError, include_object, migrate
+from back.src.driver.migrations import (
+    SCRIPT_LOCATION,
+    ForeignKeyViolationError,
+    SchemaDriftError,
+    include_object,
+    migrate,
+)
 from back.src.driver.seed_data import ACHIEVEMENTS
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
@@ -385,6 +392,72 @@ class OrphanCleanupTest(unittest.TestCase):
 
         with self.assertNoLogs("alembic.runtime.migration", "WARNING"):
             upgrade(self.path, "head")
+
+
+class ForeignKeysTest(unittest.TestCase):
+    """The app migrates with foreign keys off, refuses a result that violates one, then enforces them."""
+
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.path = Path(directory.name) / "raclotto.db"
+
+    def start(self) -> App:
+        config = type("Config", (ConfigInMemory,), {"SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.path}"})
+        app = App("foreign-keys-test", db, config)
+        app_ctx.pop()
+        self.addCleanup(RetiredColumnsTest.dispose, app)
+        return app
+
+    def test_an_old_database_whose_tables_are_rebuilt_upgrades_and_then_enforces_foreign_keys(self):
+        old_database(
+            self.path,
+            """
+            INSERT INTO user (id, name, password, meat, vegetarian, vegan, fish, histamine, fructose, lactose,
+                gluten, language, is_admin, token_version, experience_points)
+                VALUES (1, 'ana', 'x', 0, 1, 1, 0, 1, 1, 1, 1, 'de', 0, 0, 0);
+            INSERT INTO session (id, key, name, timestamp, active) VALUES (1, 's1', 's1', '2025-12-24', 1);
+            INSERT INTO preparation_type (id, name, session_id) VALUES (5, 'own', 1);
+            INSERT INTO pan (id, user_id, timestamp, snacked, preparation_type_id, rolled_preparation_type,
+                rolled_cheese, name, session_id) VALUES (1, 1, '2025-12-24', 0, 5, 1, 0, 'old', 1),
+                (2, 1, '2025-12-24', 0, 5, 1, 0, 'orphan', 2);
+            """,
+        )
+
+        app = self.start()
+
+        with app.app_context():
+            self.assertEqual(db.session.execute(text("PRAGMA foreign_keys")).scalar(), 1)
+            self.assertEqual(db.session.execute(text("SELECT id, preparation_type_id FROM pan")).all(), [(1, 5)])
+            db.session.add(Pan(user_id=1, session_id=2, name="nowhere"))
+            with self.assertRaises(IntegrityError):
+                db.session.commit()
+
+    def test_a_new_database_enforces_foreign_keys(self):
+        app = self.start()
+
+        with app.app_context():
+            self.assertEqual(db.session.execute(text("PRAGMA foreign_keys")).scalar(), 1)
+            self.assertEqual(db.session.execute(text("PRAGMA foreign_key_check")).all(), [])
+
+    def test_a_violation_left_after_the_revisions_stops_startup(self):
+        engine = create_engine(f"sqlite:///{self.path}")
+        with engine.begin() as connection:
+            db.metadata.create_all(connection)
+            connection.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY)"))
+            connection.execute(text(f"INSERT INTO alembic_version VALUES ('{_head()}')"))
+            connection.execute(
+                text(
+                    "INSERT INTO session (id, key, name, timestamp, active, created_by_user_id) "
+                    "VALUES (1, 's1', 's1', '2025-12-24', 1, 9)"
+                )
+            )
+        engine.dispose()
+
+        with self.assertRaises(ForeignKeyViolationError) as raised:
+            self.start()
+
+        self.assertIn("session", str(raised.exception))
 
 
 if __name__ == "__main__":

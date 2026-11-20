@@ -114,19 +114,6 @@ class TestPanApi(AppTest):
             ("#1890ff", "solid", None, False),
         )
 
-    def test_a_missing_author_is_null(self):
-        ghost = self.make_user("ghost")
-        pan = self.make_pan(ghost, self.s1, [self.potato])
-        db.session.delete(ghost)
-        db.session.commit()
-
-        [listed] = self.page(session_key="s1").items
-        fetched = PanDto.model_validate(self.call("GET", f"/pans/{pan.id}", self.ana).json)
-
-        self.assertIsNone(listed.author)
-        self.assertIsNone(fetched.author)
-        self.assertEqual(listed.user_id, fetched.user_id)
-
     def test_listing_loads_authors_together(self):
         carl = self.make_user("carl")
         for user in (self.ana, self.ben, carl):

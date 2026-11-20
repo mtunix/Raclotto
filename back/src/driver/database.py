@@ -1,11 +1,12 @@
-"""The app's SQLAlchemy object; a SQLite file gets the connection settings concurrent requests need (ADR 0007).
+"""The app's SQLAlchemy object, with the connection settings SQLite needs (ADR 0007, 0009).
 
-Every connection to a file runs in WAL mode, waits up to `BUSY_TIMEOUT_SECONDS` for a lock, and
-begins each transaction with `BEGIN IMMEDIATE`: it takes the write lock up front, so a transaction
-that reads and then writes can't fail when another one wrote in between. Readers outside the app
-(the backup) never wait. The cost: a transaction holds the lock from its first query to its commit,
-so nothing slow (a network call) may run inside one. In-memory databases keep the driver's
-defaults; the tests share one connection between sessions, which explicit BEGINs would refuse.
+Every SQLite connection, in memory too, enforces foreign keys. Every connection to a file runs in
+WAL mode, waits up to `BUSY_TIMEOUT_SECONDS` for a lock, and begins each transaction with
+`BEGIN IMMEDIATE`: it takes the write lock up front, so a transaction that reads and then writes
+can't fail when another one wrote in between. Readers outside the app (the backup) never wait.
+The cost: a transaction holds the lock from its first query to its commit, so nothing slow (a
+network call) may run inside one. In-memory databases keep the driver's transaction defaults; the
+tests share one connection between sessions, which explicit BEGINs would refuse.
 """
 
 import sqlite3
@@ -32,6 +33,14 @@ def is_sqlite_file(url: URL) -> bool:
     return url.get_backend_name() == "sqlite" and url.database not in (None, "", ":memory:")
 
 
+def enforce_foreign_keys(engine: Engine) -> None:
+    event.listen(engine, "connect", _on_connect_enforce_foreign_keys)
+
+
+def _on_connect_enforce_foreign_keys(connection: sqlite3.Connection, _: object) -> None:
+    connection.execute("PRAGMA foreign_keys = ON")
+
+
 def configure_sqlite_file(engine: Engine) -> None:
     event.listen(engine, "connect", _on_connect)
     event.listen(engine, "begin", _on_begin)
@@ -53,6 +62,8 @@ def _on_begin(connection: Connection) -> None:
 class _SQLAlchemy(SQLAlchemy):
     def _make_engine(self, bind_key: str | None, options: dict[str, Any], app: Flask) -> Engine:
         engine = super()._make_engine(bind_key, options, app)
+        if engine.url.get_backend_name() == "sqlite":
+            enforce_foreign_keys(engine)
         if is_sqlite_file(engine.url):
             configure_sqlite_file(engine)
         return engine

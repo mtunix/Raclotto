@@ -121,15 +121,3 @@ class PansTest(AppTest):
         listed = self.call("GET", "/events", self.ben, query={"session_key": "s1"})
         self.assertEqual(listed.status_code, 200, listed.json)
         self.assertEqual([e["id"] for e in listed.json], [swap.id])
-
-    def test_a_pan_without_its_author_still_deletes(self):
-        ghost = self.make_user("ghost")
-        pan = self.make_pan(ghost, self.session, [self.potato])
-        db.session.delete(ghost)
-        db.session.commit()
-
-        self.delete(pan)
-
-        [fact] = self.achievements.facts
-        self.assertIsInstance(fact, PanDeleted)
-        self.assertIsNone(fact.actor)
