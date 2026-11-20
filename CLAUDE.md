@@ -83,6 +83,9 @@ The deep modules in `interactor/` and what they own:
   configs and default preparation types an admin's. Admins may do all of it, and grant or
   revoke admin for anyone but themselves, so the last admin can't be lost. Rolling,
   rating and a session's ingredients are open to everyone signed in. Never check ownership in a route.
+- **`sessions.py` — `Sessions`**: a session's lifecycle: create (its creator joins), join (a first
+  pan joins too; the first join time stays, achievements count it), rename, close (reports
+  `SessionClosed`), reactivate and delete. Who may is `Permissions`'s question, not this module's.
 - **`session_recap.py` — `SessionRecaps().of(session)`**: the recap a session closes with (best,
   worst and boldest pan, favorite ingredient, each participant's pans, XP and stars); read-only.
 - **`levels.py` — `Levels`**: the XP a pan earns and the level it reaches (`award -> Reward`),

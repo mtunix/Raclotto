@@ -1,9 +1,6 @@
-from datetime import datetime
-
 from back.src.api.base_api import BaseApi, found
 from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.driver.database import db
 from back.src.dto.session import (
     CreateSessionBody,
     ListSessionsQuery,
@@ -14,9 +11,8 @@ from back.src.dto.session import (
 )
 from back.src.dto.session_recap import SessionRecapDto
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.user import user_sessions
-from back.src.interactor.achievements import Achievements, SessionClosed
 from back.src.interactor.session_recap import SessionRecaps
+from back.src.interactor.sessions import Sessions
 from back.src.repository.session_repository import SessionRepository
 
 
@@ -42,13 +38,7 @@ class SessionApi(BaseApi):
     @require_auth
     def create_session(self, body: CreateSessionBody) -> SessionDto:
         """Create a session; its creator joins it."""
-        user = get_current_user()
-        session = self.repository.create_with_key(body.name, user.id)
-        # The join time counts for achievements such as "Pandler".
-        db.session.execute(
-            user_sessions.insert().values(user_id=user.id, session_id=session.id, joined_at=datetime.now())
-        )
-        return SessionDto.model_validate(session)
+        return SessionDto.model_validate(Sessions().create(get_current_user(), body.name))
 
     @BaseApi.endpoint("", ["GET"], query=ListSessionsQuery, response=list[SessionDto], operation_id="listSessions")
     @require_auth
@@ -97,14 +87,14 @@ class SessionApi(BaseApi):
     def update_session(self, session_id: int, body: UpdateSessionBody) -> SessionDto:
         """Rename a session."""
         session = self._managed(self.repository.by_id(session_id))
-        session.name = body.name
+        Sessions().rename(session, body.name)
         return SessionDto.model_validate(session)
 
     @BaseApi.endpoint("/<int:session_id>", ["DELETE"], status=204, operation_id="deleteSession", errors=(403, 404))
     @require_auth
     def delete_session(self, session_id: int) -> None:
         """Delete a session."""
-        db.session.delete(self._managed(self.repository.by_id(session_id)))
+        Sessions().delete(self._managed(self.repository.by_id(session_id)))
 
     @BaseApi.endpoint(
         "/close", ["POST"], body=SessionKeyBody, response=SessionDto, operation_id="closeSession", errors=(403, 404)
@@ -113,8 +103,7 @@ class SessionApi(BaseApi):
     def close_session(self, body: SessionKeyBody) -> SessionDto:
         """Close a session; achievements that wait for the end are judged."""
         session = self._managed(self.repository.by_key(body.key))
-        session.active = False
-        Achievements().record(SessionClosed(session=session, actor=get_current_user()))
+        Sessions().close(session, get_current_user())
         return SessionDto.model_validate(session)
 
     @BaseApi.endpoint(
@@ -129,5 +118,5 @@ class SessionApi(BaseApi):
     def reactivate_session(self, body: SessionKeyBody) -> SessionDto:
         """Reopen a closed session."""
         session = self._managed(self.repository.by_key(body.key))
-        session.active = True
+        Sessions().reactivate(session)
         return SessionDto.model_validate(session)

@@ -14,7 +14,6 @@ included, leaves nothing behind. Randomness comes from an injectable
 import random
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
 
 from wonderwords import RandomWord
 
@@ -24,11 +23,12 @@ from back.src.entity.event import Event
 from back.src.entity.ingredient import Ingredient, IngredientType
 from back.src.entity.pan import Pan
 from back.src.entity.raclotto_session import RaclottoSession
-from back.src.entity.user import User, user_sessions
+from back.src.entity.user import User
 from back.src.interactor.achievements import Achievements, PanRolled
 from back.src.interactor.diet import Diet
 from back.src.interactor.events import Events
 from back.src.interactor.levels import Levels, Reward
+from back.src.interactor.sessions import Sessions
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.preparation_type_repository import PreparationTypeRepository
 from back.src.repository.session_repository import SessionRepository
@@ -122,6 +122,7 @@ class PanRoll:
         self._ingredients = IngredientRepository()
         self._prep_types = PreparationTypeRepository()
         self._levels = Levels()
+        self._membership = Sessions(achievements=self._achievements)
 
     def roll(self, user: User, session_key: str, options: RollOptions) -> RollOutcome:
         session = self._sessions.by_key(session_key)
@@ -132,7 +133,7 @@ class PanRoll:
         prep_type_id, rolled_prep_type = self._preparation_type(session, options)
         cheese_level = self._rng.randint(0, 9) if options.roll_cheese else None
 
-        self._ensure_member(user, session)
+        self._membership.join(user, session)
         pan = Pan(
             name=options.name or self._name_pan(),
             ingredients=ingredients,
@@ -218,18 +219,3 @@ class PanRoll:
                 )
             return prep_type.id, False
         return None, False
-
-    @staticmethod
-    def _ensure_member(user: User, session: RaclottoSession) -> None:
-        is_member = (
-            db.session.query(user_sessions)
-            .filter(
-                user_sessions.c.user_id == user.id,
-                user_sessions.c.session_id == session.id,
-            )
-            .first()
-        )
-        if not is_member:
-            db.session.execute(
-                user_sessions.insert().values(user_id=user.id, session_id=session.id, joined_at=datetime.now())
-            )
