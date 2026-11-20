@@ -1,5 +1,7 @@
 """Login throttle: after too many failed sign-ins for one account from one address, refuse more for a while.
 
+Invite tokens share it: wrong tokens count per address alone (``invite|<address>``).
+
     throttle = LoginThrottle()
     throttle.retry_after(key)   # None, or how long until the next attempt counts
     throttle.failed(key)        # after a wrong password

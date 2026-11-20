@@ -36,7 +36,7 @@ import type { ErrorType } from '../../../../lib/api/orvalMutator';
 
 
  /**
- * @summary Look up an unused invite for the registration page.
+ * @summary Look up an unused invite for the registration page; too many wrong tokens pause the address.
  */
 export const lookupInvite = (
     token: string,
@@ -54,7 +54,7 @@ export const getLookupInviteKey = (token: string,) => [`/auth/invite/${token}`] 
 export type LookupInviteQueryResult = NonNullable<Awaited<ReturnType<typeof lookupInvite>>>
 
 /**
- * @summary Look up an unused invite for the registration page.
+ * @summary Look up an unused invite for the registration page; too many wrong tokens pause the address.
  */
 export const useLookupInvite = <TError = ErrorType<ErrorResponseDto>>(
   token: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof lookupInvite>>, TError> & { swrKey?: Key, enabled?: boolean },  }
@@ -284,7 +284,7 @@ export const useRefreshToken = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Register a new user with an invite token and sign them in.
+ * @summary Register a new user with an invite token and sign them in; too many wrong tokens pause the address.
  */
 export const register = (
     registerBody: RegisterBody,
@@ -309,7 +309,7 @@ export const getRegisterMutationKey = () => [`/auth/register`] as const;
 export type RegisterMutationResult = NonNullable<Awaited<ReturnType<typeof register>>>
 
 /**
- * @summary Register a new user with an invite token and sign them in.
+ * @summary Register a new user with an invite token and sign them in; too many wrong tokens pause the address.
  */
 export const useRegister = <TError = ErrorType<ErrorResponseDto>>(
    options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof register>>, TError, Key, RegisterBody, Awaited<ReturnType<typeof register>>> & { swrKey?: string }, }

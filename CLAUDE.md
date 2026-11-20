@@ -27,7 +27,7 @@ patterns from its neighbours.
 | Spec | `api/openapi.py` | Builds `back/openapi.json` from the endpoint declarations. |
 | Migrations | `driver/migrations.py`, `back/migrations/` | Alembic; the app migrates its database at startup (below). |
 | Frontend serving | `driver/app.py` (`App.serve`) | Files of the frontend build in `static/`; any other non-API path gets `index.html` for the browser router. |
-| Auth | `auth/` | JWT (carries the user's `token_version`), the `@require_auth` guard, the in-memory login throttle (5 failures per address and account per 15 min). |
+| Auth | `auth/` | JWT (carries the user's `token_version`), the `@require_auth` guard, the in-memory login throttle (5 failures per address and account per 15 min; wrong invite tokens per address). |
 
 Schema changes ship with an Alembic revision (`venv/bin/alembic revision -m "..."`; render it with
 `--autogenerate` against a database at head via `RACLOTTO_DATABASE_URL`). At startup `migrate()`

@@ -403,3 +403,39 @@ class TestInviteLookup(AuthTest):
                 response = self.call("GET", f"/auth/invite/{token}")
                 self.assertEqual(response.status_code, 400, response.json)
                 self.assertEqual(response.json["errors"][0]["title"], "Invalid invite token")
+
+
+class TestInviteGuessing(AuthTest):
+    def lookup_from(self, address: str, token: str):
+        return self.client.get(f"/api/auth/invite/{token}", environ_base={"REMOTE_ADDR": address})
+
+    def register_from(self, address: str, token: str, email: str = "ben@example.com"):
+        body = {"token": token, "email": email, "name": "ben", "password": "pw-12345"}
+        return self.client.post("/api/auth/register", json=body, environ_base={"REMOTE_ADDR": address})
+
+    def test_five_wrong_tokens_pause_lookup_and_registration_from_that_address(self):
+        invite = self.make_invite(self.ana, "ben@example.com")
+        statuses = [self.lookup_from("10.0.0.1", "nope").status_code for _ in range(3)]
+        statuses += [self.register_from("10.0.0.1", "nope").status_code for _ in range(2)]
+
+        lookup, register = self.lookup_from("10.0.0.1", invite.token), self.register_from("10.0.0.1", invite.token)
+
+        self.assertEqual(statuses, [400] * 5)
+        self.assertEqual((lookup.status_code, register.status_code), (429, 429), (lookup.json, register.json))
+        self.assertEqual(register.json["errors"][0]["code"], "api_error_code.too_many_requests")
+        self.assertEqual(self.lookup_from("10.0.0.2", invite.token).status_code, 200)
+
+    def test_a_wrong_email_counts_as_a_guess(self):
+        invite = self.make_invite(self.ana, "ben@example.com")
+        for _ in range(5):
+            self.register_from("10.0.0.1", invite.token, email="eve@example.com")
+
+        self.assertEqual(self.register_from("10.0.0.1", invite.token).status_code, 429)
+
+    def test_a_taken_name_is_not_a_guess(self):
+        for _ in range(5):
+            self.register_from("10.0.0.1", self.make_invite(self.ana, "ana@example.com").token, email="ana@example.com")
+
+        self.assertEqual(
+            self.register_from("10.0.0.1", self.make_invite(self.ana, "ben@example.com").token).status_code, 200
+        )

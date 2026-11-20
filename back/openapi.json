@@ -3176,9 +3176,19 @@
               }
             },
             "description": "Bad Request"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Too Many Requests"
           }
         },
-        "summary": "Look up an unused invite for the registration page.",
+        "summary": "Look up an unused invite for the registration page; too many wrong tokens pause the address.",
         "tags": [
           "auth"
         ]
@@ -3470,9 +3480,19 @@
               }
             },
             "description": "Bad Request"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Too Many Requests"
           }
         },
-        "summary": "Register a new user with an invite token and sign them in.",
+        "summary": "Register a new user with an invite token and sign them in; too many wrong tokens pause the address.",
         "tags": [
           "auth"
         ]

@@ -16,6 +16,10 @@ account (`remote_addr|name_or_email`, case-folded). After 5 failures within 15 m
 gets 429 until the oldest failure leaves the window; a successful sign-in clears it. The failures
 live in a dict in the app's process, behind a lock, swept once more than 10,000 keys are tracked.
 
+Invite lookup and registration share the throttle: an unknown, spent or wrong-email invite token
+counts as a failure for the client address alone (`invite|remote_addr`), so guessing tokens gets
+the same 429 after 5 tries.
+
 ## Consequences
 
 - No table, no migration and no external store; the throttle is a few dozen lines with an

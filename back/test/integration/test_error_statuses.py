@@ -139,7 +139,15 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         self.assertEqual({r.status_code for r in responses}, self.declared[operation_id], operation_id)
 
     def test_lookup_invite(self):
-        self.assert_answers("lookupInvite", self.call("GET", "/auth/invite/nope"))
+        self.assert_answers("lookupInvite", *[self.call("GET", "/auth/invite/nope") for _ in range(6)])
+
+    def test_register(self):
+        body = {"token": "nope", "email": "eve@example.com", "name": "eve", "password": "longenough"}
+        self.assert_answers(
+            "register",
+            self.call("POST", "/auth/register", body={}),
+            *[self.call("POST", "/auth/register", body=body) for _ in range(6)],
+        )
 
     def test_login(self):
         self.assert_answers(

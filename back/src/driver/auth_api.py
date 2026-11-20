@@ -26,6 +26,24 @@ def _me(user: User) -> MeDto:
     return MeDto.of(user, Levels().progress_of(user))
 
 
+def _refuse_if_paused(key: str, attempts: str) -> None:
+    wait = login_throttle().retry_after(key)
+    if wait is not None:
+        raise ApiError(
+            ApiErrorCode.too_many_requests,
+            status=429,
+            title="Too many attempts",
+            detail=f"Too many failed {attempts}; try again in {ceil(wait.total_seconds() / 60)} minutes",
+        )
+
+
+def _invite_key() -> str:
+    # Per address alone: whoever guesses tokens tries many of them.
+    return f"invite|{request.remote_addr}"
+
+
+# What a token guess runs into; a taken name is not one.
+_INVITE_GUESSES = {AccountError.UNKNOWN_INVITE, AccountError.SPENT_INVITE, AccountError.EMAIL_MISMATCH}
 _INVALID_INVITE = "Invalid invite token"
 _REGISTRATION_ERRORS = {
     AccountError.UNKNOWN_INVITE: ErrorSpec(
@@ -64,12 +82,17 @@ class AuthApi(BaseApi):
         super().__init__()
         self.user_repository = UserRepository()
 
-    @BaseApi.endpoint("/register", ["POST"], body=RegisterBody, response=AuthResultDto, operation_id="register")
+    @BaseApi.endpoint(
+        "/register", ["POST"], body=RegisterBody, response=AuthResultDto, operation_id="register", errors=(429,)
+    )
     def register(self, body: RegisterBody) -> AuthResultDto:
-        """Register a new user with an invite token and sign them in."""
+        """Register a new user with an invite token and sign them in; too many wrong tokens pause the address."""
+        _refuse_if_paused(_invite_key(), "invite tokens")
         try:
             user = Accounts().register(body.token, body.name, body.email, body.password, body.profile_picture)
         except AccountError as e:
+            if e.kind in _INVITE_GUESSES:
+                login_throttle().failed(_invite_key())
             raise _REGISTRATION_ERRORS[e.kind].error() from e
         dto = AuthResultDto(token=_token(user), user=_me(user))
         db.session.commit()
@@ -82,14 +105,7 @@ class AuthApi(BaseApi):
         """Sign in with name or email and password; too many failures from one address pause the account there."""
         throttle = login_throttle()
         key = f"{request.remote_addr}|{body.name_or_email.casefold()}"
-        wait = throttle.retry_after(key)
-        if wait is not None:
-            raise ApiError(
-                ApiErrorCode.too_many_requests,
-                status=429,
-                title="Too many attempts",
-                detail=f"Too many failed sign-ins; try again in {ceil(wait.total_seconds() / 60)} minutes",
-            )
+        _refuse_if_paused(key, "sign-ins")
         user = self.user_repository.by_email_or_name(body.name_or_email)
         if not verify_password(body.password, user.password if user else None) or not user:
             throttle.failed(key)
@@ -109,13 +125,15 @@ class AuthApi(BaseApi):
         return _me(get_current_user())
 
     @BaseApi.endpoint(
-        "/invite/<string:token>", ["GET"], response=InviteLookupDto, operation_id="lookupInvite", errors=(400,)
+        "/invite/<string:token>", ["GET"], response=InviteLookupDto, operation_id="lookupInvite", errors=(400, 429)
     )
     def get_invite(self, token: str) -> InviteLookupDto:
-        """Look up an unused invite for the registration page."""
+        """Look up an unused invite for the registration page; too many wrong tokens pause the address."""
+        _refuse_if_paused(_invite_key(), "invite tokens")
         try:
             invite = Accounts().usable_invite(token)
         except AccountError as e:
+            login_throttle().failed(_invite_key())
             raise ApiError(
                 ApiErrorCode.invalid_token,
                 status=400,
