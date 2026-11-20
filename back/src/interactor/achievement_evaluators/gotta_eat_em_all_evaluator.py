@@ -21,12 +21,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         self.pan_repository = PanRepository()
 
     def _get_all_fill_ingredients_in_session(self, session_id: int) -> set[int]:
-        """
-        Get all FILL ingredient IDs from the current session.
-
-        :param session_id: Session ID
-        :return: Set of FILL ingredient IDs
-        """
+        """Get all FILL ingredient IDs from the current session."""
         session = self.session_repository.by_id(session_id)
         if not session:
             return set()
@@ -35,13 +30,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         return {fill.id for fill in fills}
 
     def _get_fill_ingredients_used_by_user(self, user: User, session_id: int) -> set[int]:
-        """
-        Get all FILL ingredient IDs that the user has used in their pans in the current session.
-
-        :param user: The user
-        :param session_id: Session ID
-        :return: Set of FILL ingredient IDs that the user has used
-        """
+        """Get all FILL ingredient IDs that the user has used in their pans in the current session."""
         session = self.session_repository.by_id(session_id)
         if not session:
             return set()
@@ -62,14 +51,7 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         return used_fills
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the user has eaten all FILL ingredients (not sauces) from the current session.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if user has eaten all FILL ingredients
-        """
+        """Check if the user has eaten all FILL ingredients (not sauces) from the current session."""
         # This achievement is session-specific, so only check the current session
         session_id = context.session.id
 
@@ -95,11 +77,6 @@ class GottaEatEmAllEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the ratio of FILL ingredients eaten to total FILL ingredients.
         Progress is a ratio of used_fills / total_fills.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value between 0.0 and 1.0
         """
         # This achievement is session-specific, so only check the current session
         session_id = context.session.id

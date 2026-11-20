@@ -10,26 +10,12 @@ class UserAchievementProgressRepository(BaseRepository[UserAchievementProgress])
         super().__init__(UserAchievementProgress)
 
     def by_user_and_achievement(self, user_id: int, achievement_id: int) -> UserAchievementProgress | None:
-        """
-        Get progress record for a user and achievement.
-
-        :param user_id: User ID
-        :param achievement_id: Achievement ID
-        :return: Progress record or None if not found
-        """
         return (
             db.session.query(UserAchievementProgress).filter_by(user_id=user_id, achievement_id=achievement_id).first()
         )
 
     def create_or_update(self, user_id: int, achievement_id: int, progress_value: float) -> UserAchievementProgress:
-        """
-        Create or update progress record for a user and achievement.
-
-        :param user_id: User ID
-        :param achievement_id: Achievement ID
-        :param progress_value: Progress value between 0.0 and 1.0
-        :return: Progress record
-        """
+        """Create or update progress record for a user and achievement."""
         # Clamp progress to valid range
         progress_value = max(0.0, min(1.0, progress_value))
 

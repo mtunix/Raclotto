@@ -18,11 +18,6 @@ class LocalHostEvaluator(AchievementEvaluator):
         Check if the user has created at least 1 session.
         Note: This evaluator checks the user's total session creation count from context,
         not the current pan. The achievement is unlocked when user_sessions_created >= 1.
-
-        :param pan: The newly created pan (not used for this achievement)
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if user has created >= 1 session
         """
         # Check if user has created the required number of sessions
         unlocked = context.user_sessions_created >= self.REQUIRED_SESSIONS_COUNT
@@ -36,11 +31,6 @@ class LocalHostEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the number of sessions created by the user.
         Progress is a ratio of sessions_created / REQUIRED_SESSIONS_COUNT.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value between 0.0 and 1.0
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

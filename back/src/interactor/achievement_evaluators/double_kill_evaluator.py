@@ -17,12 +17,6 @@ class DoubleKillEvaluator(AchievementEvaluator):
     """
 
     def _get_ingredient_ids(self, pan: Pan) -> set[int]:
-        """
-        Get the set of ingredient IDs for a pan.
-
-        :param pan: The pan
-        :return: Set of ingredient IDs
-        """
         if not pan.ingredients:
             return set()
         return {ingredient.id for ingredient in pan.ingredients}
@@ -31,10 +25,6 @@ class DoubleKillEvaluator(AchievementEvaluator):
         """
         Check if two pans have identical ingredients.
         Two pans are identical if they have the same set of ingredient IDs.
-
-        :param pan1: First pan
-        :param pan2: Second pan
-        :return: True if pans have identical ingredients
         """
         ingredients1 = self._get_ingredient_ids(pan1)
         ingredients2 = self._get_ingredient_ids(pan2)
@@ -45,11 +35,6 @@ class DoubleKillEvaluator(AchievementEvaluator):
         """
         Get the user's previous pan in the session (excluding the current pan).
         Returns the most recent pan created by the user before the current pan.
-
-        :param user: The user
-        :param current_pan: The current pan being created
-        :param session_pans: All pans in the session
-        :return: The previous pan or None if this is the user's first pan in the session
         """
         # Filter to only this user's pans in the session, excluding the current pan
         user_pans = [pan for pan in session_pans if pan.user_id == user.id and pan.id != current_pan.id]
@@ -66,11 +51,6 @@ class DoubleKillEvaluator(AchievementEvaluator):
         """
         Check if the user has created two consecutive pans with identical ingredients
         in the current session.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if pans are identical
         """
         # Get the user's previous pan in this session
         previous_pan = self._get_previous_pan_in_session(user, pan, context.session_pans)
@@ -88,14 +68,6 @@ class DoubleKillEvaluator(AchievementEvaluator):
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
-        """
-        Calculate progress - binary achievement, either unlocked or not.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0)
-        """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:
             return 1.0

@@ -10,12 +10,7 @@ class LevelRepository(BaseRepository[Level]):
         super().__init__(Level)
 
     def by_experience(self, experience_points: int) -> Level | None:
-        """
-        Get the highest level that the user has achieved based on experience points.
-
-        :param experience_points: User's total experience points
-        :return: Level instance or None if no level found
-        """
+        """Get the highest level that the user has achieved based on experience points."""
         # Get the highest level where required_experience <= experience_points
         return (
             db.session.query(Level)
@@ -25,20 +20,10 @@ class LevelRepository(BaseRepository[Level]):
         )
 
     def all_ordered(self) -> list[Level]:
-        """
-        Get all levels ordered by required_experience ascending.
-
-        :return: List of levels
-        """
+        """Get all levels ordered by required_experience ascending."""
         return db.session.query(Level).order_by(Level.required_experience.asc()).all()
 
     def next_level(self, current_level: Level) -> Level | None:
-        """
-        Get the next level after the current level.
-
-        :param current_level: Current level
-        :return: Next level or None if at max level
-        """
         return (
             db.session.query(Level)
             .filter(Level.required_experience > current_level.required_experience)

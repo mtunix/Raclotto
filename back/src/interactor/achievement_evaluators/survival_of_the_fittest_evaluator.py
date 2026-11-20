@@ -29,12 +29,6 @@ class SurvivalOfTheFittestEvaluator(AchievementEvaluator):
         return "pan_owner"
 
     def _get_unique_rating_users(self, pan: Pan) -> set[int]:
-        """
-        Get the set of unique user IDs who have rated this pan.
-
-        :param pan: The pan
-        :return: Set of user IDs who rated the pan
-        """
         if not pan.ratings:
             return set()
         return {rating.user_id for rating in pan.ratings}
@@ -43,10 +37,6 @@ class SurvivalOfTheFittestEvaluator(AchievementEvaluator):
         """
         Check if this pan is the worst rated pan in the session.
         Only considers pans that have at least MINIMUM_RATINGS_COUNT ratings.
-
-        :param pan: The pan to check
-        :param session_pans: All pans in the session
-        :return: True if this pan is the worst rated (lowest average rating)
         """
         # Get unique rating users for this pan
         pan_rating_users = self._get_unique_rating_users(pan)
@@ -82,11 +72,6 @@ class SurvivalOfTheFittestEvaluator(AchievementEvaluator):
         """
         Check if the user has created the worst rated pan in the session.
         The pan must have been rated by at least 2 different people.
-
-        :param pan: The pan to evaluate (should be the pan that was just rated)
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if pan is worst rated with >=2 ratings
         """
         # Check if pan has at least MINIMUM_RATINGS_COUNT ratings from different users
         rating_users = self._get_unique_rating_users(pan)
@@ -103,14 +88,6 @@ class SurvivalOfTheFittestEvaluator(AchievementEvaluator):
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
-        """
-        Calculate progress - binary achievement, either unlocked or not.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0)
-        """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:
             return 1.0

@@ -10,12 +10,7 @@ class PreparationTypeRepository(BaseRepository[PreparationType]):
         super().__init__(PreparationType)
 
     def by_session(self, session_id: int) -> list[PreparationType]:
-        """
-        Get preparation types for a session (including defaults where session_id is null).
-
-        :param session_id: Session ID
-        :return: List of preparation types
-        """
+        """Get preparation types for a session (including defaults where session_id is null)."""
         return (
             db.session.query(PreparationType)
             .filter((PreparationType.session_id == session_id) | (PreparationType.session_id.is_(None)))
@@ -23,17 +18,5 @@ class PreparationTypeRepository(BaseRepository[PreparationType]):
         )
 
     def defaults(self) -> list[PreparationType]:
-        """
-        Get default/system-wide preparation types (where session_id is null).
-
-        :return: List of default preparation types
-        """
+        """Get default/system-wide preparation types (where session_id is null)."""
         return db.session.query(PreparationType).filter(PreparationType.session_id.is_(None)).all()
-
-    def default_types(self) -> list[PreparationType]:
-        """
-        Alias for defaults() method for backward compatibility.
-
-        :return: List of default preparation types
-        """
-        return self.defaults()

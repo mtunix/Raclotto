@@ -18,12 +18,7 @@ class BiotonneEvaluator(AchievementEvaluator):
     REQUIRED_PANS_COUNT = 5
 
     def _pan_is_vegan(self, pan: Pan) -> bool:
-        """
-        Check if a pan is vegan (all ingredients must be vegan).
-
-        :param pan: The pan to check
-        :return: True if pan is vegan (all ingredients are vegan)
-        """
+        """Check if a pan is vegan (all ingredients must be vegan)."""
         if not pan.ingredients:
             return False
 
@@ -31,13 +26,7 @@ class BiotonneEvaluator(AchievementEvaluator):
         return all(ingredient.vegan for ingredient in pan.ingredients)
 
     def _count_vegan_pans_in_session(self, user: User, session_pans: list[Pan]) -> int:
-        """
-        Count how many vegan pans the user has created in the session.
-
-        :param user: The user
-        :param session_pans: All pans in the session
-        :return: Count of vegan pans created by the user
-        """
+        """Count how many vegan pans the user has created in the session."""
         user_pans = [pan for pan in session_pans if pan.user_id == user.id]
         vegan_pan_count = 0
 
@@ -48,14 +37,7 @@ class BiotonneEvaluator(AchievementEvaluator):
         return vegan_pan_count
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the user has created 5 vegan pans in the current session.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if user has 5+ vegan pans
-        """
+        """Check if the user has created 5 vegan pans in the current session."""
         # Count vegan pans in the session (including the new pan)
         vegan_pan_count = self._count_vegan_pans_in_session(user, context.session_pans)
 
@@ -71,11 +53,6 @@ class BiotonneEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the number of vegan pans eaten.
         Progress is a ratio of vegan_pan_count / REQUIRED_PANS_COUNT.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value between 0.0 and 1.0
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

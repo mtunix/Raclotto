@@ -12,14 +12,6 @@ class FirstBloodEvaluator(AchievementEvaluator):
     """
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if this is the first pan in the session.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if this is the first pan
-        """
         # The current pan was just created, so session_pans might not include it yet
         # or it might be the only one. We need to check if there are any other pans
         # in the session (excluding this one).
@@ -50,14 +42,6 @@ class FirstBloodEvaluator(AchievementEvaluator):
         return EvaluationResult(unlocked=is_first)
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
-        """
-        Calculate progress - binary achievement, either unlocked or not.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0)
-        """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:
             return 1.0

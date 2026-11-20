@@ -410,12 +410,6 @@ class BaseApi(View):
 
 
 def init_api_rules(apis: Sequence[type[BaseApi]], session: scoped_session[Any]) -> Blueprint:
-    """Initialize API rules and register blueprints.
-
-    :param apis: List of API classes
-    :param session: Database session
-    :return: Blueprint with all APIs registered
-    """
     BaseApi.session = session
 
     api_rules = Blueprint("api_rules", __name__, url_prefix="/api")

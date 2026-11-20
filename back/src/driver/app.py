@@ -113,7 +113,7 @@ class App(Flask):
 
         prep_type_repository = PreparationTypeRepository()
         default_name = "Raclotto Pfanne"
-        default_types = prep_type_repository.default_types()
+        default_types = prep_type_repository.defaults()
         existing = next((pt for pt in default_types if pt.name == default_name), None)
 
         if not existing:

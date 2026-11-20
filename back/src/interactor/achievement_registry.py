@@ -18,12 +18,6 @@ class AchievementRegistry:
         return self._evaluators
 
     def has_evaluator(self, achievement: Achievement) -> bool:
-        """
-        Check if an achievement has a registered evaluator.
-
-        :param achievement: The achievement entity
-        :return: True if evaluator is registered, False otherwise
-        """
         return achievement.key in self._evaluators
 
 

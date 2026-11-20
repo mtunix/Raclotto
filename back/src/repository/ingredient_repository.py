@@ -17,12 +17,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         super().__init__(Ingredient)
 
     def by_session(self, session_key: str) -> list[Ingredient]:
-        """
-        Get all ingredients for a session.
-
-        :param session_key: Session key
-        :return: List of ingredients
-        """
         try:
             session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
             return db.session.query(Ingredient).filter_by(session_id=session.id).all()
@@ -30,13 +24,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
             return []
 
     def by_type(self, session_key: str, ingredient_type: IngredientType) -> list[Ingredient]:
-        """
-        Get ingredients by type for a session.
-
-        :param session_key: Session key
-        :param ingredient_type: Type of ingredient (FILL or SAUCE)
-        :return: List of ingredients
-        """
         try:
             session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
             return db.session.query(Ingredient).filter_by(session_id=session.id, type=ingredient_type).all()
@@ -44,14 +31,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
             return []
 
     def filter_by_preferences(self, session_key: str, diet: Diet, ingredient_type: IngredientType) -> list[Ingredient]:
-        """
-        Available, named ingredients of one type in a session that the diet allows.
-
-        :param session_key: Session key
-        :param diet: The user's diet (see ``Diet``)
-        :param ingredient_type: Type of ingredient (FILL or SAUCE)
-        :return: Eligible ingredients, ordered by id
-        """
+        """Available, named ingredients of one type in a session that the diet allows."""
         try:
             session = db.session.query(RaclottoSession).filter_by(key=session_key).one()
         except NoResultFound:
@@ -72,12 +52,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         )
 
     def mark_unavailable(self, id: int) -> Ingredient | None:
-        """
-        Mark an ingredient as unavailable.
-
-        :param id: Ingredient ID
-        :return: Updated ingredient or None if not found
-        """
         ingredient = self.by_id(id)
         if not ingredient:
             return None
@@ -87,12 +61,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return ingredient
 
     def mark_available(self, id: int) -> Ingredient | None:
-        """
-        Mark an ingredient as available.
-
-        :param id: Ingredient ID
-        :return: Updated ingredient or None if not found
-        """
         ingredient = self.by_id(id)
         if not ingredient:
             return None
@@ -102,13 +70,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return ingredient
 
     def by_session_ids(self, session_ids: list[int], ingredient_type: IngredientType | None = None) -> list[Ingredient]:
-        """
-        Get ingredients from multiple sessions.
-
-        :param session_ids: List of session IDs
-        :param ingredient_type: Optional ingredient type to filter by
-        :return: List of ingredients
-        """
         if not session_ids:
             return []
 
@@ -120,13 +81,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return query.all()
 
     def get_top_rated(self, session_id: int | None = None, limit: int = 10) -> list[Row[Ingredient, float]]:
-        """
-        Get top-rated ingredients by average rating.
-
-        :param session_id: Optional session ID to filter by
-        :param limit: Maximum number of results
-        :return: List of tuples (Ingredient, avg_rating)
-        """
+        """Get top-rated ingredients by average rating."""
         from sqlalchemy import func
 
         from back.src.entity.pan import Pan, pan_ingredients
@@ -168,13 +123,7 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return row
 
     def get_most_used(self, session_id: int | None = None, limit: int = 10) -> list[Row[Ingredient, int]]:
-        """
-        Get most-used ingredients by pan count.
-
-        :param session_id: Optional session ID to filter by
-        :param limit: Maximum number of results
-        :return: List of tuples (Ingredient, pan_count)
-        """
+        """Get most-used ingredients by pan count."""
         from sqlalchemy import func
 
         from back.src.entity.pan import Pan, pan_ingredients
@@ -191,13 +140,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return query.group_by(Ingredient.id).order_by(func.count(Pan.id).desc()).limit(limit).all()
 
     def bulk_create(self, ingredients_data: list[dict[str, Any]], session_id: int) -> list[Ingredient]:
-        """
-        Create multiple ingredients in bulk.
-
-        :param ingredients_data: List of ingredient attribute dictionaries
-        :param session_id: Session ID to associate ingredients with
-        :return: List of created ingredient instances
-        """
         from back.src.entity.raclotto_session import RaclottoSession
 
         session = db.session.query(RaclottoSession).filter_by(id=session_id).first()
@@ -222,12 +164,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return created_ingredients
 
     def bulk_update(self, ingredients_data: list[dict[str, Any]]) -> list[Ingredient]:
-        """
-        Update multiple ingredients in bulk.
-
-        :param ingredients_data: List of ingredient dictionaries with 'id' field
-        :return: List of updated ingredient instances
-        """
         updated_ingredients = []
 
         for data in ingredients_data:
@@ -259,12 +195,6 @@ class IngredientRepository(BaseRepository[Ingredient]):
         return updated_ingredients
 
     def mark_unavailable_by_ids(self, ingredient_ids: list[int]) -> int:
-        """
-        Mark multiple ingredients as unavailable by their IDs.
-
-        :param ingredient_ids: List of ingredient IDs to mark as unavailable
-        :return: Number of ingredients updated
-        """
         if not ingredient_ids:
             return 0
 

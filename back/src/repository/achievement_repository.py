@@ -13,12 +13,6 @@ class AchievementRepository(BaseRepository[Achievement]):
         super().__init__(Achievement)
 
     def by_title(self, title: str | None) -> Achievement | None:
-        """
-        Find achievement by title.
-
-        :param title: Achievement title
-        :return: Achievement instance or None if not found
-        """
         return db.session.query(Achievement).filter_by(title=title).first()
 
     def standings(self) -> list[tuple[int, str, int, int]]:

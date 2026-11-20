@@ -30,12 +30,6 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
         return "session_members"
 
     def _count_pans_per_user(self, session_pans: list[Pan]) -> dict[int, int]:
-        """
-        Count the number of pans per user in the session.
-
-        :param session_pans: List of all pans in the session
-        :return: Dictionary mapping user_id to pan count
-        """
         user_pan_counts: Counter[int] = Counter()
         for pan in session_pans:
             user_pan_counts[pan.user_id] += 1
@@ -46,11 +40,6 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
         Check if the user has the most pans in the current session.
         This is evaluated after each pan creation, so the newly created pan
         is included in the session_pans list.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if user has the most pans
         """
         # Count pans per user in the session
         # Note: session_pans should include the newly created pan
@@ -80,11 +69,6 @@ class KingOfTheGrillEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the user's pan count relative to the max in the session.
         Progress is 1.0 if the user has the most pans, otherwise it's their count / max_count.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value between 0.0 and 1.0
         """
         # Count pans per user in the session
         user_pan_counts = self._count_pans_per_user(context.session_pans)

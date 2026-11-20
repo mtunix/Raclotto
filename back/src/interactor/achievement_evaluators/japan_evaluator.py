@@ -21,12 +21,7 @@ class JapanEvaluator(AchievementEvaluator):
     """
 
     def _pan_has_only_fish(self, pan: Pan) -> bool:
-        """
-        Check if a pan contains only fish fill ingredients.
-
-        :param pan: The pan to check
-        :return: True if pan has at least one fill ingredient and all fill ingredients are fish
-        """
+        """Check if a pan contains only fish fill ingredients."""
         if not pan.ingredients:
             return False
 
@@ -41,14 +36,7 @@ class JapanEvaluator(AchievementEvaluator):
         return all(ingredient.fish for ingredient in fill_ingredients)
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the pan contains only fish fill ingredients.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if pan contains only fish
-        """
+        """Check if the pan contains only fish fill ingredients."""
         # Check if this pan has only fish ingredients
         unlocked = self._pan_has_only_fish(pan)
 
@@ -61,11 +49,6 @@ class JapanEvaluator(AchievementEvaluator):
         """
         Calculate progress - binary achievement, either unlocked or not.
         Checks if user has created any pan with only fish fill ingredients.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0)
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

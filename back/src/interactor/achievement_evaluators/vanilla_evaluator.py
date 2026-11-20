@@ -18,14 +18,7 @@ class VanillaEvaluator(AchievementEvaluator):
     REQUIRED_INGREDIENT_COUNT = 1
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the pan has exactly one fill ingredient (sauces are not counted).
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if pan has exactly 1 fill ingredient
-        """
+        """Check if the pan has exactly one fill ingredient (sauces are not counted)."""
         # Count only fill ingredients, exclude sauces
         fill_ingredients = [
             ingredient for ingredient in (pan.ingredients or []) if ingredient.type == IngredientType.FILL
@@ -42,11 +35,6 @@ class VanillaEvaluator(AchievementEvaluator):
         """
         Calculate progress - binary achievement, either unlocked or not.
         Only counts fill ingredients, sauces are excluded.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0)
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

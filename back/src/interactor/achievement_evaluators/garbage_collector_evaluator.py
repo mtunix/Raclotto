@@ -19,14 +19,7 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
     REQUIRED_HOURS = 3
 
     def _get_previous_pan_in_session(self, user: User, current_pan: Pan, session_pans: list[Pan]) -> Pan | None:
-        """
-        Get the user's previous pan in the session (excluding the current pan).
-
-        :param user: The user
-        :param current_pan: The current pan being created
-        :param session_pans: All pans in the session
-        :return: The previous pan or None if this is the user's first pan in the session
-        """
+        """Get the user's previous pan in the session (excluding the current pan)."""
         # Filter to only this user's pans in the session, excluding the current pan
         user_pans = [pan for pan in session_pans if pan.user_id == user.id and pan.id != current_pan.id]
 
@@ -42,11 +35,6 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
         """
         Check if the user has eaten a pan at least 3 hours after their last pan
         in the current session.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if 3+ hours have passed
         """
         # Get the user's previous pan in this session
         previous_pan = self._get_previous_pan_in_session(user, pan, context.session_pans)
@@ -78,11 +66,6 @@ class GarbageCollectorEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the time since the user's last pan in the session.
         Progress is 1.0 if 3+ hours have passed, otherwise it's the ratio of elapsed time to 3 hours.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value between 0.0 and 1.0
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

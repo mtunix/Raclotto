@@ -24,12 +24,7 @@ class PandlerEvaluator(AchievementEvaluator):
         self.pan_repository = PanRepository()
 
     def _get_user_pans_by_session(self, user: User) -> list[tuple[int, datetime]]:
-        """
-        Get the session IDs and timestamps of the earliest pan in each session for the user.
-
-        :param user: The user
-        :return: List of (session_id, earliest_pan_timestamp) tuples, sorted by time
-        """
+        """Get the session IDs and timestamps of the earliest pan in each session for the user."""
         # Get all pans for the user
         pans = self.pan_repository.by_user(user.id)
 
@@ -52,11 +47,6 @@ class PandlerEvaluator(AchievementEvaluator):
         """
         Check if the user has had a pan in two different sessions within 24 hours.
         This is evaluated when a pan is created.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if user has pans in 2 different sessions within 24h
         """
         # Get all sessions where the user has pans (session_id, earliest_pan_timestamp)
         session_pans = self._get_user_pans_by_session(user)
@@ -93,14 +83,6 @@ class PandlerEvaluator(AchievementEvaluator):
         return EvaluationResult(unlocked=unlocked, progress=progress)
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
-        """
-        Calculate progress - binary achievement, either unlocked or not.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0)
-        """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:
             return 1.0

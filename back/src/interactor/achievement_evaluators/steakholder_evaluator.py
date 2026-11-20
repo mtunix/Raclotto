@@ -17,25 +17,14 @@ class SteakholderEvaluator(AchievementEvaluator):
     REQUIRED_PANS_COUNT = 5
 
     def _pan_has_meat(self, pan: Pan) -> bool:
-        """
-        Check if a pan contains at least one meat ingredient.
-
-        :param pan: The pan to check
-        :return: True if pan has at least one meat ingredient
-        """
+        """Check if a pan contains at least one meat ingredient."""
         if not pan.ingredients:
             return False
 
         return any(ingredient.meat for ingredient in pan.ingredients)
 
     def _count_meat_pans_in_session(self, user: User, session_pans: list[Pan]) -> int:
-        """
-        Count how many pans with meat the user has created in the session.
-
-        :param user: The user
-        :param session_pans: All pans in the session
-        :return: Count of pans with meat created by the user
-        """
+        """Count how many pans with meat the user has created in the session."""
         user_pans = [pan for pan in session_pans if pan.user_id == user.id]
         meat_pan_count = 0
 
@@ -46,14 +35,7 @@ class SteakholderEvaluator(AchievementEvaluator):
         return meat_pan_count
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the user has created 5 pans with meat in the current session.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if user has 5+ pans with meat
-        """
+        """Check if the user has created 5 pans with meat in the current session."""
         # Count pans with meat in the session (including the new pan)
         meat_pan_count = self._count_meat_pans_in_session(user, context.session_pans)
 
@@ -69,11 +51,6 @@ class SteakholderEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the number of pans with meat eaten.
         Progress is a ratio of meat_pan_count / REQUIRED_PANS_COUNT.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value between 0.0 and 1.0
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

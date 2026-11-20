@@ -10,23 +10,9 @@ class PlaceholderEvaluator(AchievementEvaluator):
     reacts_to = ()
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Placeholder evaluation - always returns not unlocked.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=False
-        """
+        """Placeholder evaluation - always returns not unlocked."""
         return EvaluationResult(unlocked=False)
 
     def calculate_progress(self, user: User, achievement: Achievement, context: EvaluationContext) -> float | None:
-        """
-        Placeholder progress calculation - returns None (progress not applicable).
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: None (progress tracking not applicable for placeholder)
-        """
+        """Placeholder progress calculation - returns None (progress not applicable)."""
         return None

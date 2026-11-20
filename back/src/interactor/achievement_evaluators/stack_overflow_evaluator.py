@@ -14,14 +14,6 @@ class StackOverflowEvaluator(AchievementEvaluator):
     REQUIRED_INGREDIENT_COUNT = 10
 
     def evaluate(self, pan: Pan, user: User, context: EvaluationContext) -> EvaluationResult:
-        """
-        Check if the pan has more than 10 ingredients.
-
-        :param pan: The newly created pan
-        :param user: The user who created the pan
-        :param context: Context information for evaluation
-        :return: EvaluationResult with unlocked=True if pan has >10 ingredients
-        """
         ingredient_count = len(pan.ingredients) if pan.ingredients else 0
         unlocked = ingredient_count > self.REQUIRED_INGREDIENT_COUNT
 
@@ -31,11 +23,6 @@ class StackOverflowEvaluator(AchievementEvaluator):
         """
         Calculate progress based on the maximum ingredient count in user's pans.
         Progress is 1.0 if user has created a pan with >10 ingredients, otherwise 0.0.
-
-        :param user: The user
-        :param achievement: The achievement to calculate progress for
-        :param context: Context information for evaluation
-        :return: Progress value (0.0 or 1.0) or None if not applicable
         """
         # Check if user has already unlocked this achievement
         if achievement in user.achievements:

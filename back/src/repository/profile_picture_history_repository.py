@@ -11,31 +11,12 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
         super().__init__(ProfilePictureHistory)
 
     def by_user_id(self, user_id: int) -> list[ProfilePictureHistory]:
-        """
-        Get all profile picture history entries for a user, ordered by created_at descending.
-
-        :param user_id: User ID
-        :return: List of ProfilePictureHistory instances
-        """
+        """Get all profile picture history entries for a user, ordered by created_at descending."""
         return (
             db.session.query(ProfilePictureHistory)
             .filter_by(user_id=user_id)
             .order_by(ProfilePictureHistory.created_at.desc())
             .all()
-        )
-
-    def get_latest_by_user_id(self, user_id: int) -> ProfilePictureHistory | None:
-        """
-        Get the most recent profile picture for a user.
-
-        :param user_id: User ID
-        :return: ProfilePictureHistory instance or None if not found
-        """
-        return (
-            db.session.query(ProfilePictureHistory)
-            .filter_by(user_id=user_id)
-            .order_by(ProfilePictureHistory.created_at.desc())
-            .first()
         )
 
     def has_marked_candidate(self, user_id: int) -> bool:
@@ -63,9 +44,6 @@ class ProfilePictureHistoryRepository(BaseRepository[ProfilePictureHistory]):
         """
         Get the candidate profile picture (marked for generation context) for a user.
         Falls back to the first/oldest picture if no candidate is marked.
-
-        :param user_id: User ID
-        :return: ProfilePictureHistory instance or None if no pictures exist
         """
         # First try to get the picture marked as candidate
         candidate = db.session.query(ProfilePictureHistory).filter_by(user_id=user_id, is_candidate=True).first()
