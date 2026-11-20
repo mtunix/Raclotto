@@ -3,6 +3,7 @@ from back.src.dto.base import ResponseDto
 from back.src.dto.ingredient import IngredientDto
 from back.src.dto.pan import PanDto
 from back.src.dto.user_stats import IngredientRatingDto
+from back.src.interactor.stats import Dashboard
 
 
 class IngredientUsageDto(ResponseDto):
@@ -20,3 +21,18 @@ class StatsDto(ResponseDto):
     ingredients_top_rated: list[IngredientRatingDto]
     ingredients_most_used: list[IngredientUsageDto]
     leaderboard: list[LeaderboardEntryDto]
+
+    @classmethod
+    def of(cls, dashboard: Dashboard) -> StatsDto:
+        return cls(
+            pans=[PanDto.of(pan, dashboard.authors.get(pan.user_id)) for pan in dashboard.pans],
+            ingredients_top_rated=[
+                IngredientRatingDto(ingredient=IngredientDto.model_validate(ingredient), avg_rating=average)
+                for ingredient, average in dashboard.top_rated
+            ],
+            ingredients_most_used=[
+                IngredientUsageDto(ingredient=IngredientDto.model_validate(ingredient), pan_count=count)
+                for ingredient, count in dashboard.most_used
+            ],
+            leaderboard=LeaderboardEntryDto.ranking(dashboard.standings),
+        )
