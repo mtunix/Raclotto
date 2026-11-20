@@ -43,6 +43,7 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/api/generated/**", "src/**/__fixtures__/**", "src/**/*.test.{ts,tsx}", "src/setupTests.ts", "src/testUtils.tsx", "src/vite-env.d.ts"],
       reporter: ["text-summary", "html"],
+      thresholds: { statements: 89, branches: 81, functions: 88, lines: 94 },
     },
   },
 });

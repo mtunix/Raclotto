@@ -162,6 +162,7 @@ deploy/release.sh                                          # dev → master, tag
 
 cd front && npx vitest run <path>        # one test file — the edit loop
 cd front && npx vitest run               # whole frontend suite
+cd front && npm run test:coverage        # with coverage; fails below `coverage.thresholds` (vite.config.ts), as in CI
 cd front && npx tsc -b                  # type check: src (tsconfig.app.json), tool configs (tsconfig.node.json)
 cd front && npm run test:e2e             # Playwright against the production server and build (E2E_CHANNEL=chrome: installed Chrome)
 cd front && npm start                    # Vite dev server: https://localhost:3001, proxies /api to 8081

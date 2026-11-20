@@ -2,7 +2,7 @@ import type { AchievementDto } from "../api/generated/model";
 
 type Translate = (key: string) => string;
 
-// An achievement default_data no longer seeds has no key; it still counts for whoever holds it.
+// An achievement seed_data no longer seeds has no key; it still counts for whoever holds it.
 const textKey = ({ key }: Pick<AchievementDto, "key">, part: "title" | "description") =>
   key === null ? `achievements.retired.${part}` : `achievements.${key}.${part}`;
 
