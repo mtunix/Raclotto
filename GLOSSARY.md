@@ -127,7 +127,7 @@ _Avoid_: generate (only the route and the button say it)
 **Classic roll**:
 A roll with a fixed number of fills and sauces (3 and 2 by default), drawn at random from those
 available and allowed by the roller's diet, each capped at what there is.
-Code: `num_fill` / `num_sauce`, `rollPan`, `POST /pans/generate`. UI: "Legacy".
+Code: `num_fill` / `num_sauce`, `rollPan`, `POST /pans/generate`. UI: "Classic".
 
 **Bandit roll**:
 A roll with a number of columns; the split into fills and sauces is random too, with at least one
