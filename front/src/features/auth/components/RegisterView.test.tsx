@@ -27,7 +27,7 @@ afterEach(() => {
 const field = (label: string) => screen.getByLabelText(label);
 const type = (label: string, value: string) => fireEvent.change(field(label), { target: { value } });
 
-async function submit({ token = 'invite-token', email = inviteLookup.email, password = 'carl-secret', confirm = password }: {
+async function submit({ token = 'invite-token', email = 'carl@example.com', password = 'carl-secret', confirm = password }: {
     token?: string;
     email?: string;
     password?: string;
@@ -35,8 +35,8 @@ async function submit({ token = 'invite-token', email = inviteLookup.email, pass
 } = {}) {
     if (!(field('auth.inviteToken') as HTMLInputElement).disabled) {
         type('auth.inviteToken', token);
-        type('auth.email', email);
     }
+    type('auth.email', email);
     type('auth.name', registration.user.name);
     type('auth.password', password);
     type('auth.confirmPassword', confirm);
@@ -53,7 +53,7 @@ it('registers with an invite token, saves the diet picked and signs the new user
     await waitFor(() => expect(currentPath()).toBe('/'));
     expect(fake.last('POST', '/auth/register')?.body).toEqual({
         token: 'invite-token',
-        email: inviteLookup.email,
+        email: 'carl@example.com',
         name: registration.user.name,
         password: 'carl-secret',
     });
@@ -81,19 +81,26 @@ it('saves the diet by its hierarchy', async () => {
     expect(fake.last('PATCH', '/auth/me')?.body).toMatchObject({ meat: true, vegetarian: true, vegan: true });
 });
 
-it('takes token and email from the invite link and locks them', async () => {
+it('takes the token from the invite link and locks it', async () => {
     const token = 'a/b+c';
     fake.on('GET', `/auth/invite/${encodeURIComponent(token)}`, inviteLookup);
     renderRoutes(routes, `/register?token=${encodeURIComponent(token)}`);
 
-    await waitFor(() => expect(field('auth.email')).toHaveValue(inviteLookup.email));
-    expect(field('auth.inviteToken')).toHaveValue(token);
+    await waitFor(() => expect(field('auth.inviteToken')).toHaveValue(token));
     expect(field('auth.inviteToken')).toBeDisabled();
-    expect(field('auth.email')).toBeDisabled();
     await submit();
 
     await waitFor(() => expect(currentPath()).toBe('/'));
-    expect(fake.last('POST', '/auth/register')?.body).toMatchObject({ token, email: inviteLookup.email });
+    expect(fake.last('POST', '/auth/register')?.body).toMatchObject({ token, email: 'carl@example.com' });
+});
+
+it('registers without an email', async () => {
+    renderRoutes(routes, '/register');
+
+    await submit({ email: '' });
+
+    await waitFor(() => expect(currentPath()).toBe('/'));
+    expect(fake.last('POST', '/auth/register')?.body).not.toHaveProperty('email');
 });
 
 it('says when the invite link is not valid and leaves the fields open', async () => {
@@ -104,7 +111,6 @@ it('says when the invite link is not valid and leaves the fields open', async ()
     expect(await screen.findByText('auth.inviteTokenInvalid')).toBeInTheDocument();
     expect(field('auth.inviteToken')).toBeEnabled();
     expect(field('auth.inviteToken')).toHaveValue('');
-    expect(field('auth.email')).toBeEnabled();
 });
 
 it('sends nothing while the passwords differ', async () => {

@@ -302,7 +302,6 @@
     "emailOrNameRequired": "Please enter your email or name",
     "emailOrNamePlaceholder": "Enter email or name",
     "email": "Email",
-    "emailRequired": "Please enter your email",
     "emailInvalid": "Please enter a valid email",
     "emailPlaceholder": "Enter email",
     "name": "Name",
@@ -340,17 +339,13 @@
     "close": "Close",
     "tooManyAttempts": "Too many failed sign-ins. Please wait 15 minutes and try again.",
     "passwordTooShort": "At least {{count}} characters",
-    "loginFailed": "Login failed. Please check your credentials."
+    "loginFailed": "Login failed. Please check your credentials.",
+    "emailOptional": "Optional: lets you sign in with your email, too."
   },
   "invite": {
-    "generateToken": "Generate Invite Token",
-    "generate": "Generate",
-    "myInvites": "My Invite Tokens",
-    "email": "Email",
-    "emailRequired": "Please enter an email address",
-    "emailInvalid": "Please enter a valid email address",
-    "emailPlaceholder": "Enter email address",
-    "token": "Token",
+    "generateToken": "Invite someone",
+    "generate": "Create invite link",
+    "myInvites": "My invite links",
     "expiresAt": "Expires At",
     "usedAt": "Used At",
     "used": "Used",
@@ -358,10 +353,12 @@
     "active": "Active",
     "revoke": "Revoke",
     "revokeConfirm": "Are you sure you want to revoke this invite token?",
-    "tokenCreated": "Invite token created successfully",
+    "tokenCreated": "Invite link created",
     "tokenRevoked": "Invite token revoked successfully",
     "creationFailed": "Failed to create invite token",
-    "revokeFailed": "Failed to revoke invite token"
+    "revokeFailed": "Failed to revoke invite token",
+    "createdAt": "Created",
+    "explanation": "An invite link lets one person register an account; copy it from the list below. For tonight’s guests, the session’s join link is quicker."
   },
   "profile": {
     "title": "Profile",
@@ -531,7 +528,7 @@
     "gotIt": "Got it, let's roll",
     "intro": "Raclotto is a raclette lottery: instead of choosing what goes into your pan, you let chance decide, eat what you get, and rate it.",
     "joinTitle": "1. Join a session",
-    "joinBody": "Everyone at the table joins the same session. Set what you eat under Settings: vegetarian, vegan, meat or fish, and intolerances. A random roll only gives you ingredients your diet allows; a pan you copy from the History with “$t(history.iWantThisToo)” is copied as it is.",
+    "joinBody": "Everyone at the table joins the same session; scan its join link (“Invite to the table”) and pick a name to join as a guest. Set what you eat under Settings: vegetarian, vegan, meat or fish, and intolerances. A random roll only gives you ingredients your diet allows; a pan you copy from the History with “$t(history.iWantThisToo)” is copied as it is.",
     "rollTitle": "2. Roll a pan",
     "rollBody": "Under Shuffle, roll a pan of random ingredients from the session's catalog: pick how many fillings and sauces you want, or pull the lever of the bandit and let it choose the mix too. You can also roll the preparation type and the amount of cheese.",
     "rateTitle": "3. Eat it and rate it",
@@ -725,5 +722,25 @@
     "none": "Picked with the next pan",
     "alwaysAdd": "Always put it in my pan",
     "inThisPan": "Ingredient of the hour: bonus XP!"
+  },
+  "join": {
+    "inviteToTable": "Invite to the table",
+    "scanToJoin": "Scan to join",
+    "closedSession": "This session has ended and takes no new guests.",
+    "title": "Join a session",
+    "titleSession": "Join “{{name}}”",
+    "explanation": "Pick a name and what you eat, and you are in. No password needed tonight; you can keep your account later.",
+    "invalidLink": "This join link is not valid.",
+    "haveAccount": "Have an account? Sign in instead",
+    "join": "Join",
+    "failed": "Could not join the session"
+  },
+  "guest": {
+    "notice": "You are a guest. Set a password to keep your account, XP and achievements after tonight.",
+    "keepAccount": "Keep your account",
+    "keepAccountButton": "Keep account",
+    "keepAccountExplanation": "You joined as a guest, so you can’t sign in again yet. Set a password (and an email, if you like) to keep your account, XP and achievements.",
+    "kept": "Your account is kept. Sign in with your name and password next time.",
+    "logoutWarning": "You are a guest: once you log out, you can’t sign in to this account again. Log out anyway?"
   }
 }

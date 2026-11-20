@@ -13,7 +13,9 @@ SCRIPT_LOCATION = Path(__file__).resolve().parents[2] / "migrations"
 
 # Left the models but stay in the database, so reverting their removal brings their data back.
 RETIRED_TABLES = frozenset({"insult"})
-RETIRED_COLUMNS = frozenset({("pan", "snacked"), ("achievement", "is_global"), ("achievement", "description")})
+RETIRED_COLUMNS = frozenset(
+    {("pan", "snacked"), ("achievement", "is_global"), ("achievement", "description"), ("invite_token", "email")}
+)
 
 
 class SchemaDriftError(RuntimeError):

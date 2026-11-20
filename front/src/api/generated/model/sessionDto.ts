@@ -9,6 +9,7 @@ export interface SessionDto {
   active: boolean;
   created_by_user_id: number | null;
   id: number;
+  join_code: string;
   key: string;
   name: string;
   timestamp: string;

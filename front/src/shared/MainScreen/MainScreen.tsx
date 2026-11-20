@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import {Row, Col, Card} from "antd";
+import { useEffect, useState } from "react";
+import {Row, Col, Card, Alert, Button} from "antd";
 import {onErrorRetry} from "../../lib/api/swrHooks";
 import {useListIngredients} from "../../api/generated/endpoints/ingredients/ingredients";
 import {Toolbar} from "../Toolbar/Toolbar";
@@ -7,6 +7,7 @@ import {EventDisplay} from "../EventDisplay/EventDisplay";
 import {dismissSessionEvent, useSessionEvents} from "../EventDisplay/sessionEvents";
 import {RulesIntroModal} from "../Rules/RulesIntroModal";
 import {useAppStore} from "../../AppSlice";
+import {useAuthStore} from "../../AuthSlice";
 import {useNavigate, useParams, Outlet, useLocation} from "react-router";
 import {useTranslation} from "react-i18next";
 import "./MainScreen.css";
@@ -24,6 +25,8 @@ export function MainScreen(props: MainScreenProps) {
     const location = useLocation();
 
     const sessionKey = session?.key || "";
+    const isGuest = useAuthStore((state) => state.user?.is_guest ?? false);
+    const [guestNoticeClosed, setGuestNoticeClosed] = useState(false);
     
     // Use SWR hooks for data fetching
     const { data: ingredients = [] } = useListIngredients({session_key: sessionKey}, {
@@ -87,6 +90,21 @@ export function MainScreen(props: MainScreenProps) {
                     />
                 </Col>
             </Row>
+            {/* It leads to the settings, where the account is kept. */}
+            {isGuest && !guestNoticeClosed && !location.pathname.endsWith("/settings") && (
+                <Alert
+                    type="info"
+                    showIcon
+                    className="mb-16"
+                    title={t("guest.notice")}
+                    closable={{ onClose: () => setGuestNoticeClosed(true) }}
+                    action={
+                        <Button size="small" type="primary" onClick={() => navigate(`/${session.id}/settings`)}>
+                            {t("guest.keepAccountButton")}
+                        </Button>
+                    }
+                />
+            )}
             <Row gutter={[0, 24]}>
                 <Col span={24}>
                     <EventDisplay

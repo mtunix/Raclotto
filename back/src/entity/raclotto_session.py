@@ -1,3 +1,4 @@
+import secrets
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -28,6 +29,8 @@ class RaclottoSession(Base):
     timestamp: Mapped[datetime] = mapped_column(default=datetime.now)
     active: Mapped[bool] = mapped_column(default=True)
     created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"))
+    # What the session's join link carries: whoever has it may join as a guest while the session is active.
+    join_code: Mapped[str] = mapped_column(unique=True, default=lambda: secrets.token_urlsafe(9))
 
     pans: Mapped[list[Pan]] = relationship(back_populates="session", cascade="all")
     ingredients: Mapped[list[Ingredient]] = relationship(back_populates="session", cascade="all")

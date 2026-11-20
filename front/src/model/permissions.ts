@@ -15,6 +15,11 @@ export function canDeletePan(user: MeDto | null, pan: Pick<PanDto, "user_id">): 
 }
 
 /** See who is an admin: admins only. */
+/** Guests invite no one until they keep their account. */
+export function canInvite(user: MeDto | null): boolean {
+  return user !== null && !user.is_guest;
+}
+
 export function canManageAdmins(user: MeDto | null): boolean {
   return user?.is_admin ?? false;
 }

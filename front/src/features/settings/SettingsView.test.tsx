@@ -231,8 +231,8 @@ describe('password', () => {
 });
 
 describe('invites', () => {
-    it("lists the user's invites and creates one for an email address", async () => {
-        const created = { ...invite, id: 2, email: 'dora@example.com', token: 'new-token' };
+    it("lists the user's invites and creates a link", async () => {
+        const created = { ...invite, id: 2, token: 'new-token' };
         fake.on('POST', '/invites', () => {
             invites = [created, invite];
             return created;
@@ -241,11 +241,20 @@ describe('invites', () => {
         await openTab('common.invites');
 
         expect(await screen.findByText(invite.token)).toBeInTheDocument();
-        fireEvent.change(screen.getByPlaceholderText('invite.emailPlaceholder'), { target: { value: created.email } });
-        fireEvent.click(button('invite.generate'));
+        fireEvent.click(screen.getByRole('button', { name: /invite\.generate/ }));
 
         expect(await screen.findByText(created.token)).toBeInTheDocument();
-        expect(fake.last('POST', '/invites')?.body).toEqual({ email: created.email });
+        expect(fake.last('POST', '/invites')).toBeDefined();
+    });
+
+    it('is no tab for a guest, who keeps their account instead of changing a password', async () => {
+        useAuthStore.setState({ user: { ...me, is_guest: true } });
+        fake.on('GET', '/auth/me', { ...me, is_guest: true });
+        await renderSettings();
+
+        expect(screen.queryByText('common.invites')).not.toBeInTheDocument();
+        expect(await screen.findByText('guest.keepAccount')).toBeInTheDocument();
+        expect(screen.queryByText('settings.changePassword')).not.toBeInTheDocument();
     });
 });
 

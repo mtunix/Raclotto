@@ -1,4 +1,4 @@
-import { Button, Space, Row, Col, Flex, Typography, Avatar } from "antd";
+import { Button, Space, Row, Col, Flex, Typography, Avatar, Popconfirm } from "antd";
 import {
   DashboardOutlined,
   SwapOutlined,
@@ -17,6 +17,7 @@ import { useGetUserProfile } from "../../api/generated/endpoints/users/users";
 import type { IngredientForUserDto } from "../../api/generated/model";
 import { onErrorRetry } from "../../lib/api/swrHooks";
 import { getProfilePictureUrl } from "../../lib/utils/profilePictureUrl";
+import { JoinLinkButton } from "../JoinLink/JoinLink";
 import "./Toolbar.css";
 
 // Import image from src directory
@@ -142,6 +143,7 @@ export function Toolbar(props: ToolbarProps) {
                 <Button type="default" icon={<ReadOutlined />} onClick={() => navigate("/rules")} size="small">
                   {t("rules.title")}
                 </Button>
+                {session && <JoinLinkButton session={session} />}
               </Space>
             </Flex>
             <Avatar
@@ -177,13 +179,14 @@ export function Toolbar(props: ToolbarProps) {
               {sessionName}
             </Text>
           </Space>
-          <Space size="small">
+          <Space size="small" wrap>
             <Button type="default" onClick={handleLeaveSession} size="small">
               ← {t("session.leave")}
             </Button>
             <Button type="default" icon={<ReadOutlined />} onClick={() => navigate("/rules")} size="small">
               {t("rules.title")}
             </Button>
+            {session && <JoinLinkButton session={session} />}
           </Space>
         </Flex>
         <Avatar
@@ -223,15 +226,30 @@ export function Toolbar(props: ToolbarProps) {
                 </Button>
               ))}
             </Space>
-            <Button
-              type="default"
-              danger
-              icon={<LogoutOutlined />}
-              onClick={handleLogout}
-              className="toolbar-logout-button"
-            >
-              <span className="toolbar-button-label">{t("auth.logout")}</span>
-            </Button>
+            {currentUser?.is_guest ? (
+              // A guest can't sign in again: logging out loses the account.
+              <Popconfirm
+                title={t("guest.logoutWarning")}
+                okText={t("auth.logout")}
+                okButtonProps={{ danger: true }}
+                cancelText={t("common.cancel")}
+                onConfirm={handleLogout}
+              >
+                <Button type="default" danger icon={<LogoutOutlined />} className="toolbar-logout-button">
+                  <span className="toolbar-button-label">{t("auth.logout")}</span>
+                </Button>
+              </Popconfirm>
+            ) : (
+              <Button
+                type="default"
+                danger
+                icon={<LogoutOutlined />}
+                onClick={handleLogout}
+                className="toolbar-logout-button"
+              >
+                <span className="toolbar-button-label">{t("auth.logout")}</span>
+              </Button>
+            )}
           </Flex>
         </Col>
       </Row>

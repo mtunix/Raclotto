@@ -302,7 +302,6 @@
     "emailOrNameRequired": "Bitte geben Sie Ihre E-Mail oder Ihren Namen ein",
     "emailOrNamePlaceholder": "E-Mail oder Name eingeben",
     "email": "E-Mail",
-    "emailRequired": "Bitte geben Sie Ihre E-Mail ein",
     "emailInvalid": "Bitte geben Sie eine gültige E-Mail ein",
     "emailPlaceholder": "E-Mail eingeben",
     "name": "Name",
@@ -340,17 +339,13 @@
     "close": "Schließen",
     "tooManyAttempts": "Zu viele fehlgeschlagene Anmeldungen. Bitte warten Sie 15 Minuten und versuchen Sie es erneut.",
     "passwordTooShort": "Mindestens {{count}} Zeichen",
-    "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben."
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Angaben.",
+    "emailOptional": "Optional: Dann können Sie sich auch mit Ihrer E-Mail anmelden."
   },
   "invite": {
-    "generateToken": "Einladungstoken erstellen",
-    "generate": "Erstellen",
-    "myInvites": "Meine Einladungstoken",
-    "email": "E-Mail",
-    "emailRequired": "Bitte geben Sie eine E-Mail-Adresse ein",
-    "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
-    "emailPlaceholder": "E-Mail-Adresse eingeben",
-    "token": "Token",
+    "generateToken": "Jemanden einladen",
+    "generate": "Einladungslink erstellen",
+    "myInvites": "Meine Einladungslinks",
     "expiresAt": "Läuft ab am",
     "usedAt": "Verwendet am",
     "used": "Verwendet",
@@ -358,10 +353,12 @@
     "active": "Aktiv",
     "revoke": "Widerrufen",
     "revokeConfirm": "Sind Sie sicher, dass Sie diesen Einladungstoken widerrufen möchten?",
-    "tokenCreated": "Einladungstoken erfolgreich erstellt",
+    "tokenCreated": "Einladungslink erstellt",
     "tokenRevoked": "Einladungstoken erfolgreich widerrufen",
     "creationFailed": "Fehler beim Erstellen des Einladungstokens",
-    "revokeFailed": "Fehler beim Widerrufen des Einladungstokens"
+    "revokeFailed": "Fehler beim Widerrufen des Einladungstokens",
+    "createdAt": "Erstellt",
+    "explanation": "Mit einem Einladungslink kann sich eine Person ein Konto anlegen; kopieren Sie ihn aus der Liste unten. Für die Gäste von heute Abend geht es mit dem Beitrittslink der Session schneller."
   },
   "profile": {
     "title": "Profil",
@@ -531,7 +528,7 @@
     "gotIt": "Verstanden, los geht's",
     "intro": "Raclotto ist eine Raclette-Lotterie: Statt selbst auszuwählen, was in Ihre Pfanne kommt, entscheidet der Zufall. Sie essen, was Sie bekommen, und bewerten es.",
     "joinTitle": "1. Einer Session beitreten",
-    "joinBody": "Alle am Tisch treten derselben Session bei. Unter Einstellungen legen Sie fest, was Sie essen: vegetarisch, vegan, Fleisch oder Fisch, und Unverträglichkeiten. Eine zufällige Pfanne enthält nur Zutaten, die zu Ihrer Ernährung passen; eine Pfanne, die Sie im Verlauf mit „$t(history.iWantThisToo)“ kopieren, wird so übernommen, wie sie ist.",
+    "joinBody": "Alle am Tisch treten derselben Session bei; scannen Sie ihren Beitrittslink („An den Tisch einladen“) und wählen Sie einen Namen, um als Gast mitzumachen. Unter Einstellungen legen Sie fest, was Sie essen: vegetarisch, vegan, Fleisch oder Fisch, und Unverträglichkeiten. Eine zufällige Pfanne enthält nur Zutaten, die zu Ihrer Ernährung passen; eine Pfanne, die Sie im Verlauf mit „$t(history.iWantThisToo)“ kopieren, wird so übernommen, wie sie ist.",
     "rollTitle": "2. Eine Pfanne ziehen",
     "rollBody": "Unter Mischen ziehen Sie eine Pfanne mit zufälligen Zutaten aus dem Katalog der Session: Wählen Sie, wie viele Füllungen und Saucen Sie möchten, oder ziehen Sie am Hebel des Bandits und lassen Sie auch die Mischung entscheiden. Auch Zubereitungsart und Käsemenge können Sie ziehen.",
     "rateTitle": "3. Essen und bewerten",
@@ -725,5 +722,25 @@
     "none": "Wird mit der nächsten Pfanne gezogen",
     "alwaysAdd": "Immer in meine Pfanne",
     "inThisPan": "Zutat der Stunde: Bonus-XP!"
+  },
+  "join": {
+    "inviteToTable": "An den Tisch einladen",
+    "scanToJoin": "Scannen und mitmachen",
+    "closedSession": "Diese Session ist beendet und nimmt keine neuen Gäste auf.",
+    "title": "Einer Session beitreten",
+    "titleSession": "„{{name}}“ beitreten",
+    "explanation": "Name und Ernährung wählen, schon sind Sie dabei. Heute Abend braucht es kein Passwort; Ihr Konto können Sie später behalten.",
+    "invalidLink": "Dieser Beitrittslink ist ungültig.",
+    "haveAccount": "Schon ein Konto? Stattdessen anmelden",
+    "join": "Beitreten",
+    "failed": "Beitritt zur Session fehlgeschlagen"
+  },
+  "guest": {
+    "notice": "Sie sind Gast. Legen Sie ein Passwort fest, um Konto, XP und Erfolge über heute Abend hinaus zu behalten.",
+    "keepAccount": "Konto behalten",
+    "keepAccountButton": "Konto behalten",
+    "keepAccountExplanation": "Sie sind als Gast beigetreten und können sich deshalb noch nicht wieder anmelden. Legen Sie ein Passwort (und gern eine E-Mail) fest, um Konto, XP und Erfolge zu behalten.",
+    "kept": "Ihr Konto bleibt. Melden Sie sich nächstes Mal mit Name und Passwort an.",
+    "logoutWarning": "Sie sind Gast: Nach dem Abmelden können Sie sich nicht mehr bei diesem Konto anmelden. Trotzdem abmelden?"
   }
 }

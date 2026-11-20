@@ -72,11 +72,11 @@ describe("signing in", () => {
   });
 
   it("looks an invite up by its encoded token", async () => {
-    fake.on("GET", "/auth/invite/a%2Fb", { email: "carl@example.com", expires_at: "2026-11-25T12:00:00" });
+    fake.on("GET", "/auth/invite/a%2Fb", { expires_at: "2026-11-25T12:00:00" });
 
     const found = await lookupInvite(encodeURIComponent("a/b"));
 
-    expect(found.email).toBe("carl@example.com");
+    expect(found.expires_at).toBe("2026-11-25T12:00:00");
   });
 
   it("logout clears what login stored", () => {
@@ -146,16 +146,16 @@ describe("profiles and stats", () => {
 });
 
 describe("invites", () => {
-  it("creates, lists and revokes invites with plain bodies", async () => {
+  it("creates, lists and revokes invites", async () => {
     fake.on("POST", "/invites", invite);
     fake.on("GET", "/invites", [invite]);
     fake.on("DELETE", `/invites/${invite.id}`, undefined);
 
-    expect(await createInvite({ email: invite.email })).toEqual(invite);
+    expect(await createInvite()).toEqual(invite);
     expect(await listInvites()).toEqual([invite]);
     await revokeInvite(invite.id);
 
-    expect(fake.last("POST", "/invites")?.body).toEqual({ email: invite.email });
+    expect(fake.last("POST", "/invites")?.body).toBeUndefined();
     expect(fake.last("DELETE", `/invites/${invite.id}`)).toBeDefined();
   });
 });

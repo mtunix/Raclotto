@@ -41,20 +41,18 @@ test("ends the session with a recap", async ({ page }) => {
 
 test("invites someone who then registers", async ({ page, browser }) => {
   const session = await createSession(page);
-  const email = `guest-${Date.now()}@example.test`;
   await page.goto(`/${session.id}/settings`);
   await page.getByRole("tab", { name: t("common.invites") }).click();
-  await page.getByPlaceholder(t("invite.emailPlaceholder")).fill(email);
   const created = page.waitForResponse((r) => r.url().endsWith("/api/invites") && r.request().method() === "POST");
-  await page.getByRole("button", { name: t("common.create") }).click();
+  await page.getByRole("button", { name: t("invite.generate") }).click();
   const { token } = (await (await created).json()) as { token: string };
   await expect(page.getByText(token)).toBeVisible();
 
   const guest = await browser.newPage({ storageState: { cookies: [], origins: [] } });
   await guest.goto(`/register?token=${encodeURIComponent(token)}`);
-  // The link fills in and locks the token and the invited address.
-  await expect(guest.getByPlaceholder(t("auth.emailPlaceholder"))).toHaveValue(email);
-  await expect(guest.getByPlaceholder(t("auth.emailPlaceholder"))).toBeDisabled();
+  // The link fills in and locks the token; the email is optional.
+  await expect(guest.getByPlaceholder(t("auth.inviteTokenPlaceholder"))).toHaveValue(token);
+  await expect(guest.getByPlaceholder(t("auth.inviteTokenPlaceholder"))).toBeDisabled();
   await guest.getByPlaceholder(t("auth.namePlaceholder")).fill(`guest${Date.now().toString(36)}`);
   await guest.getByPlaceholder(t("auth.passwordPlaceholder")).fill("guest-password-1");
   await guest.getByPlaceholder(t("auth.confirmPasswordPlaceholder")).fill("guest-password-1");

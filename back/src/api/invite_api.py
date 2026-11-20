@@ -1,8 +1,9 @@
 from flask import current_app
 
 from back.src.api.base_api import ApiErrorCode, BaseApi, ErrorSpec
+from back.src.api.guard import guarded, permissions
 from back.src.auth.middleware import get_current_user, require_auth
-from back.src.dto.invite import CreateInviteBody, InviteDto
+from back.src.dto.invite import InviteDto
 from back.src.interactor.accounts import AccountError, Accounts
 from back.src.repository.invite_token_repository import InviteTokenRepository
 
@@ -26,12 +27,14 @@ class InviteApi(BaseApi):
         super().__init__()
         self.invite_token_repository = InviteTokenRepository()
 
-    @BaseApi.endpoint("", ["POST"], body=CreateInviteBody, response=InviteDto, operation_id="createInvite")
+    @BaseApi.endpoint("", ["POST"], response=InviteDto, operation_id="createInvite", errors=(403,))
     @require_auth
-    def create_invite(self, body: CreateInviteBody) -> InviteDto:
-        """Invite someone by email; any signed-in user may."""
+    def create_invite(self) -> InviteDto:
+        """Create an invite link; any signed-in user but a guest may."""
+        with guarded():
+            permissions().invite()
         valid_days = current_app.config.get("INVITE_TOKEN_EXPIRATION_DAYS", 7)
-        invite = Accounts().invite(get_current_user(), body.email, valid_days)
+        invite = Accounts().invite(get_current_user(), valid_days)
         return InviteDto.model_validate(invite)
 
     @BaseApi.endpoint("", ["GET"], response=list[InviteDto], operation_id="listInvites")

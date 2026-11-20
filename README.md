@@ -8,7 +8,8 @@ Raclotto is a raclette lottery. Everyone at the table joins a session and rolls 
 ingredients from the session's catalog, filtered by their diet, then rates what they got. Rolling
 earns XP and levels, rolling and rating earn achievements, and session events such as a pan swap
 keep the table moving. When the session's creator ends it, everyone gets a recap of the evening;
-the rules are in the app under Rules. Accounts are created by invitation; ingredient catalogs can
+the rules are in the app under Rules. Guests join a session by its link or QR code with just a name and can keep the account later;
+full accounts are created by invite link. Ingredient catalogs can
 be exported and imported, and profile pictures can be generated with Google's image model.
 
 A Flask and SQLite backend serves a React and TypeScript frontend; both ship as one Docker image.

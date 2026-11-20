@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Form, Input, Button, Card, Alert } from "antd";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { login } from "../../../api/generated/endpoints/auth/auth";
 import { UnauthorizedError } from "../../../lib/api/transport";
 import { failedStatus, failureMessage } from "../../../lib/api/failedRequest";
@@ -11,6 +11,10 @@ import "./auth.css";
 export function LoginView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Only a path inside the app, so a link can't send the user elsewhere after signing in.
+  const next = searchParams.get("next");
+  const afterSignIn = next?.startsWith("/") && !next.startsWith("//") ? next : "/";
   const signIn = useAuthStore((state) => state.login);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +25,7 @@ export function LoginView() {
     void login({ name_or_email: values.email, password: values.password })
       .then(({ token, user }) => {
         signIn(token, user);
-        void navigate("/");
+        void navigate(afterSignIn);
       })
       .catch((err: unknown) => {
         setError(

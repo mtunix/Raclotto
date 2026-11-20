@@ -77,7 +77,7 @@ class _Recorder(AppTest):
         me = self.ok(self.call("GET", "/auth/me", ana))
         profile = self.ok(self.call("GET", f"/users/{ana.id}", ben))
         stats = self.ok(self.call("GET", f"/users/{ana.id}/stats", ben))
-        invite = self.ok(self.call("POST", "/invites", ana, body={"email": "carl@example.com"}))
+        invite = self.ok(self.call("POST", "/invites", ana))
         invite_lookup = self.ok(self.call("GET", f"/auth/invite/{invite['token']}"))
 
         session_dto = self.ok(self.call("GET", "/sessions/by-key", ana, query=query))
@@ -158,6 +158,10 @@ class _Recorder(AppTest):
         # The diet the registration page saves right after, with fish ticked.
         diet = dict.fromkeys(["vegetarian", "vegan", "fish", "gluten", "histamine", "fructose", "lactose"], True)
         registered_me = self.ok(self.call("PATCH", "/auth/me", carl, body={"meat": False, **diet}))
+        join_lookup = self.ok(self.call("GET", f"/auth/join/{session.join_code}"))
+        joined = self.ok(self.call("POST", "/auth/join", body={"join_code": session.join_code, "name": "Eve"}))
+        eve = db.session.get(User, joined["user"]["id"])
+        claimed_me = self.ok(self.call("POST", "/auth/claim", eve, body={"password": "eve-secret"}))
 
         assert roll["reward"]["leveled_up"] and roll["events"] and roll["achievements"], roll
         assert {a["unlocked"] for a in achievements} == {True, False}, achievements
@@ -176,6 +180,7 @@ class _Recorder(AppTest):
         assert {p["session_id"] for p in prep_types} == {None}, prep_types
         assert prep_type["session_id"] == session.id, prep_type
         assert registered_me["fish"] and not registration["user"]["fish"], registered_me
+        assert joined["user"]["is_guest"] and not claimed_me["is_guest"], claimed_me
         assert ingredient_of_the_hour["ingredient"], ingredient_of_the_hour
         assert {i["applicable"] for i in ingredients} == {True, False}, ingredients
         assert counts["fill_count"] < counts["total_fill_count"], counts
@@ -211,6 +216,9 @@ class _Recorder(AppTest):
             "eventConfigs": ("EventConfigDto[]", event_configs),
             "stats": ("StatsDto", dashboard),
             "ingredientOfTheHour": ("IngredientOfTheHourDto", ingredient_of_the_hour),
+            "joinLookup": ("JoinLookupDto", join_lookup),
+            "joinResult": ("JoinResultDto", joined),
+            "claimedMe": ("MeDto", claimed_me),
             "sessionRecap": ("SessionRecapDto", recap),
             "imageGeneration": ("ImageGenerationDto", image_generation),
             "imageGenerationUnavailable": ("ImageGenerationDto", image_generation_unavailable),

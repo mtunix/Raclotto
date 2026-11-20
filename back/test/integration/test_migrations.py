@@ -448,8 +448,8 @@ class ForeignKeysTest(unittest.TestCase):
             connection.execute(text(f"INSERT INTO alembic_version VALUES ('{_head()}')"))
             connection.execute(
                 text(
-                    "INSERT INTO session (id, key, name, timestamp, active, created_by_user_id) "
-                    "VALUES (1, 's1', 's1', '2025-12-24', 1, 9)"
+                    "INSERT INTO session (id, key, name, timestamp, active, created_by_user_id, join_code) "
+                    "VALUES (1, 's1', 's1', '2025-12-24', 1, 9, 'j1')"
                 )
             )
         engine.dispose()

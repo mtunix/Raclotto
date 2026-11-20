@@ -27,6 +27,11 @@ export const RaclottoRouter = createBrowserRouter([
                 errorElement: <ErrorPage/>,
             },
             {
+                path: "join/:code",
+                lazy: {Component: async () => (await import("./features/auth/components/JoinView")).JoinView},
+                errorElement: <ErrorPage/>,
+            },
+            {
                 path: "rules",
                 lazy: {Component: async () => (await import("./shared/Rules/RulesView")).RulesView},
                 errorElement: <ErrorPage/>,

@@ -9,7 +9,7 @@
  * An invite as its creator sees it; the token is what the registration link carries.
  */
 export interface InviteDto {
-  email: string;
+  created_at: string;
   expires_at: string;
   id: number;
   is_used: boolean;

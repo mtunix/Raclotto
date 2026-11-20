@@ -1,5 +1,5 @@
 import { me, panPage, session } from "../lib/api/__fixtures__/backendResponses";
-import { canChangeAdmin, canDeletePan, canManageAdmins, canManageSession } from "./permissions";
+import { canChangeAdmin, canDeletePan, canInvite, canManageAdmins, canManageSession } from "./permissions";
 
 const other = { ...me, id: me.id + 100 };
 
@@ -52,5 +52,13 @@ describe("admin rights", () => {
 
   it("are never an admin's own to change", () => {
     expect(canChangeAdmin(admin, me)).toBe(false);
+  });
+});
+
+describe("canInvite", () => {
+  it("lets anyone signed in invite but a guest", () => {
+    expect(canInvite(me)).toBe(true);
+    expect(canInvite({ ...me, is_guest: true })).toBe(false);
+    expect(canInvite(null)).toBe(false);
   });
 });

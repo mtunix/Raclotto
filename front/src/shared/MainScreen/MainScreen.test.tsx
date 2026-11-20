@@ -3,7 +3,7 @@ import { type RouteObject } from 'react-router';
 import { useAppStore } from '../../AppSlice';
 import { useAuthStore } from '../../AuthSlice';
 import type { SessionDto } from '../../api/generated/model';
-import { events, ingredientsForUser, session } from '../../lib/api/__fixtures__/backendResponses';
+import { events, ingredientsForUser, me, session } from '../../lib/api/__fixtures__/backendResponses';
 import { FakeTransport } from '../../lib/api/fakeTransport';
 import { setTransport, type Transport } from '../../lib/api/transport';
 import { currentPath, renderRoutes, settle } from '../../testUtils';
@@ -95,4 +95,24 @@ it('leaves for the start screen when the URL names another session', async () =>
     await act(() => vi.advanceTimersByTimeAsync(500));
 
     expect(currentPath()).toBe('/');
+});
+
+it('reminds a guest to keep their account and leads to the settings', async () => {
+    useAuthStore.setState({ user: { ...me, is_guest: true } });
+    const current = inSession();
+    const { router } = renderRoutes(routes, `/${current.id}`, { sharedCache: true });
+
+    expect(screen.getByText('guest.notice')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'guest.keepAccountButton' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/${current.id}/settings`));
+});
+
+it('reminds no one with an account', async () => {
+    useAuthStore.setState({ user: me });
+    const current = inSession();
+    renderRoutes(routes, `/${current.id}`, { sharedCache: true });
+
+    expect(screen.queryByText('guest.notice')).not.toBeInTheDocument();
+    await settle();
 });

@@ -26,6 +26,7 @@ export interface MeDto {
   histamine: boolean;
   id: number;
   is_admin: boolean;
+  is_guest: boolean;
   lactose: boolean;
   language: MeDtoLanguage;
   level: LevelDto | null;

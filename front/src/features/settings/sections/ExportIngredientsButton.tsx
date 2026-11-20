@@ -3,7 +3,7 @@ import { Button, Input, message, Modal } from "antd";
 import { CopyOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { exportIngredients } from "../../../api/generated/endpoints/ingredients/ingredients";
-import { copyToClipboard } from "../copyToClipboard";
+import { copyToClipboard } from "../../../shared/copyToClipboard";
 import "../SettingsView.css";
 
 /** Shows the session's ingredients as an export file and copies it right away. */

@@ -19,8 +19,12 @@ import type {
 import type {
   AuthResultDto,
   ChangePasswordBody,
+  ClaimAccountBody,
   ErrorResponseDto,
   InviteLookupDto,
+  JoinBody,
+  JoinLookupDto,
+  JoinResultDto,
   LoginBody,
   MeDto,
   RegisterBody,
@@ -36,6 +40,50 @@ import type { ErrorType } from '../../../../lib/api/orvalMutator';
 
 
  /**
+ * @summary Keep the signed-in guest's account by setting a password, so it can sign in again.
+ */
+export const claimAccount = (
+    claimAccountBody: ClaimAccountBody,
+ ) => {
+    return orvalMutator<MeDto>(
+    {url: `/auth/claim`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: claimAccountBody
+    },
+    );
+  }
+
+
+
+export const getClaimAccountMutationFetcher = ( ) => {
+  return (_: Key, { arg }: { arg: ClaimAccountBody }) => {
+    return claimAccount(arg);
+  }
+}
+export const getClaimAccountMutationKey = () => [`/auth/claim`] as const;
+
+export type ClaimAccountMutationResult = NonNullable<Awaited<ReturnType<typeof claimAccount>>>
+
+/**
+ * @summary Keep the signed-in guest's account by setting a password, so it can sign in again.
+ */
+export const useClaimAccount = <TError = ErrorType<ErrorResponseDto>>(
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof claimAccount>>, TError, Key, ClaimAccountBody, Awaited<ReturnType<typeof claimAccount>>> & { swrKey?: string }, }
+) => {
+
+  const {swr: swrOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getClaimAccountMutationKey();
+  const swrFn = getClaimAccountMutationFetcher();
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
  * @summary Look up an unused invite for the registration page; too many wrong tokens pause the address.
  */
 export const lookupInvite = (
@@ -64,6 +112,87 @@ export const useLookupInvite = <TError = ErrorType<ErrorResponseDto>>(
   const isEnabled = swrOptions?.enabled !== false && token !== null && token !== undefined
   const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getLookupInviteKey(token) : null);
   const swrFn = () => lookupInvite(token)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Join an active session as a guest and sign in; too many wrong codes pause the address.
+ */
+export const joinAsGuest = (
+    joinBody: JoinBody,
+ ) => {
+    return orvalMutator<JoinResultDto>(
+    {url: `/auth/join`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: joinBody
+    },
+    );
+  }
+
+
+
+export const getJoinAsGuestMutationFetcher = ( ) => {
+  return (_: Key, { arg }: { arg: JoinBody }) => {
+    return joinAsGuest(arg);
+  }
+}
+export const getJoinAsGuestMutationKey = () => [`/auth/join`] as const;
+
+export type JoinAsGuestMutationResult = NonNullable<Awaited<ReturnType<typeof joinAsGuest>>>
+
+/**
+ * @summary Join an active session as a guest and sign in; too many wrong codes pause the address.
+ */
+export const useJoinAsGuest = <TError = ErrorType<ErrorResponseDto>>(
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof joinAsGuest>>, TError, Key, JoinBody, Awaited<ReturnType<typeof joinAsGuest>>> & { swrKey?: string }, }
+) => {
+
+  const {swr: swrOptions} = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getJoinAsGuestMutationKey();
+  const swrFn = getJoinAsGuestMutationFetcher();
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+/**
+ * @summary Look up the session a join link opens; too many wrong codes pause the address.
+ */
+export const lookupJoinCode = (
+    joinCode: string,
+ ) => {
+    return orvalMutator<JoinLookupDto>(
+    {url: `/auth/join/${joinCode}`, method: 'GET'
+    },
+    );
+  }
+
+
+
+export const getLookupJoinCodeKey = (joinCode: string,) => [`/auth/join/${joinCode}`] as const;
+
+export type LookupJoinCodeQueryResult = NonNullable<Awaited<ReturnType<typeof lookupJoinCode>>>
+
+/**
+ * @summary Look up the session a join link opens; too many wrong codes pause the address.
+ */
+export const useLookupJoinCode = <TError = ErrorType<ErrorResponseDto>>(
+  joinCode: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof lookupJoinCode>>, TError> & { swrKey?: Key, enabled?: boolean },  }
+) => {
+  const {swr: swrOptions} = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && joinCode !== null && joinCode !== undefined
+  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getLookupJoinCodeKey(joinCode) : null);
+  const swrFn = () => lookupJoinCode(joinCode)
 
   const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 

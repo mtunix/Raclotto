@@ -6,11 +6,10 @@
  */
 
 /**
- * Sign up with an unused invite; the email must be the one the invite was made for.
+ * Sign up with an unused invite; the email is optional and only another way to sign in.
  */
 export interface RegisterBody {
-  /** @minLength 1 */
-  email: string;
+  email?: string | null;
   /** @minLength 1 */
   name: string;
   /** @minLength 8 */

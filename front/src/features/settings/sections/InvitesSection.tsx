@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card, Alert, Form, Input, Button, Space, Tag, message } from "antd";
-import { CopyOutlined, CloseOutlined } from "@ant-design/icons";
+import { Card, Alert, Button, Space, Tag, Typography, message } from "antd";
+import { CopyOutlined, CloseOutlined, LinkOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { createInvite, revokeInvite, useListInvites } from "../../../api/generated/endpoints/invites/invites";
 import type { InviteDto } from "../../../api/generated/model";
@@ -9,12 +9,14 @@ import { onErrorRetry } from "../../../lib/api/swrHooks";
 import { formatDateTime, useLanguage } from "../../../lib/language";
 import { ConfirmDeleteButton } from "../../../shared/ConfirmDeleteButton";
 import { ItemList, ItemMeta, ItemRow } from "../../../shared/ItemList/ItemList";
-import { copyToClipboard } from "../copyToClipboard";
+import { copyToClipboard } from "../../../shared/copyToClipboard";
 import "../SettingsView.css";
 
 const isExpired = (invite: InviteDto) => new Date(invite.expires_at) < new Date();
+const registrationLink = (invite: InviteDto) =>
+    `${window.location.origin}/register?token=${encodeURIComponent(invite.token)}`;
 
-/** Invite someone by email and keep track of the invites you sent. */
+/** Make invite links for full accounts and keep track of them; guests at the table join by the session's link. */
 export function InvitesSection() {
     const { t } = useTranslation();
     const language = useLanguage();
@@ -24,10 +26,10 @@ export function InvitesSection() {
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    function onCreate(values: { email: string }) {
+    function onCreate() {
         setCreating(true);
         setError(null);
-        void createInvite({ email: values.email })
+        void createInvite()
             .then(() => {
                 void mutate();
                 message.success(t("invite.tokenCreated"));
@@ -50,8 +52,8 @@ export function InvitesSection() {
 
     return (
         <div className="settings-session-tab">
-            <Card 
-                title={<span className="settings-section-title settings-card-title">{t("invite.generateToken")}</span>} 
+            <Card
+                title={<span className="settings-section-title settings-card-title">{t("invite.generateToken")}</span>}
                 className="settings-card mb-24"
                 classNames={{ body: "settings-card-body" }}
             >
@@ -64,38 +66,20 @@ export function InvitesSection() {
                         className="settings-alert mb-16"
                     />
                 )}
-                <Form
-                    name="createInvite"
-                    onFinish={onCreate}
-                    layout="vertical"
-                    autoComplete="off"
+                <Typography.Paragraph type="secondary">{t("invite.explanation")}</Typography.Paragraph>
+                <Button
+                    type="primary"
+                    size="large"
+                    icon={<LinkOutlined />}
+                    onClick={onCreate}
+                    loading={creating}
+                    className="settings-save-button-medium"
                 >
-                    <Form.Item
-                        label={<span className="settings-section-title">{t("invite.email")}</span>}
-                        name="email"
-                        rules={[
-                            { required: true, message: t("invite.emailRequired") },
-                            { type: 'email', message: t("invite.emailInvalid") }
-                        ]}
-                    >
-                        <Input size="large" placeholder={t("invite.emailPlaceholder")} />
-                    </Form.Item>
-
-                    <Form.Item className="mb-0">
-                        <Button 
-                            type="primary" 
-                            size="large" 
-                            htmlType="submit" 
-                            loading={creating}
-                            className="settings-save-button-medium"
-                        >
-                            {t("invite.generate")}
-                        </Button>
-                    </Form.Item>
-                </Form>
+                    {t("invite.generate")}
+                </Button>
             </Card>
 
-            <Card 
+            <Card
                 title={<span className="settings-section-title settings-card-title">{t("invite.myInvites")}</span>}
                 className="settings-card"
                 classNames={{ body: "settings-card-body" }}
@@ -112,12 +96,7 @@ export function InvitesSection() {
                                         type="text"
                                         icon={<CopyOutlined />}
                                         aria-label={t("settings.copyToClipboard")}
-                                        onClick={() =>
-                                            copyToClipboard(
-                                                `${window.location.origin}/register?token=${encodeURIComponent(invite.token)}`,
-                                                t,
-                                            )
-                                        }
+                                        onClick={() => void copyToClipboard(registrationLink(invite), t)}
                                         size="large"
                                         className="settings-icon-button"
                                     />
@@ -136,7 +115,7 @@ export function InvitesSection() {
                             <ItemMeta
                                 title={
                                     <Space>
-                                        <span>{invite.email}</span>
+                                        <code>{invite.token}</code>
                                         {invite.is_used && <Tag color="green">{t("invite.used")}</Tag>}
                                         {!invite.is_used && isExpired(invite) && (
                                             <Tag color="red">{t("invite.expired")}</Tag>
@@ -149,7 +128,7 @@ export function InvitesSection() {
                                 description={
                                     <div>
                                         <div>
-                                            <strong>{t("invite.token")}:</strong> <code>{invite.token}</code>
+                                            <strong>{t("invite.createdAt")}:</strong> {formatDateTime(invite.created_at, language)}
                                         </div>
                                         <div>
                                             <strong>{t("invite.expiresAt")}:</strong> {formatDateTime(invite.expires_at, language)}

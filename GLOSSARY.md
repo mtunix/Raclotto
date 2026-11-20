@@ -41,9 +41,20 @@ and default preparation types.
 Code: `User.is_admin`; the first admin comes from `RACLOTTO_ADMIN_PASSWORD`.
 
 **Invite**:
-A single-use token that lets one email address register. It expires (7 days by default) and its
-creator can revoke it until it is used. Any signed-in user can issue one.
-Code: `InviteToken`, `InviteDto`, `Accounts.invite` / `register` / `revoke`. UI: "Invite Token".
+A single-use link that lets whoever has it register an account; an email is optional. It expires
+(7 days by default) and its creator can revoke it until it is used. Any signed-in user but a guest
+can issue one.
+Code: `InviteToken`, `InviteDto`, `Accounts.invite` / `register` / `revoke`. UI: "Invite link".
+
+**Join link**:
+A session's link, shown as a QR code, that lets anyone join it as a guest while it is active.
+Code: `RaclottoSession.join_code`, `Accounts.join_as_guest`, `/join/:code`. UI: "Invite to the table".
+_Avoid_: invite (that is for an account)
+
+**Guest**:
+A user who joined through a join link with only a name: no password, so they can't sign in again
+until they keep the account by setting one (claiming it).
+Code: `User.password` null, `MeDto.is_guest`, `Accounts.claim`. UI: "Keep account".
 
 ## Ingredients
 

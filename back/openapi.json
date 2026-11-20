@@ -358,6 +358,34 @@
         "title": "ChangePasswordBody",
         "type": "object"
       },
+      "ClaimAccountBody": {
+        "additionalProperties": false,
+        "description": "Keep a guest account: a password, and optionally an email to sign in with.",
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Email"
+          },
+          "password": {
+            "minLength": 8,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "ClaimAccountBody",
+        "type": "object"
+      },
       "CreateIngredientBody": {
         "additionalProperties": false,
         "properties": {
@@ -432,21 +460,6 @@
           "type"
         ],
         "title": "CreateIngredientBody",
-        "type": "object"
-      },
-      "CreateInviteBody": {
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "minLength": 1,
-            "title": "Email",
-            "type": "string"
-          }
-        },
-        "required": [
-          "email"
-        ],
-        "title": "CreateInviteBody",
         "type": "object"
       },
       "CreatePanBody": {
@@ -1243,8 +1256,9 @@
       "InviteDto": {
         "description": "An invite as its creator sees it; the token is what the registration link carries.",
         "properties": {
-          "email": {
-            "title": "Email",
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
             "type": "string"
           },
           "expires_at": {
@@ -1280,7 +1294,7 @@
         "required": [
           "id",
           "token",
-          "email",
+          "created_at",
           "expires_at",
           "is_used",
           "used_at"
@@ -1291,10 +1305,6 @@
       "InviteLookupDto": {
         "description": "What the registration page shows for a valid invite link.",
         "properties": {
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
           "expires_at": {
             "format": "date-time",
             "title": "Expires At",
@@ -1302,10 +1312,88 @@
           }
         },
         "required": [
-          "email",
           "expires_at"
         ],
         "title": "InviteLookupDto",
+        "type": "object"
+      },
+      "JoinBody": {
+        "additionalProperties": false,
+        "description": "Join a session as a guest: a name is all it takes.",
+        "properties": {
+          "join_code": {
+            "minLength": 1,
+            "title": "Join Code",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "profile_picture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Profile Picture"
+          }
+        },
+        "required": [
+          "join_code",
+          "name"
+        ],
+        "title": "JoinBody",
+        "type": "object"
+      },
+      "JoinLookupDto": {
+        "description": "The session a join link opens.",
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "integer"
+          },
+          "session_name": {
+            "title": "Session Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "session_name",
+          "active"
+        ],
+        "title": "JoinLookupDto",
+        "type": "object"
+      },
+      "JoinResultDto": {
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/SessionDto"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MeDto"
+          }
+        },
+        "required": [
+          "token",
+          "user",
+          "session"
+        ],
+        "title": "JoinResultDto",
         "type": "object"
       },
       "LeaderboardEntryDto": {
@@ -1478,6 +1566,10 @@
             "title": "Is Admin",
             "type": "boolean"
           },
+          "is_guest": {
+            "title": "Is Guest",
+            "type": "boolean"
+          },
           "lactose": {
             "title": "Lactose",
             "type": "boolean"
@@ -1557,6 +1649,7 @@
           "gluten",
           "language",
           "is_admin",
+          "is_guest",
           "add_ingredient_of_the_hour",
           "experience_points",
           "level",
@@ -1948,12 +2041,19 @@
       },
       "RegisterBody": {
         "additionalProperties": false,
-        "description": "Sign up with an unused invite; the email must be the one the invite was made for.",
+        "description": "Sign up with an unused invite; the email is optional and only another way to sign in.",
         "properties": {
           "email": {
-            "minLength": 1,
-            "title": "Email",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Email"
           },
           "name": {
             "minLength": 1,
@@ -1985,7 +2085,6 @@
         },
         "required": [
           "token",
-          "email",
           "name",
           "password"
         ],
@@ -2217,6 +2316,10 @@
             "title": "Id",
             "type": "integer"
           },
+          "join_code": {
+            "title": "Join Code",
+            "type": "string"
+          },
           "key": {
             "title": "Key",
             "type": "string"
@@ -2237,7 +2340,8 @@
           "name",
           "timestamp",
           "active",
-          "created_by_user_id"
+          "created_by_user_id",
+          "join_code"
         ],
         "title": "SessionDto",
         "type": "object"
@@ -3198,6 +3302,72 @@
         ]
       }
     },
+    "/auth/claim": {
+      "post": {
+        "operationId": "claimAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimAccountBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Keep the signed-in guest's account by setting a password, so it can sign in again.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/auth/invite/{token}": {
       "get": {
         "operationId": "lookupInvite",
@@ -3244,6 +3414,118 @@
           }
         },
         "summary": "Look up an unused invite for the registration page; too many wrong tokens pause the address.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/join": {
+      "post": {
+        "operationId": "joinAsGuest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinResultDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Join an active session as a guest and sign in; too many wrong codes pause the address.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/join/{join_code}": {
+      "get": {
+        "operationId": "lookupJoinCode",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "join_code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinLookupDto"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Look up the session a join link opens; too many wrong codes pause the address.",
         "tags": [
           "auth"
         ]
@@ -5035,16 +5317,6 @@
       },
       "post": {
         "operationId": "createInvite",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInviteBody"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -5056,16 +5328,6 @@
             },
             "description": "OK"
           },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
           "401": {
             "content": {
               "application/json": {
@@ -5075,6 +5337,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -5082,7 +5354,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Invite someone by email; any signed-in user may.",
+        "summary": "Create an invite link; any signed-in user but a guest may.",
         "tags": [
           "invites"
         ]

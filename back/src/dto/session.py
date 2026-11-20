@@ -14,6 +14,8 @@ class SessionDto(ResponseDto):
     active: bool
     # Null for sessions created without a signed-in creator.
     created_by_user_id: int | None
+    # What the session's join link carries; anyone with it may join as a guest while the session is active.
+    join_code: str
 
 
 class SessionKeyQuery(RequestDto):

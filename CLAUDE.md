@@ -78,7 +78,8 @@ The deep modules in `interactor/` and what they own:
   into `EventType` in `dto/event.py`, and its name and message, filled from the event's `data`, into
   the frontend's `events.types.<type>`.
 - **`accounts.py` — `Accounts`**: invites (issue, look up, revoke), creating users, by
-  registration or the admin seed (`is_admin`), signing in (an unknown account is refused as slowly
+  registration, a session's join code (a guest: no password, until `claim` sets one) or the admin
+  seed (`is_admin`), signing in (an unknown account is refused as slowly
   as a wrong password), granting or revoking admin, and changing a password,
   which bumps the user's `token_version` and so revokes every token issued before; a new user
   starts at the lowest level.

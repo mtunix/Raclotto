@@ -47,7 +47,7 @@ test("levels up a new cook without asking for a picture the server can't make", 
   await addIngredients(page, session, PANTRY);
   const admin = await api(page);
   const email = `climber-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@example.test`;
-  const { token } = await admin.post<{ token: string }>("/invites", { email });
+  const { token } = await admin.post<{ token: string }>("/invites", {});
   const climber = await admin.post<{ token: string; user: { id: number } }>("/auth/register", {
     token,
     email,
@@ -104,7 +104,7 @@ test("announces a pan swap and lists achievements in German", async ({ page }) =
   await addIngredients(page, session, PANTRY);
   const admin = await api(page);
   const email = `swapper-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@example.test`;
-  const { token } = await admin.post<{ token: string }>("/invites", { email });
+  const { token } = await admin.post<{ token: string }>("/invites", {});
   const name = email.split("@")[0];
   const swapper = await admin.post<{ token: string }>("/auth/register", { token, email, name, password: "swapper-password-1" });
   const roll = { num_fill: 1, num_sauce: 1 };

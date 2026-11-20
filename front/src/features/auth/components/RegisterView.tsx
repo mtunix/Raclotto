@@ -32,7 +32,7 @@ export function RegisterView() {
   const [form] = Form.useForm();
   const [invitePrefilled, setInvitePrefilled] = useState(false);
 
-  // Prefill invite token & email if ?token=... is present in the URL
+  // Prefill the invite token if ?token=... is present in the URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
@@ -47,12 +47,9 @@ export function RegisterView() {
       setLoading(true);
       // The generated client puts path parameters into the URL as they are.
       await lookupInvite(encodeURIComponent(token))
-        .then((invite) => {
-          if (!cancelled && invite.email) {
-            form.setFieldsValue({
-              token,
-              email: invite.email,
-            });
+        .then(() => {
+          if (!cancelled) {
+            form.setFieldsValue({ token });
             setInvitePrefilled(true);
             setError(null);
           }
@@ -90,7 +87,7 @@ export function RegisterView() {
 
   const onFinish = (values: {
     token: string;
-    email: string;
+    email?: string;
     name: string;
     password: string;
     confirmPassword: string;
@@ -104,7 +101,7 @@ export function RegisterView() {
     setError(null);
     void register({
       token: values.token,
-      email: values.email,
+      ...(values.email ? { email: values.email } : {}),
       name: values.name,
       password: values.password,
       ...(profilePicture ? { profile_picture: profilePicture } : {}),
@@ -164,17 +161,11 @@ export function RegisterView() {
           <Form.Item
             label={t("auth.email")}
             name="email"
-            rules={[
-              { required: true, message: t("auth.emailRequired") },
-              { type: "email", message: t("auth.emailInvalid") },
-            ]}
+            rules={[{ type: "email", message: t("auth.emailInvalid") }]}
+            extra={t("auth.emailOptional")}
             className="mb-24"
           >
-            <Input
-              size="large"
-              placeholder={t("auth.emailPlaceholder")}
-              disabled={invitePrefilled}
-            />
+            <Input size="large" placeholder={t("auth.emailPlaceholder")} />
           </Form.Item>
 
           <Form.Item

@@ -98,3 +98,24 @@ it('signs out to the login page', async () => {
     expect(useAppStore.getState().session).toBeNull();
     expect(useAuthStore.getState().user).toBeNull();
 });
+
+it("shows the session's join link as a QR code to scan", async () => {
+    renderAt(`/${session.id}`);
+
+    fireEvent.click(screen.getAllByText('join.inviteToTable')[0]);
+
+    expect(await screen.findByText(`${window.location.origin}/join/${session.join_code}`)).toBeInTheDocument();
+    expect(document.querySelector('.join-qr-code svg')).not.toBeNull();
+});
+
+it('asks a guest before logging out, since they could not sign in again', async () => {
+    useAuthStore.setState({ user: { ...me, is_guest: true } });
+    renderAt(`/${session.id}`);
+
+    fireEvent.click(button('auth.logout'));
+
+    expect(await screen.findByText('guest.logoutWarning')).toBeInTheDocument();
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    fireEvent.click(screen.getAllByRole('button', { name: 'auth.logout' }).at(-1) as HTMLElement);
+    await waitFor(() => expect(useAuthStore.getState().isAuthenticated).toBe(false));
+});

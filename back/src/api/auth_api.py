@@ -6,8 +6,19 @@ from back.src.api.base_api import ApiError, ApiErrorCode, BaseApi, ErrorSpec
 from back.src.auth.jwt import generate_token
 from back.src.auth.middleware import get_current_user, require_auth
 from back.src.auth.throttle import login_throttle
-from back.src.dto.auth import AuthResultDto, ChangePasswordBody, LoginBody, RegisterBody, TokenDto
+from back.src.dto.auth import (
+    AuthResultDto,
+    ChangePasswordBody,
+    ClaimAccountBody,
+    JoinBody,
+    JoinLookupDto,
+    JoinResultDto,
+    LoginBody,
+    RegisterBody,
+    TokenDto,
+)
 from back.src.dto.invite import InviteLookupDto
+from back.src.dto.session import SessionDto
 from back.src.dto.user import MeDto, UpdateMeBody
 from back.src.entity.user import User
 from back.src.interactor.accounts import AccountError, Accounts
@@ -39,7 +50,7 @@ def _invite_key() -> str:
 
 
 # What a token guess runs into; a taken name is not one.
-_INVITE_GUESSES = {AccountError.UNKNOWN_INVITE, AccountError.SPENT_INVITE, AccountError.EMAIL_MISMATCH}
+_INVITE_GUESSES = {AccountError.UNKNOWN_INVITE, AccountError.SPENT_INVITE}
 _INVALID_INVITE = "Invalid invite token"
 _REGISTRATION_ERRORS = {
     AccountError.UNKNOWN_INVITE: ErrorSpec(
@@ -48,14 +59,26 @@ _REGISTRATION_ERRORS = {
     AccountError.SPENT_INVITE: ErrorSpec(
         ApiErrorCode.invalid_token, 400, _INVALID_INVITE, "The invite token has already been used or has expired"
     ),
-    AccountError.EMAIL_MISMATCH: ErrorSpec(
-        ApiErrorCode.incorrect_parameters,
-        400,
-        "Email mismatch",
-        "The provided email does not match the invite token's email",
-    ),
     AccountError.TAKEN: ErrorSpec(
         ApiErrorCode.incorrect_parameters, 400, "User already exists", "A user with this email or name already exists"
+    ),
+}
+_UNKNOWN_JOIN_CODE = ErrorSpec(
+    ApiErrorCode.invalid_token, 400, "Invalid join link", "The join link does not belong to any session"
+)
+_JOIN_ERRORS = {
+    AccountError.UNKNOWN_JOIN_CODE: _UNKNOWN_JOIN_CODE,
+    AccountError.CLOSED_SESSION: ErrorSpec(
+        ApiErrorCode.conflict, 409, "Session closed", "The session is closed and takes no new guests"
+    ),
+    AccountError.TAKEN: _REGISTRATION_ERRORS[AccountError.TAKEN],
+}
+_CLAIM_ERRORS = {
+    AccountError.NOT_A_GUEST: ErrorSpec(
+        ApiErrorCode.conflict, 409, "Not a guest", "The account has a password already"
+    ),
+    AccountError.TAKEN: ErrorSpec(
+        ApiErrorCode.incorrect_parameters, 400, "Email taken", "Another user signs in with this email"
     ),
 }
 
@@ -76,6 +99,50 @@ class AuthApi(BaseApi):
                 login_throttle().failed(_invite_key())
             raise _REGISTRATION_ERRORS[e.kind].error() from e
         return AuthResultDto(token=_token(user), user=_me(user))
+
+    @BaseApi.endpoint(
+        "/join/<string:join_code>",
+        ["GET"],
+        response=JoinLookupDto,
+        operation_id="lookupJoinCode",
+        errors=(400, 429),
+    )
+    def lookup_join_code(self, join_code: str) -> JoinLookupDto:
+        """Look up the session a join link opens; too many wrong codes pause the address."""
+        _refuse_if_paused(_invite_key(), "join links")
+        try:
+            session = Accounts().joinable_session(join_code)
+        except AccountError as e:
+            login_throttle().failed(_invite_key())
+            raise _UNKNOWN_JOIN_CODE.error() from e
+        return JoinLookupDto(session_id=session.id, session_name=session.name, active=session.active)
+
+    @BaseApi.endpoint(
+        "/join", ["POST"], body=JoinBody, response=JoinResultDto, operation_id="joinAsGuest", errors=(409, 429)
+    )
+    def join(self, body: JoinBody) -> JoinResultDto:
+        """Join an active session as a guest and sign in; too many wrong codes pause the address."""
+        _refuse_if_paused(_invite_key(), "join links")
+        try:
+            user, session = Accounts().join_as_guest(body.join_code, body.name, body.profile_picture)
+        except AccountError as e:
+            if e.kind == AccountError.UNKNOWN_JOIN_CODE:
+                login_throttle().failed(_invite_key())
+            raise _JOIN_ERRORS[e.kind].error() from e
+        return JoinResultDto(token=_token(user), user=_me(user), session=SessionDto.model_validate(session))
+
+    @BaseApi.endpoint(
+        "/claim", ["POST"], body=ClaimAccountBody, response=MeDto, operation_id="claimAccount", errors=(400, 409)
+    )
+    @require_auth
+    def claim(self, body: ClaimAccountBody) -> MeDto:
+        """Keep the signed-in guest's account by setting a password, so it can sign in again."""
+        user = get_current_user()
+        try:
+            Accounts().claim(user, body.password, body.email)
+        except AccountError as e:
+            raise _CLAIM_ERRORS[e.kind].error() from e
+        return _me(user)
 
     @BaseApi.endpoint(
         "/login", ["POST"], body=LoginBody, response=AuthResultDto, operation_id="login", errors=(401, 429)

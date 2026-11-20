@@ -17,7 +17,6 @@ import type {
 } from 'swr/mutation';
 
 import type {
-  CreateInviteBody,
   ErrorResponseDto,
   InviteDto
 } from '../../model';
@@ -67,15 +66,13 @@ export const useListInvites = <TError = ErrorType<ErrorResponseDto>>(
   }
 }
 /**
- * @summary Invite someone by email; any signed-in user may.
+ * @summary Create an invite link; any signed-in user but a guest may.
  */
 export const createInvite = (
-    createInviteBody: CreateInviteBody,
+
  ) => {
     return orvalMutator<InviteDto>(
-    {url: `/invites`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: createInviteBody
+    {url: `/invites`, method: 'POST'
     },
     );
   }
@@ -83,8 +80,8 @@ export const createInvite = (
 
 
 export const getCreateInviteMutationFetcher = ( ) => {
-  return (_: Key, { arg }: { arg: CreateInviteBody }) => {
-    return createInvite(arg);
+  return (_: Key, __: { arg: Arguments }) => {
+    return createInvite();
   }
 }
 export const getCreateInviteMutationKey = () => [`/invites`] as const;
@@ -92,10 +89,10 @@ export const getCreateInviteMutationKey = () => [`/invites`] as const;
 export type CreateInviteMutationResult = NonNullable<Awaited<ReturnType<typeof createInvite>>>
 
 /**
- * @summary Invite someone by email; any signed-in user may.
+ * @summary Create an invite link; any signed-in user but a guest may.
  */
 export const useCreateInvite = <TError = ErrorType<ErrorResponseDto>>(
-   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createInvite>>, TError, Key, CreateInviteBody, Awaited<ReturnType<typeof createInvite>>> & { swrKey?: string }, }
+   options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createInvite>>, TError, Key, Arguments, Awaited<ReturnType<typeof createInvite>>> & { swrKey?: string }, }
 ) => {
 
   const {swr: swrOptions} = options ?? {}

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Tabs } from "antd";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../AuthSlice";
-import { canManageAdmins } from "../../model/permissions";
+import { canInvite, canManageAdmins } from "../../model/permissions";
 import { UserSettingsSection } from "./sections/UserSettingsSection";
 import { SessionSettingsSection } from "./sections/SessionSettingsSection";
 import { EventSettingsSection } from "./sections/EventSettingsSection";
@@ -26,7 +26,7 @@ export function SettingsView() {
         tab("user", t("settings.userSettings"), <UserSettingsSection />),
         tab("session", t("settings.sessionSettings"), <SessionSettingsSection />),
         tab("events", t("settings.eventSettings"), <EventSettingsSection />),
-        tab("invites", t("common.invites"), <InvitesSection />),
+        ...(canInvite(user) ? [tab("invites", t("common.invites"), <InvitesSection />)] : []),
         ...(canManageAdmins(user) ? [tab("admins", t("settings.admins"), <AdminsSection />)] : []),
       ]}
     />

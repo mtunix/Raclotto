@@ -3,6 +3,7 @@ import { LockOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { TagChipGroup } from "../../../shared/TagChipGroup";
 import { ChangePasswordSection } from "./ChangePasswordSection";
+import { KeepAccountSection } from "./KeepAccountSection";
 import { useUserSettingsForm } from "./useUserSettingsForm";
 import "../SettingsView.css";
 
@@ -275,7 +276,7 @@ export function UserSettingsSection() {
                     </Form.Item>
                 </Card>
             )}
-            <ChangePasswordSection />
+            {me?.is_guest ? <KeepAccountSection /> : <ChangePasswordSection />}
         </div>
     );
 }

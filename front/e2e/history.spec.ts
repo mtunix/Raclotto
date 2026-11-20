@@ -8,7 +8,7 @@ async function registerCook(page: Page) {
   const admin = await api(page);
   const email = `cook-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@example.test`;
   const name = email.split("@")[0];
-  const { token } = await admin.post<{ token: string }>("/invites", { email });
+  const { token } = await admin.post<{ token: string }>("/invites", {});
   const cook = await admin.post<{ token: string }>("/auth/register", { token, email, name, password: COOK_PASSWORD });
   return { name, token: cook.token };
 }

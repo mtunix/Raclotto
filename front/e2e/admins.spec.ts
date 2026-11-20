@@ -4,7 +4,7 @@ test("grants admin to a new user, who then sees the admin settings", async ({ pa
   const stamp = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const guest = { name: `guest${stamp}`, email: `guest-${stamp}@example.test`, password: "guest-password-1" };
   const session = await createSession(page);
-  const { token } = await (await api(page)).post<{ token: string }>("/invites", { email: guest.email });
+  const { token } = await (await api(page)).post<{ token: string }>("/invites", {});
   const registered = await page.request.post("/api/auth/register", {
     data: { token, email: guest.email, name: guest.name, password: guest.password },
   });

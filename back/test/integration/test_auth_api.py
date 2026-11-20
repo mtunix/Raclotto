@@ -4,11 +4,11 @@ import jwt
 
 from back.src.auth.password import hash_password
 from back.src.driver.database import db
-from back.src.dto.auth import AuthResultDto, TokenDto
+from back.src.dto.auth import AuthResultDto, JoinLookupDto, JoinResultDto, TokenDto
 from back.src.dto.user import MeDto
 from back.src.entity.invite_token import InviteToken
 from back.src.entity.profile_picture_history import ProfilePictureHistory
-from back.src.entity.user import User
+from back.src.entity.user import User, user_sessions
 from back.src.repository.level_repository import LevelRepository
 from back.test.support import AppTest
 
@@ -306,7 +306,7 @@ class TestRefresh(AuthTest):
 
 class TestRegister(AuthTest):
     def register(self, invite: InviteToken, **overrides):
-        body = {"token": invite.token, "email": invite.email, "name": "ben", "password": "pw-12345", **overrides}
+        body = {"token": invite.token, "email": "ben@example.com", "name": "ben", "password": "pw-12345", **overrides}
         return self.call("POST", "/auth/register", body=body)
 
     def error_title(self, response) -> str:
@@ -315,7 +315,7 @@ class TestRegister(AuthTest):
         return error["title"]
 
     def test_register_signs_the_new_user_in(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
+        invite = self.make_invite(self.ana)
 
         response = self.register(invite, email="Ben@Example.com", profile_picture="/pics/ben.png")
 
@@ -335,7 +335,7 @@ class TestRegister(AuthTest):
         )
 
     def test_the_first_picture_is_the_one_generation_starts_from(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
+        invite = self.make_invite(self.ana)
         result = AuthResultDto.model_validate(self.register(invite, profile_picture="/pics/ben.png").json)
 
         changed = self.call("PATCH", "/auth/me", self.stored(result.user.id), body={"profile_picture": "/pics/new.png"})
@@ -348,55 +348,54 @@ class TestRegister(AuthTest):
         )
 
     def test_unusable_invites_are_rejected(self):
-        used = self.make_invite(self.ana, "ben@example.com", used=True)
-        expired = self.make_invite(self.ana, "ben@example.com", expires_in_days=-1)
+        used = self.make_invite(self.ana, used=True)
+        expired = self.make_invite(self.ana, expires_in_days=-1)
 
         self.assertEqual(self.error_title(self.register(used)), "Invalid invite token")
         self.assertEqual(self.error_title(self.register(expired)), "Invalid invite token")
         self.assertEqual(self.error_title(self.register(used, token="nope")), "Invalid invite token")
         self.assertEqual(db.session.query(User).filter_by(name="ben").count(), 0)
 
-    def test_email_must_match_the_invite(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
+    def test_any_email_or_none_registers(self):
+        response = self.register(self.make_invite(self.ana), email=None)
 
-        self.assertEqual(self.error_title(self.register(invite, email="eve@example.com")), "Email mismatch")
-        db.session.expire_all()
-        self.assertFalse(db.session.get_one(InviteToken, invite.id).is_used)
-        self.assertEqual(db.session.query(User).filter_by(name="ben").count(), 0)
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertIsNone(self.stored(response.json["user"]["id"]).email)
+        second = self.register(self.make_invite(self.ana), name="cleo", email="whoever@example.com")
+        self.assertEqual(second.status_code, 200, second.json)
 
     def test_name_and_email_must_be_free(self):
-        taken_email = self.make_invite(self.ana, "ana@example.com")
-        free_email = self.make_invite(self.ana, "ben@example.com")
+        taken_email = self.make_invite(self.ana)
+        free_email = self.make_invite(self.ana)
 
-        self.assertEqual(self.error_title(self.register(taken_email)), "User already exists")
+        self.assertEqual(self.error_title(self.register(taken_email, email="ana@example.com")), "User already exists")
         self.assertEqual(self.error_title(self.register(free_email, name="ana")), "User already exists")
         db.session.expire_all()
         self.assertFalse(db.session.get_one(InviteToken, free_email.id).is_used)
 
     def test_register_body_is_validated(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
+        invite = self.make_invite(self.ana)
 
         self.assertEqual(self.pointers(self.register(invite, password="")), ["/body/password"])
         self.assertEqual(self.pointers(self.register(invite, password="7 chars")), ["/body/password"])
         self.assertEqual(
             self.pointers(self.call("POST", "/auth/register", body={})),
-            ["/body/token", "/body/email", "/body/name", "/body/password"],
+            ["/body/token", "/body/name", "/body/password"],
         )
 
 
 class TestInviteLookup(AuthTest):
-    def test_lookup_shows_the_invited_email(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
+    def test_lookup_shows_when_the_invite_expires(self):
+        invite = self.make_invite(self.ana)
 
         response = self.call("GET", f"/auth/invite/{invite.token}")
 
         self.assertEqual(response.status_code, 200, response.json)
-        self.assertEqual(set(response.json), {"email", "expires_at"})
-        self.assertEqual(response.json["email"], "ben@example.com")
+        self.assertEqual(set(response.json), {"expires_at"})
 
     def test_unusable_invites_are_400(self):
-        used = self.make_invite(self.ana, "a@example.com", used=True)
-        expired = self.make_invite(self.ana, "b@example.com", expires_in_days=-1)
+        used = self.make_invite(self.ana, used=True)
+        expired = self.make_invite(self.ana, expires_in_days=-1)
 
         for token in (used.token, expired.token, "nope"):
             with self.subTest(token=token):
@@ -414,7 +413,7 @@ class TestInviteGuessing(AuthTest):
         return self.client.post("/api/auth/register", json=body, environ_base={"REMOTE_ADDR": address})
 
     def test_five_wrong_tokens_pause_lookup_and_registration_from_that_address(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
+        invite = self.make_invite(self.ana)
         statuses = [self.lookup_from("10.0.0.1", "nope").status_code for _ in range(3)]
         statuses += [self.register_from("10.0.0.1", "nope").status_code for _ in range(2)]
 
@@ -425,17 +424,101 @@ class TestInviteGuessing(AuthTest):
         self.assertEqual(register.json["errors"][0]["code"], "api_error_code.too_many_requests")
         self.assertEqual(self.lookup_from("10.0.0.2", invite.token).status_code, 200)
 
-    def test_a_wrong_email_counts_as_a_guess(self):
-        invite = self.make_invite(self.ana, "ben@example.com")
-        for _ in range(5):
-            self.register_from("10.0.0.1", invite.token, email="eve@example.com")
-
-        self.assertEqual(self.register_from("10.0.0.1", invite.token).status_code, 429)
-
     def test_a_taken_name_is_not_a_guess(self):
         for _ in range(5):
-            self.register_from("10.0.0.1", self.make_invite(self.ana, "ana@example.com").token, email="ana@example.com")
+            self.register_from("10.0.0.1", self.make_invite(self.ana).token, email="ana@example.com")
 
+        self.assertEqual(self.register_from("10.0.0.1", self.make_invite(self.ana).token).status_code, 200)
+
+
+class TestGuestJoin(AuthTest):
+    def setUp(self):
+        super().setUp()
+        self.session = self.make_session("s1", creator=self.ana)
+
+    def join(self, **overrides):
+        return self.call("POST", "/auth/join", body={"join_code": self.session.join_code, "name": "ben", **overrides})
+
+    def test_lookup_names_the_session(self):
+        response = self.call("GET", f"/auth/join/{self.session.join_code}")
+
+        self.assertEqual(response.status_code, 200, response.json)
         self.assertEqual(
-            self.register_from("10.0.0.1", self.make_invite(self.ana, "ben@example.com").token).status_code, 200
+            JoinLookupDto.model_validate(response.json),
+            JoinLookupDto(session_id=self.session.id, session_name="s1", active=True),
         )
+        self.assertEqual(self.call("GET", "/auth/join/nope").status_code, 400)
+
+    def test_a_guest_joins_with_a_name_and_is_signed_in_as_a_member(self):
+        response = self.join(profile_picture="/pics/ben.png")
+
+        self.assertEqual(response.status_code, 200, response.json)
+        result = JoinResultDto.model_validate(response.json)
+        self.assertEqual((result.session.id, result.user.name, result.user.is_guest), (self.session.id, "ben", True))
+        self.assertEqual(result.user.profile_picture, "/pics/ben.png")
+        ben = self.stored(result.user.id)
+        self.assertEqual((ben.password, ben.email, ben.level_id), (None, None, self.levels[0].id))
+        members = db.session.query(user_sessions.c.user_id).filter_by(session_id=self.session.id).all()
+        self.assertIn((ben.id,), members)
+        self.assertEqual(self.me_with(result.token).json["is_guest"], True)
+
+    def test_a_guest_cannot_sign_in_with_any_password(self):
+        self.join()
+
+        response = self.call("POST", "/auth/login", body={"name_or_email": "ben", "password": "x"})
+
+        self.assertEqual(response.status_code, 401, response.json)
+
+    def test_a_taken_name_unknown_code_or_closed_session_is_refused(self):
+        self.assertEqual(self.join(name="ana").status_code, 400)
+        self.assertEqual(self.join(join_code="nope").status_code, 400)
+        self.session.active = False
+        db.session.commit()
+        closed = self.join()
+        self.assertEqual(closed.status_code, 409, closed.json)
+        self.assertEqual(db.session.query(User).filter_by(name="ben").count(), 0)
+
+    def test_wrong_codes_pause_the_address(self):
+        for _ in range(5):
+            self.client.get("/api/auth/join/nope", environ_base={"REMOTE_ADDR": "10.0.0.1"})
+
+        response = self.client.get(f"/api/auth/join/{self.session.join_code}", environ_base={"REMOTE_ADDR": "10.0.0.1"})
+
+        self.assertEqual(response.status_code, 429, response.json)
+
+    def test_a_guest_may_not_invite(self):
+        guest = self.stored(JoinResultDto.model_validate(self.join().json).user.id)
+
+        response = self.call("POST", "/invites", guest)
+
+        self.assertEqual(response.status_code, 403, response.json)
+
+
+class TestClaim(AuthTest):
+    def guest(self) -> User:
+        session = self.make_session("s1", creator=self.ana)
+        joined = self.call("POST", "/auth/join", body={"join_code": session.join_code, "name": "ben"})
+        return self.stored(joined.json["user"]["id"])
+
+    def test_a_claimed_guest_signs_in_with_name_or_email(self):
+        guest = self.guest()
+
+        response = self.call("POST", "/auth/claim", guest, body={"password": "pw-12345", "email": "ben@example.com"})
+
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertFalse(MeDto.model_validate(response.json).is_guest)
+        for name in ("ben", "ben@example.com"):
+            signed_in = self.call("POST", "/auth/login", body={"name_or_email": name, "password": "pw-12345"})
+            self.assertEqual(signed_in.status_code, 200, signed_in.json)
+
+    def test_only_a_guest_claims_and_only_with_a_free_email(self):
+        guest = self.guest()
+
+        taken = self.call("POST", "/auth/claim", guest, body={"password": "pw-12345", "email": "ana@example.com"})
+        not_a_guest = self.call("POST", "/auth/claim", self.ana, body={"password": "pw-12345"})
+        short = self.call("POST", "/auth/claim", guest, body={"password": "short"})
+
+        self.assertEqual(taken.status_code, 400, taken.json)
+        self.assertEqual(not_a_guest.status_code, 409, not_a_guest.json)
+        self.assertEqual(self.pointers(short), ["/body/password"])
+        self.assertIsNone(self.stored(guest.id).password)

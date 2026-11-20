@@ -12,7 +12,7 @@ import { useAppStore } from "../../../AppSlice";
 import { useAuthStore } from "../../../AuthSlice";
 import { mutateSession, onErrorRetry } from "../../../lib/api/swrHooks";
 import { canManageSession } from "../../../model/permissions";
-import { copyToClipboard } from "../copyToClipboard";
+import { copyToClipboard } from "../../../shared/copyToClipboard";
 import { INGREDIENT_PROMPT } from "../ingredientPrompt";
 import { ExportIngredientsButton } from "./ExportIngredientsButton";
 import { ImportIngredientsModal } from "./ImportIngredientsModal";

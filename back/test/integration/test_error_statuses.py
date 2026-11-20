@@ -171,7 +171,7 @@ class DeclaredErrorsMatchHandlersTest(AppTest):
         )
 
     def test_revoke_invite(self):
-        used = self.make_invite(self.ana, "c@example.com", used=True)
+        used = self.make_invite(self.ana, used=True)
         self.assert_answers(
             "revokeInvite",
             self.call("DELETE", f"/invites/{used.id}"),

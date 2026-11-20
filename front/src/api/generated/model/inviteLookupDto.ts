@@ -9,6 +9,5 @@
  * What the registration page shows for a valid invite link.
  */
 export interface InviteLookupDto {
-  email: string;
   expires_at: string;
 }

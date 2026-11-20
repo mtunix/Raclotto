@@ -1,0 +1,24 @@
+.join-qr {
+    width: 100%;
+}
+
+.join-qr-code.ant-qrcode {
+    background: #fff;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.join-qr-link {
+    max-width: 100%;
+}
+
+.join-qr-link-text.ant-typography {
+    max-width: 260px;
+    font-size: 12px;
+}
+
+@media (max-width: 568px) {
+    .join-link-label {
+        display: none;
+    }
+}

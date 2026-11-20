@@ -4,14 +4,16 @@
     Permissions(user).rename_pan(pan)
     Permissions(user).delete_pan(pan)
     Permissions(user).change_global()           # global event configs, default preparation types
+    Permissions(user).invite()                  # issue an invite
     Permissions(user).manage_admins()           # see who is an admin
     Permissions(user).change_admin(other)       # grant or revoke admin
 
 A session belongs to its creator and a pan to its author; admins may do all of it, except delete
 someone else's pan, which takes its ratings with it. A session without a creator can only be
 managed by admins. An admin grants and revokes admin for anyone but themselves, so whoever revokes
-stays an admin and the last admin can't be lost. Everything else,
-rolling, rating and a session's ingredients and preparation types, is open to every signed-in user.
+stays an admin and the last admin can't be lost. A guest may not
+invite anyone until they claim their account. Everything else, rolling, rating and a session's
+ingredients and preparation types, is open to every signed-in user.
 Each check raises ``Forbidden``; the ``may_*`` twins answer without raising.
 """
 
@@ -40,6 +42,9 @@ class Permissions:
     def may_change_global(self) -> bool:
         return self._user.is_admin
 
+    def may_invite(self) -> bool:
+        return self._user.password is not None
+
     def may_manage_admins(self) -> bool:
         return self._user.is_admin
 
@@ -61,6 +66,10 @@ class Permissions:
     def change_global(self) -> None:
         if not self.may_change_global():
             raise Forbidden("Only an admin may change the global settings")
+
+    def invite(self) -> None:
+        if not self.may_invite():
+            raise Forbidden("A guest may invite no one until they keep their account")
 
     def manage_admins(self) -> None:
         if not self.may_manage_admins():

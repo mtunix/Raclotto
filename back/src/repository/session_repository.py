@@ -15,6 +15,9 @@ class SessionRepository(BaseRepository[RaclottoSession]):
     def by_key(self, key: str) -> RaclottoSession | None:
         return db.session.query(RaclottoSession).filter_by(key=key).first()
 
+    def by_join_code(self, join_code: str) -> RaclottoSession | None:
+        return db.session.query(RaclottoSession).filter_by(join_code=join_code).first()
+
     def active_sessions(self) -> list[RaclottoSession]:
         return db.session.query(RaclottoSession).filter_by(active=True).all()
 

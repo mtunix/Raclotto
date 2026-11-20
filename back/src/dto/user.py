@@ -118,6 +118,8 @@ class MeDto(_UserCard):
     language: Language
     # Admins may change any session and pan, and the global settings.
     is_admin: bool
+    # Signed in through a session's join link, without a password yet; setting one keeps the account.
+    is_guest: bool
     # Every rolled pan gets the session's ingredient of the hour, where the diet allows it.
     add_ingredient_of_the_hour: bool
     experience_points: int
@@ -142,6 +144,7 @@ class MeDto(_UserCard):
             gluten=user.gluten,
             language=user.language if _is_language(user.language) else DEFAULT_LANGUAGE,
             is_admin=user.is_admin,
+            is_guest=user.password is None,
             add_ingredient_of_the_hour=user.add_ingredient_of_the_hour,
         )
 

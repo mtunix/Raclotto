@@ -12,7 +12,6 @@ class InviteToken(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     token: Mapped[str] = mapped_column(unique=True, index=True)
-    email: Mapped[str]
     created_by_user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     expires_at: Mapped[datetime]

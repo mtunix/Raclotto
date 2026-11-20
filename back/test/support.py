@@ -102,10 +102,9 @@ class AppTest(unittest.TestCase):
         db.session.commit()
         return pan
 
-    def make_invite(self, creator: User, email: str, expires_in_days: int = 7, used: bool = False) -> InviteToken:
+    def make_invite(self, creator: User, expires_in_days: int = 7, used: bool = False) -> InviteToken:
         invite = InviteToken(
             token=InviteToken.generate_token(),
-            email=email,
             created_by_user_id=creator.id,
             expires_at=datetime.now() + timedelta(days=expires_in_days),
             is_used=used,

@@ -42,7 +42,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
     email: Mapped[str | None] = mapped_column(unique=True)
-    password: Mapped[str]
+    # None for a guest, who signed in through a session's join link and can't sign in again.
+    password: Mapped[str | None]
 
     # Refers to what a user wants to eat
     # Having a flag set false means that the user does not want to eat this
