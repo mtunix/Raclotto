@@ -92,7 +92,7 @@ class AuthApi(BaseApi):
                 detail=f"Too many failed sign-ins; try again in {ceil(wait.total_seconds() / 60)} minutes",
             )
         user = self.user_repository.by_email_or_name(body.name_or_email)
-        if not user or not verify_password(body.password, user.password):
+        if not verify_password(body.password, user.password if user else None) or not user:
             throttle.failed(key)
             raise ApiError(
                 ApiErrorCode.invalid_token,

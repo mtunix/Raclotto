@@ -1,3 +1,5 @@
+import time
+
 import jwt
 
 from back.src.auth.password import hash_password
@@ -63,6 +65,17 @@ class TestLogin(AuthTest):
                 self.assertEqual(
                     (error["code"], error["title"]), ("api_error_code.invalid_token", "Invalid credentials")
                 )
+
+    def test_an_unknown_account_takes_as_long_as_a_wrong_password(self):
+        def fastest(name_or_email: str) -> float:
+            timings = []
+            for _ in range(3):
+                start = time.perf_counter()
+                self.assertEqual(self.login(name_or_email, "wrong").status_code, 401)
+                timings.append(time.perf_counter() - start)
+            return min(timings)
+
+        self.assertGreater(fastest("nobody"), fastest("ana") / 2)
 
     def test_login_body_is_validated(self):
         self.assertEqual(self.pointers(self.login("ana", "")), ["/body/password"])
