@@ -52,9 +52,19 @@ class CatalogChanged:
 
 
 @dataclass(frozen=True)
+class SessionOpened:
+    session: RaclottoSession
+    creator: User
+
+    @property
+    def actor(self) -> User | None:
+        return self.creator
+
+
+@dataclass(frozen=True)
 class SessionClosed:
     session: RaclottoSession
     actor: User | None = None
 
 
-Fact = PanRolled | PanRated | IngredientAdded | CatalogChanged | SessionClosed
+Fact = PanRolled | PanRated | IngredientAdded | CatalogChanged | SessionOpened | SessionClosed

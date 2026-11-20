@@ -4,7 +4,7 @@ from back.src.driver.database import db
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.src.interactor.achievements import AchievementChanges, Achievements
-from back.src.interactor.facts import Fact, SessionClosed
+from back.src.interactor.facts import Fact, SessionClosed, SessionOpened
 from back.src.interactor.sessions import Sessions
 from back.test.support import AppTest
 
@@ -45,6 +45,7 @@ class SessionsTest(AppTest):
         self.assertEqual((session.name, session.active, session.created_by_user_id), ("Friday", True, self.ana.id))
         self.assertTrue(session.key)
         self.assertEqual(self.members(session), [(self.ana.id, FRIDAY)])
+        self.assertEqual(self.achievements.facts, [SessionOpened(session=session, creator=self.ana)])
 
     def test_a_member_keeps_the_time_they_first_joined(self):
         session = self.sessions.create(self.ana, "Friday")

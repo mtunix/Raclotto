@@ -29,6 +29,7 @@ from back.src.interactor.facts import (
     PanRated,
     PanRolled,
     SessionClosed,
+    SessionOpened,
 )
 from back.src.repository.achievement_repository import AchievementRepository
 from back.src.repository.pan_repository import PanRepository
@@ -48,6 +49,7 @@ __all__ = [
     "PanRated",
     "PanRolled",
     "SessionClosed",
+    "SessionOpened",
 ]
 
 

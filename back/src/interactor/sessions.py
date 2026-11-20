@@ -8,8 +8,8 @@
     Sessions().delete(session)
 
 Its creator joins a session as it is created, and anyone who rolls there joins on their first pan;
-the join time counts for achievements such as "Pandler". Closing reports ``SessionClosed``, so the
-achievements that wait for the end are judged with it. Who may change a session is
+the join time counts for achievements such as "Pandler". Creating reports ``SessionOpened`` and closing
+``SessionClosed``, so the achievements that wait for either are judged with it. Who may change a session is
 ``Permissions.manage_session``; nothing here checks. Callers own the transaction: nothing here commits.
 """
 
@@ -20,7 +20,7 @@ from back.src.driver.database import db
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.src.interactor.achievements import Achievements
-from back.src.interactor.facts import SessionClosed
+from back.src.interactor.facts import SessionClosed, SessionOpened
 from back.src.repository.session_repository import SessionRepository
 
 
@@ -33,6 +33,7 @@ class Sessions:
     def create(self, creator: User, name: str) -> RaclottoSession:
         session = self._sessions.create_with_key(name, creator.id)
         self.join(creator, session)
+        self._achievements.record(SessionOpened(session=session, creator=creator))
         return session
 
     def join(self, user: User, session: RaclottoSession) -> None:

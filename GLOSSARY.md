@@ -187,8 +187,9 @@ and description from the translations, by key; the stored `title` only names the
 
 **Fact**:
 Something that happened in a session, reported to achievements and events: a pan rolled, a pan
-rated, an ingredient added, the catalog changed, the session closed.
-Code: `PanRolled`, `PanRated`, `IngredientAdded`, `CatalogChanged`, `SessionClosed` (`facts.py`).
+rated, an ingredient added, the catalog changed, the session opened or closed.
+Code: `PanRolled`, `PanRated`, `IngredientAdded`, `CatalogChanged`, `SessionOpened`, `SessionClosed`
+(`facts.py`).
 _Avoid_: event (that is the session event below), trigger
 
 **Evaluator**:

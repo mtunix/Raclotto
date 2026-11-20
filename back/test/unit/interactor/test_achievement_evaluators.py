@@ -25,7 +25,7 @@ from back.src.interactor.achievement_evaluators.survival_of_the_fittest_evaluato
     SurvivalOfTheFittestEvaluator,
 )
 from back.src.interactor.achievement_evaluators.vanilla_evaluator import VanillaEvaluator
-from back.src.interactor.facts import Fact, PanRated, PanRolled, SessionClosed
+from back.src.interactor.facts import Fact, PanRated, PanRolled, SessionClosed, SessionOpened
 from back.src.repository.ingredient_repository import IngredientRepository
 from back.src.repository.pan_repository import PanRepository
 from back.src.repository.session_repository import SessionRepository
@@ -231,10 +231,14 @@ class TestLocalHost(unittest.TestCase):
     evaluator = LocalHostEvaluator()
 
     def test_one_created_session_unlocks(self):
-        self.assertTrue(self.evaluator.evaluate(pan(ANA), ANA, context(sessions_created=1)).unlocked)
-        self.assertEqual(self.evaluator.evaluate(pan(ANA), ANA, context(sessions_created=3)).progress, 1.0)
-        result = self.evaluator.evaluate(pan(ANA), ANA, context())
-        self.assertEqual((result.unlocked, result.progress), (False, 0.0))
+        for fact in (SessionOpened(SESSION, ANA), rolled()):
+            with self.subTest(type(fact).__name__):
+                one, three, none = (
+                    self.evaluator.judge(fact, ANA, ACHIEVEMENT, context(sessions_created=n)) for n in (1, 3, 0)
+                )
+                self.assertTrue(one.unlocked)
+                self.assertEqual(three.progress, 1.0)
+                self.assertEqual((none.unlocked, none.progress), (False, 0.0))
 
     def test_progress_counts_the_created_sessions(self):
         self.assertEqual(self.evaluator.calculate_progress(ANA, ACHIEVEMENT, context()), 0.0)
@@ -491,7 +495,6 @@ class TestDeclarations(unittest.TestCase):
 
     def test_rolling_judges_the_roller_for_good(self):
         for evaluator in (
-            LocalHostEvaluator(),
             FirstBloodEvaluator(),
             GottaEatEmAllEvaluator(),
             BiotonneEvaluator(),
@@ -501,6 +504,14 @@ class TestDeclarations(unittest.TestCase):
         ):
             with self.subTest(type(evaluator).__name__):
                 self.assert_declares(evaluator, rolled(), "actor")
+
+    def test_opening_a_session_or_rolling_judges_the_actor_for_good(self):
+        evaluator = LocalHostEvaluator()
+
+        self.assertEqual(evaluator.reacts_to, (SessionOpened, PanRolled))
+        self.assertEqual(evaluator.audience(SessionOpened(SESSION, ANA)), "actor")
+        self.assertEqual(evaluator.audience(rolled()), "actor")
+        self.assertFalse(evaluator.revocable)
 
     def test_ratings_judge_the_pans_owner_for_good(self):
         for evaluator in (PantasticEvaluator(), SurvivalOfTheFittestEvaluator()):

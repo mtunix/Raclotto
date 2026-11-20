@@ -2,6 +2,7 @@ from datetime import datetime
 
 from back.src.driver.database import db
 from back.src.dto.session import SessionDto
+from back.src.entity.achievement import AchievementKey
 from back.src.entity.raclotto_session import RaclottoSession
 from back.src.entity.user import User, user_sessions
 from back.test.support import AppTest
@@ -40,6 +41,14 @@ class TestCreateSession(SessionApiTest):
         self.assertEqual(response.json["timestamp"], session.timestamp.isoformat())
         members = db.session.execute(user_sessions.select().where(user_sessions.c.session_id == session.id)).all()
         self.assertEqual([m.user_id for m in members], [self.ana.id])
+
+    def test_creating_a_session_unlocks_local_host_for_its_creator(self):
+        self.call("POST", "/sessions", self.ana, body={"name": "Friday"})
+
+        db.session.expire_all()
+        ana, ben = db.session.get_one(User, self.ana.id), db.session.get_one(User, self.ben.id)
+        self.assertEqual([a.key for a in ana.achievements], [AchievementKey.local_host])
+        self.assertEqual(ben.achievements, [])
 
     def test_a_session_without_a_key_gets_a_generated_one(self):
         session = RaclottoSession(name="Friday")

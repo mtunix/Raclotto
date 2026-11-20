@@ -65,8 +65,8 @@ The deep modules in `interactor/` and what they own:
   rolls the whole roll back.
 - **`achievements.py` — `Achievements.record(fact) -> AchievementChanges`**: routes report
   what happened (the facts in `facts.py`: `PanRolled`, `PanRated`, `IngredientAdded`,
-  `CatalogChanged`, `SessionClosed`); evaluators declare `reacts_to`, `audience` and `revocable`,
-  and are registered by the achievement's `key` (`AchievementKey`), which also names its texts in the
+  `CatalogChanged`, `SessionOpened`, `SessionClosed`); evaluators declare `reacts_to`, `audience`
+  and `revocable`, and are registered by the achievement's `key` (`AchievementKey`), which also names its texts in the
   frontend. Never special-case an achievement by key or title outside its evaluator. `record` flushes;
   the request commits it together with the change the fact reports.
 - **`events.py` — `Events.record(fact) -> list[Event]`**: session events (pan swap) from the same
